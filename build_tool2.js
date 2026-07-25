@@ -93,16 +93,6 @@ const html = `<!DOCTYPE html>
     <div class="resolved" id="resolved"></div>
     <div class="warn" id="warn" style="display:none"></div>
 
-    <div class="edit">
-      <label>Liturgical day (editable)</label>
-      <input id="e_day" type="text">
-      <label>First Reading</label><input id="e_first" type="text">
-      <label>Responsorial Psalm</label><input id="e_psalm" type="text">
-      <label>Second Reading</label><input id="e_second" type="text">
-      <label>Gospel</label><input id="e_gospel" type="text">
-      <p class="editnote">These are auto-filled from the lectionary. Edit any field to override — the priest's choice wins — then download. <a href="#" id="reset">Reset to computed</a>.</p>
-    </div>
-
     <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13.5px;color:var(--ink);font-weight:500;cursor:pointer">
       <input type="checkbox" id="incl" checked style="width:16px;height:16px"> Include the full text of the readings (adds a second page)
     </label>
@@ -113,6 +103,18 @@ const html = `<!DOCTYPE html>
   </div>
 
   <div class="sheet" id="sheet"></div>
+
+  <div class="card">
+    <div class="edit">
+      <label>Liturgical day (editable)</label>
+      <input id="e_day" type="text">
+      <label>First Reading</label><input id="e_first" type="text">
+      <label>Responsorial Psalm</label><input id="e_psalm" type="text">
+      <label>Second Reading</label><input id="e_second" type="text">
+      <label>Gospel</label><input id="e_gospel" type="text">
+      <p class="editnote">These are auto-filled from the lectionary. Edit any field to override — the priest's choice wins; the sheet above updates as you type. <a href="#" id="reset">Reset to computed</a>.</p>
+    </div>
+  </div>
   <div class="foot">Calendar: Catholic Church in Finland (Diocese of Helsinki) — Epiphany on 6 Jan, St Henry, All Souls handled. Sunday cycles A–C <span id="range"></span>, readings from the Order of Readings for Mass. Always confirm against your parish Ordo; edit any field to override.</div>
 </div>
 
@@ -181,7 +183,7 @@ function renderResolved(){
 function refresh(){
   renderResolved(); renderEditors(); renderSheet();
   const v = vals();
-  if(!v.gospel && !v.first){ warn.style.display="block"; warn.textContent="This day (e.g. St Henry, patron of Finland) has proper readings that aren't in the dataset — please type them into the fields above from your parish Ordo."; }
+  if(!v.gospel && !v.first){ warn.style.display="block"; warn.textContent="This day (e.g. St Henry, patron of Finland) has proper readings that aren't in the dataset — please type them into the fields below from your parish Ordo."; }
   else if(warn.textContent.indexOf("outside the computed")<0){ warn.style.display="none"; }
 }
 
