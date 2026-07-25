@@ -1,0 +1,1265 @@
+{
+ "bySlot": {
+  "Year A | 1st Sunday of Advent": {
+   "first": "Isaiah 2:1-5",
+   "psalm": "Psalm 122:1-2, 3-4, 4-5, 6-7, 8-9",
+   "second": "Romans 13:11-14",
+   "gospel": "Matthew 24:37-44",
+   "src": "usccb"
+  },
+  "Year A | 2nd Sunday of Advent": {
+   "first": "Isaiah 11:1-10",
+   "psalm": "Psalm 72:1-2, 7-8, 12-13, 17",
+   "second": "Romans 15:4-9",
+   "gospel": "Matthew 3:1-12",
+   "src": "usccb"
+  },
+  "Year A | 3rd Sunday of Advent": {
+   "first": "Isaiah 35:1-6a, 10",
+   "psalm": "Psalm 146:6-7, 8-9, 9-10",
+   "second": "James 5:7-10",
+   "gospel": "Matthew 11:2-11",
+   "src": "usccb"
+  },
+  "Year A | 4th Sunday of Advent": {
+   "first": "Isaiah 7:10-14",
+   "psalm": "Psalm 24:1-2, 3-4, 5-6",
+   "second": "Romans 1:1-7",
+   "gospel": "Matthew 1:18-24",
+   "src": "usccb"
+  },
+  "Year A | Holy Family": {
+   "first": "Sirach 3:2-6, 12-14",
+   "psalm": "Psalm 128:1-2, 3, 4-5",
+   "second": "Colossians 3:12-21",
+   "gospel": "Matthew 2:13-15, 19-23",
+   "src": "usccb"
+  },
+  "Year A | Epiphany": {
+   "first": "Isaiah 60:1-6",
+   "psalm": "Psalm 72:1-2, 7-8, 10-11, 12-13.",
+   "second": "Ephesians 3:2-3a, 5-6",
+   "gospel": "Matthew 2:1-12",
+   "src": "usccb"
+  },
+  "Year A | Baptism of the Lord": {
+   "first": "Isaiah 42:1-4, 6-7",
+   "psalm": "Psalm 29:1-2, 3-4, 3, 9-10",
+   "second": "Acts 10:34-38",
+   "gospel": "Matthew 3:13-17",
+   "src": "usccb"
+  },
+  "Year A | 2nd Sunday of Ordinary Time": {
+   "first": "Isaiah 49:3, 5-6",
+   "psalm": "Psalm 40:2, 4, 7-8, 8-9, 10",
+   "second": "1 Corinthians 1:1-3",
+   "gospel": "John 1:29-34",
+   "src": "usccb"
+  },
+  "Year A | 3rd Sunday of Ordinary Time": {
+   "first": "Isaiah 8:23—9:3",
+   "psalm": "Psalm 27:1, 4, 13-14",
+   "second": "1 Corinthians 1:10-13, 17",
+   "gospel": "Matthew 4:12-23 or 4:12-17",
+   "src": "usccb"
+  },
+  "Year A | 4th Sunday of Ordinary Time": {
+   "first": "Zephaniah 2:3; 3:12-13",
+   "psalm": "Psalm 146:6-7, 8-9, 9-10",
+   "second": "1 Corinthians 1:26-31",
+   "gospel": "Matthew 5:1-12a",
+   "src": "usccb"
+  },
+  "Year A | 5th Sunday of Ordinary Time": {
+   "first": "Isaiah 58:7-10",
+   "psalm": "Psalm 112:4-5, 6-7, 8-9",
+   "second": "1 Corinthians 2:1-5",
+   "gospel": "Matthew 5:13-16",
+   "src": "usccb"
+  },
+  "Year A | 6th Sunday of Ordinary Time": {
+   "first": "Sirach 15:15-20",
+   "psalm": "Psalm 119:1-2, 4-5, 17-18, 33-34",
+   "second": "1 Corinthians 2:6-10",
+   "gospel": "Matthew 5:17-37",
+   "src": "usccb"
+  },
+  "Year A | 1st Sunday of Lent": {
+   "first": "Genesis 2:7-9; 3:1-7",
+   "psalm": "Psalm 51:3-4, 5-6, 12-13, 17",
+   "second": "Romans 5:12-19 or 5:12, 17-19",
+   "gospel": "Matthew 4:1-11",
+   "src": "usccb"
+  },
+  "Year A | 2nd Sunday of Lent": {
+   "first": "Genesis 12:1-4a",
+   "psalm": "Psalm 33:4-5, 18-19, 20, 22.",
+   "second": "2 Timothy 1:8b-10",
+   "gospel": "Matthew 17:1-9",
+   "src": "usccb"
+  },
+  "Year A | 3rd Sunday of Lent": {
+   "first": "Exodus 17:3-7",
+   "psalm": "Psalm 95:1-2, 6-7, 8-9",
+   "second": "Romans 5:1-2, 5-8",
+   "gospel": "John 4:5-42",
+   "src": "usccb"
+  },
+  "Year A | 4th Sunday of Lent": {
+   "first": "1 Samuel 16:1b, 6-7, 10-13a",
+   "psalm": "Psalm 23: 1-3a, 3b-4, 5, 6",
+   "second": "Ephesians 5:8-14",
+   "gospel": "John 9:1-41",
+   "src": "usccb"
+  },
+  "Year A | 5th Sunday of Lent": {
+   "first": "Ezekiel 37:12-14",
+   "psalm": "Psalm 130:1-2, 3-4, 5-6, 7-8",
+   "second": "Romans 8:8-11",
+   "gospel": "John 11:1-45",
+   "src": "usccb"
+  },
+  "Year A | Palm Sunday": {
+   "first": "Isaiah 50:4-7",
+   "psalm": "Psalm 22:8-9, 17-18, 19-20, 23-24",
+   "second": "Philippians 2:6-11",
+   "gospel": "Matthew 26:14—27:66",
+   "src": "usccb"
+  },
+  "Year A | Easter Sunday": {
+   "first": "Acts 10:34a, 37-43",
+   "psalm": "Psalm 118:1-2, 16-17, 22-23",
+   "second": "Colossians 3:1-4",
+   "gospel": "John 20:1-9",
+   "src": "fixed"
+  },
+  "Year A | Divine Mercy Sunday": {
+   "first": "Acts 2:42-47",
+   "psalm": "Psalm 118:2-4, 13-15, 22-24",
+   "second": "1 Peter 1:3-9",
+   "gospel": "John 20:19-31",
+   "src": "usccb"
+  },
+  "Year A | 3rd Sunday of Easter": {
+   "first": "Acts 2:14, 22-33",
+   "psalm": "Psalm 16:1-2, 5, 7-8, 9-10, 11",
+   "second": "1 Peter 1:17-21",
+   "gospel": "Luke 24:13-35",
+   "src": "usccb"
+  },
+  "Year A | 4th Sunday of Easter": {
+   "first": "Acts 2:14a, 36-41",
+   "psalm": "Psalm 23: 1-3a, 3b4, 5, 6",
+   "second": "1 Peter 2:20b-25",
+   "gospel": "John 10:1-10",
+   "src": "usccb"
+  },
+  "Year A | 5th Sunday of Easter": {
+   "first": "Acts 6:1-7",
+   "psalm": "Psalm 33:1-2, 4-5, 18-19",
+   "second": "1 Peter 2:4-9",
+   "gospel": "John 14:1-12",
+   "src": "usccb"
+  },
+  "Year A | 6th Sunday of Easter": {
+   "first": "Acts 8:5-8, 14-17",
+   "psalm": "Psalm 66:1-3, 4-5, 6-7, 16, 20",
+   "second": "1 Peter 3:15-18",
+   "gospel": "John 14:15-21",
+   "src": "usccb"
+  },
+  "Year A | 7th Sunday of Easter": {
+   "first": "Acts 1:1-11",
+   "psalm": "Psalm 47:2-3, 6-7, 8-9",
+   "second": "Ephesians 1:17-23",
+   "gospel": "Matthew 28:16-20",
+   "src": "usccb"
+  },
+  "Year A | Pentecost Sunday": {
+   "first": "Acts 2:1-11",
+   "psalm": "Psalm 104:1, 24, 29-30, 31, 34",
+   "second": "1 Corinthians 12:3b-7, 12-13",
+   "gospel": "John 20:19-23",
+   "src": "usccb"
+  },
+  "Year A | Trinity Sunday": {
+   "first": "Exodus 34:4b-6, 8-9",
+   "psalm": "Daniel 3:52, 53, 54, 55, 56",
+   "second": "2 Corinthians 13:11-13",
+   "gospel": "John 3:16-18",
+   "src": "usccb"
+  },
+  "Year A | Corpus Christi": {
+   "first": "Deuteronomy 8:2-3, 14b-16a",
+   "psalm": "Psalm 147:12-13, 14-15, 19-20",
+   "second": "1 Corinthians 10:16-17",
+   "gospel": "John 6:51-58",
+   "src": "usccb"
+  },
+  "Year A | 11th Sunday of Ordinary Time": {
+   "first": "Exodus 19:2-6a",
+   "psalm": "Psalm 100:1-2, 3, 5",
+   "second": "Romans 5:6-11",
+   "gospel": "Matthew 9:36—10:8",
+   "src": "usccb"
+  },
+  "Year A | 12th Sunday of Ordinary Time": {
+   "first": "Jeremiah 20:10-13",
+   "psalm": "Psalm 69:8-10, 14, 17, 33-35",
+   "second": "Romans 5:12-15",
+   "gospel": "Matthew 10:26-33",
+   "src": "usccb"
+  },
+  "Year A | 13th Sunday of Ordinary Time": {
+   "first": "2 Kings 4:8-11, 14-16a",
+   "psalm": "Psalm 89:2-3, 16-17, 18-19",
+   "second": "Romans 6:3-4, 8-11",
+   "gospel": "Matthew 10:37-42",
+   "src": "usccb"
+  },
+  "Year A | 14th Sunday of Ordinary Time": {
+   "first": "Zechariah 9:9-10",
+   "psalm": "Psalm 145:1-2, 8-9, 10-11, 13-14",
+   "second": "Romans 8:9, 11-13",
+   "gospel": "Matthew 11:25-30",
+   "src": "usccb"
+  },
+  "Year A | 15th Sunday of Ordinary Time": {
+   "first": "Isaiah 55:10-11",
+   "psalm": "Psalm 65:10, 11, 12-13, 14",
+   "second": "Romans 8:18-23",
+   "gospel": "Matthew 13:1-23",
+   "src": "usccb"
+  },
+  "Year A | 16th Sunday of Ordinary Time": {
+   "first": "Wisdom 12:13, 16-19",
+   "psalm": "Psalm 86:5-6, 9-10, 15-16",
+   "second": "Romans 8:26-27",
+   "gospel": "Matthew 13:24-43",
+   "src": "usccb"
+  },
+  "Year A | 17th Sunday of Ordinary Time": {
+   "first": "1 Kings 3:5, 7-12",
+   "psalm": "Psalm 119:57, 72, 76-77, 127-128, 129-130",
+   "second": "Romans 8:28-30",
+   "gospel": "Matthew 13:44-52",
+   "src": "usccb"
+  },
+  "Year A | 18th Sunday of Ordinary Time": {
+   "first": "Isaiah 55:1-3",
+   "psalm": "Psalm 145:8-9, 15-16, 17-18",
+   "second": "Romans 8:35, 37-39",
+   "gospel": "Matthew 14:13-21",
+   "src": "usccb"
+  },
+  "Year A | 19th Sunday of Ordinary Time": {
+   "first": "1 Kings 19:9a, 11-13a",
+   "psalm": "Psalm 85:9, 10, 11-12, 13-14",
+   "second": "Romans 9:1-5",
+   "gospel": "Matthew 14:22-33",
+   "src": "usccb"
+  },
+  "Year A | 20th Sunday of Ordinary Time": {
+   "first": "Isaiah 56:1, 6-7",
+   "psalm": "Psalm 67:2-3, 5, 6, 8",
+   "second": "Romans 11:13-15, 29-32",
+   "gospel": "Matthew 15:21-28",
+   "src": "usccb"
+  },
+  "Year A | 21st Sunday of Ordinary Time": {
+   "first": "Isaiah 22:19-23",
+   "psalm": "Psalm 138:1-2, 2-3, 6, 8",
+   "second": "Romans 11:33-36",
+   "gospel": "Matthew 16:13-20",
+   "src": "usccb"
+  },
+  "Year A | 22nd Sunday of Ordinary Time": {
+   "first": "Jeremiah 20:7-9",
+   "psalm": "Psalm 63:2, 3-4, 5-6, 8-9",
+   "second": "Romans 12:1-2",
+   "gospel": "Matthew 16:21-27",
+   "src": "usccb"
+  },
+  "Year A | 23rd Sunday of Ordinary Time": {
+   "first": "Ezekiel 33:7-9",
+   "psalm": "Psalm 95:1-2, 6-7, 8-9",
+   "second": "Romans 13:8-10",
+   "gospel": "Matthew 18:15-20",
+   "src": "usccb"
+  },
+  "Year A | 24th Sunday of Ordinary Time": {
+   "first": "Sirach 27:30—28:7",
+   "psalm": "Psalm 103:1-2, 3-4, 9-10, 11-12",
+   "second": "Romans 14:7-9",
+   "gospel": "Matthew 18:21-35",
+   "src": "usccb"
+  },
+  "Year A | 25th Sunday of Ordinary Time": {
+   "first": "Isaiah 55:6-9",
+   "psalm": "Psalm 145:2-3, 8-9, 17-18",
+   "second": "Philippians 1:20c-24, 27a",
+   "gospel": "Matthew 20:1-16a",
+   "src": "usccb"
+  },
+  "Year A | 26th Sunday of Ordinary Time": {
+   "first": "Ezekiel 18:25-28",
+   "psalm": "Psalm 25:4-5, 6-7, 8-9",
+   "second": "Philippians 2:1-11",
+   "gospel": "Matthew 21:28-32",
+   "src": "usccb"
+  },
+  "Year A | 27th Sunday of Ordinary Time": {
+   "first": "Isaiah 5:1-7",
+   "psalm": "Psalm 80:9, 12, 13-14, 15-16, 19-20",
+   "second": "Philippians 4:6-9",
+   "gospel": "Matthew 21:33-43",
+   "src": "usccb"
+  },
+  "Year A | 28th Sunday of Ordinary Time": {
+   "first": "Isaiah 25:6-10a",
+   "psalm": "Psalm 23:1-3a, 3b-4, 5, 6",
+   "second": "Philippians 4:12-14, 19-20",
+   "gospel": "Matthew 22:1-14",
+   "src": "usccb"
+  },
+  "Year A | 29th Sunday of Ordinary Time": {
+   "first": "Isaiah 45:1, 4-6",
+   "psalm": "Psalm 96:1, 3, 4-5, 7-8, 9-10",
+   "second": "1 Thessalonians 1:1-5b",
+   "gospel": "Matthew 22:15-21",
+   "src": "usccb"
+  },
+  "Year A | 30th Sunday of Ordinary Time": {
+   "first": "Exodus 22:20-26",
+   "psalm": "Psalm 18:2-3, 3-4, 47, 51",
+   "second": "1 Thessalonians 1:5c-10",
+   "gospel": "Matthew 22:34-40",
+   "src": "usccb"
+  },
+  "Year A | All Saints": {
+   "first": "Revelation 7:2-4, 9-14",
+   "psalm": "Psalm 24:1bc-2, 3-4ab, 5-6",
+   "second": "1 John 3:1-3",
+   "gospel": "Matthew 5:1-12a",
+   "src": "usccb"
+  },
+  "Year A | 32nd Sunday of Ordinary Time": {
+   "first": "Wisdom 6:12-16",
+   "psalm": "Psalm 63:2, 3-4, 5-6, 7-8",
+   "second": "1 Thessalonians 4:13-18",
+   "gospel": "Matthew 25:1-13",
+   "src": "usccb"
+  },
+  "Year A | 33rd Sunday of Ordinary Time": {
+   "first": "Proverbs 31:10-13, 19-20, 30-31",
+   "psalm": "Psalm 128:1-2, 3, 4-5",
+   "second": "1 Thessalonians 5:1-6",
+   "gospel": "Matthew 25:14-30",
+   "src": "usccb"
+  },
+  "Year A | Christ the King": {
+   "first": "Ezekiel 34:11-12, 15-17",
+   "psalm": "Psalm 23:1-2, 2-3, 5-6",
+   "second": "1 Corinthians 15:20-26, 28",
+   "gospel": "Matthew 25:31-46",
+   "src": "usccb"
+  },
+  "Year B | 1st Sunday of Advent": {
+   "first": "Isaiah 63:16b-17, 19b; 64:2-7",
+   "psalm": "Psalm 80:2-3, 15-16, 18-19",
+   "second": "1 Corinthians 1:3-9",
+   "gospel": "Mark 13:33-37",
+   "src": "usccb"
+  },
+  "Year B | 2nd Sunday of Advent": {
+   "first": "Isaiah 40:1-5, 9-11",
+   "psalm": "Psalm 85:9-10-11-12, 13-14",
+   "second": "2 Peter 3:8-14",
+   "gospel": "Mark 1:1-8",
+   "src": "usccb"
+  },
+  "Year B | 3rd Sunday of Advent": {
+   "first": "Isaiah 61:1-2a, 10-11",
+   "psalm": "Luke 1:46-48, 49-50, 53-54",
+   "second": "1 Thessalonians 5:16-24",
+   "gospel": "John 1:6-8, 19-28",
+   "src": "usccb"
+  },
+  "Year B | 4th Sunday of Advent": {
+   "first": "2 Samuel 7:1-5, 8b-12, 14a, 16",
+   "psalm": "Psalm 89:2-3, 4-5, 27, 29",
+   "second": "Romans 16:25-27",
+   "gospel": "Luke 1:26-38",
+   "src": "usccb"
+  },
+  "Year B | Holy Family": {
+   "first": "Sirach 3:2-6, 12-14",
+   "psalm": "Psalm 128:1-2, 3, 4-5.",
+   "second": "Colossians 3:12-21",
+   "gospel": "Luke 2:22-40",
+   "src": "usccb"
+  },
+  "Year B | Epiphany": {
+   "first": "Isaiah 60:1-6",
+   "psalm": "Psalm 72:1-2, 7-8, 10-11, 12-13.",
+   "second": "Ephesians 3:2-3a, 5-6",
+   "gospel": "Matthew 2:1-12",
+   "src": "usccb"
+  },
+  "Year B | Baptism of the Lord": {
+   "first": "Isaiah 42:1-4, 6-7",
+   "psalm": "Psalm 29:1-2, 3-4, 3, 9-10",
+   "second": "Acts 10:34-38",
+   "gospel": "Mark 1:7-11",
+   "src": "usccb"
+  },
+  "Year B | 2nd Sunday of Ordinary Time": {
+   "first": "1 Samuel 3:3b-10, 19",
+   "psalm": "Psalm 40:2, 4, 7-8, 8-9, 10",
+   "second": "1 Corinthians 6:13c-15a, 17-20",
+   "gospel": "John 1:35-42",
+   "src": "usccb"
+  },
+  "Year B | 3rd Sunday of Ordinary Time": {
+   "first": "Jonah 3:1-5, 10",
+   "psalm": "Psalm 25:4-5, 6-7, 8-9",
+   "second": "1 Corinthians 7:29-31",
+   "gospel": "Mark 1:14-20",
+   "src": "usccb"
+  },
+  "Year B | 4th Sunday of Ordinary Time": {
+   "first": "Deuteronomy 18:15-20",
+   "psalm": "Psalm 95:1-2, 6-7, 7-9",
+   "second": "1 Corinthians 7:32-35",
+   "gospel": "Mark 1:21-28",
+   "src": "usccb"
+  },
+  "Year B | 5th Sunday of Ordinary Time": {
+   "first": "Job 7:1-4, 6-7",
+   "psalm": "Psalm 147:1-2, 3-4, 5-6",
+   "second": "1 Corinthians 9:16-19, 22-23",
+   "gospel": "Mark 1:29-39",
+   "src": "usccb"
+  },
+  "Year B | 1st Sunday of Lent": {
+   "first": "Genesis 9:8-15",
+   "psalm": "Psalm 25:4-5, 6-7, 8-9.",
+   "second": "1 Peter 3:18-22",
+   "gospel": "Mark 1:12-15",
+   "src": "usccb"
+  },
+  "Year B | 2nd Sunday of Lent": {
+   "first": "Genesis 22:1-2, 9a, 10-13, 15-18",
+   "psalm": "Psalm 116:10, 15, 16-17, 18-19",
+   "second": "Romans 8:31b-34",
+   "gospel": "Mark 9:2-10",
+   "src": "usccb"
+  },
+  "Year B | 3rd Sunday of Lent": {
+   "first": "Exodus 20:1-17",
+   "psalm": "Psalm 19:8, 9, 10, 11",
+   "second": "1 Corinthians 1:22-25",
+   "gospel": "John 2:13-25",
+   "src": "usccb"
+  },
+  "Year B | 4th Sunday of Lent": {
+   "first": "2 Chronicles 36:14-16, 19-23",
+   "psalm": "137:1-2, 3, 4-5, 6",
+   "second": "Ephesians 2:4-10",
+   "gospel": "John 3:14-21",
+   "src": "usccb"
+  },
+  "Year B | 5th Sunday of Lent": {
+   "first": "Jeremiah 31:31-34",
+   "psalm": "Psalm 51:3-4, 12-13, 14-15",
+   "second": "Hebrews 5:7-9",
+   "gospel": "John 12:20-33",
+   "src": "usccb"
+  },
+  "Year B | Palm Sunday": {
+   "first": "Isaiah 50:4-7",
+   "psalm": "Psalm 22:8-9, 17-18, 19-20, 23-24",
+   "second": "Philippians 2:6-11",
+   "gospel": "Mark 14:1-15:47",
+   "src": "usccb"
+  },
+  "Year B | Easter Sunday": {
+   "first": "Acts 10:34a, 37-43",
+   "psalm": "Psalm 118:1-2, 16-17, 22-23",
+   "second": "Colossians 3:1-4",
+   "gospel": "John 20:1-9",
+   "src": "fixed"
+  },
+  "Year B | Divine Mercy Sunday": {
+   "first": "Acts 4:32-35",
+   "psalm": "Psalm 118:2-4, 13-15, 22-24",
+   "second": "1 John 5:1-6",
+   "gospel": "John 20:19-31",
+   "src": "usccb"
+  },
+  "Year B | 3rd Sunday of Easter": {
+   "first": "Acts 3:13-15, 17-19",
+   "psalm": "Psalm 4:2, 4, 7-8, 9",
+   "second": "1 John 2:1-5a",
+   "gospel": "Luke 24:35-48",
+   "src": "usccb"
+  },
+  "Year B | 4th Sunday of Easter": {
+   "first": "Acts 4:8-12",
+   "psalm": "Psalm 118:1, 8-9, 21-23, 26, 28, 29",
+   "second": "1 John 3:1-2",
+   "gospel": "John 10:11-18",
+   "src": "usccb"
+  },
+  "Year B | 5th Sunday of Easter": {
+   "first": "Acts 9:26-31",
+   "psalm": "Psalm 22:26-27, 28, 30, 31-32",
+   "second": "1 John 3:18-24",
+   "gospel": "John 15:1-8",
+   "src": "usccb"
+  },
+  "Year B | 6th Sunday of Easter": {
+   "first": "Acts 10:25-26, 34-35, 44-48",
+   "psalm": "Psalm 98:1, 2-3, 3-4",
+   "second": "1 John 4:7-10",
+   "gospel": "John 15:9-17",
+   "src": "usccb"
+  },
+  "Year B | 7th Sunday of Easter": {
+   "first": "Acts 1:1-11",
+   "psalm": "Psalm 47:2-3, 6-7, 8-9",
+   "second": "Ephesians 1:17-23",
+   "gospel": "Mark 16:15-20",
+   "src": "usccb"
+  },
+  "Year B | Pentecost Sunday": {
+   "first": "Acts 2:1-11",
+   "psalm": "Psalm 104:1, 24, 29-30, 31, 34",
+   "second": "1 Corinthians 12:3b-7, 12-13",
+   "gospel": "John 20:19-23",
+   "src": "usccb"
+  },
+  "Year B | Trinity Sunday": {
+   "first": "Deuteronomy 4:32-34, 39-40",
+   "psalm": "Psalm 33:4-5, 6, 9, 18-19, 20, 22",
+   "second": "Romans 8:14-17",
+   "gospel": "Matthew 28:16-20",
+   "src": "usccb"
+  },
+  "Year B | Corpus Christi": {
+   "first": "Exodus 24:3-8",
+   "psalm": "Psalm 116:12-13, 15-16, 17-18",
+   "second": "Hebrews 9:11-15",
+   "gospel": "Mark 14:12-16, 22-26",
+   "src": "usccb"
+  },
+  "Year B | 10th Sunday of Ordinary Time": {
+   "first": "Genesis 3:9-15",
+   "psalm": "Psalm 130:1-2, 3-4, 5-6, 7-8",
+   "second": "2 Corinthians 4:13—5:1",
+   "gospel": "Mark 3:20-35",
+   "src": "usccb"
+  },
+  "Year B | 11th Sunday of Ordinary Time": {
+   "first": "Ezekiel 17:22-24",
+   "psalm": "Psalm 92:2-3, 13-14, 15-16",
+   "second": "2 Corinthians 5:6-10",
+   "gospel": "Mark 4:26-34",
+   "src": "usccb"
+  },
+  "Year B | 12th Sunday of Ordinary Time": {
+   "first": "Job 38:1, 8-11",
+   "psalm": "Psalm 107:23-24, 25-26, 28-29, 30-31",
+   "second": "2 Corinthians 5:14-17",
+   "gospel": "Mark 4:35-41",
+   "src": "usccb"
+  },
+  "Year B | 13th Sunday of Ordinary Time": {
+   "first": "Wisdom 1:13-15; 2:23-24",
+   "psalm": "Psalm 30:2, 4, 5-6, 11, 12, 13",
+   "second": "2 Corinthians 8:7, 9, 13-15",
+   "gospel": "Mark 5:21-43 or 5:21-24, 35b-43",
+   "src": "usccb"
+  },
+  "Year B | 14th Sunday of Ordinary Time": {
+   "first": "Ezekiel 2:2-5",
+   "psalm": "Psalm 123:1-2, 2, 3-4",
+   "second": "2 Corinthians 12:7-10",
+   "gospel": "Mark 6:1-6",
+   "src": "usccb"
+  },
+  "Year B | 15th Sunday of Ordinary Time": {
+   "first": "Amos 7:12-15",
+   "psalm": "Psalm 85:9-10, 11-12, 13-14",
+   "second": "Ephesians 1:3-14 or 1:3-10",
+   "gospel": "Mark 6:7-13",
+   "src": "usccb"
+  },
+  "Year B | 16th Sunday of Ordinary Time": {
+   "first": "Jeremiah 23:1-6",
+   "psalm": "Psalm 23:1-3, 3-4, 5, 6",
+   "second": "Ephesians 2:13-18",
+   "gospel": "Mark 6:30-34",
+   "src": "usccb"
+  },
+  "Year B | 17th Sunday of Ordinary Time": {
+   "first": "2 Kings 4:42-44",
+   "psalm": "Psalm 145:10-11, 15-16, 17-18",
+   "second": "Ephesians 4:1-6",
+   "gospel": "John 6:1-15",
+   "src": "usccb"
+  },
+  "Year B | 18th Sunday of Ordinary Time": {
+   "first": "Exodus 16:2-4, 12-15",
+   "psalm": "Psalm 78:3-4, 23-24, 25, 54",
+   "second": "Ephesians 4:17, 20-24",
+   "gospel": "John 6:24-35",
+   "src": "usccb"
+  },
+  "Year B | 19th Sunday of Ordinary Time": {
+   "first": "1 Kings 19:4-8",
+   "psalm": "Psalm 34:2-3, 4-5, 6-7, 8-9",
+   "second": "Ephesians 4:30—5:2",
+   "gospel": "John 6:41-51",
+   "src": "usccb"
+  },
+  "Year B | The Assumption of the Blessed Virgin Mary": {
+   "first": "Revelation 11:19A; 12:1-6A, 10AB",
+   "psalm": "Psalm 45:10, 11, 12, 16",
+   "second": "1 Corinthians 15:20-27",
+   "gospel": "Luke 1:39-56",
+   "src": "usccb"
+  },
+  "Year B | 21st Sunday of Ordinary Time": {
+   "first": "Joshua 24:1-2a, 15-17, 18b",
+   "psalm": "Psalm 34:2-3, 16-17, 18-19, 20-21",
+   "second": "Ephesians 5:21-32 or 5:2a, 25-32",
+   "gospel": "John 6:60-69",
+   "src": "usccb"
+  },
+  "Year B | 22nd Sunday of Ordinary Time": {
+   "first": "Deuteronomy 4:1-2, 6-8",
+   "psalm": "Psalm 15:2-3, 3-4, 4-5",
+   "second": "James 1:17-18, 21b-22, 27",
+   "gospel": "Mark 7:1-8, 14-15, 21-23",
+   "src": "usccb"
+  },
+  "Year B | 23rd Sunday of Ordinary Time": {
+   "first": "Isaiah 35:4-7a",
+   "psalm": "Psalm 146:6-7, 8-9, 9-10",
+   "second": "James 2:1-5",
+   "gospel": "Mark 7:31-37",
+   "src": "usccb"
+  },
+  "Year B | 24th Sunday of Ordinary Time": {
+   "first": "Isaiah 50:5-9a",
+   "psalm": "Psalm 116:1-2, 3-4, 5-6, 8-9",
+   "second": "James 2:14-18",
+   "gospel": "Mark 8:27-35",
+   "src": "usccb"
+  },
+  "Year B | 25th Sunday of Ordinary Time": {
+   "first": "Wisdom 2:12, 17-20",
+   "psalm": "Psalm 54:3-4, 5, 6 and 8",
+   "second": "James 3:16—4:3",
+   "gospel": "Mark 9:30-37",
+   "src": "usccb"
+  },
+  "Year B | 26th Sunday of Ordinary Time": {
+   "first": "Numbers 11:25-29",
+   "psalm": "Psalm 19:8, 10, 12-13, 14",
+   "second": "James 5:1-6",
+   "gospel": "Mark 9:38-43, 45, 47-48",
+   "src": "usccb"
+  },
+  "Year B | 27th Sunday of Ordinary Time": {
+   "first": "Genesis 2:18-24",
+   "psalm": "Psalm 128:1-2, 3, 4-5, 6",
+   "second": "Hebrews 2:9-11",
+   "gospel": "Mark 10:2-16 or 10:2-12",
+   "src": "usccb"
+  },
+  "Year B | 28th Sunday of Ordinary Time": {
+   "first": "Wisdom 7:7-11",
+   "psalm": "Psalm 90:12-13, 14-15, 16-17",
+   "second": "Hebrews 4:12-13",
+   "gospel": "Mark 10:17-30 or 10:17-27",
+   "src": "usccb"
+  },
+  "Year B | 29th Sunday of Ordinary Time": {
+   "first": "Isaiah 53:10-11",
+   "psalm": "Psalm 33:4-5, 18-19, 20, 22",
+   "second": "Hebrews 4:14-16",
+   "gospel": "Mark 10:35-45 or 10:42-45",
+   "src": "usccb"
+  },
+  "Year B | 30th Sunday of Ordinary Time": {
+   "first": "Jeremiah 31:7-9",
+   "psalm": "Psalm 126:1-2, 2-3, 4-5, 6",
+   "second": "Hebrews 5:1-6",
+   "gospel": "Mark 10:46-52",
+   "src": "usccb"
+  },
+  "Year B | 31st Sunday of Ordinary Time": {
+   "first": "Deuteronomy 6:2-6",
+   "psalm": "Psalm 18:2-3, 3-4, 47, 51",
+   "second": "Hebrews 7:23-28",
+   "gospel": "Mark 12:28b-34",
+   "src": "usccb"
+  },
+  "Year B | 32nd Sunday of Ordinary Time": {
+   "first": "1 Kings 17:10-16",
+   "psalm": "Psalm 146:7, 8-9, 9-10",
+   "second": "Hebrews 9:24-28",
+   "gospel": "Mark 12:38-44 or 12:41-44",
+   "src": "usccb"
+  },
+  "Year B | 33rd Sunday of Ordinary Time": {
+   "first": "Daniel 12:1-3",
+   "psalm": "Psalm 16:5, 8, 9-10, 11",
+   "second": "Hebrews 10:11-14, 18",
+   "gospel": "Mark 13:24-32",
+   "src": "usccb"
+  },
+  "Year B | Christ the King": {
+   "first": "Daniel 7:13-14",
+   "psalm": "Psalm 93:1, 1-2, 5",
+   "second": "Revelation 1:5-8",
+   "gospel": "John 18:33b-37",
+   "src": "usccb"
+  },
+  "Year C | 2nd Sunday of Ordinary Time": {
+   "first": "Isaiah 62:1-5",
+   "psalm": "Psalm 96:1-2a, 2b-3, 7-8, 9-10",
+   "second": "1 Corinthians 12:4-11",
+   "gospel": "John 2:1-11",
+   "src": "felix"
+  },
+  "Year C | 3rd Sunday of Ordinary Time": {
+   "first": "Nehemiah 8:2-4a, 5-6, 8-10",
+   "psalm": "Psalm 19:8, 9, 10, 15",
+   "second": "1 Corinthians 12:12-30",
+   "gospel": "Luke 1:1-4; 4:14-21",
+   "src": "felix"
+  },
+  "Year C | 4th Sunday of Ordinary Time": {
+   "first": "Jeremiah 1:4-5, 17-19",
+   "psalm": "Psalm 71:1-2, 3-4, 5-6, 15-17",
+   "second": "1 Corinthians 12:31-13:13",
+   "gospel": "Luke 4:21-30",
+   "src": "felix"
+  },
+  "Year C | 5th Sunday of Ordinary Time": {
+   "first": "Isaiah 6:1-2a, 3-8",
+   "psalm": "Psalm 138:1-2a, 2b-3, 4-5, 7-8",
+   "second": "1 Corinthians 15:1-11",
+   "gospel": "Luke 5:1-11",
+   "src": "felix"
+  },
+  "Year C | 6th Sunday of Ordinary Time": {
+   "first": "Jeremiah 17:5-8",
+   "psalm": "Psalm 1:1-2, 3, 4, 6",
+   "second": "1 Corinthians 15:12, 16-20",
+   "gospel": "Luke 6:17, 20-26",
+   "src": "felix"
+  },
+  "Year C | 7th Sunday of Ordinary Time": {
+   "first": "1 Samuel 26:2, 7-9, 12-13, 22-23",
+   "psalm": "Psalm 103:1-2, 3-4, 8, 10, 12-13",
+   "second": "1 Corinthians 15:45-49",
+   "gospel": "Luke 6:27-38",
+   "src": "felix"
+  },
+  "Year C | 8th Sunday of Ordinary Time": {
+   "first": "Sirach 27:4-7",
+   "psalm": "Psalm 92:2-3, 13-14, 15-16",
+   "second": "1 Corinthians 15:54-58",
+   "gospel": "Luke 6:39-45",
+   "src": "felix"
+  },
+  "Year C | 9th Sunday of Ordinary Time": {
+   "first": "1 Kings 8:41-43",
+   "psalm": "Psalm 117:1, 2",
+   "second": "Galatians 1:1-2, 6-10",
+   "gospel": "Luke 7:1-10",
+   "src": "felix"
+  },
+  "Year C | 10th Sunday of Ordinary Time": {
+   "first": "1 Kings 17:17-24",
+   "psalm": "Psalm 30:2, 4, 5-6, 11, 12, 13",
+   "second": "Galatians 1:11-19",
+   "gospel": "Luke 7:11-17",
+   "src": "felix"
+  },
+  "Year C | 11th Sunday of Ordinary Time": {
+   "first": "2 Samuel 12:7-10, 13",
+   "psalm": "Psalm 32:1-2, 5, 7, 11",
+   "second": "Galatians 2:16, 19-21",
+   "gospel": "Luke 7:36-8:3",
+   "src": "felix"
+  },
+  "Year C | 12th Sunday of Ordinary Time": {
+   "first": "Zechariah 12:10-11; 13:1",
+   "psalm": "Psalm 63:2, 3-4, 5-6, 8-9",
+   "second": "Galatians 3:26-29",
+   "gospel": "Luke 9:18-24",
+   "src": "felix"
+  },
+  "Year C | 13th Sunday of Ordinary Time": {
+   "first": "1 Kings 19:16b, 19-21",
+   "psalm": "Psalm 16:1-2, 5, 7-8, 9-10, 11",
+   "second": "Galatians 5:1, 13-18",
+   "gospel": "Luke 9:51-62",
+   "src": "felix"
+  },
+  "Year C | 14th Sunday of Ordinary Time": {
+   "first": "Isaiah 66:10-14c",
+   "psalm": "Psalm 66:1-3, 4-5, 6-7, 16, 20",
+   "second": "Galatians 6:14-18",
+   "gospel": "Luke 10:1-12, 17-20",
+   "src": "felix"
+  },
+  "Year C | 15th Sunday of Ordinary Time": {
+   "first": "Deuteronomy 30:10-14",
+   "psalm": "Psalm 69:14, 17, 30-31, 33-34, 36, 37",
+   "second": "Colossians 1:15-20",
+   "gospel": "Luke 10:25-37",
+   "src": "felix"
+  },
+  "Year C | 16th Sunday of Ordinary Time": {
+   "first": "Genesis 18:1-10a",
+   "psalm": "Psalm 15:2-3, 3-4, 5",
+   "second": "Colossians 1:24-28",
+   "gospel": "Luke 10:38-42",
+   "src": "felix"
+  },
+  "Year C | 17th Sunday of Ordinary Time": {
+   "first": "Genesis 18:20-32",
+   "psalm": "Psalm 138:1-2, 2-3, 6-7, 7-8",
+   "second": "Colossians 2:12-14",
+   "gospel": "Luke 11:1-13",
+   "src": "felix"
+  },
+  "Year C | 18th Sunday of Ordinary Time": {
+   "first": "Ecclesiastes 1:2; 2:21-23",
+   "psalm": "Psalm 90:3-4, 5-6, 12-13, 14, 17",
+   "second": "Colossians 3:1-5, 9-11",
+   "gospel": "Luke 12:13-21",
+   "src": "felix"
+  },
+  "Year C | 19th Sunday of Ordinary Time": {
+   "first": "Wisdom 18:6-9",
+   "psalm": "Psalm 33:1, 12, 18-19, 20-22",
+   "second": "Hebrews 11:1-2, 8-19",
+   "gospel": "Luke 12:32-48",
+   "src": "felix"
+  },
+  "Year C | 20th Sunday of Ordinary Time": {
+   "first": "Jeremiah 38:4-6, 8-10",
+   "psalm": "Psalm 40:2, 3, 4, 18",
+   "second": "Hebrews 12:1-4",
+   "gospel": "Luke 12:49-53",
+   "src": "felix"
+  },
+  "Year C | 21st Sunday of Ordinary Time": {
+   "first": "Isaiah 66:18-21",
+   "psalm": "Psalm 117:1, 2",
+   "second": "Hebrews 12:5-7, 11-13",
+   "gospel": "Luke 13:22-30",
+   "src": "felix"
+  },
+  "Year C | 22nd Sunday of Ordinary Time": {
+   "first": "Sirach 3:17-18, 20, 28-29",
+   "psalm": "Psalm 68:4-5, 6-7, 10-11",
+   "second": "Hebrews 12:18-19, 22-24a",
+   "gospel": "Luke 14:1, 7-14",
+   "src": "felix"
+  },
+  "Year C | 23rd Sunday of Ordinary Time": {
+   "first": "Wisdom 9:13-18b",
+   "psalm": "Psalm 90:3-4, 5-6, 12-13, 14, 17",
+   "second": "Philemon 9-10, 12-17",
+   "gospel": "Luke 14:25-33",
+   "src": "felix"
+  },
+  "Year C | 24th Sunday of Ordinary Time": {
+   "first": "Exodus 32:7-11, 13-14",
+   "psalm": "Psalm 51:3-4, 12-13, 17, 19",
+   "second": "1 Timothy 1:12-17",
+   "gospel": "Luke 15:1-32",
+   "src": "felix"
+  },
+  "Year C | 25th Sunday of Ordinary Time": {
+   "first": "Amos 8:4-7",
+   "psalm": "Psalm 113:1-2, 4-6, 7-8",
+   "second": "1 Timothy 2:1-8",
+   "gospel": "Luke 16:1-13",
+   "src": "felix"
+  },
+  "Year C | 26th Sunday of Ordinary Time": {
+   "first": "Amos 6:1a, 4-7",
+   "psalm": "Psalm 146:7, 8-9, 9-10",
+   "second": "1 Timothy 6:11-16",
+   "gospel": "Luke 16:19-31",
+   "src": "felix"
+  },
+  "Year C | 27th Sunday of Ordinary Time": {
+   "first": "Habakkuk 1:2-3; 2:2-4",
+   "psalm": "Psalm 95:1-2, 6-7, 8-9",
+   "second": "2 Timothy 1:6-8, 13-14",
+   "gospel": "Luke 17:5-10",
+   "src": "felix"
+  },
+  "Year C | 28th Sunday of Ordinary Time": {
+   "first": "2 Kings 5:14-17",
+   "psalm": "Psalm 98:1, 2-3, 3-4",
+   "second": "2 Timothy 2:8-13",
+   "gospel": "Luke 17:11-19",
+   "src": "felix"
+  },
+  "Year C | 29th Sunday of Ordinary Time": {
+   "first": "Exodus 17:8-13",
+   "psalm": "Psalm 121:1-2, 3-4, 5-6, 7-8",
+   "second": "2 Timothy 3:14-4:2",
+   "gospel": "Luke 18:1-8",
+   "src": "felix"
+  },
+  "Year C | 30th Sunday of Ordinary Time": {
+   "first": "Sirach 35:12-14, 16-18",
+   "psalm": "Psalm 34:2-3, 17-18, 19, 23",
+   "second": "2 Timothy 4:6-8, 16-18",
+   "gospel": "Luke 18:9-14",
+   "src": "felix"
+  },
+  "Year C | 31st Sunday of Ordinary Time": {
+   "first": "Wisdom 11:22-12:2",
+   "psalm": "Psalm 145:1-2, 8-9, 10-11, 13-14",
+   "second": "2 Thessalonians 1:11-2:2",
+   "gospel": "Luke 19:1-10",
+   "src": "felix"
+  },
+  "Year C | 32nd Sunday of Ordinary Time": {
+   "first": "2 Maccabees 7:1-2, 9-14",
+   "psalm": "Psalm 17:1, 5-6, 8, 15",
+   "second": "2 Thessalonians 2:16-3:5",
+   "gospel": "Luke 20:27-38",
+   "src": "felix"
+  },
+  "Year C | 33rd Sunday of Ordinary Time": {
+   "first": "Malachi 3:19-20a",
+   "psalm": "Psalm 98:5-6, 7-8, 9",
+   "second": "2 Thessalonians 3:7-12",
+   "gospel": "Luke 21:5-19",
+   "src": "felix"
+  },
+  "Year C | 1st Sunday of Advent": {
+   "first": "Jeremiah 33:14-16",
+   "psalm": "Psalm 25:4-5, 8-9, 10, 14",
+   "second": "1 Thessalonians 3:12-4:2",
+   "gospel": "Luke 21:25-28, 34-36",
+   "src": "felix"
+  },
+  "Year C | 2nd Sunday of Advent": {
+   "first": "Baruch 5:1-9",
+   "psalm": "Psalm 126:1-2, 2-3, 4-5, 6",
+   "second": "Philippians 1:4-6, 8-11",
+   "gospel": "Luke 3:1-6",
+   "src": "felix"
+  },
+  "Year C | 3rd Sunday of Advent": {
+   "first": "Zephaniah 3:14-18a",
+   "psalm": "Isaiah 12:2-3, 4, 5-6",
+   "second": "Philippians 4:4-7",
+   "gospel": "Luke 3:10-18",
+   "src": "felix"
+  },
+  "Year C | 4th Sunday of Advent": {
+   "first": "Micah 5:1-4a",
+   "psalm": "Psalm 80:2-3, 15-16, 18-19",
+   "second": "Hebrews 10:5-10",
+   "gospel": "Luke 1:39-45",
+   "src": "felix"
+  },
+  "Year C | 1st Sunday of Lent": {
+   "first": "Deuteronomy 26:4-10",
+   "psalm": "Psalm 91:1-2, 10-11, 12-13, 14-15",
+   "second": "Romans 10:8-13",
+   "gospel": "Luke 4:1-13",
+   "src": "felix"
+  },
+  "Year C | 2nd Sunday of Lent": {
+   "first": "Genesis 15:5-12, 17-18",
+   "psalm": "Psalm 27:1, 7-8, 8-9, 13-14",
+   "second": "Philippians 3:17-4:1",
+   "gospel": "Luke 9:28b-36",
+   "src": "felix"
+  },
+  "Year C | 3rd Sunday of Lent": {
+   "first": "Exodus 3:1-8a, 13-15",
+   "psalm": "Psalm 103:1-2, 3-4, 6-7, 8, 11",
+   "second": "1 Corinthians 10:1-6, 10-12",
+   "gospel": "Luke 13:1-9",
+   "src": "felix"
+  },
+  "Year C | 4th Sunday of Lent": {
+   "first": "Joshua 5:9a, 10-12",
+   "psalm": "Psalm 34:2-3, 4-5, 6-7",
+   "second": "2 Corinthians 5:17-21",
+   "gospel": "Luke 15:1-3, 11-32",
+   "src": "felix"
+  },
+  "Year C | 5th Sunday of Lent": {
+   "first": "Isaiah 43:16-21",
+   "psalm": "Psalm 126:1-2, 2-3, 4-5, 6",
+   "second": "Philippians 3:8-14",
+   "gospel": "John 8:1-11",
+   "src": "felix"
+  },
+  "Year C | Palm Sunday": {
+   "first": "Isaiah 50:4-7",
+   "psalm": "Psalm 22:8-9, 17-18, 19-20, 23-24",
+   "second": "Philippians 2:6-11",
+   "gospel": "Luke 22:14-23:56",
+   "src": "felix"
+  },
+  "Year C | Divine Mercy Sunday": {
+   "first": "Acts 5:12-16",
+   "psalm": "Psalm 118:2-4, 13-15, 22-24",
+   "second": "Revelation 1:9-11a, 12-13, 17-19",
+   "gospel": "John 20:19-31",
+   "src": "felix"
+  },
+  "Year C | 3rd Sunday of Easter": {
+   "first": "Acts 5:27-32, 40b-41",
+   "psalm": "Psalm 30:2, 4, 5-6, 11-12, 13",
+   "second": "Revelation 5:11-14",
+   "gospel": "John 21:1-19",
+   "src": "felix"
+  },
+  "Year C | 4th Sunday of Easter": {
+   "first": "Acts 13:14, 43-52",
+   "psalm": "Psalm 100:1-2, 3, 5",
+   "second": "Revelation 7:9, 14b-17",
+   "gospel": "John 10:27-30",
+   "src": "felix"
+  },
+  "Year C | 5th Sunday of Easter": {
+   "first": "Acts 14:21-27",
+   "psalm": "Psalm 145:8-9, 10-11, 12-13",
+   "second": "Revelation 21:1-5a",
+   "gospel": "John 13:31-33a, 34-35",
+   "src": "felix"
+  },
+  "Year C | 6th Sunday of Easter": {
+   "first": "Acts 15:1-2, 22-29",
+   "psalm": "Psalm 67:2-3, 5, 6, 8",
+   "second": "Revelation 21:10-14, 22-23",
+   "gospel": "John 14:23-29",
+   "src": "felix"
+  },
+  "Year C | 7th Sunday of Easter": {
+   "first": "Acts 7:55-60",
+   "psalm": "Psalm 97:1-2, 6-7, 9",
+   "second": "Revelation 22:12-14, 16-17, 20",
+   "gospel": "John 17:20-26",
+   "src": "felix"
+  },
+  "Year C | Pentecost Sunday": {
+   "first": "Acts 2:1-11",
+   "psalm": "Psalm 104:1, 24, 29-30, 31, 34",
+   "second": "Romans 8:8-17",
+   "gospel": "John 14:15-16, 23b-26",
+   "src": "felix"
+  },
+  "Year C | Holy Family": {
+   "first": "1 Samuel 1:20-22, 24-28",
+   "psalm": "Psalm 84:2-3, 5-6, 9-10",
+   "second": "1 John 3:1-2, 21-24",
+   "gospel": "Luke 2:41-52",
+   "src": "felix"
+  },
+  "Year C | Baptism of the Lord": {
+   "first": "Isaiah 40:1-5, 9-11",
+   "psalm": "Psalm 104:1b-2, 3-4, 24-25, 27-28, 29-30",
+   "second": "Titus 2:11-14; 3:4-7",
+   "gospel": "Luke 3:15-16, 21-22",
+   "src": "felix"
+  },
+  "Year C | Trinity Sunday": {
+   "first": "Proverbs 8:22-31",
+   "psalm": "Psalm 8:4-5, 6-7, 8-9",
+   "second": "Romans 5:1-5",
+   "gospel": "John 16:12-15",
+   "src": "felix"
+  },
+  "Year C | Corpus Christi": {
+   "first": "Genesis 14:18-20",
+   "psalm": "Psalm 110:1, 2, 3, 4",
+   "second": "1 Corinthians 11:23-26",
+   "gospel": "Luke 9:11b-17",
+   "src": "felix"
+  },
+  "Year C | Christ the King": {
+   "first": "2 Samuel 5:1-3",
+   "psalm": "Psalm 122:1-2, 3-4, 4-5",
+   "second": "Colossians 1:12-20",
+   "gospel": "Luke 23:35-43",
+   "src": "felix"
+  },
+  "Year A | 7th Sunday of Ordinary Time": {
+   "first": "Leviticus 19:1-2, 17-18",
+   "psalm": "Psalm 103:1-2, 3-4, 8, 10, 12-13",
+   "second": "1 Corinthians 3:16-23",
+   "gospel": "Matthew 5:38-48",
+   "src": "felix"
+  },
+  "Year A | 8th Sunday of Ordinary Time": {
+   "first": "Isaiah 49:14-15",
+   "psalm": "Psalm 62:2-3, 6-7, 8-9",
+   "second": "1 Corinthians 4:1-5",
+   "gospel": "Matthew 6:24-34",
+   "src": "felix"
+  },
+  "Year A | 9th Sunday of Ordinary Time": {
+   "first": "Deuteronomy 11:18, 26-28, 32",
+   "psalm": "Psalm 31:2-3, 3-4, 17, 25",
+   "second": "Romans 3:21-25, 28",
+   "gospel": "Matthew 7:21-27",
+   "src": "felix"
+  },
+  "Year A | 10th Sunday of Ordinary Time": {
+   "first": "Hosea 6:3-6",
+   "psalm": "Psalm 50:1, 8, 12-13, 14-15",
+   "second": "Romans 4:18-25",
+   "gospel": "Matthew 9:9-13",
+   "src": "felix"
+  },
+  "Year A | 31st Sunday of Ordinary Time": {
+   "first": "Malachi 1:14b-2:2b, 8-10",
+   "psalm": "Psalm 131:1, 2, 3",
+   "second": "1 Thessalonians 2:7b-9, 13",
+   "gospel": "Matthew 23:1-12",
+   "src": "felix"
+  },
+  "Year B | 6th Sunday of Ordinary Time": {
+   "first": "Leviticus 13:1-2, 44-46",
+   "psalm": "Psalm 32:1-2, 5, 11",
+   "second": "1 Corinthians 10:31-11:1",
+   "gospel": "Mark 1:40-45",
+   "src": "felix"
+  },
+  "Year B | 7th Sunday of Ordinary Time": {
+   "first": "Isaiah 43:18-19, 21-22, 24b-25",
+   "psalm": "Psalm 41:2-3, 4-5, 13-14",
+   "second": "2 Corinthians 1:18-22",
+   "gospel": "Mark 2:1-12",
+   "src": "felix"
+  },
+  "Year B | 8th Sunday of Ordinary Time": {
+   "first": "Hosea 2:16b, 17b, 21-22",
+   "psalm": "Psalm 103:1-2, 3-4, 8, 10, 12-13",
+   "second": "2 Corinthians 3:1b-6",
+   "gospel": "Mark 2:18-22",
+   "src": "felix"
+  },
+  "Year B | 9th Sunday of Ordinary Time": {
+   "first": "Deuteronomy 5:12-15",
+   "psalm": "Psalm 81:3-4, 5-6, 7-8, 10-11",
+   "second": "2 Corinthians 4:6-11",
+   "gospel": "Mark 2:23-3:6",
+   "src": "felix"
+  },
+  "Year B | 20th Sunday of Ordinary Time": {
+   "first": "Proverbs 9:1-6",
+   "psalm": "Psalm 34:2-3, 4-5, 6-7",
+   "second": "Ephesians 5:15-20",
+   "gospel": "John 6:51-58",
+   "src": "felix"
+  },
+  "Year C | Easter Sunday": {
+   "first": "Acts 10:34a, 37-43",
+   "psalm": "Psalm 118:1-2, 16-17, 22-23",
+   "second": "Colossians 3:1-4",
+   "gospel": "John 20:1-9",
+   "src": "fixed"
+  }
+ },
+ "feastByName": {
+  "Christmas": {
+   "first": "Isaiah 52:7-10",
+   "psalm": "Psalm 98:1, 2-3, 3-4, 5-6.",
+   "second": "Hebrews 1:1-6",
+   "gospel": "John 1:1-18",
+   "src": "usccb-fixed"
+  },
+  "Mary, Mother of God": {
+   "first": "Numbers 6:22-27",
+   "psalm": "Psalm 67:2-3, 5, 6, 8",
+   "second": "Galatians 4:4-7",
+   "gospel": "Luke 2:16-21",
+   "src": "usccb-fixed"
+  },
+  "Epiphany": {
+   "first": "Isaiah 60:1-6",
+   "psalm": "Psalm 72:1-2, 7-8, 10-11, 12-13.",
+   "second": "Ephesians 3:2-3a, 5-6",
+   "gospel": "Matthew 2:1-12",
+   "src": "usccb-fixed"
+  },
+  "Presentation of the Lord": {
+   "first": "Malachi 3:1-4",
+   "psalm": "Psalm 24:7, 8, 9, 10",
+   "second": "Hebrews 2:14-18",
+   "gospel": "Luke 2:22-40 or 2:22-32",
+   "src": "usccb-fixed"
+  },
+  "Saints Peter and Paul, Apostles": {
+   "first": "Acts 12:1-11",
+   "psalm": "Psalm 34:2-3, 4-5, 6-7, 8-9",
+   "second": "2 Timothy 4:6-8, 17-18",
+   "gospel": "Matthew 16:13-19",
+   "src": "usccb-fixed"
+  },
+  "Birth of John the Baptist": {
+   "first": "Isaiah 49:1-6",
+   "psalm": "Psalm 139:1b-3, 13-14ab, 14c-15",
+   "second": "Acts 13:22-26",
+   "gospel": "Luke 1:57-66, 80",
+   "src": "usccb-fixed"
+  },
+  "Transfiguration": {
+   "first": "Daniel 7:9-10, 13-14",
+   "psalm": "Psalm 97:1-2, 5-6, 9",
+   "second": "2 Peter 1:16-19",
+   "gospel": "Matthew 17:1-9",
+   "src": "usccb-fixed"
+  },
+  "The Assumption of the Blessed Virgin Mary": {
+   "psalm": "Psalm 45:10, 11, 12, 16",
+   "second": "1 Corinthians 15:20-27",
+   "gospel": "Luke 1:39-56",
+   "src": "usccb-fixed"
+  },
+  "The Exaltation of the Holy Cross": {
+   "first": "Numbers 21:4b-9",
+   "psalm": "Psalm 78:1bc-2, 34-35, 36-37, 38",
+   "second": "Philippians 2:6-11",
+   "gospel": "John 3:13-17",
+   "src": "usccb-fixed"
+  },
+  "Dedication of the Lateran Basilica": {
+   "first": "Ezekiel 47:1-2, 8-9, 12",
+   "psalm": "Psalm 46:2-3, 5-6, 8-9",
+   "second": "1 Corinthians 3:9c-11, 16-17",
+   "gospel": "John 2:13-22",
+   "src": "usccb-fixed"
+  },
+  "All Saints": {
+   "first": "Revelation 7:2-4, 9-14",
+   "psalm": "Psalm 24:1bc-2, 3-4ab, 5-6",
+   "second": "1 John 3:1-3",
+   "gospel": "Matthew 5:1-12a",
+   "src": "usccb-fixed"
+  }
+ }
+}

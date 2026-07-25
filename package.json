@@ -1,0 +1,10 @@
+{
+  "name": "stjames-mass-planner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "St James' 6pm Mass music planner — offline HTML tool + build pipeline",
+  "scripts": {
+    "build": "node make_template.js && node make_template2.js && node build_tool2.js"
+  },
+  "dependencies": { "docx": "*", "romcal": "*" }
+}
