@@ -34,6 +34,8 @@ const html = `<!DOCTYPE html>
   body{ margin:0; font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--canvas); padding:0 22px 40px; }
   .parish-bar{ margin:0 -22px; padding:11px 22px; background:var(--accent); color:#fff; }
   .parish-bar-inner{ max-width:880px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:20px; font-size:12px; letter-spacing:.15px; }
+  .parish-home{ color:#fff; text-decoration:none; font-weight:650; }
+  .bar-mobile,.mobile-title,.nav-mobile{ display:none; }
   .parish-bar-actions{ display:flex; align-items:center; gap:12px; }
   .install-app{ min-height:0; padding:4px 8px; border-color:rgba(255,255,255,.7); color:#fff; background:transparent; font-size:11px; }
   .install-app:hover{ background:rgba(255,255,255,.12); }
@@ -74,6 +76,7 @@ const html = `<!DOCTYPE html>
   details.options{ margin-top:14px; border-top:1px solid #eee6d5; padding-top:12px; }
   details.options summary{ width:max-content; color:var(--muted); cursor:pointer; touch-action:manipulation; font-size:13px; font-weight:600; }
   .option-body{ padding:11px 0 0 2px; }
+  .print-option{ margin-top:12px; }
   .checkrow{ display:flex; align-items:flex-start; gap:9px; color:var(--ink); font-size:13.5px; cursor:pointer; }
   .checkrow input{ width:17px; height:17px; margin-top:1px; accent-color:var(--accent); }
   .checkrow small{ display:block; color:var(--muted); margin-top:2px; font-size:11.5px; }
@@ -134,25 +137,45 @@ const html = `<!DOCTYPE html>
   }
   @media (max-width:700px){
     body{ padding:0 12px calc(28px + env(safe-area-inset-bottom)); }
-    .parish-bar{ margin:0 -12px; padding:9px 16px; }
+    .parish-bar{ margin:0 -12px; padding:7px 14px; }
     .parish-bar-inner{ display:flex; font-size:11px; }
     .parish-bar-actions > span{ display:none; }
-    header.app{ padding:22px 4px 15px; }
-    header.app h1{ font-size:27px; }
-    .card{ padding:17px; border-radius:3px; margin-bottom:14px; }
-    .setup-head{ margin-bottom:15px; }
-    .daterow{ grid-template-columns:1fr 1fr; }
-    .daterow #date{ grid-column:1 / -1; grid-row:1; }
-    .daterow #prev{ grid-column:1; grid-row:2; }
-    .daterow #next{ grid-column:2; grid-row:2; }
-    .daterow #today{ grid-column:1 / -1; grid-row:3; }
-    .daterow button,.daterow input{ min-height:48px; }
+    .bar-desktop,.desktop-title,.nav-desktop{ display:none; }
+    .bar-mobile,.mobile-title,.nav-mobile{ display:inline; }
+    .install-app{ padding:5px 8px; }
+    header.app{ padding:14px 4px 11px; }
+    header.app h1{ font-size:25px; line-height:1.1; margin:0; }
+    header.app p,.church-link{ display:none; }
+    .card{ padding:14px; border-radius:3px; margin-bottom:12px; }
+    .planner-card{ margin-left:-4px; margin-right:-4px; }
+    .setup-head{ margin-bottom:10px; }
+    .setup-head .eyebrow{ display:none; }
+    .setup-head h2{ font-size:20px; }
+    .daterow{ grid-template-columns:46px minmax(0,1fr) 46px; gap:7px; }
+    .daterow #prev{ grid-column:1; grid-row:1; }
+    .daterow #date{ grid-column:2; grid-row:1; min-width:0; height:46px; padding:7px 8px; font-size:16px; }
+    .daterow #next{ grid-column:3; grid-row:1; }
+    .daterow #today{ grid-column:1 / -1; grid-row:2; min-height:42px; }
+    .daterow button{ min-height:46px; padding:6px; font-size:25px; }
+    .daterow #today{ font-size:13px; }
     .resolved{ grid-template-columns:1fr; }
-    .selected-meta{ grid-column:1; grid-row:auto; text-align:left; margin-top:2px; }
-    .reading-grid{ grid-template-columns:1fr; }
-    .reading-item:nth-child(odd){ border-right:none; }
-    .actions{ display:grid; grid-template-columns:1fr; }
+    .resolved{ margin-top:9px; padding:9px 11px; border-left-width:3px; }
+    .selected-date{ display:none; }
+    .selected-day{ font-size:17px; line-height:1.2; }
+    .selected-meta{ grid-column:1; grid-row:auto; text-align:left; margin-top:2px; font-size:11px; }
+    .actions{ display:grid; grid-template-columns:1fr; margin-top:10px; }
     .actions button{ width:100%; }
+    .actions .primary{ min-height:50px; }
+    .reading-summary{ margin-top:11px; }
+    .reading-summary-title{ padding:7px 9px; font-size:10px; }
+    .reading-grid{ grid-template-columns:1fr; }
+    .reading-item{ display:grid; grid-template-columns:100px minmax(0,1fr); gap:9px; align-items:start; padding:7px 9px; }
+    .reading-item:nth-child(odd){ border-right:none; }
+    .reading-label{ margin:1px 0 0; font-size:9.5px; }
+    .reading-cite{ font-size:12.5px; line-height:1.25; }
+    details.options{ margin-top:10px; padding-top:9px; }
+    details.options summary{ font-size:12px; }
+    .print-option{ width:100%; }
     .preview-heading{ padding:8px 4px 0; }
     .sheet-frame{ overflow:visible; margin:0 0 14px; padding:0; }
     .sheet{ width:100%; padding:22px 14px 26px; }
@@ -175,15 +198,15 @@ const html = `<!DOCTYPE html>
   }
 </style></head>
 <body>
-<div class="parish-bar"><div class="parish-bar-inner"><span>St. Henry’s Cathedral Parish</span><div class="parish-bar-actions"><span>Church of St. James the Apostle</span><button class="install-app" id="installApp" hidden>Install app</button></div></div></div>
+<div class="parish-bar"><div class="parish-bar-inner"><a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener"><span class="bar-desktop">St. Henry’s Cathedral Parish</span><span class="bar-mobile">St James the Apostle</span></a><div class="parish-bar-actions"><span>Church of St. James the Apostle</span><button class="install-app" id="installApp" hidden>Install app</button></div></div></div>
 <div class="wrap">
   <header class="app">
-    <h1>St James the Apostle — 6pm Mass</h1>
+    <h1><span class="desktop-title">St James the Apostle — 6pm Mass</span><span class="mobile-title">6pm Mass music planner</span></h1>
     <p>Create a music-planning sheet for any Sunday Mass.</p>
     <a class="church-link" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener">Visit the church webpage ↗</a>
   </header>
 
-  <div class="card">
+  <div class="card planner-card">
     <div class="setup-head">
       <div>
         <div class="eyebrow">Music planning sheet</div>
@@ -192,9 +215,9 @@ const html = `<!DOCTYPE html>
     </div>
     <label class="fld sr-only" for="date">Choose a Sunday</label>
     <div class="daterow">
-      <button class="nav" id="prev" title="Previous Sunday" aria-label="Previous Sunday">‹ Previous</button>
+      <button class="nav" id="prev" title="Previous Sunday" aria-label="Previous Sunday"><span class="nav-desktop">‹ Previous</span><span class="nav-mobile" aria-hidden="true">‹</span></button>
       <input type="date" id="date">
-      <button class="nav" id="next" title="Following Sunday" aria-label="Following Sunday">Next ›</button>
+      <button class="nav" id="next" title="Following Sunday" aria-label="Following Sunday"><span class="nav-desktop">Next ›</span><span class="nav-mobile" aria-hidden="true">›</span></button>
       <button class="nav" id="today">Jump to upcoming Sunday</button>
     </div>
     <div class="resolved" id="resolved"></div>
@@ -202,7 +225,6 @@ const html = `<!DOCTYPE html>
 
     <div class="actions">
       <button class="primary" id="dl">↓ Download music sheet</button>
-      <button id="print">Print / Save as PDF</button>
     </div>
     <div class="reading-summary" id="readingSummary"></div>
     <details class="options">
@@ -212,6 +234,7 @@ const html = `<!DOCTYPE html>
           <input type="checkbox" id="incl">
           <span>Print full reading texts on a second page<small>The full texts always remain visible in the on-screen preview below.</small></span>
         </label>
+        <button class="print-option" id="print">Print / Save as PDF</button>
       </div>
     </details>
   </div>
