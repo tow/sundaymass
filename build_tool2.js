@@ -19,27 +19,37 @@ const html = `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>St James the Apostle — 6pm Mass Music Planner</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23002F45'/%3E%3Cpath d='M29 12h6v16h12v6H35v20h-6V34H17v-6h12z' fill='white'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#002F45">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mass Planner">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <style>
   :root{ --accent:#002F45; --accent-dark:#001F2D; --accentlt:#F0E5C8; --ink:#271A01; --muted:#675F52; --line:#D8CDB8; --canvas:#FBF6EF; }
   *{ box-sizing:border-box; }
   .sr-only{ position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
   body{ margin:0; font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--canvas); padding:0 22px 40px; }
   .parish-bar{ margin:0 -22px; padding:11px 22px; background:var(--accent); color:#fff; }
-  .parish-bar-inner{ max-width:880px; margin:0 auto; display:flex; justify-content:space-between; gap:20px; font-size:12px; letter-spacing:.15px; }
+  .parish-bar-inner{ max-width:880px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:20px; font-size:12px; letter-spacing:.15px; }
+  .parish-bar-actions{ display:flex; align-items:center; gap:12px; }
+  .install-app{ min-height:0; padding:4px 8px; border-color:rgba(255,255,255,.7); color:#fff; background:transparent; font-size:11px; }
+  .install-app:hover{ background:rgba(255,255,255,.12); }
   .wrap{ max-width:880px; margin:0 auto; }
   header.app{ padding:34px 2px 22px; }
   header.app h1{ color:var(--ink); font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:34px; font-weight:400; line-height:1.18; margin:0 0 6px; letter-spacing:-.4px; }
   header.app p{ color:var(--muted); margin:0; font-size:14px; }
+  .church-link{ display:inline-block; margin-top:8px; color:var(--accent); font-size:12px; font-weight:650; text-underline-offset:3px; }
   .card{ background:#fff; border:1px solid var(--line); border-radius:4px; padding:24px; margin-bottom:20px; box-shadow:0 2px 10px rgba(39,26,1,.045); }
   .setup-head,.section-heading{ display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:18px; }
   .eyebrow{ color:var(--accent); font-size:11px; font-weight:750; letter-spacing:.8px; text-transform:uppercase; margin-bottom:4px; }
   .setup-head h2,.section-heading h2{ font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:23px; font-weight:400; line-height:1.2; margin:0; letter-spacing:-.2px; }
-  .format-pill{ flex:none; background:var(--accentlt); color:var(--ink); border-radius:2px; padding:6px 10px; font-size:11px; font-weight:700; }
   label.fld{ display:block; font-weight:600; font-size:12px; margin:0 0 5px; color:var(--accent); text-transform:uppercase; letter-spacing:.4px; }
   .daterow{ display:grid; grid-template-columns:auto minmax(190px,1fr) auto auto; gap:9px; align-items:center; }
-  input[type=date]{ width:100%; height:44px; font-size:15px; padding:9px 11px; color:var(--ink); background:#fff; border:1px solid #bdb4b5; border-radius:9px; }
-  button{ min-height:44px; font-size:14px; font-weight:650; padding:9px 14px; border-radius:2px; border:1px solid var(--accent); cursor:pointer; background:#fff; color:var(--accent); transition:background .15s ease,border-color .15s ease,box-shadow .15s ease,transform .05s ease; }
+  input[type=date]{ width:100%; height:44px; font-size:16px; padding:9px 11px; color:var(--ink); background:#fff; border:1px solid #bdb4b5; border-radius:9px; }
+  button{ min-height:44px; font-size:14px; font-weight:650; padding:9px 14px; border-radius:2px; border:1px solid var(--accent); cursor:pointer; touch-action:manipulation; background:#fff; color:var(--accent); transition:background .15s ease,border-color .15s ease,box-shadow .15s ease,transform .05s ease; }
   button:hover{ background:#f6f1e5; }
   button:focus-visible,input:focus-visible,summary:focus-visible{ outline:3px solid rgba(0,47,69,.22); outline-offset:2px; }
   button.primary{ background:var(--accent); color:#fff; box-shadow:0 3px 9px rgba(0,47,69,.16); }
@@ -62,13 +72,13 @@ const html = `<!DOCTYPE html>
   .actions{ display:flex; align-items:center; gap:10px; margin-top:16px; flex-wrap:wrap; }
   .actions .primary{ min-height:48px; padding:11px 19px; font-size:15px; }
   details.options{ margin-top:14px; border-top:1px solid #eee6d5; padding-top:12px; }
-  details.options summary{ width:max-content; color:var(--muted); cursor:pointer; font-size:13px; font-weight:600; }
+  details.options summary{ width:max-content; color:var(--muted); cursor:pointer; touch-action:manipulation; font-size:13px; font-weight:600; }
   .option-body{ padding:11px 0 0 2px; }
   .checkrow{ display:flex; align-items:flex-start; gap:9px; color:var(--ink); font-size:13.5px; cursor:pointer; }
   .checkrow input{ width:17px; height:17px; margin-top:1px; accent-color:var(--accent); }
   .checkrow small{ display:block; color:var(--muted); margin-top:2px; font-size:11.5px; }
   .edit label{ display:block; font-size:11.5px; color:var(--accent); font-weight:600; margin:10px 0 3px; }
-  .edit input{ width:100%; font-size:14px; padding:9px 10px; border:1px solid #ccc; border-radius:8px; }
+  .edit input{ width:100%; font-size:16px; padding:10px; border:1px solid #ccc; border-radius:8px; }
   .edit .two{ display:grid; grid-template-columns:1fr; gap:2px; }
   .editnote{ font-size:12px; color:var(--muted); margin:6px 0 0; }
   .edit-card{ padding:0; overflow:hidden; }
@@ -82,22 +92,22 @@ const html = `<!DOCTYPE html>
   .edit-card .edit{ border-top:1px solid #eee6d5; padding:10px 22px 20px; }
   .preview-heading{ padding:4px 2px 0; }
   .preview-heading p{ color:var(--muted); font-size:12.5px; margin:4px 0 0; }
-  .sheet-frame{ margin-bottom:20px; }
+  .sheet-frame{ width:100%; max-width:100%; min-width:0; margin-bottom:20px; }
   /* printable sheet */
-  .sheet{ background:#fff; border:1px solid var(--line); border-radius:2px; padding:32px 40px 38px; box-shadow:0 2px 8px rgba(39,26,1,.07); }
+  .sheet{ width:100%; max-width:100%; min-width:0; background:#fff; border:1px solid var(--line); border-radius:2px; padding:32px 40px 38px; box-shadow:0 2px 8px rgba(39,26,1,.07); }
   .sheet h2{ text-align:center; color:var(--ink); font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:21px; font-weight:400; margin:0 0 2px; }
   .sheet .sub{ text-align:center; color:#444; font-size:13px; margin:0; }
   .rule{ height:2px; background:var(--accent); margin:7px 0 12px; }
   .sheet .dayline{ text-align:center; font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-weight:400; color:var(--ink); font-size:16px; margin:8px 0 1px; }
   .sheet .meta{ text-align:center; color:var(--muted); font-size:12.5px; margin:0 0 12px; }
   .readings{ background:var(--accentlt); border:1px solid #e4d3d5; border-radius:8px; padding:6px 14px; margin:0 0 16px; }
-  .readings table{ width:100%; border-collapse:collapse; }
+  .readings table{ width:100%; table-layout:fixed; border-collapse:collapse; }
   .readings td{ padding:5px 0; font-size:13.5px; vertical-align:top; border-bottom:1px solid #ecdcde; }
   .readings tr:last-child td{ border-bottom:none; }
   .readings td.lbl{ width:150px; color:var(--muted); }
   .readings td.cite{ font-weight:600; }
-  table.parts{ width:100%; border-collapse:collapse; }
-  table.parts td{ border:1px solid #aaa; padding:8px 12px; vertical-align:middle; }
+  table.parts{ width:100%; table-layout:fixed; border-collapse:collapse; }
+  table.parts td{ min-width:0; overflow-wrap:anywhere; border:1px solid #aaa; padding:8px 12px; vertical-align:middle; }
   td.plabel{ width:42%; background:var(--accentlt); font-weight:700; color:var(--ink); font-size:13.5px; }
   td.plabel .note{ display:block; font-style:italic; font-weight:400; font-size:11px; color:#8a8a8a; margin-top:2px; }
   td.pblank{ height:26px; }
@@ -111,6 +121,7 @@ const html = `<!DOCTYPE html>
   .rhead .rcite{ font-style:italic; font-weight:400; color:var(--muted); font-size:12.5px; margin-left:8px; }
   .rtext{ font-size:13.5px; line-height:1.5; text-align:justify; }
   .rpcaveat{ font-size:11px; font-style:italic; color:var(--muted); margin-top:14px; }
+  @media (display-mode:standalone){ .install-app{ display:none !important; } }
   @page{ size:A4; margin:12mm; }
   @media print{ .readingpage{ page-break-before:always; border-top:none; margin-top:0; padding-top:0; } }
   @media print{
@@ -122,16 +133,20 @@ const html = `<!DOCTYPE html>
     table.parts td{ padding:6px 12px; } td.pblank{ height:22px; }
   }
   @media (max-width:700px){
-    body{ padding:0 12px 28px; }
+    body{ padding:0 12px calc(28px + env(safe-area-inset-bottom)); }
     .parish-bar{ margin:0 -12px; padding:9px 16px; }
-    .parish-bar-inner{ display:block; font-size:11px; }
-    .parish-bar-inner span:last-child{ display:none; }
+    .parish-bar-inner{ display:flex; font-size:11px; }
+    .parish-bar-actions > span{ display:none; }
     header.app{ padding:22px 4px 15px; }
     header.app h1{ font-size:27px; }
     .card{ padding:17px; border-radius:3px; margin-bottom:14px; }
     .setup-head{ margin-bottom:15px; }
-    .daterow{ grid-template-columns:auto 1fr auto; }
-    .daterow #today{ grid-column:1 / -1; }
+    .daterow{ grid-template-columns:1fr 1fr; }
+    .daterow #date{ grid-column:1 / -1; grid-row:1; }
+    .daterow #prev{ grid-column:1; grid-row:2; }
+    .daterow #next{ grid-column:2; grid-row:2; }
+    .daterow #today{ grid-column:1 / -1; grid-row:3; }
+    .daterow button,.daterow input{ min-height:48px; }
     .resolved{ grid-template-columns:1fr; }
     .selected-meta{ grid-column:1; grid-row:auto; text-align:left; margin-top:2px; }
     .reading-grid{ grid-template-columns:1fr; }
@@ -139,19 +154,33 @@ const html = `<!DOCTYPE html>
     .actions{ display:grid; grid-template-columns:1fr; }
     .actions button{ width:100%; }
     .preview-heading{ padding:8px 4px 0; }
-    .sheet-frame{ overflow-x:auto; margin-left:-12px; margin-right:-12px; padding:0 12px 8px; }
-    .sheet{ width:720px; }
+    .sheet-frame{ overflow:visible; margin:0 0 14px; padding:0; }
+    .sheet{ width:100%; padding:22px 14px 26px; }
+    .sheet h2{ font-size:18px; }
+    .sheet .sub{ font-size:12px; }
+    .sheet .dayline{ font-size:15px; }
+    .sheet .meta{ font-size:11px; }
+    .readings{ padding:5px 9px; }
+    .readings td{ font-size:11.5px; }
+    .readings td.lbl{ width:39%; padding-right:7px; }
+    table.parts td{ padding:7px 8px; }
+    td.plabel{ width:52%; font-size:11.5px; }
+    td.plabel .note{ font-size:9.5px; }
+    .readingpage{ margin-top:22px; padding-top:20px; }
+    .rhead .rcite{ display:block; margin:1px 0 0; }
+    .rtext{ font-size:14.5px; line-height:1.55; text-align:left; }
     .edit-card{ padding:0; }
     .edit-card > summary{ padding:16px 17px; }
     .edit-card .edit{ padding:8px 17px 17px; }
   }
 </style></head>
 <body>
-<div class="parish-bar"><div class="parish-bar-inner"><span>St. Henry’s Cathedral Parish</span><span>Church of St. James the Apostle</span></div></div>
+<div class="parish-bar"><div class="parish-bar-inner"><span>St. Henry’s Cathedral Parish</span><div class="parish-bar-actions"><span>Church of St. James the Apostle</span><button class="install-app" id="installApp" hidden>Install app</button></div></div></div>
 <div class="wrap">
   <header class="app">
     <h1>St James the Apostle — 6pm Mass</h1>
     <p>Create a music-planning sheet for any Sunday Mass.</p>
+    <a class="church-link" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener">Visit the church webpage ↗</a>
   </header>
 
   <div class="card">
@@ -160,7 +189,6 @@ const html = `<!DOCTYPE html>
         <div class="eyebrow">Music planning sheet</div>
         <h2>Choose the Sunday</h2>
       </div>
-      <span class="format-pill">Word · .docx</span>
     </div>
     <label class="fld sr-only" for="date">Choose a Sunday</label>
     <div class="daterow">
@@ -170,13 +198,13 @@ const html = `<!DOCTYPE html>
       <button class="nav" id="today">Jump to upcoming Sunday</button>
     </div>
     <div class="resolved" id="resolved"></div>
-    <div class="reading-summary" id="readingSummary"></div>
     <div class="warn" id="warn" style="display:none"></div>
 
     <div class="actions">
       <button class="primary" id="dl">↓ Download music sheet</button>
       <button id="print">Print / Save as PDF</button>
     </div>
+    <div class="reading-summary" id="readingSummary"></div>
     <details class="options">
       <summary>Print settings</summary>
       <div class="option-body">
@@ -287,6 +315,7 @@ function renderReadingSummary(){
 function refresh(){
   renderResolved(); renderReadingSummary(); renderEditors(); renderSheet();
   prev.disabled=curIdx===0; next.disabled=curIdx===SUNDAYS.length-1;
+  today.hidden=curIdx===nextSundayIdx();
   const v = vals();
   if(!v.gospel && !v.first){ warn.style.display="block"; warn.textContent="This day (e.g. St Henry, patron of Finland) has proper readings that aren't in the dataset — please type them into the fields below from your parish Ordo."; }
   else if(warn.textContent.indexOf("outside the computed")<0){ warn.style.display="none"; }
@@ -359,6 +388,31 @@ document.getElementById("incl").addEventListener("change", renderSheet);
 document.getElementById("range").textContent = "("+SUNDAYS[0].d.slice(0,4)+"–"+SUNDAYS[SUNDAYS.length-1].d.slice(0,4)+")";
 
 curIdx=nextSundayIdx(); date.value=current().d; refresh();
+
+// Installable app support. iPhone/iPad uses Safari's Share → Add to Home Screen flow.
+let deferredInstallPrompt = null;
+const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+if(ios && !standalone) installApp.hidden=false;
+window.addEventListener("beforeinstallprompt", event=>{
+  event.preventDefault();
+  deferredInstallPrompt=event;
+  if(!standalone) installApp.hidden=false;
+});
+installApp.addEventListener("click", async ()=>{
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt=null;
+    installApp.hidden=true;
+  }else if(ios){
+    alert("In Safari, tap the Share button, then choose “Add to Home Screen”.");
+  }
+});
+window.addEventListener("appinstalled", ()=>{ installApp.hidden=true; deferredInstallPrompt=null; });
+if("serviceWorker" in navigator && location.protocol!=="file:"){
+  window.addEventListener("load", ()=>navigator.serviceWorker.register("./service-worker.js"));
+}
 </script></body></html>`;
 
 fs.writeFileSync(path.join(ROOT, "StJames_Mass_Planner.html"), html);
