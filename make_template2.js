@@ -3,9 +3,13 @@ const {
   Table, TableRow, TableCell, WidthType, VerticalAlign, HeightRule, ShadingType,
 } = require("docx");
 const fs = require("fs");
-const { execSync } = require("child_process");
+const path = require("path");
+const { execFileSync } = require("child_process");
+const ROOT = __dirname;
+const TEMPLATE_PATH = path.join(ROOT, "template2.docx");
+const PARTS_DIR = path.join(ROOT, "tpl2");
 
-const ACCENT = "7A1F2B", LABELBG = "F3E9EA", LINE = "AAAAAA";
+const ACCENT = "002F45", LABELBG = "F0E5C8", LINE = "AAA08D";
 const TABLE_W = 9360, LCOL = 3500, RCOL = 5860;
 const cb = () => ({ top:{style:BorderStyle.SINGLE,size:4,color:LINE}, bottom:{style:BorderStyle.SINGLE,size:4,color:LINE}, left:{style:BorderStyle.SINGLE,size:4,color:LINE}, right:{style:BorderStyle.SINGLE,size:4,color:LINE} });
 const PARTS = [["Entrance / Processional Hymn",""],["Kyrie — Lord, Have Mercy",""],["Gloria — Glory to God","(omitted in Advent & Lent)"],["Responsorial Psalm",""],["Gospel Acclamation — Alleluia","(Lenten acclamation in Lent)"],["Preparation of the Gifts / Offertory",""],["Sanctus — Holy, Holy, Holy",""],["Memorial Acclamation — Mystery of Faith",""],["Great Amen",""],["The Lord's Prayer — Our Father","(if sung)"],["Agnus Dei — Lamb of God",""],["Communion Hymn",""],["Recessional / Closing Hymn",""]];
@@ -27,12 +31,12 @@ function readingBlock(label, citeTok, textTok){
 }
 
 const doc = new Document({
-  creator:"St James' Church", title:"St James 6pm Mass — planning sheet with readings",
+  creator:"St James the Apostle", title:"St James the Apostle 6pm Mass — planning sheet with readings",
   styles:{default:{document:{run:{font:"Calibri"}}}},
   sections:[{
     properties:{ page:{ size:{width:11906,height:16838}, margin:{top:700,bottom:600,left:1273,right:1273} } },
     children:[
-      new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:10},children:[new TextRun({text:"St James' Church — 6pm Mass",bold:true,size:34,color:ACCENT})]}),
+      new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:10},children:[new TextRun({text:"St James the Apostle — 6pm Mass",bold:true,size:34,color:ACCENT})]}),
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:60},border:{bottom:{style:BorderStyle.SINGLE,size:8,color:ACCENT,space:6}},children:[new TextRun({text:"Music Planning Sheet",size:21,color:"444444"})]}),
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:40,after:10},children:[new TextRun({text:"@@DAY@@",bold:true,size:26,color:ACCENT})]}),
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:120},children:[new TextRun({text:"@@META@@",size:18,color:"6B6B6B"})]}),
@@ -59,9 +63,11 @@ const doc = new Document({
 });
 
 Packer.toBuffer(doc).then((buf)=>{
-  fs.writeFileSync("/root/template2.docx", buf);
-  execSync("rm -rf /root/tpl2 && mkdir /root/tpl2 && cd /root/tpl2 && unzip -q ../template2.docx");
-  const dx=fs.readFileSync("/root/tpl2/word/document.xml","utf8");
+  fs.writeFileSync(TEMPLATE_PATH, buf);
+  fs.rmSync(PARTS_DIR, { recursive: true, force: true });
+  fs.mkdirSync(PARTS_DIR);
+  execFileSync("unzip", ["-q", TEMPLATE_PATH, "-d", PARTS_DIR]);
+  const dx=fs.readFileSync(path.join(PARTS_DIR, "word/document.xml"),"utf8");
   ["@@DAY@@","@@FIRST@@","@@FIRSTTEXT@@","@@PSALMTEXT@@","@@SECONDTEXT@@","@@GOSPELTEXT@@"].forEach(t=>console.log(t, dx.includes(t)?"ok":"MISSING"));
   console.log("template2 built");
 });

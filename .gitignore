@@ -1,4 +1,8 @@
 node_modules/
 web.json
 kjva.json
+template.docx
+template2.docx
+tpl/
+tpl2/
 *.swp

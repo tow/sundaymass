@@ -1,7 +1,7 @@
-# St James' 6pm Mass — Music Planner
+# St James the Apostle 6pm Mass — Music Planner
 
 A single self-contained HTML tool for planning the sung parts of the 6pm Sunday Mass at
-St James' (Catholic Church in Finland / Diocese of Helsinki). Pick any Sunday 2025–2075,
+St James the Apostle (Catholic Church in Finland / Diocese of Helsinki). Pick any Sunday 2025–2075,
 get the liturgical day + the four Mass readings (auto-filled, editable), and download a
 one-page Word planning sheet — optionally with a second page containing the full text of
 the readings.

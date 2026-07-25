@@ -3,8 +3,12 @@ const {
   Table, TableRow, TableCell, WidthType, VerticalAlign, HeightRule, ShadingType,
 } = require("docx");
 const fs = require("fs");
+const path = require("path");
+const ROOT = __dirname;
+const TEMPLATE_PATH = path.join(ROOT, "template.docx");
+const PARTS_DIR = path.join(ROOT, "tpl");
 
-const ACCENT = "7A1F2B", LABELBG = "F3E9EA", LINE = "AAAAAA";
+const ACCENT = "002F45", LABELBG = "F0E5C8", LINE = "AAA08D";
 const TABLE_W = 9360, LCOL = 3500, RCOL = 5860;
 const cb = () => ({
   top: { style: BorderStyle.SINGLE, size: 4, color: LINE }, bottom: { style: BorderStyle.SINGLE, size: 4, color: LINE },
@@ -41,12 +45,12 @@ function readingRow(label, tokenCite) {
 const spacer = (h) => new Paragraph({ spacing: { after: h }, children: [new TextRun({ text: "", size: 6 })] });
 
 const doc = new Document({
-  creator: "St James' Church", title: "St James 6pm Mass — planning sheet",
+  creator: "St James the Apostle", title: "St James the Apostle 6pm Mass — planning sheet",
   styles: { default: { document: { run: { font: "Calibri" } } } },
   sections: [{
     properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 700, bottom: 600, left: 1273, right: 1273 } } },
     children: [
-      new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 10 }, children: [new TextRun({ text: "St James' Church — 6pm Mass", bold: true, size: 34, color: ACCENT })] }),
+      new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 10 }, children: [new TextRun({ text: "St James the Apostle — 6pm Mass", bold: true, size: 34, color: ACCENT })] }),
       new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 }, border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: ACCENT, space: 6 } }, children: [new TextRun({ text: "Music Planning Sheet", size: 21, color: "444444" })] }),
       new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 40, after: 10 }, children: [new TextRun({ text: "@@DAY@@", bold: true, size: 26, color: ACCENT })] }),
       new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 120 }, children: [new TextRun({ text: "@@META@@", size: 18, color: "6B6B6B" })] }),
@@ -67,14 +71,16 @@ const doc = new Document({
 });
 
 Packer.toBuffer(doc).then(async (buf) => {
-  fs.writeFileSync("/root/template.docx", buf);
+  fs.writeFileSync(TEMPLATE_PATH, buf);
   // unzip parts
-  const { execSync } = require("child_process");
-  execSync("rm -rf /root/tpl && mkdir /root/tpl && cd /root/tpl && unzip -q ../template.docx");
+  const { execFileSync } = require("child_process");
+  fs.rmSync(PARTS_DIR, { recursive: true, force: true });
+  fs.mkdirSync(PARTS_DIR);
+  execFileSync("unzip", ["-q", TEMPLATE_PATH, "-d", PARTS_DIR]);
   const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(dir + "/" + e.name) : [dir + "/" + e.name]);
-  const files = walk("/root/tpl").map(f => f.replace("/root/tpl/", ""));
+  const files = walk(PARTS_DIR).map(f => path.relative(PARTS_DIR, f));
   console.log("parts:", files.join(", "));
   // confirm tokens present in document.xml
-  const docXml = fs.readFileSync("/root/tpl/word/document.xml", "utf8");
+  const docXml = fs.readFileSync(path.join(PARTS_DIR, "word/document.xml"), "utf8");
   ["@@DAY@@","@@META@@","@@FIRST@@","@@PSALM@@","@@SECOND@@","@@GOSPEL@@"].forEach(t => console.log(t, docXml.includes(t) ? "ok" : "MISSING"));
 });
