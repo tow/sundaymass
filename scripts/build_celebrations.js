@@ -6,6 +6,26 @@ const GENERATED_DATA = path.join(ROOT, "data", "generated");
 const SOURCE_URL = "https://catholic-resources.org/Lectionary/2002USL-Sanctoral.htm";
 const COMMONS_URL = "https://catholic-resources.org/Lectionary/2002USL-Masses-Commons.htm";
 
+// This planner is specific to the Church of St James the Apostle. The titular
+// celebration is therefore a local solemnity, not the two-reading universal
+// feast imported as Lectionary 605. Preserve the imported ID so saved plans and
+// search results continue to refer to the same celebration.
+//
+// The universal Proper's 2 Corinthians passage becomes the second reading. The
+// supplementary first reading and psalm follow the complete patronal solemnity
+// set used for Saint James in Spain.
+const LOCAL_CELEBRATION_OVERRIDES = {
+  "sanctoral-605": {
+    name: "Saint James the Apostle",
+    rank: "Solemnity at St James",
+    f: "Acts 11:19-21; 12:1-2, 24",
+    p: "Psalm 67:2-3, 5, 7-8",
+    e: "2 Corinthians 4:7-15",
+    g: "Matthew 20:20-28",
+    source: "Parish titular solemnity — Proper of Saint James with supplementary patronal readings",
+  },
+};
+
 const BOOKS = {
   Gen: "Genesis", Exod: "Exodus", Lev: "Leviticus", Num: "Numbers", Deut: "Deuteronomy",
   Josh: "Joshua", Judg: "Judges", Ruth: "Ruth", "1 Sam": "1 Samuel", "2 Sam": "2 Samuel",
@@ -225,6 +245,11 @@ async function main() {
     source: "Finnish diocesan Ordo",
   });
 
+  celebrations.forEach(celebration => {
+    const override = LOCAL_CELEBRATION_OVERRIDES[celebration.id];
+    if (override) Object.assign(celebration, override);
+  });
+
   celebrations.sort((a, b) => a.monthDay.localeCompare(b.monthDay) || a.name.localeCompare(b.name));
   const outputPath = path.join(GENERATED_DATA, "celebrations.json");
   const commonsPath = path.join(GENERATED_DATA, "commons.json");
@@ -234,7 +259,7 @@ async function main() {
   console.log("wrote", commons.length, "Commons with", commons.reduce((total, common) =>
     total + common.firstOutsideEaster.length + common.firstEaster.length
       + common.psalm.length + common.second.length + common.gospel.length, 0), "reading options to", commonsPath);
-  const james = celebrations.find(item => item.monthDay === "07-25" && /James, Apostle/i.test(item.name));
+  const james = celebrations.find(item => item.id === "sanctoral-605");
   console.log("St James:", james || "MISSING");
 }
 

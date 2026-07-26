@@ -31,16 +31,22 @@ test("structured citation parser accepts multi-letter verse fragments", () => {
     endChapter: 126,
     endVerse: "2ab",
   });
+  assert.deepEqual(
+    catalog.parseReadingCitation("Philemon 9-10, 12-17").segments[0],
+    { startChapter: 1, startVerse: "9", endChapter: 1, endVerse: "10" },
+  );
 });
 
-test("St James is a complete selectable Proper celebration", () => {
+test("St James is a complete selectable parish solemnity", () => {
   const james = catalog.availableCelebrations(ordinarySunday)
     .find(celebration => celebration.id === "sanctoral-605");
   assert.ok(james);
+  assert.equal(james.rank, "Solemnity at St James");
+  assert.equal(james.requiresSecondReading, true);
   assert.deepEqual(james.readings, {
-    first: "2 Corinthians 4:7-15",
-    psalm: "Psalm 126:1bc-2ab, 2cd-3, 4-5, 6",
-    second: "",
+    first: "Acts 11:19-21; 12:1-2, 24",
+    psalm: "Psalm 67:2-3, 5, 7-8",
+    second: "2 Corinthians 4:7-15",
     gospel: "Matthew 20:20-28",
   });
 });
@@ -64,8 +70,18 @@ test("the dated calendar contains only references to complete unique lectionary 
     });
   });
   sundayLectionary.forEach(item => {
-    assert.ok(item.f && item.p && item.g, `${item.id} must contain all required readings`);
+    assert.ok(item.f && item.p && item.e && item.g, `${item.id} must contain all four Sunday readings`);
   });
+});
+
+test("every selectable Sunday or solemnity has a usable second reading", () => {
+  const candidates = catalog.availableCelebrations(ordinarySunday)
+    .filter(celebration => catalog.requiresSecondReading(celebration.rank));
+  assert.ok(candidates.length > 0);
+  for (const candidate of candidates) {
+    assert.ok(candidate.readings.second, candidate.name + " has no second reading");
+    assert.ok(readings[candidate.readings.second], candidate.name + " has no second-reading text");
+  }
 });
 
 test("every explicit Proper 'or' option remains independently selectable", () => {

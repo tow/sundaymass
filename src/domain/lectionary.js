@@ -8,6 +8,7 @@
     { key: "second", dataKey: "e", label: "Second Reading" },
     { key: "gospel", dataKey: "g", label: "Gospel" },
   ];
+  const SINGLE_CHAPTER_BOOKS = new Set(["Obadiah", "Philemon", "2 John", "3 John", "Jude"]);
 
   function normalizedCitation(value) {
     return (value || "").replace(/[–—]/g, "-").replace(/\s+/g, " ").trim().toLowerCase();
@@ -34,7 +35,9 @@
     const match = citation.match(/^((?:[1-3]\s+)?[A-Za-z][A-Za-z ]*?)\s+(\d.*)$/);
     if (!match || /\s+or\s+/i.test(citation)) return null;
     const book = match[1].trim();
-    const pieces = match[2]
+    let reference = match[2];
+    if (SINGLE_CHAPTER_BOOKS.has(book) && !/^\d+:/.test(reference)) reference = "1:" + reference;
+    const pieces = reference
       .replace(/(\d+)-\d+-\d+-(\d+)/g, "$1-$2")
       .split(/[;,.+]/)
       .map(piece => piece.trim())
@@ -84,6 +87,10 @@
     return [year - 1, year, year + 1]
       .map(value => value + "-" + monthDay)
       .sort((a, b) => Math.abs(dayDistance(a, anchorDate)) - Math.abs(dayDistance(b, anchorDate)))[0];
+  }
+
+  function requiresSecondReading(rank) {
+    return /\b(?:Sunday|Solemnity)\b/i.test(rank || "");
   }
 
   function create({ calendar, sundayLectionary, celebrations, commons, readings }) {
@@ -186,7 +193,9 @@
           slot.key,
           celebrationReadingOptions(item, slot, currentDay.s),
         ]));
-        if (!readingOptions.first.length || !readingOptions.psalm.length || !readingOptions.gospel.length) return null;
+        const secondRequired = requiresSecondReading(item.rank);
+        if (!readingOptions.first.length || !readingOptions.psalm.length || !readingOptions.gospel.length
+          || (secondRequired && !readingOptions.second.length)) return null;
         const commonNames = (item.commonIds || []).map(id => commonById.get(id)?.name).filter(Boolean);
         return {
           id: item.id,
@@ -198,6 +207,7 @@
           lectionary: item.lectionary,
           source: item.source,
           commonNames,
+          requiresSecondReading: secondRequired,
           readingOptions,
           readings: {
             first: readingOptions.first[0],
@@ -227,6 +237,7 @@
           cycle: sunday.c,
           source: "Sunday lectionary",
           commonNames: [],
+          requiresSecondReading: true,
           readingOptions,
           readings: {
             first: readingOptions.first[0],
@@ -247,6 +258,7 @@
       citationAlternatives,
       parseReadingCitation,
       dayDistance,
+      requiresSecondReading,
       scheduledCelebration,
       availableCelebrations,
     };

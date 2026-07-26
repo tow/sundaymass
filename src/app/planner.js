@@ -212,10 +212,10 @@ function renderCelebrationPreview(){
   const readings=pendingCelebration.readings;
   const field=(slot,label)=>{
     const options=pendingCelebration.readingOptions?.[slot] || [];
-    const allowNone=slot==="second" && !readings.second;
+    const allowNone=slot==="second" && !pendingCelebration.requiresSecondReading && !readings.second;
     if(options.length<=1 && !allowNone) return '<dt>'+esc(label)+'</dt><dd>'+(esc(readings[slot])||"—")+'</dd>';
     return '<dt><label for="celebrationReading_'+slot+'">'+esc(label)+'</label></dt><dd><select id="celebrationReading_'+slot+'" data-celebration-reading="'+slot+'">'
-      +(slot==="second"?'<option value="">No second reading</option>':'')
+      +(slot==="second" && !pendingCelebration.requiresSecondReading?'<option value="">No second reading</option>':'')
       +options.map(citation=>'<option value="'+esc(citation)+'"'+(citation===readings[slot]?' selected':'')+'>'+esc(citation)+'</option>').join("")
       +'</select></dd>';
   };

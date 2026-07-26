@@ -145,7 +145,7 @@ const FIXED_FEAST_FALLBACKS = {
   // 1) start with cpbjr harvested for A & B only (2025 Year C harvest is contaminated by All Souls etc.)
   for (const [k, v] of Object.entries(cpbjr)) {
     if (k.startsWith("Year C |")) continue;
-    table[k] = { first: v.first, psalm: v.psalm, second: v.second, gospel: v.gospel, src: "usccb" };
+    table[k] = { ...row(v.first, v.psalm, v.second, v.gospel), src: "usccb" };
   }
   // 2) add Felix only where cpbjr lacks
   const felixVerify = [];
@@ -165,10 +165,12 @@ const FIXED_FEAST_FALLBACKS = {
     if (j && j.readings) {
       const fallback = FIXED_FEAST_FALLBACKS[name] || {};
       feastByName[name] = {
-        first: j.readings.firstReading || fallback.first || "",
-        psalm: j.readings.psalm || fallback.psalm || "",
-        second: j.readings.secondReading || fallback.second || "",
-        gospel: j.readings.gospel || fallback.gospel || "",
+        ...row(
+          j.readings.firstReading || fallback.first || "",
+          j.readings.psalm || fallback.psalm || "",
+          j.readings.secondReading || fallback.second || "",
+          j.readings.gospel || fallback.gospel || "",
+        ),
         src: "usccb-fixed",
       };
     }
