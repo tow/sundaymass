@@ -11,7 +11,8 @@ kjva.forEach(bk => { const m = {}; bk.chapters.forEach(ch => { const cm = {}; ch
 function cleanText(t) { return String(t).replace(/\{[^}]*\}/g, "").replace(/\[[^\]]*\]/g, "").replace(/\\(["'])/g, "$1").replace(/\\/g, "").replace(/\s+/g, " ").trim(); }
 function verseLabel(v) {
   const superscript = { "0":"⁰", "1":"¹", "2":"²", "3":"³", "4":"⁴", "5":"⁵", "6":"⁶", "7":"⁷", "8":"⁸", "9":"⁹" };
-  return String(v).split("").map(digit => superscript[digit]).join("") + " ";
+  // Keep the verse number attached to its first word at line wraps.
+  return String(v).split("").map(digit => superscript[digit]).join("") + "\u202F";
 }
 
 // WEB book numbers
@@ -75,7 +76,7 @@ function extract(cite) {
     const g = getVerse(p.book, ch, v);
     if (!g) { missing.push(ch + ":" + v); return; }
     src.add(g.src);
-    if (prev && !(prev.ch === ch && prev.v === v - 1)) out.push("…");
+    if (prev && !(prev.ch === ch && prev.v === v - 1)) out.push("[...]");
     out.push(verseLabel(v) + g.t); prev = { ch, v };
   });
   return { text: out.join(" ").replace(/ …/g, " …").replace(/… /g, "… "), src: [...src].join("+"), missing };
