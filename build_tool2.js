@@ -281,7 +281,7 @@ const html = `<!DOCTYPE html>
 <dialog class="login-dialog" id="loginDialog">
   <form class="login-form" id="loginForm">
     <h2>Editor sign in</h2>
-    <p>Use the editor account provided by the parish. Your session stays signed in on this device.</p>
+    <p>Sign in to edit music choices. Your session stays signed in on this device.</p>
     <label for="loginEmail">Email</label>
     <input id="loginEmail" name="email" type="email" autocomplete="username" required>
     <label for="loginPassword">Password</label>
