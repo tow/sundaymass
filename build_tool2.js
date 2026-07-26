@@ -2,7 +2,10 @@ const fs = require("fs");
 const path = require("path");
 const ROOT = __dirname;
 const SUNDAYS = fs.readFileSync(path.join(ROOT, "sundays.json"), "utf8");
+const CELEBRATIONS = fs.readFileSync(path.join(ROOT, "celebrations.json"), "utf8");
+const COMMONS = fs.readFileSync(path.join(ROOT, "commons.json"), "utf8");
 const READINGS_JSON = fs.readFileSync(path.join(ROOT, "readings_text.json"), "utf8");
+const LECTIONARY_CATALOG_JS = fs.readFileSync(path.join(ROOT, "lectionary-catalog.js"), "utf8");
 
 // embed template parts as base64
 const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(dir + "/" + e.name) : [dir + "/" + e.name]);
@@ -126,6 +129,35 @@ const html = `<!DOCTYPE html>
   .ordo-confirm{ display:flex; gap:9px; align-items:flex-start; margin:13px 0 0; padding:10px 11px; border:1px solid #e4cfaa; border-radius:6px; background:#fff9ec; font-size:12px; line-height:1.4; }
   .ordo-confirm input{ flex:none; margin-top:2px; }
   .reading-dialog-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:13px 22px calc(13px + env(safe-area-inset-bottom)); border-top:1px solid #eee6d5; background:#fff; }
+  .liturgical-edit-launch{ display:flex; justify-content:center; margin:4px 0 20px; }
+  .liturgical-edit-launch button{ min-height:40px; padding:7px 12px; border-color:#9e9689; color:var(--muted); background:transparent; font-size:12px; }
+  .celebration-current{ padding:15px 16px; border-left:4px solid var(--accent); background:var(--canvas); }
+  .celebration-current.changed{ border-left-color:#c79238; }
+  .celebration-current-label{ display:flex; align-items:center; gap:7px; margin-bottom:4px; color:var(--muted); font-size:10.5px; font-weight:750; letter-spacing:.35px; text-transform:uppercase; }
+  .celebration-current-name{ font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:20px; line-height:1.25; }
+  .celebration-current-meta{ margin-top:4px; color:var(--muted); font-size:11.5px; line-height:1.4; }
+  .celebration-actions{ display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:11px; }
+  .celebration-actions button{ min-height:42px; padding:8px 10px; font-size:12.5px; }
+  .fine-tune-head{ margin:24px 0 8px; }
+  .fine-tune-head h3{ margin:0; font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:20px; font-weight:400; }
+  .fine-tune-head p{ margin:4px 0 0; color:var(--muted); font-size:11.5px; line-height:1.4; }
+  .liturgical-dialog-list{ border:1px solid #eee6d5; }
+  .celebration-search label{ display:block; margin:0 0 7px; color:var(--accent); font-size:11px; font-weight:750; letter-spacing:.4px; text-transform:uppercase; }
+  .celebration-search input{ width:100%; height:44px; padding:9px 11px; border:1px solid #c9c0b1; border-radius:7px; color:var(--ink); font-size:16px; }
+  .celebration-results-heading{ margin:18px 0 7px; color:var(--accent); font-size:11px; font-weight:750; letter-spacing:.4px; text-transform:uppercase; }
+  .celebration-results{ display:grid; gap:7px; }
+  .celebration-result{ width:100%; min-height:0; padding:10px 11px; border-color:#c9c0b1; border-radius:6px; text-align:left; }
+  .celebration-result strong{ display:block; color:var(--ink); font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:15px; line-height:1.3; }
+  .celebration-result small{ display:block; margin-top:3px; color:var(--muted); font-size:10.5px; font-weight:400; line-height:1.35; }
+  .celebration-result.selected{ border-color:var(--accent); background:#f4f7f7; box-shadow:inset 0 0 0 1px var(--accent); }
+  .celebration-preview{ margin-top:15px; padding:13px; border:1px solid var(--line); background:#fcfaf6; }
+  .celebration-preview h3{ margin:0 0 4px; font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:20px; font-weight:400; }
+  .celebration-preview p{ margin:0 0 10px; color:var(--muted); font-size:11px; }
+  .celebration-preview-grid{ display:grid; grid-template-columns:125px minmax(0,1fr); gap:6px 10px; font-size:12px; line-height:1.35; }
+  .celebration-preview-grid dt{ color:var(--muted); font-weight:700; }
+  .celebration-preview-grid dd{ margin:0; overflow-wrap:anywhere; }
+  .celebration-preview-grid select{ width:100%; min-height:40px; padding:7px 9px; border:1px solid #c9c0b1; border-radius:5px; color:var(--ink); background:#fff; font-size:16px; }
+  .celebration-options-note{ margin-top:10px!important; padding-top:9px; border-top:1px solid #e5ddcf; line-height:1.4; }
   .music-card{ padding:0; overflow:hidden; }
   .music-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:20px 22px 15px; border-bottom:1px solid #eee6d5; }
   .music-head h2{ font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:23px; font-weight:400; line-height:1.2; margin:0; }
@@ -244,6 +276,8 @@ const html = `<!DOCTYPE html>
     .reading-dialog-head h2{ font-size:22px; }
     .reading-dialog-body{ padding:14px 16px; }
     .reading-dialog-actions{ padding:10px 16px calc(10px + env(safe-area-inset-bottom)); }
+    .liturgical-edit-launch{ margin-bottom:12px; }
+    .celebration-preview-grid{ grid-template-columns:100px minmax(0,1fr); }
     .music-head{ padding:15px 16px 12px; }
     .music-head h2{ font-size:21px; }
     .music-head p{ font-size:11.5px; }
@@ -309,21 +343,6 @@ const html = `<!DOCTYPE html>
     <div class="music-list" id="musicList"></div>
   </section>
 
-  <section class="card reading-editor-card" id="readingEditorCard" aria-labelledby="readingEditorTitle" hidden>
-    <div class="reading-editor-head">
-      <div>
-        <div class="eyebrow">Editor tools</div>
-        <h2 id="readingEditorTitle">Reading selections</h2>
-        <p>Change a reading only when the parish Ordo or celebrant requires it. Saved changes are live immediately.</p>
-      </div>
-      <span class="sync-status" id="readingSaveStatus" role="status"></span>
-    </div>
-    <div class="reading-editor-list" id="readingEditorList"></div>
-    <div class="reading-editor-footer" id="readingEditorFooter" hidden>
-      <button type="button" id="restoreAllReadings">Restore all computed readings</button>
-    </div>
-  </section>
-
   <section class="card readings-card" id="fullReadings" aria-labelledby="readingsTitle">
     <div class="section-heading">
       <div>
@@ -335,7 +354,65 @@ const html = `<!DOCTYPE html>
     <div id="readingTexts"></div>
   </section>
 
+  <div class="liturgical-edit-launch" id="liturgicalEditLaunch" hidden>
+    <button type="button" id="openLiturgicalEditor">Edit celebration or readings</button>
+  </div>
 </div>
+
+<dialog class="reading-dialog" id="liturgicalDialog">
+  <div class="reading-dialog-form">
+    <div class="reading-dialog-head">
+      <div>
+        <div class="eyebrow">Rarely needed</div>
+        <h2>Edit celebration or readings</h2>
+        <p>Use another Mass as a complete set, or fine-tune an individual reading.</p>
+      </div>
+      <button class="reading-dialog-close" id="liturgicalDialogClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="reading-dialog-body">
+      <div class="celebration-current" id="celebrationCurrent"></div>
+      <div class="celebration-actions">
+        <button class="primary" type="button" id="chooseCelebration">Use another celebration</button>
+        <button type="button" id="restoreCelebration" hidden>Restore Sunday</button>
+      </div>
+      <div class="fine-tune-head">
+        <h3>Fine-tune individual readings</h3>
+        <p>Only use this when one reading differs from the selected celebration.</p>
+      </div>
+      <div class="reading-editor-list liturgical-dialog-list" id="readingEditorList"></div>
+      <div class="reading-editor-footer" id="readingEditorFooter" hidden>
+        <button type="button" id="restoreAllReadings">Restore all individual readings</button>
+      </div>
+      <span class="sync-status" id="readingSaveStatus" role="status"></span>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="reading-dialog" id="celebrationDialog">
+  <form class="reading-dialog-form" id="celebrationForm">
+    <div class="reading-dialog-head">
+      <div>
+        <div class="eyebrow">Use another Mass</div>
+        <h2>Choose a celebration</h2>
+        <p id="celebrationDialogContext"></p>
+      </div>
+      <button class="reading-dialog-close" id="celebrationDialogClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="reading-dialog-body">
+      <div class="celebration-search">
+        <label for="celebrationSearch">Search the standard lectionary</label>
+        <input id="celebrationSearch" type="search" autocomplete="off" placeholder="e.g. St James, Christmas, 25 July">
+      </div>
+      <div class="celebration-results-heading" id="celebrationResultsHeading">Nearby celebrations</div>
+      <div class="celebration-results" id="celebrationResults"></div>
+      <div class="celebration-preview" id="celebrationPreview" hidden></div>
+    </div>
+    <div class="reading-dialog-actions">
+      <button type="button" id="celebrationCancel">Cancel</button>
+      <button class="primary" type="submit" id="celebrationUse" disabled>Use this celebration</button>
+    </div>
+  </form>
+</dialog>
 
 <dialog class="reading-dialog" id="readingDialog">
   <form class="reading-dialog-form" id="readingForm">
@@ -389,7 +466,10 @@ const html = `<!DOCTYPE html>
 </dialog>
 
 <script>
+${LECTIONARY_CATALOG_JS}
 const SUNDAYS = ${SUNDAYS};
+const CELEBRATIONS = ${CELEBRATIONS};
+const COMMONS = ${COMMONS};
 const PARTS = ${PARTS_JSON};
 const PARTS2 = ${PARTS2_JSON};
 const READINGS = ${READINGS_JSON};
@@ -409,85 +489,28 @@ const MUSIC_PARTS = [
   {key:"communion2",token:"COMMUNION_2",label:"Communion Hymn 2",note:""},
   {key:"recessional",token:"RECESSIONAL",label:"Recessional / Closing Hymn",note:""},
 ];
-const READING_SLOTS = [
-  {key:"first",dataKey:"f",label:"First Reading"},
-  {key:"psalm",dataKey:"p",label:"Responsorial Psalm"},
-  {key:"second",dataKey:"e",label:"Second Reading"},
-  {key:"gospel",dataKey:"g",label:"Gospel"},
-];
+const lectionary=LectionaryCatalog.create({
+  sundays:SUNDAYS,
+  celebrations:CELEBRATIONS,
+  commons:COMMONS,
+  readings:READINGS,
+});
+const READING_SLOTS=lectionary.readingSlots;
+const ROLE_CITATIONS=lectionary.roleCitations;
+const CITATION_ROLES=lectionary.citationRoles;
+const normalizedCitation=lectionary.normalizedCitation;
+const citationAlternatives=lectionary.citationAlternatives;
+const parseReadingCitation=lectionary.parseReadingCitation;
+const dayDistance=lectionary.dayDistance;
 const byDate = {}; SUNDAYS.forEach((s,i)=>byDate[s.d]=i);
 const cycleName = c => "Year " + c;
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
 function fmtPicker(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}); }
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-function normalizedCitation(value){ return (value||"").replace(/[–—]/g,"-").replace(/\\s+/g," ").trim().toLowerCase(); }
-function citationAlternatives(value){
-  const citation=(value||"").replace(/[–—]/g,"-").trim();
-  if(!citation) return [];
-  const parts=citation.split(/\\s+or\\s+/i).map(part=>part.trim()).filter(Boolean);
-  if(parts.length<2) return [citation];
-  const bookMatch=parts[0].match(/^((?:[1-3]\\s+)?[A-Za-z][A-Za-z ]*?)\\s+\\d/);
-  const book=bookMatch ? bookMatch[1] : "";
-  return parts.map((part,index)=>index===0 || !/^\\d/.test(part) ? part : book+" "+part);
-}
-function parseReadingCitation(value){
-  const citation=(value||"").replace(/[–—]/g,"-").trim();
-  const match=citation.match(/^((?:[1-3]\\s+)?[A-Za-z][A-Za-z ]*?)\\s+(\\d.*)$/);
-  if(!match || /\\s+or\\s+/i.test(citation)) return null;
-  const book=match[1].trim();
-  const pieces=match[2].split(/[;,]/).map(piece=>piece.trim()).filter(Boolean);
-  const segments=[];
-  let chapter=null;
-  for(const piece of pieces){
-    let m=piece.match(/^(\\d+):(\\d+[a-z]?)-(\\d+):(\\d+[a-z]?)$/i);
-    if(m){
-      chapter=Number(m[1]);
-      segments.push({startChapter:chapter,startVerse:m[2],endChapter:Number(m[3]),endVerse:m[4]});
-      continue;
-    }
-    m=piece.match(/^(\\d+):(\\d+[a-z]?)-(\\d+[a-z]?)$/i);
-    if(m){
-      chapter=Number(m[1]);
-      segments.push({startChapter:chapter,startVerse:m[2],endChapter:chapter,endVerse:m[3]});
-      continue;
-    }
-    m=piece.match(/^(\\d+):(\\d+[a-z]?)$/i);
-    if(m){
-      chapter=Number(m[1]);
-      segments.push({startChapter:chapter,startVerse:m[2],endChapter:chapter,endVerse:m[2]});
-      continue;
-    }
-    m=piece.match(/^(\\d+[a-z]?)-(\\d+[a-z]?)$/i);
-    if(m && chapter!==null){
-      segments.push({startChapter:chapter,startVerse:m[1],endChapter:chapter,endVerse:m[2]});
-      continue;
-    }
-    m=piece.match(/^(\\d+[a-z]?)$/i);
-    if(m && chapter!==null){
-      segments.push({startChapter:chapter,startVerse:m[1],endChapter:chapter,endVerse:m[1]});
-      continue;
-    }
-    return null;
-  }
-  return segments.length ? {book,segments} : null;
-}
-const ROLE_CITATIONS={};
-const CITATION_ROLES={};
-READING_SLOTS.forEach(slot=>{
-  const values=new Map();
-  SUNDAYS.forEach(s=>citationAlternatives(s[slot.dataKey]).forEach(citation=>{
-    if(!READINGS[citation] || !parseReadingCitation(citation)) return;
-    values.set(normalizedCitation(citation),citation);
-    const roles=CITATION_ROLES[normalizedCitation(citation)] || [];
-    if(!roles.includes(slot.key)) roles.push(slot.key);
-    CITATION_ROLES[normalizedCitation(citation)]=roles;
-  }));
-  ROLE_CITATIONS[slot.key]=values;
-});
-
 let curIdx = 0;  // index into SUNDAYS
 let musicChoices = {};
 let readingOverrides = {};
+let celebrationOverride = null;
 let planStore = null;
 let stopPlanSubscription = null;
 let stopAuthSubscription = null;
@@ -496,14 +519,34 @@ let signedIn = false;
 let saveTimers = {};
 let editingReadingSlot = null;
 let pendingReadingSelection = null;
+let pendingCelebration = null;
 
 function current(){ return SUNDAYS[curIdx]; }
+function baseCelebration(){
+  const sunday=current();
+  if(!celebrationOverride){
+    return {
+      id:"sunday-"+sunday.d,
+      name:sunday.n,
+      sourceDate:sunday.d,
+      rank:"Sunday",
+      season:sunday.s,
+      cycle:sunday.c,
+      readings:{first:sunday.f||"",psalm:sunday.p||"",second:sunday.e||"",gospel:sunday.g||""},
+    };
+  }
+  return celebrationOverride;
+}
 function vals(){
   const s = current();
-  const citationFor=slot=>readingOverrides[slot.key]?.citation || s[slot.dataKey] || "";
+  const celebration=baseCelebration();
+  const citationFor=slot=>readingOverrides[slot.key]?.citation || celebration.readings?.[slot.key] || "";
+  const baseMeta=celebrationOverride
+    ? (celebration.rank || "Celebration")+" · normally "+fmtLong(celebration.sourceDate)
+    : s.s+" · "+cycleName(s.c);
   return {
-    day: s.n,
-    meta: fmtLong(s.d) + "  ·  " + s.s + "  ·  " + cycleName(s.c),
+    day: celebration.name,
+    meta: fmtLong(s.d) + "  ·  " + baseMeta,
     first: citationFor(READING_SLOTS[0]), psalm: citationFor(READING_SLOTS[1]),
     second: citationFor(READING_SLOTS[2]), gospel: citationFor(READING_SLOTS[3]),
     date: s.d,
@@ -602,25 +645,94 @@ function renderMusicPlan(){
   }
 }
 function readingSlot(key){ return READING_SLOTS.find(slot=>slot.key===key); }
-function computedCitation(slot){ return current()[slot.dataKey] || ""; }
+function computedCitation(slot){ return baseCelebration().readings?.[slot.key] || ""; }
 function displayedCitation(slot){ return readingOverrides[slot.key]?.citation || computedCitation(slot); }
 function setReadingStatus(text,state){
   readingSaveStatus.textContent=text || "";
   readingSaveStatus.dataset.state=state || "";
 }
 function renderReadingEditor(){
-  readingEditorCard.hidden=!isEditor;
+  liturgicalEditLaunch.hidden=!isEditor;
   if(!isEditor) return;
+  const celebration=baseCelebration();
+  celebrationCurrent.classList.toggle("changed",!!celebrationOverride);
+  celebrationCurrent.innerHTML='<div class="celebration-current-label">Celebration for this Mass'
+    +'<span class="reading-status-badge'+(celebrationOverride?' changed':'')+'">'+(celebrationOverride?'Changed':'Computed')+'</span></div>'
+    +'<div class="celebration-current-name">'+esc(celebration.name)+'</div>'
+    +'<div class="celebration-current-meta">'+(celebrationOverride
+      ? esc((celebration.rank||"Celebration")+" · normally "+fmtLong(celebration.sourceDate))
+      : esc(fmtLong(current().d)+" · "+current().s+" · "+cycleName(current().c)))+'</div>';
+  restoreCelebration.hidden=!celebrationOverride;
   const changed=READING_SLOTS.filter(slot=>readingOverrides[slot.key]);
   readingEditorList.innerHTML=READING_SLOTS.map(slot=>{
     const adjusted=!!readingOverrides[slot.key];
     return '<div class="reading-editor-row"><div><div class="reading-editor-label">'+esc(slot.label)
-      +'<span class="reading-status-badge'+(adjusted?' changed':'')+'">'+(adjusted?'Changed':'Computed')+'</span></div>'
+      +'<span class="reading-status-badge'+(adjusted?' changed':'')+'">'+(adjusted?'Changed':(celebrationOverride?'Selected Mass':'Computed'))+'</span></div>'
       +'<div class="reading-editor-cite">'+(esc(displayedCitation(slot))||"—")+'</div></div>'
       +'<div class="reading-editor-actions"><button type="button" data-reading-action="change" data-reading-slot="'+slot.key+'">Change</button>'
       +(adjusted?'<button type="button" data-reading-action="restore" data-reading-slot="'+slot.key+'">Restore</button>':'')+'</div></div>';
   }).join("");
   readingEditorFooter.hidden=changed.length===0;
+}
+function searchText(value){
+  return (value||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+}
+let visibleCelebrationCandidates=[];
+function celebrationMeta(candidate){
+  return (candidate.rank||"Celebration")+" · "+fmtLong(candidate.sourceDate)
+    +(candidate.cycle && candidate.rank==="Sunday" ? " · "+cycleName(candidate.cycle) : "")
+    +(candidate.lectionary ? " · Lectionary "+candidate.lectionary : "");
+}
+function renderCelebrationPreview(){
+  if(!pendingCelebration){ celebrationPreview.hidden=true; celebrationUse.disabled=true; return; }
+  const readings=pendingCelebration.readings;
+  const field=(slot,label)=>{
+    const options=pendingCelebration.readingOptions?.[slot] || [];
+    const allowNone=slot==="second" && !readings.second;
+    if(options.length<=1 && !allowNone) return '<dt>'+esc(label)+'</dt><dd>'+(esc(readings[slot])||"—")+'</dd>';
+    return '<dt><label for="celebrationReading_'+slot+'">'+esc(label)+'</label></dt><dd><select id="celebrationReading_'+slot+'" data-celebration-reading="'+slot+'">'
+      +(slot==="second"?'<option value="">No second reading</option>':'')
+      +options.map(citation=>'<option value="'+esc(citation)+'"'+(citation===readings[slot]?' selected':'')+'>'+esc(citation)+'</option>').join("")
+      +'</select></dd>';
+  };
+  celebrationPreview.innerHTML='<h3>'+esc(pendingCelebration.name)+'</h3><p>'+esc(celebrationMeta(pendingCelebration))+'</p>'
+    +'<dl class="celebration-preview-grid">'+field("first","First Reading")+field("psalm","Psalm")
+    +field("second","Second Reading")+field("gospel","Gospel")+'</dl>'
+    +(pendingCelebration.commonNames?.length
+      ? '<p class="celebration-options-note">Reading choices include '+esc(pendingCelebration.commonNames.join(" and "))+".</p>"
+      : "");
+  celebrationPreview.hidden=false;
+  celebrationUse.disabled=false;
+}
+function renderCelebrationResults(){
+  const query=searchText(celebrationSearch.value);
+  const anchor=current().d;
+  const all=lectionary.availableCelebrations(current()).filter(candidate=>!(candidate.sourceDate===current().d && candidate.name===current().n));
+  if(query){
+    celebrationResultsHeading.textContent="Matching celebrations";
+    visibleCelebrationCandidates=all.filter(candidate=>{
+      const haystack=searchText(candidate.name+" "+candidate.rank+" "+fmtLong(candidate.sourceDate)+" "+(candidate.cycle||"")+" "+(candidate.commonNames||[]).join(" "));
+      return query.split(" ").every(word=>haystack.includes(word));
+    }).sort((a,b)=>a.name.localeCompare(b.name) || a.sourceDate.localeCompare(b.sourceDate)).slice(0,40);
+  }else{
+    celebrationResultsHeading.textContent="Nearby celebrations";
+    visibleCelebrationCandidates=all.filter(candidate=>Math.abs(dayDistance(candidate.sourceDate,anchor))<=14)
+      .sort((a,b)=>Math.abs(dayDistance(a.sourceDate,anchor))-Math.abs(dayDistance(b.sourceDate,anchor)) || a.sourceDate.localeCompare(b.sourceDate))
+      .slice(0,30);
+  }
+  celebrationResults.innerHTML=visibleCelebrationCandidates.length
+    ? visibleCelebrationCandidates.map((candidate,index)=>'<button class="celebration-result'+(pendingCelebration?.id===candidate.id?' selected':'')+'" type="button" data-celebration-index="'+index+'"><strong>'+esc(candidate.name)+'</strong><small>'+esc(celebrationMeta(candidate))+'</small></button>').join("")
+    : '<p class="reading-validation">No available celebration matches that search.</p>';
+}
+function openCelebrationDialog(){
+  pendingCelebration=null;
+  celebrationSearch.value="";
+  celebrationUse.textContent="Use this celebration";
+  celebrationDialogContext.textContent="For the Mass on "+fmtLong(current().d);
+  renderCelebrationResults();
+  renderCelebrationPreview();
+  celebrationDialog.showModal();
+  setTimeout(()=>celebrationSearch.focus(),0);
 }
 function suggestedCitations(slot){
   const computed=computedCitation(slot);
@@ -713,7 +825,7 @@ function openReadingDialog(key){
   editingReadingSlot=key;
   pendingReadingSelection=null;
   readingDialogTitle.textContent=slot.label;
-  readingDialogContext.textContent=current().n+" · "+fmtLong(current().d);
+  readingDialogContext.textContent=baseCelebration().name+" · "+fmtLong(current().d);
   fillReadingOptions(slot);
   const suggestions=suggestedCitations(slot);
   readingCitationInput.value=readingOverrides[key]?.citation || suggestions[0]?.citation || computedCitation(slot);
@@ -743,7 +855,7 @@ function renderFullReadings(){
   const v = vals();
   readingsIntro.textContent=v.day+" · "+v.meta;
   const blk = (slot,id,label,cite,text) => '<article class="rblock reading-anchor" id="'+id+'"><div class="rhead">'+esc(label)+'<span class="rcite">'+esc(cite)+'</span>'
-    +(readingOverrides[slot]?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</div><div class="rtext">'+(esc(text)||'<em>(see citation)</em>')+'</div></article>';
+    +(celebrationOverride || readingOverrides[slot]?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</div><div class="rtext">'+(esc(text)||'<em>(see citation)</em>')+'</div></article>';
   readingTexts.innerHTML =
     blk("first","reading-first","First Reading",v.first,textFor(v.first))
     + blk("psalm","reading-psalm","Responsorial Psalm",v.psalm,textFor(v.psalm)||"(sung — see citation)")
@@ -752,10 +864,13 @@ function renderFullReadings(){
     + '<div class="rpcaveat">Scripture: World English Bible (public domain). Verse numbering — especially in the Psalms — can differ slightly from the lectionary.</div>';
 }
 function renderResolved(){
-  const s = current();
+  const s=current();
+  const celebration=baseCelebration();
   resolved.innerHTML = '<span class="selected-date">'+fmtLong(s.d)+'</span>'
-    + '<span class="selected-day">'+esc(s.n)+'</span>'
-    + '<span class="selected-meta">'+esc(s.s)+' · '+cycleName(s.c)+'</span>';
+    + '<span class="selected-day">'+esc(celebration.name)+(celebrationOverride?'<span class="reading-adjusted-note">Changed celebration</span>':'')+'</span>'
+    + '<span class="selected-meta">'+(celebrationOverride
+      ? esc((celebration.rank||"Celebration")+" · normally "+fmtLong(celebration.sourceDate))
+      : esc(s.s)+' · '+cycleName(s.c))+'</span>';
 }
 function renderReadingSummary(){
   const v=vals();
@@ -765,9 +880,9 @@ function renderReadingSummary(){
     ["second","Second Reading",v.second,"reading-second"],
     ["gospel","Gospel",v.gospel,"reading-gospel"],
   ];
-  const anyAdjusted=READING_SLOTS.some(slot=>readingOverrides[slot.key]);
-  readingSummary.innerHTML='<div class="reading-summary-title">Readings for this Sunday'+(anyAdjusted?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</div><div class="reading-grid">'
-    + readings.map(r=>'<a class="reading-item'+(readingOverrides[r[0]]?' changed':'')+'" href="#'+r[3]+'"><span class="reading-label">'+esc(r[1])+(readingOverrides[r[0]]?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</span><span class="reading-cite">'+(esc(r[2])||"—")+'</span></a>').join('')
+  const anyAdjusted=!!celebrationOverride || READING_SLOTS.some(slot=>readingOverrides[slot.key]);
+  readingSummary.innerHTML='<div class="reading-summary-title">Readings for this Mass'+(anyAdjusted?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</div><div class="reading-grid">'
+    + readings.map(r=>'<a class="reading-item'+(celebrationOverride || readingOverrides[r[0]]?' changed':'')+'" href="#'+r[3]+'"><span class="reading-label">'+esc(r[1])+(readingOverrides[r[0]]?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</span><span class="reading-cite">'+(esc(r[2])||"—")+'</span></a>').join('')
     + '</div>';
 }
 function syncDateControl(){
@@ -791,6 +906,7 @@ function subscribeToCurrentPlan(){
   if(stopPlanSubscription){ stopPlanSubscription(); stopPlanSubscription=null; }
   musicChoices={};
   readingOverrides={};
+  celebrationOverride=null;
   renderMusicPlan();
   refresh();
   if(!planStore){ setSyncStatus("Connecting…",""); return; }
@@ -798,6 +914,7 @@ function subscribeToCurrentPlan(){
   stopPlanSubscription=planStore.subscribePlan(current().d,(plan,meta)=>{
     musicChoices=plan?.choices || {};
     readingOverrides=plan?.readingOverrides || {};
+    celebrationOverride=plan?.celebrationOverride || null;
     renderMusicPlan();
     refresh();
     setSyncStatus(meta && meta.offline ? "Offline — showing saved copy" : "Up to date",meta && meta.offline ? "" : "saved");
@@ -813,6 +930,11 @@ function connectPlanStore(store){
     isEditor=!!auth.isEditor;
     signedIn=!!auth.user;
     authButton.textContent=signedIn ? "Sign out" : "Sign in";
+    if(!isEditor){
+      if(liturgicalDialog.open) liturgicalDialog.close();
+      if(celebrationDialog.open) celebrationDialog.close();
+      if(readingDialog.open) readingDialog.close();
+    }
     renderMusicPlan();
     renderReadingEditor();
   });
@@ -876,6 +998,88 @@ loginForm.addEventListener("submit",async event=>{
     loginSubmit.textContent="Sign in";
   }
 });
+openLiturgicalEditor.addEventListener("click",()=>{
+  if(!isEditor) return;
+  renderReadingEditor();
+  liturgicalDialog.showModal();
+});
+function closeLiturgicalDialog(){ liturgicalDialog.close(); }
+liturgicalDialogClose.addEventListener("click",closeLiturgicalDialog);
+liturgicalDialog.addEventListener("click",event=>{ if(event.target===liturgicalDialog) closeLiturgicalDialog(); });
+chooseCelebration.addEventListener("click",openCelebrationDialog);
+celebrationSearch.addEventListener("input",()=>{
+  pendingCelebration=null;
+  renderCelebrationResults();
+  renderCelebrationPreview();
+});
+celebrationResults.addEventListener("click",event=>{
+  const button=event.target.closest("button[data-celebration-index]");
+  if(!button) return;
+  pendingCelebration=visibleCelebrationCandidates[Number(button.dataset.celebrationIndex)] || null;
+  renderCelebrationResults();
+  renderCelebrationPreview();
+  celebrationPreview.scrollIntoView({block:"nearest"});
+});
+celebrationPreview.addEventListener("change",event=>{
+  const select=event.target.closest("select[data-celebration-reading]");
+  if(!select || !pendingCelebration || !isEditor) return;
+  pendingCelebration.readings[select.dataset.celebrationReading]=select.value;
+});
+function closeCelebrationDialog(){
+  celebrationDialog.close();
+  pendingCelebration=null;
+}
+celebrationDialogClose.addEventListener("click",closeCelebrationDialog);
+celebrationCancel.addEventListener("click",closeCelebrationDialog);
+celebrationDialog.addEventListener("click",event=>{ if(event.target===celebrationDialog) closeCelebrationDialog(); });
+celebrationForm.addEventListener("submit",async event=>{
+  event.preventDefault();
+  if(!pendingCelebration || !isEditor || !planStore || celebrationUse.disabled) return;
+  const selection=pendingCelebration;
+  const payload={
+    id:selection.id,
+    name:selection.name,
+    sourceDate:selection.sourceDate,
+    rank:selection.rank,
+    season:selection.season,
+    cycle:selection.cycle,
+    lectionary:selection.lectionary || "",
+    source:selection.source || "Standard lectionary",
+    readings:selection.readings,
+    checkedAgainstOrdo:true,
+  };
+  celebrationUse.disabled=true;
+  celebrationUse.textContent="Saving…";
+  setReadingStatus("Saving…","");
+  try{
+    await planStore.saveCelebrationOverride(current().d,payload);
+    celebrationOverride=payload;
+    readingOverrides={};
+    refresh();
+    setReadingStatus("Saved","saved");
+    closeCelebrationDialog();
+  }catch(error){
+    console.error(error);
+    setReadingStatus("Save failed","error");
+    celebrationUse.disabled=false;
+    celebrationUse.textContent="Use this celebration";
+  }
+});
+restoreCelebration.addEventListener("click",async ()=>{
+  if(!isEditor || !planStore) return;
+  if(!confirm("Restore the computed Sunday celebration and all of its readings?")) return;
+  setReadingStatus("Saving…","");
+  try{
+    await planStore.clearCelebrationOverride(current().d);
+    celebrationOverride=null;
+    readingOverrides={};
+    refresh();
+    setReadingStatus("Saved","saved");
+  }catch(error){
+    console.error(error);
+    setReadingStatus("Save failed","error");
+  }
+});
 readingEditorList.addEventListener("click",event=>{
   const button=event.target.closest("button[data-reading-action]");
   if(!button || !isEditor) return;
@@ -884,7 +1088,7 @@ readingEditorList.addEventListener("click",event=>{
 });
 restoreAllReadings.addEventListener("click",async ()=>{
   if(!isEditor || !planStore) return;
-  if(!confirm("Restore all four readings to the computed lectionary selections?")) return;
+  if(!confirm("Restore all individual readings to the selected celebration?")) return;
   setReadingStatus("Saving…","");
   try{
     await planStore.clearReadingOverride(current().d,null);

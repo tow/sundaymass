@@ -1,5 +1,6 @@
 const romcal = require("romcal");
 const fs = require("fs");
+const path = require("path");
 const { bySlot, feastByName } = require("./readings_master.json");
 
 // Cycle-independent special readings (editable in the tool)
@@ -41,7 +42,7 @@ Object.values(byDate).sort((a,b)=>a.moment.localeCompare(b.moment)).forEach(d =>
     f: r.first, p: r.psalm, e: r.second, g: r.gospel });
 });
 
-fs.writeFileSync("/root/sundays.json", JSON.stringify(out));
+fs.writeFileSync(path.join(__dirname, "sundays.json"), JSON.stringify(out));
 console.log("Sundays 2025-2075 (Finland):", out.length);
 console.log("full 4 readings:", out.filter(o=>o.f&&o.p&&o.g).length);
 console.log("corrections -> Epiphany kept on Jan6:", notes.epiphanyFixed, "| 2nd Sun after Christmas:", notes.secondAfterXmas, "| Baptism (from transferred Epiph):", notes.baptismFromEpiph, "| All Souls:", notes.allSouls, "| St Henry (blank):", notes.henry);

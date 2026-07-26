@@ -5,7 +5,8 @@
   "description": "St James the Apostle 6pm Mass music planner — offline HTML tool + build pipeline",
   "scripts": {
     "icons": "node generate_icons.js",
-    "build": "node generate_icons.js && node make_template.js && node make_template2.js && node build_tool2.js"
+    "build": "node generate_icons.js && node make_template.js && node make_template2.js && node build_tool2.js",
+    "test": "node --test test_lectionary_catalog.js"
   },
   "dependencies": { "docx": "*", "romcal": "*" }
 }

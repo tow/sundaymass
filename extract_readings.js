@@ -20,9 +20,38 @@ const WEBNUM = { "Genesis":1,"Exodus":2,"Leviticus":3,"Numbers":4,"Deuteronomy":
 // deuterocanon -> KJVA names
 const KJVNAME = { "Sirach":"Sirach","Wisdom":"Wisdom","Baruch":"Baruch","2 Maccabees":"II Maccabees","1 Maccabees":"I Maccabees","Tobit":"Tobit","Judith":"Judith" };
 
+// The Lectionary/NAB follows Hebrew Psalm verse numbering; WEB follows the
+// traditional English convention and omits some superscriptions from the verse
+// count. Values are NAB verse number minus WEB verse number for the psalm body.
+// Derived by comparing:
+//   https://bible.usccb.org/bible/psalms/0
+//   https://www.sefaria.org/api/shape/Psalms
+// against the bundled WEB chapter lengths. Keep the complete map so future
+// lectionary additions do not silently extract the verse before the cited one.
+const PSALM_NAB_TO_WEB_OFFSET = {
+  3:1, 4:1, 5:1, 6:1, 7:1, 8:1, 9:1, 12:1, 18:1, 19:1, 20:1, 21:1,
+  22:1, 30:1, 31:1, 34:1, 36:1, 38:1, 39:1, 40:1, 41:1, 42:1, 44:1,
+  45:1, 46:1, 47:1, 48:1, 49:1, 51:2, 52:2, 53:1, 54:2, 55:1, 56:1,
+  57:1, 58:1, 59:1, 60:2, 61:1, 62:1, 63:1, 64:1, 65:1, 67:1, 68:1,
+  69:1, 70:1, 75:1, 76:1, 77:1, 80:1, 81:1, 83:1, 84:1, 85:1, 88:1,
+  89:1, 92:1, 102:1, 108:1, 140:1, 142:1,
+};
+
 function getVerse(book, ch, v) {
   // Neo-Vulgate/lectionary vs WEB chapter differences
   if (book === "Malachi" && ch === 3 && v >= 19) { ch = 4; v = v - 18; }   // Mal 3:19-24 (NAB) = Mal 4:1-6 (WEB/KJV)
+  if (book === "Zechariah" && ch === 2 && v >= 14) { v = v - 4; }          // Zech 2:14-17 (NAB) = Zech 2:10-13 (WEB/KJV)
+  if (book === "Psalm" && PSALM_NAB_TO_WEB_OFFSET[ch] && v > PSALM_NAB_TO_WEB_OFFSET[ch]) {
+    v -= PSALM_NAB_TO_WEB_OFFSET[ch];
+  }
+  // Catholic Daniel inserts the Prayer of Azariah/Song of the Three into ch. 3.
+  // KJVA stores that addition as a separate one-chapter book: Dan 3:24 = Azar 1.
+  if (book === "Daniel" && ch === 3 && v >= 24) {
+    const azariahVerse = v - 23;
+    if (KJV["Prayer of Azariah"]?.[1]?.[azariahVerse] != null) {
+      return { t: KJV["Prayer of Azariah"][1][azariahVerse], src: "KJV" };
+    }
+  }
   if (WEBNUM[book] && WEB[WEBNUM[book]] && WEB[WEBNUM[book]][ch] && WEB[WEBNUM[book]][ch][v] != null)
     return { t: WEB[WEBNUM[book]][ch][v], src: "WEB" };
   const kn = KJVNAME[book] || book;
@@ -34,7 +63,7 @@ const SINGLE_CH = { "Philemon":1,"Jude":1,"Obadiah":1,"2 John":1,"3 John":1,"Bar
 
 // parse "Book c:v, v-v, c:v-c:v ..." -> ordered list of {ch,v}
 function parseRef(cite) {
-  let s = cite.split(/\s+or\s+/i)[0].replace(/\([^)]*\)/g, "").replace(/[—–]/g, "-").replace(/:\s+/g, ":").trim(); // primary alt, normalize dashes/spacing
+  let s = cite.split(/\s+or\s+/i)[0].replace(/\([^)]*\)/g, "").replace(/[—–]/g, "-").replace(/:\s+/g, ":").replace(/\b3b4\b/g, "3b-4").replace(/(\d+)-\d+-\d+-(\d+)/g, "$1-$2").trim(); // primary alt, normalize dashes/spacing
   const bm = s.match(/^((?:[1-3]\s)?[A-Za-z][A-Za-z ]*?)\s+(\d.*)$/);
   let book, rest;
   if (bm) { book = bm[1].trim(); rest = bm[2].trim(); }
@@ -42,8 +71,8 @@ function parseRef(cite) {
   else return null;
   const list = [];
   let curCh = (/^\d+:/.test(rest) ? null : (SINGLE_CH[book] || 1)); // single-chapter books start at ch1
-  rest.split(/[;,]/).forEach(seg => {
-    seg = seg.trim().replace(/([0-9])[a-z]+/g, "$1"); if (!seg) return; // strip verse letter-suffixes (3a, 1bc)
+  rest.split(/[;,.+]/).forEach(seg => {
+    seg = seg.trim().replace(/([0-9])[a-z]+/gi, "$1"); if (!seg) return; // strip verse letter-suffixes (3a, 1bc)
     // cross-chapter range a:b-c:d
     let m = seg.match(/^(\d+):(\d+)[a-z]?-(\d+):(\d+)[a-z]?$/);
     if (m) { const [_, c1, v1, c2, v2] = m.map(Number); for (let c = c1; c <= c2; c++) { const lo = c === c1 ? v1 : 1; const hi = c === c2 ? v2 : lastVerse(book, c); for (let v = lo; v <= hi; v++) list.push({ ch: c, v }); } curCh = c2; return; }
@@ -86,13 +115,23 @@ function expandAlternatives(cite) {
   const parts = String(cite || "").split(/\s+or\s+/i).map(part => part.trim()).filter(Boolean);
   if (parts.length < 2) return parts;
   const book = parts[0].match(/^((?:[1-3]\s)?[A-Za-z][A-Za-z ]*?)\s+\d/)?.[1];
-  return parts.map((part, index) => index === 0 || !book || /^[A-Za-z]/.test(part) ? part : book + " " + part);
+  return parts.map((part, index) => index === 0 || !book || !/^\d+:/.test(part) ? part : book + " " + part);
 }
 
 // ---- run over all distinct citations ----
 const sundays = require("./sundays.json");
+const celebrations = require("./celebrations.json");
+const commons = require("./commons.json");
 const cites = new Set();
 sundays.forEach(o => [o.f, o.p, o.e, o.g].forEach(c => c && cites.add(c)));
+celebrations.forEach(o => [o.f, o.p, o.e, o.g].forEach(c => c && cites.add(c)));
+commons.forEach(common => [
+  ...common.firstOutsideEaster,
+  ...common.firstEaster,
+  ...common.psalm,
+  ...common.second,
+  ...common.gospel,
+].forEach(c => c && cites.add(c)));
 const extractableCites = new Set(cites);
 cites.forEach(cite => expandAlternatives(cite).forEach(alternative => extractableCites.add(alternative)));
 const map = {}; let full = 0, partial = 0, none = 0; const problems = [];
@@ -110,6 +149,6 @@ console.log("readings_text.json KB:", Math.round(fs.statSync(outputPath).size/10
 console.log("\n--- problems (first 25) ---"); problems.slice(0,25).forEach(p=>console.log(" ", p));
 // versification spot checks
 console.log("\n--- spot checks (verify against known text) ---");
-["Psalm 23:1-3a, 3b-4, 5, 6","Psalm 51:3-4, 12-13, 14-15","Matthew 13:44-52","Sirach 45:12-20, 4-5","Wisdom 3:1-9","Isaiah 55:1-3"].forEach(c=>{
+["Psalm 23:1-3a, 3b-4, 5, 6","Psalm 51:3-4, 12-13, 14-15","Matthew 13:44-52","Sirach 45:12-20, 4-5","Wisdom 3:1-9","Isaiah 55:1-3","Daniel 3:52, 53, 54, 55, 56"].forEach(c=>{
   console.log("\n["+c+"]:", (map[c]||"(none)").slice(0,180));
 });

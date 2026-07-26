@@ -1,7 +1,7 @@
 const SUPABASE_MODULE_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 function emptyPlan() {
-  return { choices: {}, readingOverrides: {} };
+  return { choices: {}, readingOverrides: {}, celebrationOverride: null };
 }
 
 function normalizePlan(value) {
@@ -10,10 +10,11 @@ function normalizePlan(value) {
     return {
       choices: value.choices && typeof value.choices === "object" ? value.choices : {},
       readingOverrides: value.readingOverrides && typeof value.readingOverrides === "object" ? value.readingOverrides : {},
+      celebrationOverride: value.celebrationOverride && typeof value.celebrationOverride === "object" ? value.celebrationOverride : null,
     };
   }
   // Backwards compatibility with localStorage values created before reading overrides.
-  return { choices: value, readingOverrides: {} };
+  return { choices: value, readingOverrides: {}, celebrationOverride: null };
 }
 
 function localStore() {
@@ -74,6 +75,22 @@ function localStore() {
       localStorage.setItem(storageKey(date), JSON.stringify(plan));
       emit(date);
     },
+    async saveCelebrationOverride(date, celebrationOverride) {
+      if (!editor) throw new Error("Sign in before editing");
+      const plan = read(date);
+      plan.celebrationOverride = celebrationOverride;
+      plan.readingOverrides = {};
+      localStorage.setItem(storageKey(date), JSON.stringify(plan));
+      emit(date);
+    },
+    async clearCelebrationOverride(date) {
+      if (!editor) throw new Error("Sign in before editing");
+      const plan = read(date);
+      plan.celebrationOverride = null;
+      plan.readingOverrides = {};
+      localStorage.setItem(storageKey(date), JSON.stringify(plan));
+      emit(date);
+    },
     async signIn() {
       editor = true;
       this._notifyAuth();
@@ -103,6 +120,12 @@ function unavailableStore() {
       throw new Error("Supabase has not been configured");
     },
     async clearReadingOverride() {
+      throw new Error("Supabase has not been configured");
+    },
+    async saveCelebrationOverride() {
+      throw new Error("Supabase has not been configured");
+    },
+    async clearCelebrationOverride() {
       throw new Error("Supabase has not been configured");
     },
     async signIn() {
@@ -136,6 +159,7 @@ async function supabaseStore(config) {
     return {
       choices: row?.choices || {},
       readingOverrides: row?.reading_overrides || {},
+      celebrationOverride: row?.celebration_override || null,
     };
   };
 
@@ -147,7 +171,7 @@ async function supabaseStore(config) {
       let active = true;
       supabase
         .from("plans")
-        .select("choices, reading_overrides")
+        .select("choices, reading_overrides, celebration_override")
         .eq("sunday", date)
         .maybeSingle()
         .then(({ data, error }) => {
@@ -231,6 +255,19 @@ async function supabaseStore(config) {
       const { error } = await supabase.rpc("clear_reading_override", {
         p_sunday: date,
         p_slot: slot || null,
+      });
+      if (error) throw error;
+    },
+    async saveCelebrationOverride(date, celebrationOverride) {
+      const { error } = await supabase.rpc("save_celebration_override", {
+        p_sunday: date,
+        p_override: celebrationOverride,
+      });
+      if (error) throw error;
+    },
+    async clearCelebrationOverride(date) {
+      const { error } = await supabase.rpc("clear_celebration_override", {
+        p_sunday: date,
       });
       if (error) throw error;
     },
