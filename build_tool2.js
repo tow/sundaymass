@@ -365,12 +365,22 @@ function renderMusicPlan(){
   editorHelp.hidden=!isEditor;
   musicIntro.textContent=isEditor ? "Enter a song title and, optionally, a YouTube practice link." : "Selections for this Sunday appear here as they are chosen.";
   if(isEditor){
-    musicList.innerHTML=MUSIC_PARTS.map(part=>{
-      const choice=choiceFor(part.key);
-      return '<div class="music-edit-row"><label class="music-part-label" for="song_'+part.key+'">'+musicLabel(part)+'</label>'
-        +'<div class="music-fields"><input id="song_'+part.key+'" data-part="'+part.key+'" data-field="song" type="text" value="'+esc(choice.song)+'" placeholder="Song title">'
-        +'<input id="youtube_'+part.key+'" data-part="'+part.key+'" data-field="youtubeUrl" type="url" inputmode="url" value="'+esc(choice.youtubeUrl)+'" placeholder="YouTube link (optional)" aria-label="'+esc(part.label)+' YouTube link"></div></div>';
-    }).join("");
+    if(musicList.dataset.mode!=="edit"){
+      musicList.innerHTML=MUSIC_PARTS.map(part=>{
+        const choice=choiceFor(part.key);
+        return '<div class="music-edit-row"><label class="music-part-label" for="song_'+part.key+'">'+musicLabel(part)+'</label>'
+          +'<div class="music-fields"><input id="song_'+part.key+'" data-part="'+part.key+'" data-field="song" type="text" value="'+esc(choice.song)+'" placeholder="Song title">'
+          +'<input id="youtube_'+part.key+'" data-part="'+part.key+'" data-field="youtubeUrl" type="url" inputmode="url" value="'+esc(choice.youtubeUrl)+'" placeholder="YouTube link (optional)" aria-label="'+esc(part.label)+' YouTube link"></div></div>';
+      }).join("");
+      musicList.dataset.mode="edit";
+    }else{
+      musicList.querySelectorAll("input[data-part]").forEach(input=>{
+        if(input===document.activeElement) return;
+        const choice=choiceFor(input.dataset.part);
+        const value=choice[input.dataset.field] || "";
+        if(input.value!==value) input.value=value;
+      });
+    }
   }else{
     musicList.innerHTML=MUSIC_PARTS.map(part=>{
       const choice=choiceFor(part.key);
@@ -379,6 +389,7 @@ function renderMusicPlan(){
         +(choice.song?esc(choice.song):'<span class="music-empty">Not yet chosen</span>')
         +(link?'<br><a class="listen-link" href="'+esc(link)+'" target="_blank" rel="noopener">Listen / practise ↗</a>':'')+'</div></div>';
     }).join("");
+    musicList.dataset.mode="view";
   }
 }
 function renderFullReadings(){
