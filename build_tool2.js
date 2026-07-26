@@ -52,7 +52,9 @@ const html = `<!DOCTYPE html>
   .setup-head h2,.section-heading h2{ font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:23px; font-weight:400; line-height:1.2; margin:0; letter-spacing:-.2px; }
   label.fld{ display:block; font-weight:600; font-size:12px; margin:0 0 5px; color:var(--accent); text-transform:uppercase; letter-spacing:.4px; }
   .daterow{ display:grid; grid-template-columns:auto minmax(190px,1fr) auto auto; gap:9px; align-items:center; }
-  input[type=date]{ width:100%; min-width:0; max-width:100%; height:44px; font-size:16px; padding:9px 11px; color:var(--ink); background:#fff; border:1px solid #bdb4b5; border-radius:9px; }
+  .date-slot{ width:100%; min-width:0; height:44px; overflow:hidden; background:#fff; border:1px solid #bdb4b5; border-radius:9px; }
+  .date-slot:focus-within{ outline:3px solid rgba(0,47,69,.22); outline-offset:2px; }
+  input[type=date]{ display:block; width:100%; min-width:0; max-width:100%; height:100%; font-size:16px; padding:9px 11px; color:var(--ink); background:#fff; border:0; border-radius:8px; }
   input[type=date]::-webkit-date-and-time-value{ min-width:0; text-align:center; }
   button{ min-height:44px; font-size:14px; font-weight:650; padding:9px 14px; border-radius:2px; border:1px solid var(--accent); cursor:pointer; touch-action:manipulation; background:#fff; color:var(--accent); transition:background .15s ease,border-color .15s ease,box-shadow .15s ease,transform .05s ease; }
   button:hover{ background:#f6f1e5; }
@@ -155,7 +157,8 @@ const html = `<!DOCTYPE html>
     .setup-head h2{ font-size:20px; }
     .daterow{ grid-template-columns:46px minmax(0,1fr) 46px; gap:7px; }
     .daterow #prev{ grid-column:1; grid-row:1; }
-    .daterow #date{ grid-column:2; grid-row:1; width:100%; min-width:0; max-width:100%; height:46px; padding:7px 4px; font-size:16px; text-align:center; }
+    .daterow .date-slot{ grid-column:2; grid-row:1; width:100%; min-width:0; max-width:100%; height:46px; }
+    .daterow #date{ width:100%; min-width:0; max-width:100%; height:100%; padding:7px 2px; font-size:16px; text-align:center; }
     .daterow #next{ grid-column:3; grid-row:1; }
     .daterow #today{ grid-column:1 / -1; grid-row:2; min-height:42px; }
     .daterow button{ min-width:0; min-height:46px; padding:6px; font-size:25px; }
@@ -198,7 +201,7 @@ const html = `<!DOCTYPE html>
   }
 </style></head>
 <body>
-<div class="parish-bar"><div class="parish-bar-inner"><a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener" aria-label="Visit the St James the Apostle church webpage">St James the Apostle ↗</a><div class="parish-bar-actions"><span>Church of St. James the Apostle</span><button class="install-app" id="installApp" hidden>Install app</button><button class="auth-button" id="authButton">Editor sign in</button></div></div></div>
+<div class="parish-bar"><div class="parish-bar-inner"><a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener" aria-label="Visit the St James the Apostle church webpage">St James the Apostle ↗</a><div class="parish-bar-actions"><span>Church of St. James the Apostle</span><button class="install-app" id="installApp" hidden>Install</button><button class="auth-button" id="authButton">Sign in</button></div></div></div>
 <div class="wrap">
   <header class="app">
     <h1><span class="desktop-title">St James the Apostle — 6pm Mass</span><span class="mobile-title">6pm Mass music planner</span></h1>
@@ -216,7 +219,7 @@ const html = `<!DOCTYPE html>
     <label class="fld sr-only" for="date">Choose a Sunday</label>
     <div class="daterow">
       <button class="nav" id="prev" title="Previous Sunday" aria-label="Previous Sunday"><span class="nav-desktop">‹ Previous</span><span class="nav-mobile" aria-hidden="true">‹</span></button>
-      <input type="date" id="date">
+      <div class="date-slot"><input type="date" id="date"></div>
       <button class="nav" id="next" title="Following Sunday" aria-label="Following Sunday"><span class="nav-desktop">Next ›</span><span class="nav-mobile" aria-hidden="true">›</span></button>
       <button class="nav" id="today">Jump to upcoming Sunday</button>
     </div>
@@ -439,7 +442,7 @@ function connectPlanStore(store){
   stopAuthSubscription=store.subscribeAuth(auth=>{
     isEditor=!!auth.isEditor;
     signedIn=!!auth.user;
-    authButton.textContent=isEditor ? "Sign out" : (signedIn ? "Not an editor · Sign out" : "Editor sign in");
+    authButton.textContent=signedIn ? "Sign out" : "Sign in";
     renderMusicPlan();
   });
   subscribeToCurrentPlan();
