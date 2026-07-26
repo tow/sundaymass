@@ -82,12 +82,21 @@ function extract(cite) {
   return { text: out.join(" ").replace(/ …/g, " …").replace(/… /g, "… "), src: [...src].join("+"), missing };
 }
 
+function expandAlternatives(cite) {
+  const parts = String(cite || "").split(/\s+or\s+/i).map(part => part.trim()).filter(Boolean);
+  if (parts.length < 2) return parts;
+  const book = parts[0].match(/^((?:[1-3]\s)?[A-Za-z][A-Za-z ]*?)\s+\d/)?.[1];
+  return parts.map((part, index) => index === 0 || !book || /^[A-Za-z]/.test(part) ? part : book + " " + part);
+}
+
 // ---- run over all distinct citations ----
 const sundays = require("./sundays.json");
 const cites = new Set();
 sundays.forEach(o => [o.f, o.p, o.e, o.g].forEach(c => c && cites.add(c)));
+const extractableCites = new Set(cites);
+cites.forEach(cite => expandAlternatives(cite).forEach(alternative => extractableCites.add(alternative)));
 const map = {}; let full = 0, partial = 0, none = 0; const problems = [];
-[...cites].forEach(c => {
+[...extractableCites].forEach(c => {
   const r = extract(c);
   map[c] = r.text;
   if (!r.text) { none++; problems.push("NONE  " + c + "  (" + r.missing.join(",") + ")"); }
@@ -96,7 +105,7 @@ const map = {}; let full = 0, partial = 0, none = 0; const problems = [];
 });
 const outputPath = require("path").join(__dirname, "readings_text.json");
 fs.writeFileSync(outputPath, JSON.stringify(map));
-console.log("distinct citations:", cites.size, "| full:", full, "| partial:", partial, "| none:", none);
+console.log("calendar citation strings:", cites.size, "| expanded entries:", extractableCites.size, "| full:", full, "| partial:", partial, "| none:", none);
 console.log("readings_text.json KB:", Math.round(fs.statSync(outputPath).size/1024));
 console.log("\n--- problems (first 25) ---"); problems.slice(0,25).forEach(p=>console.log(" ", p));
 // versification spot checks

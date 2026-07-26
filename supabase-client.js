@@ -1,7 +1,19 @@
 const SUPABASE_MODULE_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 function emptyPlan() {
-  return {};
+  return { choices: {}, readingOverrides: {} };
+}
+
+function normalizePlan(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return emptyPlan();
+  if ("choices" in value || "readingOverrides" in value) {
+    return {
+      choices: value.choices && typeof value.choices === "object" ? value.choices : {},
+      readingOverrides: value.readingOverrides && typeof value.readingOverrides === "object" ? value.readingOverrides : {},
+    };
+  }
+  // Backwards compatibility with localStorage values created before reading overrides.
+  return { choices: value, readingOverrides: {} };
 }
 
 function localStore() {
@@ -10,7 +22,7 @@ function localStore() {
   const storageKey = date => "st-james-plan-" + date;
   const read = date => {
     try {
-      return JSON.parse(localStorage.getItem(storageKey(date))) || emptyPlan();
+      return normalizePlan(JSON.parse(localStorage.getItem(storageKey(date))));
     } catch (error) {
       console.warn("Could not read local plan", error);
       return emptyPlan();
@@ -36,7 +48,7 @@ function localStore() {
     async savePart(date, key, choice) {
       if (!editor) throw new Error("Sign in before editing");
       const plan = read(date);
-      plan[key] = {
+      plan.choices[key] = {
         song: choice.song || "",
         youtubeUrl: choice.youtubeUrl || "",
         authors: choice.authors || "",
@@ -44,6 +56,21 @@ function localStore() {
         copyrightYear: choice.copyrightYear || "",
         source: choice.source || "",
       };
+      localStorage.setItem(storageKey(date), JSON.stringify(plan));
+      emit(date);
+    },
+    async saveReadingOverride(date, slot, readingOverride) {
+      if (!editor) throw new Error("Sign in before editing");
+      const plan = read(date);
+      plan.readingOverrides[slot] = readingOverride;
+      localStorage.setItem(storageKey(date), JSON.stringify(plan));
+      emit(date);
+    },
+    async clearReadingOverride(date, slot) {
+      if (!editor) throw new Error("Sign in before editing");
+      const plan = read(date);
+      if (slot) delete plan.readingOverrides[slot];
+      else plan.readingOverrides = {};
       localStorage.setItem(storageKey(date), JSON.stringify(plan));
       emit(date);
     },
@@ -72,6 +99,12 @@ function unavailableStore() {
     async savePart() {
       throw new Error("Supabase has not been configured");
     },
+    async saveReadingOverride() {
+      throw new Error("Supabase has not been configured");
+    },
+    async clearReadingOverride() {
+      throw new Error("Supabase has not been configured");
+    },
     async signIn() {
       throw new Error("Supabase has not been configured");
     },
@@ -90,24 +123,31 @@ async function supabaseStore(config) {
   const cacheKey = date => "st-james-plan-cache-" + date;
   const cacheRead = date => {
     try {
-      return JSON.parse(localStorage.getItem(cacheKey(date))) || emptyPlan();
+      const raw = localStorage.getItem(cacheKey(date));
+      return raw ? normalizePlan(JSON.parse(raw)) : null;
     } catch {
-      return emptyPlan();
+      return null;
     }
   };
-  const cacheWrite = (date, choices) => {
-    localStorage.setItem(cacheKey(date), JSON.stringify(choices || emptyPlan()));
+  const cacheWrite = (date, plan) => {
+    localStorage.setItem(cacheKey(date), JSON.stringify(normalizePlan(plan)));
+  };
+  const planFromRow = row => {
+    return {
+      choices: row?.choices || {},
+      readingOverrides: row?.reading_overrides || {},
+    };
   };
 
   return {
     subscribePlan(date, onValue, onError) {
       const cached = cacheRead(date);
-      if (Object.keys(cached).length) onValue(cached, { offline: true });
+      if (cached) onValue(cached, { offline: true });
 
       let active = true;
       supabase
         .from("plans")
-        .select("choices")
+        .select("choices, reading_overrides")
         .eq("sunday", date)
         .maybeSingle()
         .then(({ data, error }) => {
@@ -116,9 +156,9 @@ async function supabaseStore(config) {
             onError(error);
             return;
           }
-          const choices = data?.choices || emptyPlan();
-          cacheWrite(date, choices);
-          onValue(choices, { offline: false });
+          const plan = planFromRow(data);
+          cacheWrite(date, plan);
+          onValue(plan, { offline: false });
         });
 
       const channel = supabase
@@ -128,9 +168,9 @@ async function supabaseStore(config) {
           { event: "*", schema: "public", table: "plans", filter: "sunday=eq." + date },
           payload => {
             if (!active) return;
-            const choices = payload.new?.choices || emptyPlan();
-            cacheWrite(date, choices);
-            onValue(choices, { offline: false });
+            const plan = planFromRow(payload.new);
+            cacheWrite(date, plan);
+            onValue(plan, { offline: false });
           },
         )
         .subscribe();
@@ -176,6 +216,21 @@ async function supabaseStore(config) {
         p_copyright_owner: choice.copyrightOwner || "",
         p_copyright_year: choice.copyrightYear || "",
         p_source: choice.source || "",
+      });
+      if (error) throw error;
+    },
+    async saveReadingOverride(date, slot, readingOverride) {
+      const { error } = await supabase.rpc("save_reading_override", {
+        p_sunday: date,
+        p_slot: slot,
+        p_override: readingOverride,
+      });
+      if (error) throw error;
+    },
+    async clearReadingOverride(date, slot) {
+      const { error } = await supabase.rpc("clear_reading_override", {
+        p_sunday: date,
+        p_slot: slot || null,
       });
       if (error) throw error;
     },

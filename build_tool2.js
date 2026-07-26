@@ -31,6 +31,7 @@ const html = `<!DOCTYPE html>
   :root{ --accent:#002F45; --accent-dark:#001F2D; --accentlt:#F0E5C8; --ink:#271A01; --muted:#675F52; --line:#D8CDB8; --canvas:#FBF6EF; }
   html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   *{ box-sizing:border-box; }
+  [hidden]{ display:none!important; }
   .sr-only{ position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
   body{ margin:0; font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--canvas); padding:0 22px 40px; }
   .parish-bar{ margin:0 -22px; padding:11px 22px; background:var(--accent); color:#fff; }
@@ -82,19 +83,49 @@ const html = `<!DOCTYPE html>
   .warn{ color:#8a4b00; font-size:13px; margin-top:8px; }
   .actions{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:16px; }
   .actions button{ width:100%; min-width:0; min-height:48px; padding:10px 12px; font-size:14px; line-height:1.2; }
-  .edit label{ display:block; font-size:11.5px; color:var(--accent); font-weight:600; margin:10px 0 3px; }
-  .edit input{ width:100%; font-size:16px; padding:10px; border:1px solid #ccc; border-radius:8px; }
-  .edit .two{ display:grid; grid-template-columns:1fr; gap:2px; }
-  .editnote{ font-size:12px; color:var(--muted); margin:6px 0 0; }
-  .edit-card{ padding:0; overflow:hidden; }
-  .edit-card > summary{ display:flex; align-items:center; justify-content:space-between; gap:18px; padding:18px 22px; cursor:pointer; list-style:none; }
-  .edit-card > summary::-webkit-details-marker{ display:none; }
-  .edit-card > summary strong{ display:block; font-size:14px; color:var(--ink); }
-  .edit-card > summary small{ display:block; color:var(--muted); font-size:12px; font-weight:400; margin-top:2px; }
-  .summary-action{ color:var(--accent); font-size:13px; font-weight:700; }
-  .edit-card[open] .summary-action{ font-size:0; }
-  .edit-card[open] .summary-action:after{ content:"Close"; font-size:13px; }
-  .edit-card .edit{ border-top:1px solid #eee6d5; padding:10px 22px 20px; }
+  .reading-editor-card{ padding:0; overflow:hidden; }
+  .reading-editor-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:20px 22px 15px; border-bottom:1px solid #eee6d5; }
+  .reading-editor-head h2{ margin:0; font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:23px; font-weight:400; line-height:1.2; }
+  .reading-editor-head p{ margin:4px 0 0; color:var(--muted); font-size:12.5px; line-height:1.4; }
+  .reading-editor-list{ margin:0; }
+  .reading-editor-row{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; padding:13px 22px; border-bottom:1px solid #eee6d5; }
+  .reading-editor-row:last-child{ border-bottom:none; }
+  .reading-editor-label{ display:flex; align-items:center; gap:7px; margin-bottom:3px; color:var(--muted); font-size:10.5px; font-weight:750; letter-spacing:.3px; text-transform:uppercase; }
+  .reading-editor-cite{ font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:15px; line-height:1.3; overflow-wrap:anywhere; }
+  .reading-editor-actions{ display:flex; gap:7px; }
+  .reading-editor-actions button{ min-height:38px; padding:7px 10px; font-size:12px; }
+  .reading-status-badge{ display:inline-block; padding:2px 6px; border-radius:999px; color:#38704b; background:#e5f0e7; font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:9px; font-weight:750; letter-spacing:.2px; line-height:1.3; text-transform:uppercase; }
+  .reading-status-badge.changed{ color:#86510d; background:#f5e7c8; }
+  .reading-editor-footer{ display:flex; align-items:center; justify-content:flex-end; padding:11px 22px; background:#fcfaf6; border-top:1px solid #eee6d5; }
+  .reading-editor-footer button{ min-height:38px; padding:7px 10px; font-size:12px; }
+  .reading-adjusted-note{ margin-left:7px; color:#86510d; font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:9px; font-weight:750; letter-spacing:.25px; text-transform:uppercase; white-space:nowrap; }
+  .reading-item.changed{ box-shadow:inset 3px 0 #c79238; }
+  .reading-dialog{ width:min(650px,calc(100% - 28px)); max-height:min(760px,calc(100dvh - 28px)); padding:0; border:1px solid var(--line); border-radius:5px; color:var(--ink); background:#fff; box-shadow:0 18px 55px rgba(0,31,45,.24); }
+  .reading-dialog::backdrop{ background:rgba(0,31,45,.48); }
+  .reading-dialog-form{ display:flex; flex-direction:column; max-height:inherit; }
+  .reading-dialog-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; padding:20px 22px 14px; border-bottom:1px solid #eee6d5; }
+  .reading-dialog-head h2{ margin:0; font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:25px; font-weight:400; }
+  .reading-dialog-head p{ margin:4px 0 0; color:var(--muted); font-size:12.5px; line-height:1.4; }
+  .reading-dialog-close{ min-width:40px; min-height:40px; padding:3px; border-color:transparent; font-size:24px; line-height:1; }
+  .reading-dialog-body{ padding:18px 22px; overflow:auto; overscroll-behavior:contain; }
+  .reading-dialog fieldset{ min-width:0; margin:0 0 18px; padding:0; border:0; }
+  .reading-dialog legend,.reading-search label{ display:block; margin:0 0 7px; color:var(--accent); font-size:11px; font-weight:750; letter-spacing:.4px; text-transform:uppercase; }
+  .suggested-readings{ display:grid; gap:7px; }
+  .suggested-reading{ position:relative; display:grid; grid-template-columns:auto minmax(0,1fr); gap:9px; align-items:start; min-height:44px; padding:10px 11px; border:1px solid #c9c0b1; border-radius:6px; cursor:pointer; }
+  .suggested-reading:has(input:checked){ border-color:var(--accent); background:#f4f7f7; box-shadow:inset 0 0 0 1px var(--accent); }
+  .suggested-reading input{ margin:2px 0 0; }
+  .suggested-reading strong{ display:block; font-size:14px; line-height:1.3; }
+  .suggested-reading small{ display:block; margin-top:2px; color:var(--muted); font-size:11px; line-height:1.35; }
+  .reading-search input[type=text]{ width:100%; height:44px; padding:9px 11px; border:1px solid #c9c0b1; border-radius:7px; color:var(--ink); font-size:16px; }
+  .reading-search-help{ margin:6px 0 0; color:var(--muted); font-size:11px; line-height:1.4; }
+  .reading-validation{ min-height:19px; margin:7px 0 0; color:var(--muted); font-size:12px; line-height:1.4; }
+  .reading-validation.error{ color:#9a3b22; }
+  .reading-validation.valid{ color:#38704b; }
+  .reading-text-preview{ margin-top:12px; padding:12px 13px; border-left:3px solid var(--accent); background:#fcfaf6; color:var(--ink); font-size:12.5px; line-height:1.5; }
+  .reading-text-preview strong{ display:block; margin-bottom:4px; color:var(--accent); font-size:10px; letter-spacing:.35px; text-transform:uppercase; }
+  .ordo-confirm{ display:flex; gap:9px; align-items:flex-start; margin:13px 0 0; padding:10px 11px; border:1px solid #e4cfaa; border-radius:6px; background:#fff9ec; font-size:12px; line-height:1.4; }
+  .ordo-confirm input{ flex:none; margin-top:2px; }
+  .reading-dialog-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:13px 22px calc(13px + env(safe-area-inset-bottom)); border-top:1px solid #eee6d5; background:#fff; }
   .music-card{ padding:0; overflow:hidden; }
   .music-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:20px 22px 15px; border-bottom:1px solid #eee6d5; }
   .music-head h2{ font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:23px; font-weight:400; line-height:1.2; margin:0; }
@@ -200,9 +231,19 @@ const html = `<!DOCTYPE html>
     .readings-card .section-heading{ margin-bottom:12px; }
     .rhead .rcite{ display:block; margin:1px 0 0; }
     .rtext{ font-size:14.5px; line-height:1.55; text-align:left; }
-    .edit-card{ padding:0; }
-    .edit-card > summary{ padding:16px 17px; }
-    .edit-card .edit{ padding:8px 17px 17px; }
+    .reading-editor-head{ padding:15px 16px 12px; }
+    .reading-editor-head h2{ font-size:21px; }
+    .reading-editor-head p{ font-size:11.5px; }
+    .reading-editor-row{ grid-template-columns:minmax(0,1fr); gap:9px; padding:12px 16px; }
+    .reading-editor-actions{ display:grid; grid-template-columns:1fr auto; }
+    .reading-editor-actions button{ min-height:42px; }
+    .reading-editor-footer{ padding:10px 16px; }
+    .reading-dialog{ inset:0; width:100%; height:100dvh; max-width:none; max-height:none; margin:0; border:0; border-radius:0; }
+    .reading-dialog-form{ height:100%; max-height:none; }
+    .reading-dialog-head{ padding:15px 16px 12px; }
+    .reading-dialog-head h2{ font-size:22px; }
+    .reading-dialog-body{ padding:14px 16px; }
+    .reading-dialog-actions{ padding:10px 16px calc(10px + env(safe-area-inset-bottom)); }
     .music-head{ padding:15px 16px 12px; }
     .music-head h2{ font-size:21px; }
     .music-head p{ font-size:11.5px; }
@@ -268,6 +309,21 @@ const html = `<!DOCTYPE html>
     <div class="music-list" id="musicList"></div>
   </section>
 
+  <section class="card reading-editor-card" id="readingEditorCard" aria-labelledby="readingEditorTitle" hidden>
+    <div class="reading-editor-head">
+      <div>
+        <div class="eyebrow">Editor tools</div>
+        <h2 id="readingEditorTitle">Reading selections</h2>
+        <p>Change a reading only when the parish Ordo or celebrant requires it. Saved changes are live immediately.</p>
+      </div>
+      <span class="sync-status" id="readingSaveStatus" role="status"></span>
+    </div>
+    <div class="reading-editor-list" id="readingEditorList"></div>
+    <div class="reading-editor-footer" id="readingEditorFooter" hidden>
+      <button type="button" id="restoreAllReadings">Restore all computed readings</button>
+    </div>
+  </section>
+
   <section class="card readings-card" id="fullReadings" aria-labelledby="readingsTitle">
     <div class="section-heading">
       <div>
@@ -279,24 +335,42 @@ const html = `<!DOCTYPE html>
     <div id="readingTexts"></div>
   </section>
 
-  <details class="card edit-card">
-    <summary>
-      <span><strong>Adjust liturgical day or readings</strong><small>Only needed when the parish readings differ from the lectionary.</small></span>
-      <span class="summary-action">Edit</span>
-    </summary>
-    <div>
-      <div class="edit">
-        <label for="e_day">Liturgical day (editable)</label>
-        <input id="e_day" type="text">
-        <label for="e_first">First Reading</label><input id="e_first" type="text">
-        <label for="e_psalm">Responsorial Psalm</label><input id="e_psalm" type="text">
-        <label for="e_second">Second Reading</label><input id="e_second" type="text">
-        <label for="e_gospel">Gospel</label><input id="e_gospel" type="text">
-        <p class="editnote">These are auto-filled from the lectionary. Edit any field to override — the priest's choice wins; the full texts above update as you type. <a href="#" id="reset">Reset to computed</a>.</p>
-      </div>
-    </div>
-  </details>
 </div>
+
+<dialog class="reading-dialog" id="readingDialog">
+  <form class="reading-dialog-form" id="readingForm">
+    <div class="reading-dialog-head">
+      <div>
+        <div class="eyebrow">Change reading</div>
+        <h2 id="readingDialogTitle"></h2>
+        <p id="readingDialogContext"></p>
+      </div>
+      <button class="reading-dialog-close" id="readingDialogClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="reading-dialog-body">
+      <fieldset>
+        <legend>Options for this celebration</legend>
+        <div class="suggested-readings" id="readingSuggested"></div>
+      </fieldset>
+      <div class="reading-search">
+        <label for="readingCitationInput">Another passage from the lectionary</label>
+        <input id="readingCitationInput" type="text" list="readingCitationOptions" autocomplete="off" spellcheck="false" placeholder="Start typing a citation">
+        <datalist id="readingCitationOptions"></datalist>
+        <p class="reading-search-help" id="readingSearchHelp"></p>
+        <p class="reading-validation" id="readingValidation" role="status"></p>
+      </div>
+      <div class="reading-text-preview" id="readingTextPreview" hidden></div>
+      <label class="ordo-confirm" id="ordoConfirmWrap" hidden>
+        <input id="ordoConfirm" type="checkbox">
+        <span>I have checked this selection against the parish Ordo or with the celebrant.</span>
+      </label>
+    </div>
+    <div class="reading-dialog-actions">
+      <button type="button" id="readingCancel">Cancel</button>
+      <button class="primary" type="submit" id="readingUse" disabled>Use reading</button>
+    </div>
+  </form>
+</dialog>
 
 <dialog class="login-dialog" id="loginDialog">
   <form class="login-form" id="loginForm">
@@ -335,37 +409,105 @@ const MUSIC_PARTS = [
   {key:"communion2",token:"COMMUNION_2",label:"Communion Hymn 2",note:""},
   {key:"recessional",token:"RECESSIONAL",label:"Recessional / Closing Hymn",note:""},
 ];
+const READING_SLOTS = [
+  {key:"first",dataKey:"f",label:"First Reading"},
+  {key:"psalm",dataKey:"p",label:"Responsorial Psalm"},
+  {key:"second",dataKey:"e",label:"Second Reading"},
+  {key:"gospel",dataKey:"g",label:"Gospel"},
+];
 const byDate = {}; SUNDAYS.forEach((s,i)=>byDate[s.d]=i);
 const cycleName = c => "Year " + c;
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
 function fmtPicker(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}); }
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function normalizedCitation(value){ return (value||"").replace(/[–—]/g,"-").replace(/\\s+/g," ").trim().toLowerCase(); }
+function citationAlternatives(value){
+  const citation=(value||"").replace(/[–—]/g,"-").trim();
+  if(!citation) return [];
+  const parts=citation.split(/\\s+or\\s+/i).map(part=>part.trim()).filter(Boolean);
+  if(parts.length<2) return [citation];
+  const bookMatch=parts[0].match(/^((?:[1-3]\\s+)?[A-Za-z][A-Za-z ]*?)\\s+\\d/);
+  const book=bookMatch ? bookMatch[1] : "";
+  return parts.map((part,index)=>index===0 || !/^\\d/.test(part) ? part : book+" "+part);
+}
+function parseReadingCitation(value){
+  const citation=(value||"").replace(/[–—]/g,"-").trim();
+  const match=citation.match(/^((?:[1-3]\\s+)?[A-Za-z][A-Za-z ]*?)\\s+(\\d.*)$/);
+  if(!match || /\\s+or\\s+/i.test(citation)) return null;
+  const book=match[1].trim();
+  const pieces=match[2].split(/[;,]/).map(piece=>piece.trim()).filter(Boolean);
+  const segments=[];
+  let chapter=null;
+  for(const piece of pieces){
+    let m=piece.match(/^(\\d+):(\\d+[a-z]?)-(\\d+):(\\d+[a-z]?)$/i);
+    if(m){
+      chapter=Number(m[1]);
+      segments.push({startChapter:chapter,startVerse:m[2],endChapter:Number(m[3]),endVerse:m[4]});
+      continue;
+    }
+    m=piece.match(/^(\\d+):(\\d+[a-z]?)-(\\d+[a-z]?)$/i);
+    if(m){
+      chapter=Number(m[1]);
+      segments.push({startChapter:chapter,startVerse:m[2],endChapter:chapter,endVerse:m[3]});
+      continue;
+    }
+    m=piece.match(/^(\\d+):(\\d+[a-z]?)$/i);
+    if(m){
+      chapter=Number(m[1]);
+      segments.push({startChapter:chapter,startVerse:m[2],endChapter:chapter,endVerse:m[2]});
+      continue;
+    }
+    m=piece.match(/^(\\d+[a-z]?)-(\\d+[a-z]?)$/i);
+    if(m && chapter!==null){
+      segments.push({startChapter:chapter,startVerse:m[1],endChapter:chapter,endVerse:m[2]});
+      continue;
+    }
+    m=piece.match(/^(\\d+[a-z]?)$/i);
+    if(m && chapter!==null){
+      segments.push({startChapter:chapter,startVerse:m[1],endChapter:chapter,endVerse:m[1]});
+      continue;
+    }
+    return null;
+  }
+  return segments.length ? {book,segments} : null;
+}
+const ROLE_CITATIONS={};
+const CITATION_ROLES={};
+READING_SLOTS.forEach(slot=>{
+  const values=new Map();
+  SUNDAYS.forEach(s=>citationAlternatives(s[slot.dataKey]).forEach(citation=>{
+    if(!READINGS[citation] || !parseReadingCitation(citation)) return;
+    values.set(normalizedCitation(citation),citation);
+    const roles=CITATION_ROLES[normalizedCitation(citation)] || [];
+    if(!roles.includes(slot.key)) roles.push(slot.key);
+    CITATION_ROLES[normalizedCitation(citation)]=roles;
+  }));
+  ROLE_CITATIONS[slot.key]=values;
+});
 
 let curIdx = 0;  // index into SUNDAYS
-let override = {}; // {day,first,psalm,second,gospel}
 let musicChoices = {};
+let readingOverrides = {};
 let planStore = null;
 let stopPlanSubscription = null;
 let stopAuthSubscription = null;
 let isEditor = false;
 let signedIn = false;
 let saveTimers = {};
+let editingReadingSlot = null;
+let pendingReadingSelection = null;
 
 function current(){ return SUNDAYS[curIdx]; }
 function vals(){
   const s = current();
+  const citationFor=slot=>readingOverrides[slot.key]?.citation || s[slot.dataKey] || "";
   return {
-    day: override.day ?? s.n,
+    day: s.n,
     meta: fmtLong(s.d) + "  ·  " + s.s + "  ·  " + cycleName(s.c),
-    first: override.first ?? s.f, psalm: override.psalm ?? s.p,
-    second: override.second ?? s.e, gospel: override.gospel ?? s.g,
+    first: citationFor(READING_SLOTS[0]), psalm: citationFor(READING_SLOTS[1]),
+    second: citationFor(READING_SLOTS[2]), gospel: citationFor(READING_SLOTS[3]),
     date: s.d,
   };
-}
-
-function renderEditors(){
-  const v = vals();
-  e_day.value=v.day; e_first.value=v.first; e_psalm.value=v.psalm; e_second.value=v.second; e_gospel.value=v.gospel;
 }
 function choiceFor(key){
   const value=musicChoices[key] || {};
@@ -410,7 +552,7 @@ function copyrightFields(part,choice){
     +'<div class="copyright-fields">'
     +'<div class="copyright-field"><label for="authors_'+part.key+'">Author(s)</label><input id="authors_'+part.key+'" data-part="'+part.key+'" data-field="authors" type="text" value="'+esc(choice.authors)+'" placeholder="Composer, lyricist, translator"></div>'
     +'<div class="copyright-field"><label for="owner_'+part.key+'">Copyright owner / publisher</label><input id="owner_'+part.key+'" data-part="'+part.key+'" data-field="copyrightOwner" type="text" value="'+esc(choice.copyrightOwner)+'" placeholder="e.g. OCP or Public domain"></div>'
-    +'<div class="copyright-field"><label for="year_'+part.key+'">Copyright year</label><input id="year_'+part.key+'" data-part="'+part.key+'" data-field="copyrightYear" type="text" inputmode="numeric" value="'+esc(choice.copyrightYear)+'" placeholder="e.g. 1993"></div>'
+    +'<div class="copyright-field"><label for="year_'+part.key+'">Copyright year(s)</label><input id="year_'+part.key+'" data-part="'+part.key+'" data-field="copyrightYear" type="text" value="'+esc(choice.copyrightYear)+'" placeholder="e.g. 1975, 2016"></div>'
     +'<div class="copyright-field"><label for="source_'+part.key+'">Source (optional)</label><input id="source_'+part.key+'" data-part="'+part.key+'" data-field="source" type="text" value="'+esc(choice.source)+'" placeholder="Hymnal + number, publication or website"></div>'
     +'<p class="copyright-help">Source is optional. Leave the year blank only when the copyright owner is entered as “Public domain”.</p>'
     +'</div></details>';
@@ -459,15 +601,154 @@ function renderMusicPlan(){
     musicList.dataset.mode="view";
   }
 }
+function readingSlot(key){ return READING_SLOTS.find(slot=>slot.key===key); }
+function computedCitation(slot){ return current()[slot.dataKey] || ""; }
+function displayedCitation(slot){ return readingOverrides[slot.key]?.citation || computedCitation(slot); }
+function setReadingStatus(text,state){
+  readingSaveStatus.textContent=text || "";
+  readingSaveStatus.dataset.state=state || "";
+}
+function renderReadingEditor(){
+  readingEditorCard.hidden=!isEditor;
+  if(!isEditor) return;
+  const changed=READING_SLOTS.filter(slot=>readingOverrides[slot.key]);
+  readingEditorList.innerHTML=READING_SLOTS.map(slot=>{
+    const adjusted=!!readingOverrides[slot.key];
+    return '<div class="reading-editor-row"><div><div class="reading-editor-label">'+esc(slot.label)
+      +'<span class="reading-status-badge'+(adjusted?' changed':'')+'">'+(adjusted?'Changed':'Computed')+'</span></div>'
+      +'<div class="reading-editor-cite">'+(esc(displayedCitation(slot))||"—")+'</div></div>'
+      +'<div class="reading-editor-actions"><button type="button" data-reading-action="change" data-reading-slot="'+slot.key+'">Change</button>'
+      +(adjusted?'<button type="button" data-reading-action="restore" data-reading-slot="'+slot.key+'">Restore</button>':'')+'</div></div>';
+  }).join("");
+  readingEditorFooter.hidden=changed.length===0;
+}
+function suggestedCitations(slot){
+  const computed=computedCitation(slot);
+  const alternatives=citationAlternatives(computed);
+  if(alternatives.length===1) return [{citation:computed,label:computed,note:"Computed for this celebration",isDefault:true}];
+  return alternatives.map((citation,index)=>({
+    citation,
+    label:citation,
+    note:index===0 ? "Longer form" : "Shorter or alternative form",
+    isDefault:false,
+  }));
+}
+function fillReadingOptions(slot){
+  const suggestions=suggestedCitations(slot);
+  readingSuggested.innerHTML=suggestions.map((option,index)=>
+    '<label class="suggested-reading"><input type="radio" name="suggestedReading" value="'+esc(option.citation)+'" data-default="'+(option.isDefault?'true':'false')+'">'
+    +'<span><strong>'+esc(option.label)+'</strong><small>'+esc(option.note)+'</small></span></label>'
+  ).join("");
+  readingCitationOptions.innerHTML=Array.from(ROLE_CITATIONS[slot.key].values()).sort((a,b)=>a.localeCompare(b)).map(citation=>'<option value="'+esc(citation)+'"></option>').join("");
+  readingSearchHelp.textContent="Only "+slot.label.toLowerCase()+" passages contained in this app’s lectionary data can be selected.";
+}
+function showReadingValidation(message,state){
+  readingValidation.textContent=message || "";
+  readingValidation.className="reading-validation"+(state?" "+state:"");
+}
+function validateReadingSelection(){
+  pendingReadingSelection=null;
+  readingUse.disabled=true;
+  readingTextPreview.hidden=true;
+  ordoConfirmWrap.hidden=true;
+  const slot=readingSlot(editingReadingSlot);
+  if(!slot) return;
+  const raw=readingCitationInput.value.trim();
+  if(!raw){
+    showReadingValidation("Choose one of the options above or enter a citation.","");
+    return;
+  }
+  const computed=computedCitation(slot);
+  const suggestions=suggestedCitations(slot);
+  const defaultOption=suggestions.find(option=>option.isDefault && normalizedCitation(option.citation)===normalizedCitation(raw));
+  if(defaultOption){
+    pendingReadingSelection={slot:slot.key,citation:computed,isDefault:true,requiresConfirmation:false};
+    readingTextPreview.innerHTML='<strong>Full text preview</strong>'+esc(READINGS[computed] || "The text is not available in this app.");
+    readingTextPreview.hidden=false;
+    showReadingValidation("This restores the computed reading.","valid");
+    readingUse.textContent="Use computed reading";
+    readingUse.disabled=false;
+    return;
+  }
+  const canonical=ROLE_CITATIONS[slot.key].get(normalizedCitation(raw));
+  if(!canonical){
+    const otherRoles=CITATION_ROLES[normalizedCitation(raw)] || [];
+    if(otherRoles.length){
+      const labels=otherRoles.map(key=>readingSlot(key).label.toLowerCase()).join(" or ");
+      showReadingValidation("That passage is known as a "+labels+", not a "+slot.label.toLowerCase()+".","error");
+    }else{
+      showReadingValidation("That citation is not in the available "+slot.label.toLowerCase()+" lectionary passages.","error");
+    }
+    return;
+  }
+  const parsed=parseReadingCitation(canonical);
+  const text=READINGS[canonical];
+  if(!parsed || !text){
+    showReadingValidation("This passage is missing a valid citation or full text and cannot be selected.","error");
+    return;
+  }
+  const approved=suggestions.some(option=>normalizedCitation(option.citation)===normalizedCitation(canonical));
+  const requiresConfirmation=!approved;
+  pendingReadingSelection={
+    slot:slot.key,
+    citation:canonical,
+    book:parsed.book,
+    segments:parsed.segments,
+    origin:approved ? "ordo-option" : "lectionary-catalog",
+    translation:"World English Bible",
+    textVersion:"embedded-2026-07",
+    requiresConfirmation,
+  };
+  readingCitationInput.value=canonical;
+  readingTextPreview.innerHTML='<strong>Full text preview</strong>'+esc(text);
+  readingTextPreview.hidden=false;
+  ordoConfirmWrap.hidden=!requiresConfirmation;
+  showReadingValidation(requiresConfirmation ? "Valid for this reading slot. Confirm the non-standard selection below." : "Valid option for this celebration.","valid");
+  readingUse.textContent="Use reading";
+  readingUse.disabled=requiresConfirmation && !ordoConfirm.checked;
+}
+function openReadingDialog(key){
+  const slot=readingSlot(key);
+  if(!slot || !isEditor) return;
+  editingReadingSlot=key;
+  pendingReadingSelection=null;
+  readingDialogTitle.textContent=slot.label;
+  readingDialogContext.textContent=current().n+" · "+fmtLong(current().d);
+  fillReadingOptions(slot);
+  const suggestions=suggestedCitations(slot);
+  readingCitationInput.value=readingOverrides[key]?.citation || suggestions[0]?.citation || computedCitation(slot);
+  readingSuggested.querySelectorAll('input[name="suggestedReading"]').forEach(input=>{
+    input.checked=normalizedCitation(input.value)===normalizedCitation(readingCitationInput.value);
+  });
+  ordoConfirm.checked=false;
+  readingUse.textContent="Use reading";
+  validateReadingSelection();
+  readingDialog.showModal();
+  setTimeout(()=>readingCitationInput.focus(),0);
+}
+async function restoreReadingOverride(slotKey){
+  if(!planStore || !isEditor) return;
+  setReadingStatus("Saving…","");
+  try{
+    await planStore.clearReadingOverride(current().d,slotKey);
+    delete readingOverrides[slotKey];
+    refresh();
+    setReadingStatus("Saved","saved");
+  }catch(error){
+    console.error(error);
+    setReadingStatus("Save failed","error");
+  }
+}
 function renderFullReadings(){
   const v = vals();
   readingsIntro.textContent=v.day+" · "+v.meta;
-  const blk = (id,label,cite,text) => '<article class="rblock reading-anchor" id="'+id+'"><div class="rhead">'+esc(label)+'<span class="rcite">'+esc(cite)+'</span></div><div class="rtext">'+(esc(text)||'<em>(see citation)</em>')+'</div></article>';
+  const blk = (slot,id,label,cite,text) => '<article class="rblock reading-anchor" id="'+id+'"><div class="rhead">'+esc(label)+'<span class="rcite">'+esc(cite)+'</span>'
+    +(readingOverrides[slot]?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</div><div class="rtext">'+(esc(text)||'<em>(see citation)</em>')+'</div></article>';
   readingTexts.innerHTML =
-    blk("reading-first","First Reading",v.first,textFor(v.first))
-    + blk("reading-psalm","Responsorial Psalm",v.psalm,textFor(v.psalm)||"(sung — see citation)")
-    + blk("reading-second","Second Reading",v.second,textFor(v.second))
-    + blk("reading-gospel","Gospel",v.gospel,textFor(v.gospel))
+    blk("first","reading-first","First Reading",v.first,textFor(v.first))
+    + blk("psalm","reading-psalm","Responsorial Psalm",v.psalm,textFor(v.psalm)||"(sung — see citation)")
+    + blk("second","reading-second","Second Reading",v.second,textFor(v.second))
+    + blk("gospel","reading-gospel","Gospel",v.gospel,textFor(v.gospel))
     + '<div class="rpcaveat">Scripture: World English Bible (public domain). Verse numbering — especially in the Psalms — can differ slightly from the lectionary.</div>';
 }
 function renderResolved(){
@@ -479,13 +760,14 @@ function renderResolved(){
 function renderReadingSummary(){
   const v=vals();
   const readings=[
-    ["First Reading",v.first,"reading-first"],
-    ["Responsorial Psalm",v.psalm,"reading-psalm"],
-    ["Second Reading",v.second,"reading-second"],
-    ["Gospel",v.gospel,"reading-gospel"],
+    ["first","First Reading",v.first,"reading-first"],
+    ["psalm","Responsorial Psalm",v.psalm,"reading-psalm"],
+    ["second","Second Reading",v.second,"reading-second"],
+    ["gospel","Gospel",v.gospel,"reading-gospel"],
   ];
-  readingSummary.innerHTML='<div class="reading-summary-title">Readings for this Sunday</div><div class="reading-grid">'
-    + readings.map(r=>'<a class="reading-item" href="#'+r[2]+'"><span class="reading-label">'+esc(r[0])+'</span><span class="reading-cite">'+(esc(r[1])||"—")+'</span></a>').join('')
+  const anyAdjusted=READING_SLOTS.some(slot=>readingOverrides[slot.key]);
+  readingSummary.innerHTML='<div class="reading-summary-title">Readings for this Sunday'+(anyAdjusted?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</div><div class="reading-grid">'
+    + readings.map(r=>'<a class="reading-item'+(readingOverrides[r[0]]?' changed':'')+'" href="#'+r[3]+'"><span class="reading-label">'+esc(r[1])+(readingOverrides[r[0]]?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</span><span class="reading-cite">'+(esc(r[2])||"—")+'</span></a>').join('')
     + '</div>';
 }
 function syncDateControl(){
@@ -493,11 +775,11 @@ function syncDateControl(){
   dateDisplay.textContent=fmtPicker(current().d);
 }
 function refresh(){
-  syncDateControl(); renderResolved(); renderReadingSummary(); renderEditors(); renderFullReadings();
+  syncDateControl(); renderResolved(); renderReadingSummary(); renderFullReadings(); renderReadingEditor();
   prev.disabled=curIdx===0; next.disabled=curIdx===SUNDAYS.length-1;
   today.hidden=curIdx===nextSundayIdx();
   const v = vals();
-  if(!v.gospel && !v.first){ warn.style.display="block"; warn.textContent="This day (e.g. St Henry, patron of Finland) has proper readings that aren't in the dataset — please type them into the fields below from your parish Ordo."; }
+  if(!v.gospel && !v.first){ warn.style.display="block"; warn.textContent="This day has proper readings that are not in the dataset. Please confirm them against the parish Ordo."; }
   else if(warn.textContent.indexOf("outside the computed")<0){ warn.style.display="none"; }
 }
 
@@ -508,12 +790,16 @@ function setSyncStatus(text,state){
 function subscribeToCurrentPlan(){
   if(stopPlanSubscription){ stopPlanSubscription(); stopPlanSubscription=null; }
   musicChoices={};
+  readingOverrides={};
   renderMusicPlan();
+  refresh();
   if(!planStore){ setSyncStatus("Connecting…",""); return; }
   setSyncStatus("Loading…","");
-  stopPlanSubscription=planStore.subscribePlan(current().d,(choices,meta)=>{
-    musicChoices=choices || {};
+  stopPlanSubscription=planStore.subscribePlan(current().d,(plan,meta)=>{
+    musicChoices=plan?.choices || {};
+    readingOverrides=plan?.readingOverrides || {};
     renderMusicPlan();
+    refresh();
     setSyncStatus(meta && meta.offline ? "Offline — showing saved copy" : "Up to date",meta && meta.offline ? "" : "saved");
   },error=>{
     console.error(error);
@@ -528,6 +814,7 @@ function connectPlanStore(store){
     signedIn=!!auth.user;
     authButton.textContent=signedIn ? "Sign out" : "Sign in";
     renderMusicPlan();
+    renderReadingEditor();
   });
   subscribeToCurrentPlan();
 }
@@ -589,16 +876,94 @@ loginForm.addEventListener("submit",async event=>{
     loginSubmit.textContent="Sign in";
   }
 });
+readingEditorList.addEventListener("click",event=>{
+  const button=event.target.closest("button[data-reading-action]");
+  if(!button || !isEditor) return;
+  if(button.dataset.readingAction==="change") openReadingDialog(button.dataset.readingSlot);
+  if(button.dataset.readingAction==="restore") restoreReadingOverride(button.dataset.readingSlot);
+});
+restoreAllReadings.addEventListener("click",async ()=>{
+  if(!isEditor || !planStore) return;
+  if(!confirm("Restore all four readings to the computed lectionary selections?")) return;
+  setReadingStatus("Saving…","");
+  try{
+    await planStore.clearReadingOverride(current().d,null);
+    readingOverrides={};
+    refresh();
+    setReadingStatus("Saved","saved");
+  }catch(error){
+    console.error(error);
+    setReadingStatus("Save failed","error");
+  }
+});
+readingSuggested.addEventListener("change",event=>{
+  const input=event.target.closest('input[name="suggestedReading"]');
+  if(!input) return;
+  readingCitationInput.value=input.value;
+  ordoConfirm.checked=false;
+  validateReadingSelection();
+});
+readingCitationInput.addEventListener("input",()=>{
+  readingSuggested.querySelectorAll('input[name="suggestedReading"]').forEach(input=>{
+    input.checked=normalizedCitation(input.value)===normalizedCitation(readingCitationInput.value);
+  });
+  ordoConfirm.checked=false;
+  validateReadingSelection();
+});
+ordoConfirm.addEventListener("change",validateReadingSelection);
+function closeReadingDialog(){
+  readingDialog.close();
+  editingReadingSlot=null;
+  pendingReadingSelection=null;
+}
+readingDialogClose.addEventListener("click",closeReadingDialog);
+readingCancel.addEventListener("click",closeReadingDialog);
+readingDialog.addEventListener("click",event=>{ if(event.target===readingDialog) closeReadingDialog(); });
+readingForm.addEventListener("submit",async event=>{
+  event.preventDefault();
+  const selection=pendingReadingSelection;
+  if(!selection || !isEditor || !planStore || readingUse.disabled) return;
+  readingUse.disabled=true;
+  readingUse.textContent="Saving…";
+  setReadingStatus("Saving…","");
+  try{
+    if(selection.isDefault){
+      await planStore.clearReadingOverride(current().d,selection.slot);
+      delete readingOverrides[selection.slot];
+    }else{
+      const readingOverride={
+        citation:selection.citation,
+        book:selection.book,
+        segments:selection.segments,
+        origin:selection.origin,
+        translation:selection.translation,
+        textVersion:selection.textVersion,
+        checkedAgainstOrdo:selection.requiresConfirmation ? ordoConfirm.checked : true,
+      };
+      await planStore.saveReadingOverride(current().d,selection.slot,readingOverride);
+      readingOverrides[selection.slot]=readingOverride;
+    }
+    refresh();
+    setReadingStatus("Saved","saved");
+    closeReadingDialog();
+  }catch(error){
+    console.error(error);
+    showReadingValidation("The reading could not be saved. Please try again.","error");
+    setReadingStatus("Save failed","error");
+    readingUse.textContent=selection.isDefault ? "Use computed reading" : "Use reading";
+    readingUse.disabled=false;
+  }
+});
 
 // pick nearest Sunday to a chosen date
 function goToDate(iso){
-  if(byDate[iso]!==undefined){ curIdx=byDate[iso]; override={}; warn.style.display="none"; refresh(); subscribeToCurrentPlan(); return; }
+  if(byDate[iso]!==undefined){ curIdx=byDate[iso]; warn.style.display="none"; refresh(); subscribeToCurrentPlan(); return; }
   // find nearest Sunday record
   let best=-1,bestDiff=1e15; const t=new Date(iso+"T12:00:00Z").getTime();
   SUNDAYS.forEach((s,i)=>{ const diff=Math.abs(new Date(s.d+"T12:00:00Z").getTime()-t); if(diff<bestDiff){bestDiff=diff;best=i;} });
-  if(best<0 || bestDiff>1000*3600*24*366){ warn.style.display="block"; warn.textContent="That date is outside the computed range (2025–2075). You can still type the readings in manually below."; }
+  if(best<0 || bestDiff>1000*3600*24*366){ warn.style.display="block"; warn.textContent="That date is outside the computed range (2025–2075)."; }
   else warn.style.display="none";
-  curIdx=best; override={}; refresh(); subscribeToCurrentPlan();
+  curIdx=best; refresh(); subscribeToCurrentPlan();
 }
 
 // ---- Word (.docx) generation in-browser ----
@@ -648,13 +1013,9 @@ function downloadWord(withRd){
 
 // wire up
 function nextSundayIdx(){ const today=new Date().toISOString().slice(0,10); let i=SUNDAYS.findIndex(s=>s.d>=today); return i<0?SUNDAYS.length-1:i; }
-[["e_day","day"],["e_first","first"],["e_psalm","psalm"],["e_second","second"],["e_gospel","gospel"]].forEach(([id,key])=>{
-  document.getElementById(id).addEventListener("input", e=>{ override[key]=e.target.value; renderReadingSummary(); renderFullReadings(); });
-});
-document.getElementById("reset").addEventListener("click", e=>{ e.preventDefault(); override={}; refresh(); });
-prev.addEventListener("click", ()=>{ if(curIdx>0){curIdx--; override={}; refresh(); subscribeToCurrentPlan(); } });
-next.addEventListener("click", ()=>{ if(curIdx<SUNDAYS.length-1){curIdx++; override={}; refresh(); subscribeToCurrentPlan(); } });
-document.getElementById("today").addEventListener("click", ()=>{ curIdx=nextSundayIdx(); override={}; refresh(); subscribeToCurrentPlan(); });
+prev.addEventListener("click", ()=>{ if(curIdx>0){curIdx--; refresh(); subscribeToCurrentPlan(); } });
+next.addEventListener("click", ()=>{ if(curIdx<SUNDAYS.length-1){curIdx++; refresh(); subscribeToCurrentPlan(); } });
+document.getElementById("today").addEventListener("click", ()=>{ curIdx=nextSundayIdx(); refresh(); subscribeToCurrentPlan(); });
 date.addEventListener("change", ()=>{ if(date.value) goToDate(date.value); else syncDateControl(); });
 printMusic.addEventListener("click", ()=>downloadWord(false));
 printMusicReadings.addEventListener("click", ()=>downloadWord(true));
