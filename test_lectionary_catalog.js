@@ -3,12 +3,13 @@ const assert = require("node:assert/strict");
 
 require("./lectionary-catalog.js");
 
-const sundays = require("./sundays.json");
+const calendar = require("./sunday-calendar.json");
+const sundayLectionary = require("./sunday-lectionary.json");
 const celebrations = require("./celebrations.json");
 const commons = require("./commons.json");
 const readings = require("./readings_text.json");
-const catalog = global.LectionaryCatalog.create({ sundays, celebrations, commons, readings });
-const ordinarySunday = sundays.find(sunday => sunday.d === "2026-07-26");
+const catalog = global.LectionaryCatalog.create({ calendar, sundayLectionary, celebrations, commons, readings });
+const ordinarySunday = calendar.find(sunday => sunday.d === "2026-07-26");
 
 test("citation alternatives distinguish an implied chapter from a numbered book", () => {
   assert.deepEqual(
@@ -41,6 +42,29 @@ test("St James is a complete selectable Proper celebration", () => {
     psalm: "Psalm 126:1bc-2ab, 2cd-3, 4-5, 6",
     second: "",
     gospel: "Matthew 20:20-28",
+  });
+});
+
+test("a calendar date resolves its scheduled readings through one lectionary key", () => {
+  const scheduled = catalog.scheduledCelebration(ordinarySunday);
+  assert.equal(ordinarySunday.l, "A|17th Sunday in Ordinary Time");
+  assert.equal(scheduled.name, "17th Sunday in Ordinary Time");
+  assert.equal(scheduled.readings.first, "1 Kings 3:5, 7-12");
+  assert.equal(scheduled.readings.gospel, "Matthew 13:44-52");
+  assert.ok(!("f" in ordinarySunday), "calendar rows must not contain precomputed readings");
+});
+
+test("the dated calendar contains only references to complete unique lectionary entries", () => {
+  const byId = new Map(sundayLectionary.map(item => [item.id, item]));
+  assert.equal(byId.size, sundayLectionary.length, "lectionary IDs must be unique");
+  calendar.forEach(day => {
+    assert.ok(byId.has(day.l), `${day.d} must reference a known lectionary entry`);
+    ["f", "p", "e", "g"].forEach(field => {
+      assert.ok(!(field in day), `${day.d} must not duplicate its ${field} citation`);
+    });
+  });
+  sundayLectionary.forEach(item => {
+    assert.ok(item.f && item.p && item.g, `${item.id} must contain all required readings`);
   });
 });
 

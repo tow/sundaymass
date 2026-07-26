@@ -1,7 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 const ROOT = __dirname;
-const SUNDAYS = fs.readFileSync(path.join(ROOT, "sundays.json"), "utf8");
+const CALENDAR = fs.readFileSync(path.join(ROOT, "sunday-calendar.json"), "utf8");
+const SUNDAY_LECTIONARY = fs.readFileSync(path.join(ROOT, "sunday-lectionary.json"), "utf8");
 const CELEBRATIONS = fs.readFileSync(path.join(ROOT, "celebrations.json"), "utf8");
 const COMMONS = fs.readFileSync(path.join(ROOT, "commons.json"), "utf8");
 const READINGS_JSON = fs.readFileSync(path.join(ROOT, "readings_text.json"), "utf8");
@@ -467,7 +468,8 @@ const html = `<!DOCTYPE html>
 
 <script>
 ${LECTIONARY_CATALOG_JS}
-const SUNDAYS = ${SUNDAYS};
+const CALENDAR = ${CALENDAR};
+const SUNDAY_LECTIONARY = ${SUNDAY_LECTIONARY};
 const CELEBRATIONS = ${CELEBRATIONS};
 const COMMONS = ${COMMONS};
 const PARTS = ${PARTS_JSON};
@@ -490,7 +492,8 @@ const MUSIC_PARTS = [
   {key:"recessional",token:"RECESSIONAL",label:"Recessional / Closing Hymn",note:""},
 ];
 const lectionary=LectionaryCatalog.create({
-  sundays:SUNDAYS,
+  calendar:CALENDAR,
+  sundayLectionary:SUNDAY_LECTIONARY,
   celebrations:CELEBRATIONS,
   commons:COMMONS,
   readings:READINGS,
@@ -502,12 +505,12 @@ const normalizedCitation=lectionary.normalizedCitation;
 const citationAlternatives=lectionary.citationAlternatives;
 const parseReadingCitation=lectionary.parseReadingCitation;
 const dayDistance=lectionary.dayDistance;
-const byDate = {}; SUNDAYS.forEach((s,i)=>byDate[s.d]=i);
+const byDate = {}; CALENDAR.forEach((s,i)=>byDate[s.d]=i);
 const cycleName = c => "Year " + c;
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
 function fmtPicker(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}); }
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-let curIdx = 0;  // index into SUNDAYS
+let curIdx = 0;  // index into CALENDAR
 let musicChoices = {};
 let readingOverrides = {};
 let celebrationOverride = null;
@@ -521,21 +524,10 @@ let editingReadingSlot = null;
 let pendingReadingSelection = null;
 let pendingCelebration = null;
 
-function current(){ return SUNDAYS[curIdx]; }
+function current(){ return CALENDAR[curIdx]; }
 function baseCelebration(){
   const sunday=current();
-  if(!celebrationOverride){
-    return {
-      id:"sunday-"+sunday.d,
-      name:sunday.n,
-      sourceDate:sunday.d,
-      rank:"Sunday",
-      season:sunday.s,
-      cycle:sunday.c,
-      readings:{first:sunday.f||"",psalm:sunday.p||"",second:sunday.e||"",gospel:sunday.g||""},
-    };
-  }
-  return celebrationOverride;
+  return celebrationOverride || lectionary.scheduledCelebration(sunday);
 }
 function vals(){
   const s = current();
@@ -891,7 +883,7 @@ function syncDateControl(){
 }
 function refresh(){
   syncDateControl(); renderResolved(); renderReadingSummary(); renderFullReadings(); renderReadingEditor();
-  prev.disabled=curIdx===0; next.disabled=curIdx===SUNDAYS.length-1;
+  prev.disabled=curIdx===0; next.disabled=curIdx===CALENDAR.length-1;
   today.hidden=curIdx===nextSundayIdx();
   const v = vals();
   if(!v.gospel && !v.first){ warn.style.display="block"; warn.textContent="This day has proper readings that are not in the dataset. Please confirm them against the parish Ordo."; }
@@ -1164,7 +1156,7 @@ function goToDate(iso){
   if(byDate[iso]!==undefined){ curIdx=byDate[iso]; warn.style.display="none"; refresh(); subscribeToCurrentPlan(); return; }
   // find nearest Sunday record
   let best=-1,bestDiff=1e15; const t=new Date(iso+"T12:00:00Z").getTime();
-  SUNDAYS.forEach((s,i)=>{ const diff=Math.abs(new Date(s.d+"T12:00:00Z").getTime()-t); if(diff<bestDiff){bestDiff=diff;best=i;} });
+  CALENDAR.forEach((s,i)=>{ const diff=Math.abs(new Date(s.d+"T12:00:00Z").getTime()-t); if(diff<bestDiff){bestDiff=diff;best=i;} });
   if(best<0 || bestDiff>1000*3600*24*366){ warn.style.display="block"; warn.textContent="That date is outside the computed range (2025–2075)."; }
   else warn.style.display="none";
   curIdx=best; refresh(); subscribeToCurrentPlan();
@@ -1216,9 +1208,9 @@ function downloadWord(withRd){
 }
 
 // wire up
-function nextSundayIdx(){ const today=new Date().toISOString().slice(0,10); let i=SUNDAYS.findIndex(s=>s.d>=today); return i<0?SUNDAYS.length-1:i; }
+function nextSundayIdx(){ const today=new Date().toISOString().slice(0,10); let i=CALENDAR.findIndex(s=>s.d>=today); return i<0?CALENDAR.length-1:i; }
 prev.addEventListener("click", ()=>{ if(curIdx>0){curIdx--; refresh(); subscribeToCurrentPlan(); } });
-next.addEventListener("click", ()=>{ if(curIdx<SUNDAYS.length-1){curIdx++; refresh(); subscribeToCurrentPlan(); } });
+next.addEventListener("click", ()=>{ if(curIdx<CALENDAR.length-1){curIdx++; refresh(); subscribeToCurrentPlan(); } });
 document.getElementById("today").addEventListener("click", ()=>{ curIdx=nextSundayIdx(); refresh(); subscribeToCurrentPlan(); });
 date.addEventListener("change", ()=>{ if(date.value) goToDate(date.value); else syncDateControl(); });
 printMusic.addEventListener("click", ()=>downloadWord(false));

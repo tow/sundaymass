@@ -129,6 +129,14 @@ const FIXED_FEAST_DATES = {
   "Dedication of the Lateran Basilica": "2026/11-09",
   "All Saints": "2026/11-01",
 };
+const FIXED_FEAST_FALLBACKS = {
+  "The Assumption of the Blessed Virgin Mary": row(
+    "Rev 11:19a; 12:1-6a, 10ab",
+    "Ps 45:10, 11, 12, 16",
+    "1 Cor 15:20-27",
+    "Luke 1:39-56",
+  ),
+};
 
 (async () => {
   const table = {};
@@ -152,7 +160,16 @@ const FIXED_FEAST_DATES = {
   for (const [name, date] of Object.entries(FIXED_FEAST_DATES)) {
     const [y, md] = date.split("/");
     const j = await fetchJson(`https://raw.githubusercontent.com/cpbjr/catholic-readings-api/main/readings/${y}/${md}.json`);
-    if (j && j.readings) feastByName[name] = { first: j.readings.firstReading, psalm: j.readings.psalm, second: j.readings.secondReading || "", gospel: j.readings.gospel, src: "usccb-fixed" };
+    if (j && j.readings) {
+      const fallback = FIXED_FEAST_FALLBACKS[name] || {};
+      feastByName[name] = {
+        first: j.readings.firstReading || fallback.first || "",
+        psalm: j.readings.psalm || fallback.psalm || "",
+        second: j.readings.secondReading || fallback.second || "",
+        gospel: j.readings.gospel || fallback.gospel || "",
+        src: "usccb-fixed",
+      };
+    }
   }
 
   fs.writeFileSync(path.join(__dirname, "readings_master.json"), JSON.stringify({ bySlot: table, feastByName }, null, 1));

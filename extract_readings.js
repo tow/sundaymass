@@ -119,11 +119,11 @@ function expandAlternatives(cite) {
 }
 
 // ---- run over all distinct citations ----
-const sundays = require("./sundays.json");
+const sundayLectionary = require("./sunday-lectionary.json");
 const celebrations = require("./celebrations.json");
 const commons = require("./commons.json");
 const cites = new Set();
-sundays.forEach(o => [o.f, o.p, o.e, o.g].forEach(c => c && cites.add(c)));
+sundayLectionary.forEach(o => [o.f, o.p, o.e, o.g].forEach(c => c && cites.add(c)));
 celebrations.forEach(o => [o.f, o.p, o.e, o.g].forEach(c => c && cites.add(c)));
 commons.forEach(common => [
   ...common.firstOutsideEaster,

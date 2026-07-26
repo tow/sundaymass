@@ -85,8 +85,15 @@
       .sort((a, b) => Math.abs(dayDistance(a, anchorDate)) - Math.abs(dayDistance(b, anchorDate)))[0];
   }
 
-  function create({ sundays, celebrations, commons, readings }) {
+  function create({ calendar, sundayLectionary, celebrations, commons, readings }) {
     const commonById = new Map(commons.map(common => [common.id, common]));
+    const sundayLectionaryById = new Map(sundayLectionary.map(item => [item.id, item]));
+    const calendarByLectionaryId = new Map();
+    calendar.forEach(day => {
+      const dates = calendarByLectionaryId.get(day.l) || [];
+      dates.push(day);
+      calendarByLectionaryId.set(day.l, dates);
+    });
 
     function usableCitation(citation) {
       return Boolean(citation && readings[citation] && parseReadingCitation(citation));
@@ -129,7 +136,7 @@
         return common[slot.key] || [];
       });
       const catalogueValues = [
-        ...sundays.flatMap(sunday => citationAlternatives(sunday[slot.dataKey])),
+        ...sundayLectionary.flatMap(sunday => citationAlternatives(sunday[slot.dataKey])),
         ...celebrations.flatMap(item => citationAlternatives(item[slot.dataKey])),
         ...commonValues.flatMap(citationAlternatives),
       ];
@@ -144,12 +151,39 @@
       roleCitations[slot.key] = values;
     });
 
-    function availableCelebrations(currentSunday) {
-      const anchor = currentSunday.d;
+    function scheduledCelebration(day) {
+      const item = sundayLectionaryById.get(day.l);
+      if (!item) throw new Error("No Sunday lectionary entry for " + day.l);
+      return {
+        id: "sunday-" + day.d,
+        name: day.n,
+        sourceDate: day.d,
+        rank: "Sunday",
+        season: day.s,
+        cycle: day.c,
+        readings: {
+          first: item.f || "",
+          psalm: item.p || "",
+          second: item.e || "",
+          gospel: item.g || "",
+        },
+      };
+    }
+
+    function nearestCalendarOccurrence(lectionaryId, anchor) {
+      const dates = calendarByLectionaryId.get(lectionaryId) || [];
+      return dates.reduce((best, day) => {
+        if (!best) return day;
+        return Math.abs(dayDistance(day.d, anchor)) < Math.abs(dayDistance(best.d, anchor)) ? day : best;
+      }, null);
+    }
+
+    function availableCelebrations(currentDay) {
+      const anchor = currentDay.d;
       const fixed = celebrations.map(item => {
         const readingOptions = Object.fromEntries(READING_SLOTS.map(slot => [
           slot.key,
-          celebrationReadingOptions(item, slot, currentSunday.s),
+          celebrationReadingOptions(item, slot, currentDay.s),
         ]));
         if (!readingOptions.first.length || !readingOptions.psalm.length || !readingOptions.gospel.length) return null;
         const commonNames = (item.commonIds || []).map(id => commonById.get(id)?.name).filter(Boolean);
@@ -158,8 +192,8 @@
           name: item.name,
           sourceDate: nearestDateForMonthDay(item.monthDay, anchor),
           rank: item.rank || "Celebration",
-          season: currentSunday.s,
-          cycle: currentSunday.c,
+          season: currentDay.s,
+          cycle: currentDay.c,
           lectionary: item.lectionary,
           source: item.source,
           commonNames,
@@ -175,28 +209,20 @@
         };
       }).filter(Boolean);
 
-      // A/B/C Sunday patterns repeat. Retain the nearest concrete date for each
-      // cycle + Sunday name, giving the picker one option rather than 51 duplicates.
-      const bestSundays = new Map();
-      sundays.forEach(sunday => {
-        const key = sunday.c + "|" + sunday.n;
-        const previous = bestSundays.get(key);
-        if (!previous || Math.abs(dayDistance(sunday.d, anchor)) < Math.abs(dayDistance(previous.d, anchor))) {
-          bestSundays.set(key, sunday);
-        }
-      });
-      const sundayOptions = Array.from(bestSundays.values()).map(sunday => {
+      const sundayOptions = sundayLectionary.map(sunday => {
         const readingOptions = Object.fromEntries(READING_SLOTS.map(slot => [
           slot.key,
           uniqueAvailableCitations(citationAlternatives(sunday[slot.dataKey])),
         ]));
         if (!readingOptions.first.length || !readingOptions.psalm.length || !readingOptions.gospel.length) return null;
+        const occurrence = nearestCalendarOccurrence(sunday.id, anchor);
+        if (!occurrence) return null;
         return {
           id: "sunday-template-" + sunday.c + "-" + sunday.n,
           name: sunday.n,
-          sourceDate: sunday.d,
+          sourceDate: occurrence.d,
           rank: "Sunday",
-          season: sunday.s,
+          season: occurrence.s,
           cycle: sunday.c,
           source: "Sunday lectionary",
           commonNames: [],
@@ -220,6 +246,7 @@
       citationAlternatives,
       parseReadingCitation,
       dayDistance,
+      scheduledCelebration,
       availableCelebrations,
     };
   }
