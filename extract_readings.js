@@ -9,6 +9,10 @@ const KJV = {}; // name -> ch -> v -> text
 kjva.forEach(bk => { const m = {}; bk.chapters.forEach(ch => { const cm = {}; ch.verses.forEach(vs => cm[vs.verse] = cleanText(vs.text)); m[ch.chapter] = cm; }); KJV[bk.name] = m; });
 
 function cleanText(t) { return String(t).replace(/\{[^}]*\}/g, "").replace(/\[[^\]]*\]/g, "").replace(/\\(["'])/g, "$1").replace(/\\/g, "").replace(/\s+/g, " ").trim(); }
+function verseLabel(v) {
+  const superscript = { "0":"⁰", "1":"¹", "2":"²", "3":"³", "4":"⁴", "5":"⁵", "6":"⁶", "7":"⁷", "8":"⁸", "9":"⁹" };
+  return String(v).split("").map(digit => superscript[digit]).join("") + " ";
+}
 
 // WEB book numbers
 const WEBNUM = { "Genesis":1,"Exodus":2,"Leviticus":3,"Numbers":4,"Deuteronomy":5,"Joshua":6,"Judges":7,"Ruth":8,"1 Samuel":9,"2 Samuel":10,"1 Kings":11,"2 Kings":12,"1 Chronicles":13,"2 Chronicles":14,"Ezra":15,"Nehemiah":16,"Esther":17,"Job":18,"Psalm":19,"Psalms":19,"Proverbs":20,"Ecclesiastes":21,"Song of Songs":22,"Isaiah":23,"Jeremiah":24,"Lamentations":25,"Ezekiel":26,"Daniel":27,"Hosea":28,"Joel":29,"Amos":30,"Obadiah":31,"Jonah":32,"Micah":33,"Nahum":34,"Habakkuk":35,"Zephaniah":36,"Haggai":37,"Zechariah":38,"Malachi":39,"Matthew":40,"Mark":41,"Luke":42,"John":43,"Acts":44,"Romans":45,"1 Corinthians":46,"2 Corinthians":47,"Galatians":48,"Ephesians":49,"Philippians":50,"Colossians":51,"1 Thessalonians":52,"2 Thessalonians":53,"1 Timothy":54,"2 Timothy":55,"Titus":56,"Philemon":57,"Hebrews":58,"James":59,"1 Peter":60,"2 Peter":61,"1 John":62,"2 John":63,"3 John":64,"Jude":65,"Revelation":66 };
@@ -72,7 +76,7 @@ function extract(cite) {
     if (!g) { missing.push(ch + ":" + v); return; }
     src.add(g.src);
     if (prev && !(prev.ch === ch && prev.v === v - 1)) out.push("…");
-    out.push(g.t); prev = { ch, v };
+    out.push(verseLabel(v) + g.t); prev = { ch, v };
   });
   return { text: out.join(" ").replace(/ …/g, " …").replace(/… /g, "… "), src: [...src].join("+"), missing };
 }
@@ -89,9 +93,10 @@ const map = {}; let full = 0, partial = 0, none = 0; const problems = [];
   else if (r.missing.length) { partial++; problems.push("PARTIAL " + c + "  missing " + r.missing.join(",")); }
   else full++;
 });
-fs.writeFileSync("/root/readings_text.json", JSON.stringify(map));
+const outputPath = require("path").join(__dirname, "readings_text.json");
+fs.writeFileSync(outputPath, JSON.stringify(map));
 console.log("distinct citations:", cites.size, "| full:", full, "| partial:", partial, "| none:", none);
-console.log("readings_text.json KB:", Math.round(fs.statSync("/root/readings_text.json").size/1024));
+console.log("readings_text.json KB:", Math.round(fs.statSync(outputPath).size/1024));
 console.log("\n--- problems (first 25) ---"); problems.slice(0,25).forEach(p=>console.log(" ", p));
 // versification spot checks
 console.log("\n--- spot checks (verify against known text) ---");

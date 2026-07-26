@@ -41,13 +41,14 @@ const html = `<!DOCTYPE html>
   .parish-bar-actions{ display:flex; flex:none; align-items:center; gap:12px; }
   .install-app{ flex:none; min-height:0; padding:4px 8px; border-color:rgba(255,255,255,.7); color:#fff; background:transparent; font-size:11px; white-space:nowrap; }
   .install-app:hover{ background:rgba(255,255,255,.12); }
+  .help-button{ display:inline-flex; align-items:center; justify-content:center; min-height:0; padding:5px 9px; border:1px solid rgba(255,255,255,.72); border-radius:2px; color:#fff; background:transparent; font-size:11px; font-weight:650; line-height:1; text-decoration:none; white-space:nowrap; }
+  .help-button:hover{ background:rgba(255,255,255,.12); }
   .wrap{ max-width:880px; margin:0 auto; }
   header.app{ padding:34px 2px 22px; }
   header.app h1{ color:var(--ink); font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:34px; font-weight:400; line-height:1.18; margin:0 0 6px; letter-spacing:-.4px; }
   header.app p{ color:var(--muted); margin:0; font-size:14px; }
   .church-link{ display:inline-block; margin-top:8px; color:var(--accent); font-size:12px; font-weight:650; text-underline-offset:3px; }
-  .app-meta{ display:flex; align-items:center; gap:7px; margin-top:8px; color:var(--muted); font-size:11px; }
-  .app-meta a{ color:var(--accent); font-weight:700; text-underline-offset:2px; }
+  .app-meta{ margin-top:8px; color:var(--muted); font-size:11px; }
   .card{ background:#fff; border:1px solid var(--line); border-radius:4px; padding:24px; margin-bottom:20px; box-shadow:0 2px 10px rgba(39,26,1,.045); }
   .setup-head,.section-heading{ display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:18px; }
   .eyebrow{ color:var(--accent); font-size:11px; font-weight:750; letter-spacing:.8px; text-transform:uppercase; margin-bottom:4px; }
@@ -145,7 +146,6 @@ const html = `<!DOCTYPE html>
   .readings-card .section-heading{ margin-bottom:16px; }
   .readings-card .section-heading p{ color:var(--muted); font-size:12.5px; margin:4px 0 0; }
   .reading-anchor{ scroll-margin-top:16px; }
-  .foot{ text-align:center; color:var(--muted); font-size:11px; margin-top:20px; }
   .rblock{ margin:0; padding:16px 0; border-top:1px solid #eee6d5; }
   .rblock:first-child{ border-top:none; padding-top:0; }
   .rblock:last-of-type{ padding-bottom:0; }
@@ -162,7 +162,7 @@ const html = `<!DOCTYPE html>
     .parish-bar-actions > span{ display:none; }
     .bar-desktop,.desktop-title,.nav-desktop{ display:none; }
     .bar-mobile,.mobile-title,.nav-mobile{ display:inline; }
-    .install-app,.auth-button{ min-height:34px; padding:5px 7px; font-size:10.5px; line-height:1; }
+    .install-app,.auth-button,.help-button{ min-height:34px; padding:5px 7px; font-size:10.5px; line-height:1; }
     header.app{ padding:14px 4px 11px; }
     header.app h1{ font-size:25px; line-height:1.1; margin:0; }
     header.app p,.church-link{ display:none; }
@@ -222,13 +222,13 @@ const html = `<!DOCTYPE html>
   }
 </style></head>
 <body>
-<div class="parish-bar"><div class="parish-bar-inner"><a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener" aria-label="Visit the St James the Apostle church webpage">St James the Apostle ↗</a><div class="parish-bar-actions"><span>Church of St. James the Apostle</span><button class="install-app" id="installApp" hidden>Install</button><button class="auth-button" id="authButton">Sign in</button></div></div></div>
+<div class="parish-bar"><div class="parish-bar-inner"><a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener" aria-label="Visit the St James the Apostle church webpage">St James the Apostle ↗</a><div class="parish-bar-actions"><span>Church of St. James the Apostle</span><a class="help-button" href="./about.html">Help</a><button class="install-app" id="installApp" hidden>Install</button><button class="auth-button" id="authButton">Sign in</button></div></div></div>
 <div class="wrap">
   <header class="app">
     <h1><span class="desktop-title">St James the Apostle — 6pm Mass</span><span class="mobile-title">6pm Mass music planner</span></h1>
     <p>Create a music-planning sheet for any Sunday Mass.</p>
     <a class="church-link" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener">Visit the church webpage ↗</a>
-    <div class="app-meta"><a href="./about.html">About &amp; help</a><span aria-hidden="true">·</span><span>&copy; 2026 Datamediate Oy</span></div>
+    <div class="app-meta">&copy; 2026 Datamediate Oy</div>
   </header>
 
   <div class="card planner-card">
@@ -296,7 +296,6 @@ const html = `<!DOCTYPE html>
       </div>
     </div>
   </details>
-  <div class="foot">Calendar: Catholic Church in Finland (Diocese of Helsinki) — Epiphany on 6 Jan, St Henry, All Souls handled. Sunday cycles A–C <span id="range"></span>, readings from the Order of Readings for Mass. Always confirm against your parish Ordo; edit any field to override.</div>
 </div>
 
 <dialog class="login-dialog" id="loginDialog">
@@ -659,7 +658,6 @@ document.getElementById("today").addEventListener("click", ()=>{ curIdx=nextSund
 date.addEventListener("change", ()=>{ if(date.value) goToDate(date.value); else syncDateControl(); });
 printMusic.addEventListener("click", ()=>downloadWord(false));
 printMusicReadings.addEventListener("click", ()=>downloadWord(true));
-document.getElementById("range").textContent = "("+SUNDAYS[0].d.slice(0,4)+"–"+SUNDAYS[SUNDAYS.length-1].d.slice(0,4)+")";
 
 curIdx=nextSundayIdx(); refresh(); renderMusicPlan();
 
