@@ -52,10 +52,10 @@ const html = `<!DOCTYPE html>
   .setup-head h2,.section-heading h2{ font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:23px; font-weight:400; line-height:1.2; margin:0; letter-spacing:-.2px; }
   label.fld{ display:block; font-weight:600; font-size:12px; margin:0 0 5px; color:var(--accent); text-transform:uppercase; letter-spacing:.4px; }
   .daterow{ display:grid; grid-template-columns:auto minmax(190px,1fr) auto auto; gap:9px; align-items:center; }
-  .date-slot{ width:100%; min-width:0; height:44px; overflow:hidden; background:#fff; border:1px solid #bdb4b5; border-radius:9px; }
+  .date-slot{ position:relative; display:grid; place-items:center; width:100%; min-width:0; height:44px; overflow:hidden; background:#fff; border:1px solid #bdb4b5; border-radius:9px; }
   .date-slot:focus-within{ outline:3px solid rgba(0,47,69,.22); outline-offset:2px; }
-  input[type=date]{ display:block; width:100%; min-width:0; max-width:100%; height:100%; font-size:16px; padding:9px 11px; color:var(--ink); background:#fff; border:0; border-radius:8px; }
-  input[type=date]::-webkit-date-and-time-value{ min-width:0; text-align:center; }
+  .date-display{ color:var(--ink); font-size:16px; font-weight:650; line-height:1; pointer-events:none; }
+  input[type=date]{ position:absolute; inset:0; z-index:1; width:100%; min-width:0; max-width:100%; height:100%; margin:0; padding:0; cursor:pointer; opacity:0; }
   button{ min-height:44px; font-size:14px; font-weight:650; padding:9px 14px; border-radius:2px; border:1px solid var(--accent); cursor:pointer; touch-action:manipulation; background:#fff; color:var(--accent); transition:background .15s ease,border-color .15s ease,box-shadow .15s ease,transform .05s ease; }
   button:hover{ background:#f6f1e5; }
   button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{ outline:3px solid rgba(0,47,69,.22); outline-offset:2px; }
@@ -158,7 +158,8 @@ const html = `<!DOCTYPE html>
     .daterow{ grid-template-columns:46px minmax(0,1fr) 46px; gap:7px; }
     .daterow #prev{ grid-column:1; grid-row:1; }
     .daterow .date-slot{ grid-column:2; grid-row:1; width:100%; min-width:0; max-width:100%; height:46px; }
-    .daterow #date{ width:100%; min-width:0; max-width:100%; height:100%; padding:7px 2px; font-size:16px; text-align:center; }
+    .daterow #date{ width:100%; min-width:0; max-width:100%; height:100%; }
+    .date-display{ font-size:16px; }
     .daterow #next{ grid-column:3; grid-row:1; }
     .daterow #today{ grid-column:1 / -1; grid-row:2; min-height:42px; }
     .daterow button{ min-width:0; min-height:46px; padding:6px; font-size:25px; }
@@ -219,7 +220,7 @@ const html = `<!DOCTYPE html>
     <label class="fld sr-only" for="date">Choose a Sunday</label>
     <div class="daterow">
       <button class="nav" id="prev" title="Previous Sunday" aria-label="Previous Sunday"><span class="nav-desktop">‹ Previous</span><span class="nav-mobile" aria-hidden="true">‹</span></button>
-      <div class="date-slot"><input type="date" id="date"></div>
+      <div class="date-slot"><span class="date-display" id="dateDisplay" aria-hidden="true"></span><input type="date" id="date"></div>
       <button class="nav" id="next" title="Following Sunday" aria-label="Following Sunday"><span class="nav-desktop">Next ›</span><span class="nav-mobile" aria-hidden="true">›</span></button>
       <button class="nav" id="today">Jump to upcoming Sunday</button>
     </div>
@@ -316,6 +317,7 @@ const MUSIC_PARTS = [
 const byDate = {}; SUNDAYS.forEach((s,i)=>byDate[s.d]=i);
 const cycleName = c => "Year " + c;
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
+function fmtPicker(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}); }
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
 let curIdx = 0;  // index into SUNDAYS
@@ -408,8 +410,12 @@ function renderReadingSummary(){
     + readings.map(r=>'<a class="reading-item" href="#'+r[2]+'"><span class="reading-label">'+esc(r[0])+'</span><span class="reading-cite">'+(esc(r[1])||"—")+'</span></a>').join('')
     + '</div>';
 }
+function syncDateControl(){
+  date.value=current().d;
+  dateDisplay.textContent=fmtPicker(current().d);
+}
 function refresh(){
-  renderResolved(); renderReadingSummary(); renderEditors(); renderFullReadings();
+  syncDateControl(); renderResolved(); renderReadingSummary(); renderEditors(); renderFullReadings();
   prev.disabled=curIdx===0; next.disabled=curIdx===SUNDAYS.length-1;
   today.hidden=curIdx===nextSundayIdx();
   const v = vals();
@@ -564,15 +570,15 @@ function nextSundayIdx(){ const today=new Date().toISOString().slice(0,10); let 
   document.getElementById(id).addEventListener("input", e=>{ override[key]=e.target.value; renderReadingSummary(); renderFullReadings(); });
 });
 document.getElementById("reset").addEventListener("click", e=>{ e.preventDefault(); override={}; refresh(); });
-prev.addEventListener("click", ()=>{ if(curIdx>0){curIdx--; override={}; date.value=current().d; refresh(); subscribeToCurrentPlan(); } });
-next.addEventListener("click", ()=>{ if(curIdx<SUNDAYS.length-1){curIdx++; override={}; date.value=current().d; refresh(); subscribeToCurrentPlan(); } });
-document.getElementById("today").addEventListener("click", ()=>{ curIdx=nextSundayIdx(); override={}; date.value=current().d; refresh(); subscribeToCurrentPlan(); });
-date.addEventListener("change", ()=>{ goToDate(date.value); date.value=current().d; });
+prev.addEventListener("click", ()=>{ if(curIdx>0){curIdx--; override={}; refresh(); subscribeToCurrentPlan(); } });
+next.addEventListener("click", ()=>{ if(curIdx<SUNDAYS.length-1){curIdx++; override={}; refresh(); subscribeToCurrentPlan(); } });
+document.getElementById("today").addEventListener("click", ()=>{ curIdx=nextSundayIdx(); override={}; refresh(); subscribeToCurrentPlan(); });
+date.addEventListener("change", ()=>{ if(date.value) goToDate(date.value); else syncDateControl(); });
 printMusic.addEventListener("click", ()=>downloadWord(false));
 printMusicReadings.addEventListener("click", ()=>downloadWord(true));
 document.getElementById("range").textContent = "("+SUNDAYS[0].d.slice(0,4)+"–"+SUNDAYS[SUNDAYS.length-1].d.slice(0,4)+")";
 
-curIdx=nextSundayIdx(); date.value=current().d; refresh(); renderMusicPlan();
+curIdx=nextSundayIdx(); refresh(); renderMusicPlan();
 
 // Installable app support. iPhone/iPad uses Safari's Share → Add to Home Screen flow.
 let deferredInstallPrompt = null;
