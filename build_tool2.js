@@ -29,16 +29,17 @@ const html = `<!DOCTYPE html>
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <style>
   :root{ --accent:#002F45; --accent-dark:#001F2D; --accentlt:#F0E5C8; --ink:#271A01; --muted:#675F52; --line:#D8CDB8; --canvas:#FBF6EF; }
+  html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   *{ box-sizing:border-box; }
   .sr-only{ position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
   body{ margin:0; font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--canvas); padding:0 22px 40px; }
   .parish-bar{ margin:0 -22px; padding:11px 22px; background:var(--accent); color:#fff; }
   .parish-bar-inner{ max-width:880px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:20px; font-size:12px; letter-spacing:.15px; }
-  .parish-home{ color:#fff; text-decoration:none; font-weight:650; }
+  .parish-home{ flex:none; color:#fff; text-decoration:none; font-weight:650; white-space:nowrap; }
   .parish-home:hover,.parish-home:focus-visible{ text-decoration:underline; text-underline-offset:3px; }
   .bar-mobile,.mobile-title,.nav-mobile{ display:none; }
-  .parish-bar-actions{ display:flex; align-items:center; gap:12px; }
-  .install-app{ min-height:0; padding:4px 8px; border-color:rgba(255,255,255,.7); color:#fff; background:transparent; font-size:11px; }
+  .parish-bar-actions{ display:flex; flex:none; align-items:center; gap:12px; }
+  .install-app{ flex:none; min-height:0; padding:4px 8px; border-color:rgba(255,255,255,.7); color:#fff; background:transparent; font-size:11px; white-space:nowrap; }
   .install-app:hover{ background:rgba(255,255,255,.12); }
   .wrap{ max-width:880px; margin:0 auto; }
   header.app{ padding:34px 2px 22px; }
@@ -51,7 +52,8 @@ const html = `<!DOCTYPE html>
   .setup-head h2,.section-heading h2{ font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:23px; font-weight:400; line-height:1.2; margin:0; letter-spacing:-.2px; }
   label.fld{ display:block; font-weight:600; font-size:12px; margin:0 0 5px; color:var(--accent); text-transform:uppercase; letter-spacing:.4px; }
   .daterow{ display:grid; grid-template-columns:auto minmax(190px,1fr) auto auto; gap:9px; align-items:center; }
-  input[type=date]{ width:100%; height:44px; font-size:16px; padding:9px 11px; color:var(--ink); background:#fff; border:1px solid #bdb4b5; border-radius:9px; }
+  input[type=date]{ width:100%; min-width:0; max-width:100%; height:44px; font-size:16px; padding:9px 11px; color:var(--ink); background:#fff; border:1px solid #bdb4b5; border-radius:9px; }
+  input[type=date]::-webkit-date-and-time-value{ min-width:0; text-align:center; }
   button{ min-height:44px; font-size:14px; font-weight:650; padding:9px 14px; border-radius:2px; border:1px solid var(--accent); cursor:pointer; touch-action:manipulation; background:#fff; color:var(--accent); transition:background .15s ease,border-color .15s ease,box-shadow .15s ease,transform .05s ease; }
   button:hover{ background:#f6f1e5; }
   button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{ outline:3px solid rgba(0,47,69,.22); outline-offset:2px; }
@@ -110,7 +112,7 @@ const html = `<!DOCTYPE html>
   .music-fields input{ width:100%; min-width:0; height:42px; padding:8px 10px; border:1px solid #c9c0b1; border-radius:7px; color:var(--ink); background:#fff; font-size:15px; }
   .music-fields input::placeholder{ color:#958d81; }
   .editor-help{ padding:10px 22px; color:var(--muted); background:#fcfaf6; border-bottom:1px solid #eee6d5; font-size:11.5px; }
-  .auth-button{ min-height:0; padding:5px 9px; border-color:rgba(255,255,255,.72); color:#fff; background:transparent; font-size:11px; }
+  .auth-button{ flex:none; min-height:0; padding:5px 9px; border-color:rgba(255,255,255,.72); color:#fff; background:transparent; font-size:11px; white-space:nowrap; }
   .auth-button:hover{ background:rgba(255,255,255,.12); }
   .login-dialog{ width:min(420px,calc(100% - 28px)); padding:0; border:1px solid var(--line); border-radius:5px; color:var(--ink); background:#fff; box-shadow:0 18px 55px rgba(0,31,45,.24); }
   .login-dialog::backdrop{ background:rgba(0,31,45,.48); }
@@ -136,12 +138,13 @@ const html = `<!DOCTYPE html>
   @media (display-mode:standalone){ .install-app{ display:none !important; } }
   @media (max-width:700px){
     body{ padding:0 12px calc(28px + env(safe-area-inset-bottom)); }
-    .parish-bar{ margin:0 -12px; padding:7px 14px; }
-    .parish-bar-inner{ display:flex; font-size:11px; }
+    .parish-bar{ margin:0 -12px; padding:7px 12px; }
+    .parish-bar-inner{ display:flex; gap:8px; font-size:11px; }
+    .parish-bar-actions{ gap:6px; }
     .parish-bar-actions > span{ display:none; }
     .bar-desktop,.desktop-title,.nav-desktop{ display:none; }
     .bar-mobile,.mobile-title,.nav-mobile{ display:inline; }
-    .install-app{ padding:5px 8px; }
+    .install-app,.auth-button{ min-height:34px; padding:5px 7px; font-size:10.5px; line-height:1; }
     header.app{ padding:14px 4px 11px; }
     header.app h1{ font-size:25px; line-height:1.1; margin:0; }
     header.app p,.church-link{ display:none; }
@@ -152,10 +155,11 @@ const html = `<!DOCTYPE html>
     .setup-head h2{ font-size:20px; }
     .daterow{ grid-template-columns:46px minmax(0,1fr) 46px; gap:7px; }
     .daterow #prev{ grid-column:1; grid-row:1; }
-    .daterow #date{ grid-column:2; grid-row:1; min-width:0; height:46px; padding:7px 8px; font-size:16px; }
+    .daterow #date{ grid-column:2; grid-row:1; width:100%; min-width:0; max-width:100%; height:46px; padding:7px 4px; font-size:16px; text-align:center; }
     .daterow #next{ grid-column:3; grid-row:1; }
     .daterow #today{ grid-column:1 / -1; grid-row:2; min-height:42px; }
-    .daterow button{ min-height:46px; padding:6px; font-size:25px; }
+    .daterow button{ min-width:0; min-height:46px; padding:6px; font-size:25px; }
+    .daterow #prev,.daterow #next{ width:46px; min-width:46px; max-width:46px; }
     .daterow #today{ font-size:13px; }
     .resolved{ grid-template-columns:1fr; }
     .resolved{ margin-top:9px; padding:9px 11px; border-left-width:3px; }
