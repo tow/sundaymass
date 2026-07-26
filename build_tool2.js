@@ -106,13 +106,27 @@ const html = `<!DOCTYPE html>
   .music-part-note{ display:block; margin-top:2px; color:#8a8173; font-size:10px; font-style:italic; font-weight:400; letter-spacing:0; text-transform:none; }
   .music-choice{ min-width:0; color:var(--ink); font-size:14px; font-weight:650; line-height:1.35; overflow-wrap:anywhere; }
   .music-empty{ color:#9a9286; font-weight:400; }
-  .listen-link{ display:inline-block; margin-top:4px; color:var(--accent); font-size:11.5px; font-weight:700; text-underline-offset:2px; }
+  .listen-link{ display:block; width:max-content; max-width:100%; margin-top:4px; color:var(--accent); font-size:11.5px; font-weight:700; text-underline-offset:2px; }
+  .music-attribution{ display:block; margin-top:5px; color:var(--muted); font-size:11.5px; font-weight:400; line-height:1.4; }
+  .copyright-warning{ color:#96541a; }
   .music-edit-row{ padding:14px 22px 16px; border-bottom:1px solid #eee6d5; }
   .music-edit-row:last-child{ border-bottom:none; }
   .music-edit-row .music-part-label{ display:block; margin-bottom:7px; color:var(--ink); }
   .music-fields{ display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:8px; }
   .music-fields input{ width:100%; min-width:0; height:42px; padding:8px 10px; border:1px solid #c9c0b1; border-radius:7px; color:var(--ink); background:#fff; font-size:15px; }
   .music-fields input::placeholder{ color:#958d81; }
+  .copyright-details{ margin-top:8px; border:1px solid #ddd4c5; border-radius:7px; background:#fcfaf6; }
+  .copyright-details > summary{ display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:38px; padding:7px 10px; color:var(--accent); cursor:pointer; font-size:12px; font-weight:700; list-style:none; }
+  .copyright-details > summary::-webkit-details-marker{ display:none; }
+  .copyright-details > summary:before{ content:"›"; flex:none; font-size:18px; line-height:1; transition:transform .15s ease; }
+  .copyright-details[open] > summary:before{ transform:rotate(90deg); }
+  .copyright-status{ margin-left:auto; padding:2px 7px; border-radius:999px; color:#96541a; background:#f7e8d5; font-size:10px; font-weight:750; }
+  .copyright-status.complete{ color:#38704b; background:#e5f0e7; }
+  .copyright-fields{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:0 10px 10px; }
+  .copyright-field{ min-width:0; }
+  .copyright-field label{ display:block; margin:0 0 3px; color:var(--muted); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.25px; }
+  .copyright-field input{ width:100%; min-width:0; height:40px; padding:7px 9px; border:1px solid #c9c0b1; border-radius:6px; color:var(--ink); background:#fff; font-size:14px; }
+  .copyright-help{ grid-column:1 / -1; margin:0; color:var(--muted); font-size:10.5px; line-height:1.35; }
   .editor-help{ padding:10px 22px; color:var(--muted); background:#fcfaf6; border-bottom:1px solid #eee6d5; font-size:11.5px; }
   .auth-button{ flex:none; min-height:0; padding:5px 9px; border-color:rgba(255,255,255,.72); color:#fff; background:transparent; font-size:11px; white-space:nowrap; }
   .auth-button:hover{ background:rgba(255,255,255,.12); }
@@ -195,6 +209,9 @@ const html = `<!DOCTYPE html>
     .music-edit-row{ padding:12px 16px 14px; }
     .music-fields{ grid-template-columns:1fr; gap:7px; }
     .music-fields input{ height:44px; font-size:16px; }
+    .copyright-fields{ grid-template-columns:1fr; gap:7px; }
+    .copyright-field input{ height:44px; font-size:16px; }
+    .copyright-help{ grid-column:1; }
     .editor-help{ padding:9px 16px; }
     .sync-status{ font-size:10.5px; }
     .login-form{ padding:20px; }
@@ -349,7 +366,14 @@ function renderEditors(){
 }
 function choiceFor(key){
   const value=musicChoices[key] || {};
-  return {song:value.song || "", youtubeUrl:value.youtubeUrl || ""};
+  return {
+    song:value.song || "",
+    youtubeUrl:value.youtubeUrl || "",
+    authors:value.authors || "",
+    copyrightOwner:value.copyrightOwner || "",
+    copyrightYear:value.copyrightYear || "",
+    source:value.source || "",
+  };
 }
 function safeYoutubeUrl(value){
   if(!value) return "";
@@ -362,16 +386,43 @@ function safeYoutubeUrl(value){
 function musicLabel(part){
   return esc(part.label)+(part.note?'<span class="music-part-note">'+esc(part.note)+'</span>':'');
 }
+function copyrightComplete(choice){
+  if(!choice.song) return true;
+  const publicDomain=/\\bpublic domain\\b/i.test(choice.copyrightOwner);
+  return !!(choice.authors.trim() && choice.copyrightOwner.trim() && choice.source.trim() && (choice.copyrightYear.trim() || publicDomain));
+}
+function attributionLine(choice){
+  const items=[];
+  if(choice.authors.trim()) items.push("Authors: "+choice.authors.trim());
+  const publicDomain=/\\bpublic domain\\b/i.test(choice.copyrightOwner);
+  const copyright=[choice.copyrightYear.trim(),choice.copyrightOwner.trim()].filter(Boolean).join(" ");
+  if(copyright) items.push(publicDomain ? copyright : "© "+copyright);
+  if(choice.source.trim()) items.push("Source: "+choice.source.trim());
+  return items.join(" · ");
+}
+function copyrightFields(part,choice){
+  const status=copyrightComplete(choice);
+  const statusLabel=!choice.song ? "After choosing song" : (status ? "Complete" : "Incomplete");
+  return '<details class="copyright-details"><summary><span>Copyright details</span><span class="copyright-status'+(status && choice.song?' complete':'')+'">'+statusLabel+'</span></summary>'
+    +'<div class="copyright-fields">'
+    +'<div class="copyright-field"><label for="authors_'+part.key+'">Author(s)</label><input id="authors_'+part.key+'" data-part="'+part.key+'" data-field="authors" type="text" value="'+esc(choice.authors)+'" placeholder="Composer, lyricist, translator"></div>'
+    +'<div class="copyright-field"><label for="owner_'+part.key+'">Copyright owner / publisher</label><input id="owner_'+part.key+'" data-part="'+part.key+'" data-field="copyrightOwner" type="text" value="'+esc(choice.copyrightOwner)+'" placeholder="e.g. OCP or Public domain"></div>'
+    +'<div class="copyright-field"><label for="year_'+part.key+'">Copyright year</label><input id="year_'+part.key+'" data-part="'+part.key+'" data-field="copyrightYear" type="text" inputmode="numeric" value="'+esc(choice.copyrightYear)+'" placeholder="e.g. 1993"></div>'
+    +'<div class="copyright-field"><label for="source_'+part.key+'">Source</label><input id="source_'+part.key+'" data-part="'+part.key+'" data-field="source" type="text" value="'+esc(choice.source)+'" placeholder="Hymnal + number, publication or website"></div>'
+    +'<p class="copyright-help">Leave the year blank only when the copyright owner is entered as “Public domain”.</p>'
+    +'</div></details>';
+}
 function renderMusicPlan(){
   editorHelp.hidden=!isEditor;
-  musicIntro.textContent=isEditor ? "Enter a song title and, optionally, a YouTube practice link." : "Selections for this Sunday appear here as they are chosen.";
+  musicIntro.textContent=isEditor ? "Choose each song, then record the copyright details needed when its lyrics are projected." : "Selections for this Sunday appear here as they are chosen.";
   if(isEditor){
     if(musicList.dataset.mode!=="edit"){
       musicList.innerHTML=MUSIC_PARTS.map(part=>{
         const choice=choiceFor(part.key);
         return '<div class="music-edit-row"><label class="music-part-label" for="song_'+part.key+'">'+musicLabel(part)+'</label>'
           +'<div class="music-fields"><input id="song_'+part.key+'" data-part="'+part.key+'" data-field="song" type="text" value="'+esc(choice.song)+'" placeholder="Song title">'
-          +'<input id="youtube_'+part.key+'" data-part="'+part.key+'" data-field="youtubeUrl" type="url" inputmode="url" value="'+esc(choice.youtubeUrl)+'" placeholder="YouTube link (optional)" aria-label="'+esc(part.label)+' YouTube link"></div></div>';
+          +'<input id="youtube_'+part.key+'" data-part="'+part.key+'" data-field="youtubeUrl" type="url" inputmode="url" value="'+esc(choice.youtubeUrl)+'" placeholder="YouTube link (optional)" aria-label="'+esc(part.label)+' YouTube link"></div>'
+          +copyrightFields(part,choice)+'</div>';
       }).join("");
       musicList.dataset.mode="edit";
     }else{
@@ -381,14 +432,26 @@ function renderMusicPlan(){
         const value=choice[input.dataset.field] || "";
         if(input.value!==value) input.value=value;
       });
+      MUSIC_PARTS.forEach(part=>{
+        const status=musicList.querySelector("#song_"+part.key)?.closest(".music-edit-row")?.querySelector(".copyright-status");
+        if(!status) return;
+        const choice=choiceFor(part.key);
+        const complete=copyrightComplete(choice);
+        status.textContent=!choice.song ? "After choosing song" : (complete ? "Complete" : "Incomplete");
+        status.classList.toggle("complete",complete && !!choice.song);
+      });
     }
   }else{
     musicList.innerHTML=MUSIC_PARTS.map(part=>{
       const choice=choiceFor(part.key);
       const link=safeYoutubeUrl(choice.youtubeUrl);
+      const attribution=attributionLine(choice);
+      const incomplete=choice.song && !copyrightComplete(choice);
       return '<div class="music-view-row"><div class="music-part-label">'+musicLabel(part)+'</div><div class="music-choice">'
         +(choice.song?esc(choice.song):'<span class="music-empty">Not yet chosen</span>')
-        +(link?'<br><a class="listen-link" href="'+esc(link)+'" target="_blank" rel="noopener">Listen / practise ↗</a>':'')+'</div></div>';
+        +(attribution?'<span class="music-attribution">'+esc(attribution)+'</span>':'')
+        +(incomplete?'<span class="music-attribution copyright-warning">Copyright information incomplete</span>':'')
+        +(link?'<a class="listen-link" href="'+esc(link)+'" target="_blank" rel="noopener">Listen / practise ↗</a>':'')+'</div></div>';
     }).join("");
     musicList.dataset.mode="view";
   }
@@ -559,7 +622,11 @@ function downloadWord(withRd){
   const src = withRd ? PARTS2 : PARTS;
   let docXml=dec.decode(b64ToBytes(src["word/document.xml"]));
   const repl={ "@@DAY@@":v.day, "@@META@@":v.meta, "@@FIRST@@":v.first, "@@PSALM@@":v.psalm, "@@SECOND@@":(v.second||"—"), "@@GOSPEL@@":v.gospel };
-  MUSIC_PARTS.forEach(part=>{ repl["@@MUSIC_"+part.token+"@@"]=choiceFor(part.key).song; });
+  MUSIC_PARTS.forEach(part=>{
+    const choice=choiceFor(part.key);
+    repl["@@MUSIC_"+part.token+"@@"]=choice.song;
+    repl["@@ATTR_"+part.token+"@@"]=attributionLine(choice)+(choice.song && !copyrightComplete(choice) ? (attributionLine(choice) ? " · " : "")+"Copyright information incomplete" : "");
+  });
   if(withRd){ Object.assign(repl, {
     "@@FIRSTTEXT@@": textFor(v.first) || "(full text not available — see citation above)",
     "@@PSALMTEXT@@": textFor(v.psalm) || "(sung — see citation above)",

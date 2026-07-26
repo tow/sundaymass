@@ -29,11 +29,14 @@ function labelCell(text, note) {
     shading: { type: ShadingType.CLEAR, color: "auto", fill: LABELBG }, margins: { top: 60, bottom: 60, left: 140, right: 120 }, borders: cb(),
     children: [new Paragraph({ children: runs })] });
 }
-function musicCell(token) {
+function musicCell(songToken, attributionToken) {
   return new TableCell({ width: { size: RCOL, type: WidthType.DXA }, verticalAlign: VerticalAlign.CENTER,
-    margins: { top: 60, bottom: 60, left: 140, right: 140 }, borders: cb(), children: [new Paragraph({ children: [new TextRun({ text: token, size: 22 })] })] });
+    margins: { top: 45, bottom: 45, left: 140, right: 140 }, borders: cb(), children: [new Paragraph({ children: [
+      new TextRun({ text: songToken, size: 22 }),
+      new TextRun({ text: attributionToken, size: 14, color: "6B6B6B", break: 1 }),
+    ] })] });
 }
-function partRow(key, label, note) { return new TableRow({ height: { value: 560, rule: HeightRule.ATLEAST }, children: [labelCell(label, note), musicCell(`@@MUSIC_${key}@@`)] }); }
+function partRow(key, label, note) { return new TableRow({ height: { value: 560, rule: HeightRule.ATLEAST }, children: [labelCell(label, note), musicCell(`@@MUSIC_${key}@@`, `@@ATTR_${key}@@`)] }); }
 function readingRow(label, tokenCite) {
   const l = new TableCell({ width: { size: 2400, type: WidthType.DXA }, verticalAlign: VerticalAlign.CENTER,
     shading: { type: ShadingType.CLEAR, color: "auto", fill: LABELBG }, margins: { top: 40, bottom: 40, left: 140, right: 100 }, borders: cb(),
@@ -83,5 +86,5 @@ Packer.toBuffer(doc).then(async (buf) => {
   console.log("parts:", files.join(", "));
   // confirm tokens present in document.xml
   const docXml = fs.readFileSync(path.join(PARTS_DIR, "word/document.xml"), "utf8");
-  ["@@DAY@@","@@META@@","@@FIRST@@","@@PSALM@@","@@SECOND@@","@@GOSPEL@@", ...PARTS.map(([key]) => `@@MUSIC_${key}@@`)].forEach(t => console.log(t, docXml.includes(t) ? "ok" : "MISSING"));
+  ["@@DAY@@","@@META@@","@@FIRST@@","@@PSALM@@","@@SECOND@@","@@GOSPEL@@", ...PARTS.flatMap(([key]) => [`@@MUSIC_${key}@@`, `@@ATTR_${key}@@`])].forEach(t => console.log(t, docXml.includes(t) ? "ok" : "MISSING"));
 });

@@ -36,7 +36,14 @@ function localStore() {
     async savePart(date, key, choice) {
       if (!editor) throw new Error("Sign in before editing");
       const plan = read(date);
-      plan[key] = { song: choice.song || "", youtubeUrl: choice.youtubeUrl || "" };
+      plan[key] = {
+        song: choice.song || "",
+        youtubeUrl: choice.youtubeUrl || "",
+        authors: choice.authors || "",
+        copyrightOwner: choice.copyrightOwner || "",
+        copyrightYear: choice.copyrightYear || "",
+        source: choice.source || "",
+      };
       localStorage.setItem(storageKey(date), JSON.stringify(plan));
       emit(date);
     },
@@ -165,6 +172,10 @@ async function supabaseStore(config) {
         p_part: key,
         p_song: choice.song || "",
         p_youtube_url: choice.youtubeUrl || "",
+        p_authors: choice.authors || "",
+        p_copyright_owner: choice.copyrightOwner || "",
+        p_copyright_year: choice.copyrightYear || "",
+        p_source: choice.source || "",
       });
       if (error) throw error;
     },

@@ -19,8 +19,8 @@ HTTPS, the planner can be installed to a phone's home screen.
 
 Live data uses Supabase Auth, Postgres, Realtime, and Row Level Security:
 
-- `plans` has one row per Sunday and a JSON `choices` object. Each Mass part has only
-  `song` and `youtubeUrl`.
+- `plans` has one row per Sunday and a JSON `choices` object. Each Mass part stores
+  `song`, `youtubeUrl`, `authors`, `copyrightOwner`, `copyrightYear`, and `source`.
 - Anyone can read plans.
 - Editors sign in with an administrator-created, manually confirmed email/password
   account. Public signup is disabled, so phase 1 requires no outgoing email service.
@@ -115,8 +115,7 @@ node build_tool2.js
   with lectionary numbering.
 - Handle the Daniel 3 canticle (maps to KJVA "Prayer of Azariah").
 - Optional: hymnal / hymn-number column on the sung-parts grid.
-- Add optional automatic song suggestions as a separate phase; the stored per-part
-  `song` and `youtubeUrl` shape does not need to change.
+- Add optional automatic song suggestions as a separate phase.
 
 ## Dependencies
 Node ≥ 18. npm: `docx`, `romcal`. Rendering/verification used LibreOffice + poppler +
