@@ -98,6 +98,19 @@ The publishable browser key in `supabase-config.js` is public by design. Securit
 from RLS and editor membership, never from hiding that key. Never put a service-role key
 in a browser file.
 
+### Future authentication
+
+Replace password entry with Supabase email magic-link login. Keep public signup disabled
+and retain `public.editors` as the authorization check: possession of a valid login link
+authenticates the user, but editor membership still decides whether they may write.
+
+Magic links introduce an email-delivery dependency that phase 1 intentionally avoids.
+Before switching, configure the production Site URL and exact allowed redirect URLs,
+use a suitable production SMTP sender, and test the installed-PWA return flow as well as
+normal Safari/Chrome login. Email templates, expiry, resend/rate-limit behavior, and the
+unknown-email experience should be deliberately defined rather than left at Supabase
+defaults.
+
 ## PWA and deployment notes
 
 - GitHub Pages publishes the repository's `main` branch at the live URL above.
@@ -260,6 +273,8 @@ access accordingly.
 - Add lyric embeddings and semantic search, preferably with Supabase `pgvector`.
 - Generate projector slides from each Sunday's ordered plan.
 - Add automatic song suggestions that rank suitable known-repertoire songs first.
+- Replace password sign-in with email magic links and configure production email
+  delivery and redirects.
 
 ## Dependencies
 
