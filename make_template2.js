@@ -12,10 +12,10 @@ const PARTS_DIR = path.join(ROOT, "tpl2");
 const ACCENT = "002F45", LABELBG = "F0E5C8", LINE = "AAA08D";
 const TABLE_W = 9360, LCOL = 3500, RCOL = 5860;
 const cb = () => ({ top:{style:BorderStyle.SINGLE,size:4,color:LINE}, bottom:{style:BorderStyle.SINGLE,size:4,color:LINE}, left:{style:BorderStyle.SINGLE,size:4,color:LINE}, right:{style:BorderStyle.SINGLE,size:4,color:LINE} });
-const PARTS = [["Entrance / Processional Hymn",""],["Kyrie — Lord, Have Mercy",""],["Gloria — Glory to God","(omitted in Advent & Lent)"],["Responsorial Psalm",""],["Gospel Acclamation — Alleluia","(Lenten acclamation in Lent)"],["Preparation of the Gifts / Offertory",""],["Sanctus — Holy, Holy, Holy",""],["Memorial Acclamation — Mystery of Faith",""],["Great Amen",""],["The Lord's Prayer — Our Father","(if sung)"],["Agnus Dei — Lamb of God",""],["Communion Hymn",""],["Recessional / Closing Hymn",""]];
+const PARTS = [["ENTRANCE","Entrance / Processional Hymn",""],["KYRIE","Kyrie — Lord, Have Mercy",""],["GLORIA","Gloria — Glory to God","(omitted in Advent & Lent)"],["PSALM_MUSIC","Responsorial Psalm",""],["ACCLAMATION","Gospel Acclamation — Alleluia","(Lenten acclamation in Lent)"],["OFFERTORY","Preparation of the Gifts / Offertory",""],["SANCTUS","Sanctus — Holy, Holy, Holy",""],["MEMORIAL","Memorial Acclamation — Mystery of Faith",""],["AMEN","Great Amen",""],["LORD_PRAYER","The Lord's Prayer — Our Father","(if sung)"],["AGNUS","Agnus Dei — Lamb of God",""],["COMMUNION","Communion Hymn",""],["RECESSIONAL","Recessional / Closing Hymn",""]];
 function labelCell(text,note){ const runs=[new TextRun({text,bold:true,size:22,color:ACCENT})]; if(note)runs.push(new TextRun({text:"  "+note,italics:true,size:15,color:"8A8A8A",break:1})); return new TableCell({width:{size:LCOL,type:WidthType.DXA},verticalAlign:VerticalAlign.CENTER,shading:{type:ShadingType.CLEAR,color:"auto",fill:LABELBG},margins:{top:60,bottom:60,left:140,right:120},borders:cb(),children:[new Paragraph({children:runs})]}); }
-function blankCell(){ return new TableCell({width:{size:RCOL,type:WidthType.DXA},verticalAlign:VerticalAlign.CENTER,margins:{top:60,bottom:60,left:140,right:140},borders:cb(),children:[new Paragraph({children:[new TextRun({text:"",size:22})]})]}); }
-function partRow(l,n){ return new TableRow({height:{value:560,rule:HeightRule.ATLEAST},children:[labelCell(l,n),blankCell()]}); }
+function musicCell(token){ return new TableCell({width:{size:RCOL,type:WidthType.DXA},verticalAlign:VerticalAlign.CENTER,margins:{top:60,bottom:60,left:140,right:140},borders:cb(),children:[new Paragraph({children:[new TextRun({text:token,size:22})]})]}); }
+function partRow(key,l,n){ return new TableRow({height:{value:560,rule:HeightRule.ATLEAST},children:[labelCell(l,n),musicCell(`@@MUSIC_${key}@@`)]}); }
 function readingRow(label,tok){ const l=new TableCell({width:{size:2400,type:WidthType.DXA},verticalAlign:VerticalAlign.CENTER,shading:{type:ShadingType.CLEAR,color:"auto",fill:LABELBG},margins:{top:40,bottom:40,left:140,right:100},borders:cb(),children:[new Paragraph({children:[new TextRun({text:label,bold:true,size:19,color:ACCENT})]})]}); const c=new TableCell({width:{size:6960,type:WidthType.DXA},verticalAlign:VerticalAlign.CENTER,shading:{type:ShadingType.CLEAR,color:"auto",fill:"FBF6F6"},margins:{top:40,bottom:40,left:140,right:140},borders:cb(),children:[new Paragraph({children:[new TextRun({text:tok,size:21})]})]}); return new TableRow({children:[l,c]}); }
 const spacer=(h)=>new Paragraph({spacing:{after:h},children:[new TextRun({text:"",size:6})]});
 
@@ -43,7 +43,7 @@ const doc = new Document({
       new Table({width:{size:TABLE_W,type:WidthType.DXA},columnWidths:[2400,6960],rows:[readingRow("First Reading","@@FIRST@@"),readingRow("Responsorial Psalm","@@PSALM@@"),readingRow("Second Reading","@@SECOND@@"),readingRow("Gospel","@@GOSPEL@@")]}),
       spacer(80),
       new Paragraph({spacing:{before:60,after:30},children:[new TextRun({text:"SUNG PARTS OF THE MASS",bold:true,size:18,color:"888888"})]}),
-      new Table({width:{size:TABLE_W,type:WidthType.DXA},columnWidths:[LCOL,RCOL],rows:PARTS.map(([n,note])=>partRow(n,note))}),
+      new Table({width:{size:TABLE_W,type:WidthType.DXA},columnWidths:[LCOL,RCOL],rows:PARTS.map(([key,n,note])=>partRow(key,n,note))}),
       spacer(70),
       new Table({width:{size:TABLE_W,type:WidthType.DXA},columnWidths:[TABLE_W],rows:[
         new TableRow({height:{value:340,rule:HeightRule.ATLEAST},children:[new TableCell({width:{size:TABLE_W,type:WidthType.DXA},shading:{type:ShadingType.CLEAR,color:"auto",fill:LABELBG},margins:{top:60,bottom:60,left:140,right:140},borders:cb(),children:[new Paragraph({children:[new TextRun({text:"Notes",bold:true,size:22,color:ACCENT})]})]})]}),
@@ -68,6 +68,6 @@ Packer.toBuffer(doc).then((buf)=>{
   fs.mkdirSync(PARTS_DIR);
   execFileSync("unzip", ["-q", TEMPLATE_PATH, "-d", PARTS_DIR]);
   const dx=fs.readFileSync(path.join(PARTS_DIR, "word/document.xml"),"utf8");
-  ["@@DAY@@","@@FIRST@@","@@FIRSTTEXT@@","@@PSALMTEXT@@","@@SECONDTEXT@@","@@GOSPELTEXT@@"].forEach(t=>console.log(t, dx.includes(t)?"ok":"MISSING"));
+  ["@@DAY@@","@@FIRST@@","@@FIRSTTEXT@@","@@PSALMTEXT@@","@@SECONDTEXT@@","@@GOSPELTEXT@@",...PARTS.map(([key])=>`@@MUSIC_${key}@@`)].forEach(t=>console.log(t, dx.includes(t)?"ok":"MISSING"));
   console.log("template2 built");
 });

@@ -53,7 +53,7 @@ const html = `<!DOCTYPE html>
   input[type=date]{ width:100%; height:44px; font-size:16px; padding:9px 11px; color:var(--ink); background:#fff; border:1px solid #bdb4b5; border-radius:9px; }
   button{ min-height:44px; font-size:14px; font-weight:650; padding:9px 14px; border-radius:2px; border:1px solid var(--accent); cursor:pointer; touch-action:manipulation; background:#fff; color:var(--accent); transition:background .15s ease,border-color .15s ease,box-shadow .15s ease,transform .05s ease; }
   button:hover{ background:#f6f1e5; }
-  button:focus-visible,input:focus-visible,summary:focus-visible{ outline:3px solid rgba(0,47,69,.22); outline-offset:2px; }
+  button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{ outline:3px solid rgba(0,47,69,.22); outline-offset:2px; }
   button.primary{ background:var(--accent); color:#fff; box-shadow:0 3px 9px rgba(0,47,69,.16); }
   button.primary:hover{ background:var(--accent-dark); }
   button.nav{ padding:9px 12px; }
@@ -93,6 +93,41 @@ const html = `<!DOCTYPE html>
   .edit-card[open] .summary-action{ font-size:0; }
   .edit-card[open] .summary-action:after{ content:"Close"; font-size:13px; }
   .edit-card .edit{ border-top:1px solid #eee6d5; padding:10px 22px 20px; }
+  .music-card{ padding:0; overflow:hidden; }
+  .music-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:20px 22px 15px; border-bottom:1px solid #eee6d5; }
+  .music-head h2{ font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:23px; font-weight:400; line-height:1.2; margin:0; }
+  .music-head p{ color:var(--muted); font-size:12.5px; line-height:1.4; margin:4px 0 0; }
+  .sync-status{ flex:none; color:var(--muted); font-size:11.5px; padding-top:4px; }
+  .sync-status[data-state="saved"]{ color:#38704b; }
+  .sync-status[data-state="error"]{ color:#9a3b22; }
+  .music-list{ margin:0; }
+  .music-view-row{ display:grid; grid-template-columns:minmax(150px,38%) minmax(0,1fr); gap:14px; padding:12px 22px; border-bottom:1px solid #eee6d5; }
+  .music-view-row:last-child{ border-bottom:none; }
+  .music-part-label{ color:var(--muted); font-size:11.5px; font-weight:700; line-height:1.35; text-transform:uppercase; letter-spacing:.25px; }
+  .music-part-note{ display:block; margin-top:2px; color:#8a8173; font-size:10px; font-style:italic; font-weight:400; letter-spacing:0; text-transform:none; }
+  .music-choice{ min-width:0; color:var(--ink); font-size:14px; font-weight:650; line-height:1.35; overflow-wrap:anywhere; }
+  .music-empty{ color:#9a9286; font-weight:400; }
+  .listen-link{ display:inline-block; margin-top:4px; color:var(--accent); font-size:11.5px; font-weight:700; text-underline-offset:2px; }
+  .music-edit-row{ padding:14px 22px 16px; border-bottom:1px solid #eee6d5; }
+  .music-edit-row:last-child{ border-bottom:none; }
+  .music-edit-row .music-part-label{ display:block; margin-bottom:7px; color:var(--ink); }
+  .music-fields{ display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:8px; }
+  .music-fields input{ width:100%; min-width:0; height:42px; padding:8px 10px; border:1px solid #c9c0b1; border-radius:7px; color:var(--ink); background:#fff; font-size:15px; }
+  .music-fields input::placeholder{ color:#958d81; }
+  .editor-help{ padding:10px 22px; color:var(--muted); background:#fcfaf6; border-bottom:1px solid #eee6d5; font-size:11.5px; }
+  .auth-button{ min-height:0; padding:5px 9px; border-color:rgba(255,255,255,.72); color:#fff; background:transparent; font-size:11px; }
+  .auth-button:hover{ background:rgba(255,255,255,.12); }
+  .login-dialog{ width:min(420px,calc(100% - 28px)); padding:0; border:1px solid var(--line); border-radius:5px; color:var(--ink); background:#fff; box-shadow:0 18px 55px rgba(0,31,45,.24); }
+  .login-dialog::backdrop{ background:rgba(0,31,45,.48); }
+  .login-form{ padding:24px; }
+  .login-form h2{ margin:0; font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:25px; font-weight:400; }
+  .login-form p{ margin:5px 0 18px; color:var(--muted); font-size:12.5px; line-height:1.45; }
+  .login-form label{ display:block; margin:11px 0 4px; color:var(--accent); font-size:11px; font-weight:700; letter-spacing:.35px; text-transform:uppercase; }
+  .login-form input{ width:100%; height:44px; padding:9px 11px; border:1px solid #c9c0b1; border-radius:7px; color:var(--ink); font-size:16px; }
+  .login-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
+  .login-error{ min-height:18px; margin:9px 0 -3px!important; color:#9a3b22!important; }
+  .pchoice{ font-size:13px; font-weight:650; }
+  .pchoice a{ display:block; margin-top:3px; color:var(--accent); font-size:10px; font-weight:650; }
   .preview-heading{ padding:4px 2px 0; }
   .preview-heading p{ color:var(--muted); font-size:12.5px; margin:4px 0 0; }
   .sheet-frame{ width:100%; max-width:100%; min-width:0; margin-bottom:20px; }
@@ -195,10 +230,23 @@ const html = `<!DOCTYPE html>
     .edit-card{ padding:0; }
     .edit-card > summary{ padding:16px 17px; }
     .edit-card .edit{ padding:8px 17px 17px; }
+    .music-head{ padding:15px 16px 12px; }
+    .music-head h2{ font-size:21px; }
+    .music-head p{ font-size:11.5px; }
+    .music-view-row{ grid-template-columns:112px minmax(0,1fr); gap:10px; padding:10px 16px; }
+    .music-part-label{ font-size:10px; }
+    .music-choice{ font-size:13.5px; }
+    .music-edit-row{ padding:12px 16px 14px; }
+    .music-fields{ grid-template-columns:1fr; gap:7px; }
+    .music-fields input{ height:44px; font-size:16px; }
+    .editor-help{ padding:9px 16px; }
+    .sync-status{ font-size:10.5px; }
+    .login-form{ padding:20px; }
+    .login-actions{ display:grid; grid-template-columns:1fr 1fr; }
   }
 </style></head>
 <body>
-<div class="parish-bar"><div class="parish-bar-inner"><a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener"><span class="bar-desktop">St. Henry’s Cathedral Parish</span><span class="bar-mobile">St James the Apostle</span></a><div class="parish-bar-actions"><span>Church of St. James the Apostle</span><button class="install-app" id="installApp" hidden>Install app</button></div></div></div>
+<div class="parish-bar"><div class="parish-bar-inner"><a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener"><span class="bar-desktop">St. Henry’s Cathedral Parish</span><span class="bar-mobile">St James the Apostle</span></a><div class="parish-bar-actions"><span>Church of St. James the Apostle</span><button class="install-app" id="installApp" hidden>Install app</button><button class="auth-button" id="authButton">Editor sign in</button></div></div></div>
 <div class="wrap">
   <header class="app">
     <h1><span class="desktop-title">St James the Apostle — 6pm Mass</span><span class="mobile-title">6pm Mass music planner</span></h1>
@@ -239,11 +287,24 @@ const html = `<!DOCTYPE html>
     </details>
   </div>
 
+  <section class="card music-card" aria-labelledby="musicTitle">
+    <div class="music-head">
+      <div>
+        <div class="eyebrow">Live plan</div>
+        <h2 id="musicTitle">Music choices</h2>
+        <p id="musicIntro">Selections for this Sunday appear here as they are chosen.</p>
+      </div>
+      <span class="sync-status" id="syncStatus" role="status">Connecting…</span>
+    </div>
+    <div class="editor-help" id="editorHelp" hidden>Changes save automatically and are immediately visible to everyone.</div>
+    <div class="music-list" id="musicList"></div>
+  </section>
+
   <div class="preview-heading section-heading">
     <div>
       <div class="eyebrow">Preview</div>
       <h2>Your music-planning sheet</h2>
-      <p>The blank right-hand column is where the music choices go.</p>
+      <p>Saved music choices are included in the downloadable sheet.</p>
     </div>
   </div>
   <div class="sheet-frame"><div class="sheet" id="sheet"></div></div>
@@ -266,17 +327,41 @@ const html = `<!DOCTYPE html>
   <div class="foot">Calendar: Catholic Church in Finland (Diocese of Helsinki) — Epiphany on 6 Jan, St Henry, All Souls handled. Sunday cycles A–C <span id="range"></span>, readings from the Order of Readings for Mass. Always confirm against your parish Ordo; edit any field to override.</div>
 </div>
 
+<dialog class="login-dialog" id="loginDialog">
+  <form class="login-form" id="loginForm">
+    <h2>Editor sign in</h2>
+    <p>Use the editor account provided by the parish. Your session stays signed in on this device.</p>
+    <label for="loginEmail">Email</label>
+    <input id="loginEmail" name="email" type="email" autocomplete="username" required>
+    <label for="loginPassword">Password</label>
+    <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+    <p class="login-error" id="loginError" role="alert"></p>
+    <div class="login-actions">
+      <button type="button" id="loginCancel">Cancel</button>
+      <button class="primary" type="submit" id="loginSubmit">Sign in</button>
+    </div>
+  </form>
+</dialog>
+
 <script>
 const SUNDAYS = ${SUNDAYS};
 const PARTS = ${PARTS_JSON};
 const PARTS2 = ${PARTS2_JSON};
 const READINGS = ${READINGS_JSON};
-const PARTLABELS = [
-  ["Entrance / Processional Hymn",""],["Kyrie — Lord, Have Mercy",""],["Gloria — Glory to God","(omitted in Advent & Lent)"],
-  ["Responsorial Psalm",""],["Gospel Acclamation — Alleluia","(Lenten acclamation in Lent)"],
-  ["Preparation of the Gifts / Offertory",""],["Sanctus — Holy, Holy, Holy",""],["Memorial Acclamation — Mystery of Faith",""],
-  ["Great Amen",""],["The Lord's Prayer — Our Father","(if sung)"],["Agnus Dei — Lamb of God",""],
-  ["Communion Hymn",""],["Recessional / Closing Hymn",""],
+const MUSIC_PARTS = [
+  {key:"entrance",token:"ENTRANCE",label:"Entrance / Processional Hymn",note:""},
+  {key:"kyrie",token:"KYRIE",label:"Kyrie — Lord, Have Mercy",note:""},
+  {key:"gloria",token:"GLORIA",label:"Gloria — Glory to God",note:"(omitted in Advent & Lent)"},
+  {key:"psalm",token:"PSALM_MUSIC",label:"Responsorial Psalm",note:""},
+  {key:"acclamation",token:"ACCLAMATION",label:"Gospel Acclamation — Alleluia",note:"(Lenten acclamation in Lent)"},
+  {key:"offertory",token:"OFFERTORY",label:"Preparation of the Gifts / Offertory",note:""},
+  {key:"sanctus",token:"SANCTUS",label:"Sanctus — Holy, Holy, Holy",note:""},
+  {key:"memorial",token:"MEMORIAL",label:"Memorial Acclamation — Mystery of Faith",note:""},
+  {key:"amen",token:"AMEN",label:"Great Amen",note:""},
+  {key:"lordPrayer",token:"LORD_PRAYER",label:"The Lord's Prayer — Our Father",note:"(if sung)"},
+  {key:"agnus",token:"AGNUS",label:"Agnus Dei — Lamb of God",note:""},
+  {key:"communion",token:"COMMUNION",label:"Communion Hymn",note:""},
+  {key:"recessional",token:"RECESSIONAL",label:"Recessional / Closing Hymn",note:""},
 ];
 const byDate = {}; SUNDAYS.forEach((s,i)=>byDate[s.d]=i);
 const cycleName = c => "Year " + c;
@@ -285,6 +370,13 @@ function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").repla
 
 let curIdx = 0;  // index into SUNDAYS
 let override = {}; // {day,first,psalm,second,gospel}
+let musicChoices = {};
+let planStore = null;
+let stopPlanSubscription = null;
+let stopAuthSubscription = null;
+let isEditor = false;
+let signedIn = false;
+let saveTimers = {};
 
 function current(){ return SUNDAYS[curIdx]; }
 function vals(){
@@ -302,11 +394,51 @@ function renderEditors(){
   const v = vals();
   e_day.value=v.day; e_first.value=v.first; e_psalm.value=v.psalm; e_second.value=v.second; e_gospel.value=v.gospel;
 }
+function choiceFor(key){
+  const value=musicChoices[key] || {};
+  return {song:value.song || "", youtubeUrl:value.youtubeUrl || ""};
+}
+function safeYoutubeUrl(value){
+  if(!value) return "";
+  try{
+    const url=new URL(value);
+    const host=url.hostname.toLowerCase().replace(/^www\\./,"");
+    return url.protocol==="https:" && (host==="youtube.com" || host.endsWith(".youtube.com") || host==="youtu.be") ? url.href : "";
+  }catch(error){ return ""; }
+}
+function musicLabel(part){
+  return esc(part.label)+(part.note?'<span class="music-part-note">'+esc(part.note)+'</span>':'');
+}
+function renderMusicPlan(){
+  editorHelp.hidden=!isEditor;
+  musicIntro.textContent=isEditor ? "Enter a song title and, optionally, a YouTube practice link." : "Selections for this Sunday appear here as they are chosen.";
+  if(isEditor){
+    musicList.innerHTML=MUSIC_PARTS.map(part=>{
+      const choice=choiceFor(part.key);
+      return '<div class="music-edit-row"><label class="music-part-label" for="song_'+part.key+'">'+musicLabel(part)+'</label>'
+        +'<div class="music-fields"><input id="song_'+part.key+'" data-part="'+part.key+'" data-field="song" type="text" value="'+esc(choice.song)+'" placeholder="Song title">'
+        +'<input id="youtube_'+part.key+'" data-part="'+part.key+'" data-field="youtubeUrl" type="url" inputmode="url" value="'+esc(choice.youtubeUrl)+'" placeholder="YouTube link (optional)" aria-label="'+esc(part.label)+' YouTube link"></div></div>';
+    }).join("");
+  }else{
+    musicList.innerHTML=MUSIC_PARTS.map(part=>{
+      const choice=choiceFor(part.key);
+      const link=safeYoutubeUrl(choice.youtubeUrl);
+      return '<div class="music-view-row"><div class="music-part-label">'+musicLabel(part)+'</div><div class="music-choice">'
+        +(choice.song?esc(choice.song):'<span class="music-empty">Not yet chosen</span>')
+        +(link?'<br><a class="listen-link" href="'+esc(link)+'" target="_blank" rel="noopener">Listen / practise ↗</a>':'')+'</div></div>';
+    }).join("");
+  }
+}
 function renderSheet(){
   const v = vals();
   const rows = [["First Reading",v.first],["Responsorial Psalm",v.psalm],["Second Reading",v.second],["Gospel",v.gospel]]
     .map(r=>'<tr><td class="lbl">'+esc(r[0])+'</td><td class="cite">'+(esc(r[1])||"—")+'</td></tr>').join('');
-  const partsHtml = PARTLABELS.map(([n,note])=>'<tr><td class="plabel">'+esc(n)+(note?'<span class="note">'+esc(note)+'</span>':'')+'</td><td class="pblank"></td></tr>').join('');
+  const partsHtml = MUSIC_PARTS.map(part=>{
+    const choice=choiceFor(part.key);
+    const link=safeYoutubeUrl(choice.youtubeUrl);
+    return '<tr><td class="plabel">'+esc(part.label)+(part.note?'<span class="note">'+esc(part.note)+'</span>':'')+'</td><td class="pblank">'
+      +(choice.song?'<span class="pchoice">'+esc(choice.song)+(link?'<a href="'+esc(link)+'" target="_blank" rel="noopener">Listen / practise ↗</a>':'')+'</span>':'')+'</td></tr>';
+  }).join('');
   const printReadings = document.getElementById("incl") && document.getElementById("incl").checked;
   const blk = (label,cite,text) => '<div class="rblock"><div class="rhead">'+esc(label)+'<span class="rcite">'+esc(cite)+'</span></div><div class="rtext">'+(esc(text)||'<em>(see citation)</em>')+'</div></div>';
   const page2 = '<div class="readingpage'+(printReadings?'':' no-print')+'"><div class="rptitle">Mass Readings</div><div class="rpsub">'+esc(v.day)+'  ·  '+esc(v.meta)+'</div>'
@@ -344,15 +476,107 @@ function refresh(){
   else if(warn.textContent.indexOf("outside the computed")<0){ warn.style.display="none"; }
 }
 
+function setSyncStatus(text,state){
+  syncStatus.textContent=text;
+  syncStatus.dataset.state=state || "";
+}
+function subscribeToCurrentPlan(){
+  if(stopPlanSubscription){ stopPlanSubscription(); stopPlanSubscription=null; }
+  musicChoices={};
+  renderMusicPlan();
+  renderSheet();
+  if(!planStore){ setSyncStatus("Connecting…",""); return; }
+  setSyncStatus("Loading…","");
+  stopPlanSubscription=planStore.subscribePlan(current().d,(choices,meta)=>{
+    musicChoices=choices || {};
+    renderMusicPlan();
+    renderSheet();
+    setSyncStatus(meta && meta.offline ? "Offline — showing saved copy" : "Up to date",meta && meta.offline ? "" : "saved");
+  },error=>{
+    console.error(error);
+    setSyncStatus("Could not load plan","error");
+  });
+}
+function connectPlanStore(store){
+  planStore=store;
+  if(stopAuthSubscription) stopAuthSubscription();
+  stopAuthSubscription=store.subscribeAuth(auth=>{
+    isEditor=!!auth.isEditor;
+    signedIn=!!auth.user;
+    authButton.textContent=isEditor ? "Sign out" : (signedIn ? "Not an editor · Sign out" : "Editor sign in");
+    renderMusicPlan();
+  });
+  subscribeToCurrentPlan();
+}
+window.massPlanApp={connect:connectPlanStore};
+
+musicList.addEventListener("input",event=>{
+  const input=event.target.closest("input[data-part]");
+  if(!input || !isEditor) return;
+  const key=input.dataset.part;
+  const field=input.dataset.field;
+  const sunday=current().d;
+  const choice=choiceFor(key);
+  choice[field]=input.value;
+  musicChoices[key]=choice;
+  renderSheet();
+  clearTimeout(saveTimers[key]);
+  setSyncStatus("Saving…","");
+  saveTimers[key]=setTimeout(async ()=>{
+    try{
+      await planStore.savePart(sunday,key,choice);
+      setSyncStatus(navigator.onLine ? "Saved" : "Saved offline","saved");
+    }catch(error){
+      console.error(error);
+      setSyncStatus("Save failed","error");
+    }
+  },500);
+});
+authButton.addEventListener("click",async ()=>{
+  if(!planStore){ setSyncStatus("Editor sign-in unavailable","error"); return; }
+  try{
+    if(signedIn) await planStore.signOut();
+    else{
+      loginError.textContent="";
+      loginDialog.showModal();
+      setTimeout(()=>loginEmail.focus(),0);
+    }
+  }catch(error){
+    console.error(error);
+    setSyncStatus("Sign-in failed","error");
+  }
+});
+loginCancel.addEventListener("click",()=>loginDialog.close());
+loginDialog.addEventListener("click",event=>{
+  if(event.target===loginDialog) loginDialog.close();
+});
+loginForm.addEventListener("submit",async event=>{
+  event.preventDefault();
+  loginError.textContent="";
+  loginSubmit.disabled=true;
+  loginSubmit.textContent="Signing in…";
+  try{
+    await planStore.signIn(loginEmail.value.trim(),loginPassword.value);
+    loginPassword.value="";
+    loginDialog.close();
+  }catch(error){
+    console.error(error);
+    loginError.textContent="Sign-in failed. Check the email and password.";
+  }finally{
+    loginSubmit.disabled=false;
+    loginSubmit.textContent="Sign in";
+  }
+});
+
 // pick nearest Sunday to a chosen date
 function goToDate(iso){
-  if(byDate[iso]!==undefined){ curIdx=byDate[iso]; override={}; warn.style.display="none"; refresh(); return; }
+  if(byDate[iso]!==undefined){ curIdx=byDate[iso]; override={}; warn.style.display="none"; refresh(); subscribeToCurrentPlan(); return; }
   // find nearest Sunday record
   let best=-1,bestDiff=1e15; const t=new Date(iso+"T12:00:00Z").getTime();
   SUNDAYS.forEach((s,i)=>{ const diff=Math.abs(new Date(s.d+"T12:00:00Z").getTime()-t); if(diff<bestDiff){bestDiff=diff;best=i;} });
   if(best<0 || bestDiff>1000*3600*24*366){ warn.style.display="block"; warn.textContent="That date is outside the computed range (2025–2075). You can still type the readings in manually below."; }
   else warn.style.display="none";
-  curIdx=best; override={}; refresh();
+  curIdx=best; override={}; refresh(); subscribeToCurrentPlan();
 }
 
 // ---- Word (.docx) generation in-browser ----
@@ -380,6 +604,7 @@ function downloadWord(){
   const src = withRd ? PARTS2 : PARTS;
   let docXml=dec.decode(b64ToBytes(src["word/document.xml"]));
   const repl={ "@@DAY@@":v.day, "@@META@@":v.meta, "@@FIRST@@":v.first, "@@PSALM@@":v.psalm, "@@SECOND@@":(v.second||"—"), "@@GOSPEL@@":v.gospel };
+  MUSIC_PARTS.forEach(part=>{ repl["@@MUSIC_"+part.token+"@@"]=choiceFor(part.key).song; });
   if(withRd){ Object.assign(repl, {
     "@@FIRSTTEXT@@": textFor(v.first) || "(full text not available — see citation above)",
     "@@PSALMTEXT@@": textFor(v.psalm) || "(sung — see citation above)",
@@ -401,16 +626,16 @@ function nextSundayIdx(){ const today=new Date().toISOString().slice(0,10); let 
   document.getElementById(id).addEventListener("input", e=>{ override[key]=e.target.value; renderReadingSummary(); renderSheet(); });
 });
 document.getElementById("reset").addEventListener("click", e=>{ e.preventDefault(); override={}; refresh(); });
-prev.addEventListener("click", ()=>{ if(curIdx>0){curIdx--; override={}; date.value=current().d; refresh(); } });
-next.addEventListener("click", ()=>{ if(curIdx<SUNDAYS.length-1){curIdx++; override={}; date.value=current().d; refresh(); } });
-document.getElementById("today").addEventListener("click", ()=>{ curIdx=nextSundayIdx(); override={}; date.value=current().d; refresh(); });
+prev.addEventListener("click", ()=>{ if(curIdx>0){curIdx--; override={}; date.value=current().d; refresh(); subscribeToCurrentPlan(); } });
+next.addEventListener("click", ()=>{ if(curIdx<SUNDAYS.length-1){curIdx++; override={}; date.value=current().d; refresh(); subscribeToCurrentPlan(); } });
+document.getElementById("today").addEventListener("click", ()=>{ curIdx=nextSundayIdx(); override={}; date.value=current().d; refresh(); subscribeToCurrentPlan(); });
 date.addEventListener("change", ()=>{ goToDate(date.value); date.value=current().d; });
 dl.addEventListener("click", downloadWord);
 document.getElementById("print").addEventListener("click", ()=>window.print());
 document.getElementById("incl").addEventListener("change", renderSheet);
 document.getElementById("range").textContent = "("+SUNDAYS[0].d.slice(0,4)+"–"+SUNDAYS[SUNDAYS.length-1].d.slice(0,4)+")";
 
-curIdx=nextSundayIdx(); date.value=current().d; refresh();
+curIdx=nextSundayIdx(); date.value=current().d; refresh(); renderMusicPlan();
 
 // Installable app support. iPhone/iPad uses Safari's Share → Add to Home Screen flow.
 let deferredInstallPrompt = null;
@@ -436,7 +661,11 @@ window.addEventListener("appinstalled", ()=>{ installApp.hidden=true; deferredIn
 if("serviceWorker" in navigator && location.protocol!=="file:"){
   window.addEventListener("load", ()=>navigator.serviceWorker.register("./service-worker.js"));
 }
-</script></body></html>`;
+</script>
+<script src="./supabase-config.js"></script>
+<script type="module" src="./supabase-client.js"></script>
+</body></html>`;
 
 fs.writeFileSync(path.join(ROOT, "StJames_Mass_Planner.html"), html);
+fs.writeFileSync(path.join(ROOT, "index.html"), html);
 console.log("written", Math.round(html.length/1024), "KB");

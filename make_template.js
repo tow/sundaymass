@@ -15,11 +15,11 @@ const cb = () => ({
   left: { style: BorderStyle.SINGLE, size: 4, color: LINE }, right: { style: BorderStyle.SINGLE, size: 4, color: LINE },
 });
 const PARTS = [
-  ["Entrance / Processional Hymn", ""], ["Kyrie — Lord, Have Mercy", ""], ["Gloria — Glory to God", "(omitted in Advent & Lent)"],
-  ["Responsorial Psalm", ""], ["Gospel Acclamation — Alleluia", "(Lenten acclamation in Lent)"],
-  ["Preparation of the Gifts / Offertory", ""], ["Sanctus — Holy, Holy, Holy", ""], ["Memorial Acclamation — Mystery of Faith", ""],
-  ["Great Amen", ""], ["The Lord's Prayer — Our Father", "(if sung)"], ["Agnus Dei — Lamb of God", ""],
-  ["Communion Hymn", ""], ["Recessional / Closing Hymn", ""],
+  ["ENTRANCE", "Entrance / Processional Hymn", ""], ["KYRIE", "Kyrie — Lord, Have Mercy", ""], ["GLORIA", "Gloria — Glory to God", "(omitted in Advent & Lent)"],
+  ["PSALM_MUSIC", "Responsorial Psalm", ""], ["ACCLAMATION", "Gospel Acclamation — Alleluia", "(Lenten acclamation in Lent)"],
+  ["OFFERTORY", "Preparation of the Gifts / Offertory", ""], ["SANCTUS", "Sanctus — Holy, Holy, Holy", ""], ["MEMORIAL", "Memorial Acclamation — Mystery of Faith", ""],
+  ["AMEN", "Great Amen", ""], ["LORD_PRAYER", "The Lord's Prayer — Our Father", "(if sung)"], ["AGNUS", "Agnus Dei — Lamb of God", ""],
+  ["COMMUNION", "Communion Hymn", ""], ["RECESSIONAL", "Recessional / Closing Hymn", ""],
 ];
 function labelCell(text, note) {
   const runs = [new TextRun({ text, bold: true, size: 22, color: ACCENT })];
@@ -28,11 +28,11 @@ function labelCell(text, note) {
     shading: { type: ShadingType.CLEAR, color: "auto", fill: LABELBG }, margins: { top: 60, bottom: 60, left: 140, right: 120 }, borders: cb(),
     children: [new Paragraph({ children: runs })] });
 }
-function blankCell() {
+function musicCell(token) {
   return new TableCell({ width: { size: RCOL, type: WidthType.DXA }, verticalAlign: VerticalAlign.CENTER,
-    margins: { top: 60, bottom: 60, left: 140, right: 140 }, borders: cb(), children: [new Paragraph({ children: [new TextRun({ text: "", size: 22 })] })] });
+    margins: { top: 60, bottom: 60, left: 140, right: 140 }, borders: cb(), children: [new Paragraph({ children: [new TextRun({ text: token, size: 22 })] })] });
 }
-function partRow(label, note) { return new TableRow({ height: { value: 560, rule: HeightRule.ATLEAST }, children: [labelCell(label, note), blankCell()] }); }
+function partRow(key, label, note) { return new TableRow({ height: { value: 560, rule: HeightRule.ATLEAST }, children: [labelCell(label, note), musicCell(`@@MUSIC_${key}@@`)] }); }
 function readingRow(label, tokenCite) {
   const l = new TableCell({ width: { size: 2400, type: WidthType.DXA }, verticalAlign: VerticalAlign.CENTER,
     shading: { type: ShadingType.CLEAR, color: "auto", fill: LABELBG }, margins: { top: 40, bottom: 40, left: 140, right: 100 }, borders: cb(),
@@ -60,7 +60,7 @@ const doc = new Document({
       ] }),
       spacer(80),
       new Paragraph({ spacing: { before: 60, after: 30 }, children: [new TextRun({ text: "SUNG PARTS OF THE MASS", bold: true, size: 18, color: "888888" })] }),
-      new Table({ width: { size: TABLE_W, type: WidthType.DXA }, columnWidths: [LCOL, RCOL], rows: PARTS.map(([n, note]) => partRow(n, note)) }),
+      new Table({ width: { size: TABLE_W, type: WidthType.DXA }, columnWidths: [LCOL, RCOL], rows: PARTS.map(([key, n, note]) => partRow(key, n, note)) }),
       spacer(70),
       new Table({ width: { size: TABLE_W, type: WidthType.DXA }, columnWidths: [TABLE_W], rows: [
         new TableRow({ height: { value: 340, rule: HeightRule.ATLEAST }, children: [new TableCell({ width: { size: TABLE_W, type: WidthType.DXA }, shading: { type: ShadingType.CLEAR, color: "auto", fill: LABELBG }, margins: { top: 60, bottom: 60, left: 140, right: 140 }, borders: cb(), children: [new Paragraph({ children: [new TextRun({ text: "Notes", bold: true, size: 22, color: ACCENT })] })] })] }),
@@ -82,5 +82,5 @@ Packer.toBuffer(doc).then(async (buf) => {
   console.log("parts:", files.join(", "));
   // confirm tokens present in document.xml
   const docXml = fs.readFileSync(path.join(PARTS_DIR, "word/document.xml"), "utf8");
-  ["@@DAY@@","@@META@@","@@FIRST@@","@@PSALM@@","@@SECOND@@","@@GOSPEL@@"].forEach(t => console.log(t, docXml.includes(t) ? "ok" : "MISSING"));
+  ["@@DAY@@","@@META@@","@@FIRST@@","@@PSALM@@","@@SECOND@@","@@GOSPEL@@", ...PARTS.map(([key]) => `@@MUSIC_${key}@@`)].forEach(t => console.log(t, docXml.includes(t) ? "ok" : "MISSING"));
 });

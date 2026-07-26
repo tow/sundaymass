@@ -1,8 +1,10 @@
-const CACHE_NAME = "st-james-mass-planner-v3";
+const CACHE_NAME = "st-james-mass-planner-v5";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
+  "./supabase-config.js",
+  "./supabase-client.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png",
