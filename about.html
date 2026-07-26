@@ -19,7 +19,7 @@
     a{ color:var(--accent); text-underline-offset:3px; }
     a:focus-visible{ outline:3px solid rgba(0,47,69,.22); outline-offset:2px; }
     .parish-bar{ margin:0 -22px; padding:11px 22px; background:var(--accent); color:#fff; }
-    .parish-bar-inner{ display:flex; align-items:center; justify-content:space-between; gap:18px; max-width:760px; margin:0 auto; font-size:12px; }
+    .parish-bar-inner{ min-height:26px; display:flex; align-items:center; justify-content:space-between; gap:18px; max-width:760px; margin:0 auto; font-size:12px; }
     .parish-home,.back-link{ color:#fff; font-weight:650; text-decoration:none; white-space:nowrap; }
     .parish-home:hover,.back-link:hover{ text-decoration:underline; }
     .wrap{ max-width:760px; margin:0 auto; }
@@ -44,8 +44,8 @@
     footer a{ font-weight:700; }
     @media (max-width:700px){
       body{ padding:0 12px calc(28px + env(safe-area-inset-bottom)); }
-      .parish-bar{ margin:0 -12px; padding:9px 12px; }
-      .parish-bar-inner{ font-size:11px; }
+      .parish-bar{ margin:0 -12px; padding:7px 12px; }
+      .parish-bar-inner{ min-height:34px; font-size:11px; }
       header{ padding:20px 4px 15px; }
       h1{ font-size:29px; }
       header p{ font-size:13px; }
@@ -83,14 +83,14 @@
         <li><strong>Choose the Sunday.</strong> Use the arrows, date control or “Jump to upcoming Sunday”.</li>
         <li><strong>Review the readings.</strong> Tap a reading citation to jump to its full text.</li>
         <li><strong>Choose the music.</strong> Editors sign in, enter each song and may add a YouTube practice link.</li>
-        <li><strong>Record copyright details.</strong> For songs whose lyrics will be projected, fill in the authors, copyright owner or publisher, year and source.</li>
+        <li><strong>Record copyright details.</strong> For songs whose lyrics will be projected, fill in the authors, copyright owner or publisher and year. Add a source when it is useful.</li>
         <li><strong>Print the plan.</strong> Choose either the music sheet alone or music together with the full readings.</li>
       </ol>
     </section>
 
     <section class="card" aria-labelledby="copyright-title">
       <h2 id="copyright-title">Copyright information</h2>
-      <p>Once a song is chosen, its copyright section shows whether the required planning information is complete. The planner combines those fields into a consistent attribution line in public viewing and in the printed sheets.</p>
+      <p>Once a song is chosen, its copyright section shows whether the required planning information is complete. Source is optional and does not affect that status. The planner combines the available fields into a consistent attribution line in public viewing and in the printed sheets.</p>
       <div class="note">Recording attribution does not itself grant permission to reproduce or project protected lyrics. The church remains responsible for holding the appropriate copying licence or direct permission.</div>
     </section>
 

@@ -34,7 +34,7 @@ const html = `<!DOCTYPE html>
   .sr-only{ position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
   body{ margin:0; font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--canvas); padding:0 22px 40px; }
   .parish-bar{ margin:0 -22px; padding:11px 22px; background:var(--accent); color:#fff; }
-  .parish-bar-inner{ max-width:880px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:20px; font-size:12px; letter-spacing:.15px; }
+  .parish-bar-inner{ min-height:26px; max-width:880px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:20px; font-size:12px; letter-spacing:.15px; }
   .parish-home{ flex:none; color:#fff; text-decoration:none; font-weight:650; white-space:nowrap; }
   .parish-home:hover,.parish-home:focus-visible{ text-decoration:underline; text-underline-offset:3px; }
   .bar-mobile,.mobile-title,.nav-mobile{ display:none; }
@@ -157,7 +157,7 @@ const html = `<!DOCTYPE html>
   @media (max-width:700px){
     body{ padding:0 12px calc(28px + env(safe-area-inset-bottom)); }
     .parish-bar{ margin:0 -12px; padding:7px 12px; }
-    .parish-bar-inner{ display:flex; gap:8px; font-size:11px; }
+    .parish-bar-inner{ min-height:34px; display:flex; gap:8px; font-size:11px; }
     .parish-bar-actions{ gap:6px; }
     .parish-bar-actions > span{ display:none; }
     .bar-desktop,.desktop-title,.nav-desktop{ display:none; }
@@ -392,7 +392,7 @@ function musicLabel(part){
 function copyrightComplete(choice){
   if(!choice.song) return true;
   const publicDomain=/\\bpublic domain\\b/i.test(choice.copyrightOwner);
-  return !!(choice.authors.trim() && choice.copyrightOwner.trim() && choice.source.trim() && (choice.copyrightYear.trim() || publicDomain));
+  return !!(choice.authors.trim() && choice.copyrightOwner.trim() && (choice.copyrightYear.trim() || publicDomain));
 }
 function attributionLine(choice){
   const items=[];
@@ -411,8 +411,8 @@ function copyrightFields(part,choice){
     +'<div class="copyright-field"><label for="authors_'+part.key+'">Author(s)</label><input id="authors_'+part.key+'" data-part="'+part.key+'" data-field="authors" type="text" value="'+esc(choice.authors)+'" placeholder="Composer, lyricist, translator"></div>'
     +'<div class="copyright-field"><label for="owner_'+part.key+'">Copyright owner / publisher</label><input id="owner_'+part.key+'" data-part="'+part.key+'" data-field="copyrightOwner" type="text" value="'+esc(choice.copyrightOwner)+'" placeholder="e.g. OCP or Public domain"></div>'
     +'<div class="copyright-field"><label for="year_'+part.key+'">Copyright year</label><input id="year_'+part.key+'" data-part="'+part.key+'" data-field="copyrightYear" type="text" inputmode="numeric" value="'+esc(choice.copyrightYear)+'" placeholder="e.g. 1993"></div>'
-    +'<div class="copyright-field"><label for="source_'+part.key+'">Source</label><input id="source_'+part.key+'" data-part="'+part.key+'" data-field="source" type="text" value="'+esc(choice.source)+'" placeholder="Hymnal + number, publication or website"></div>'
-    +'<p class="copyright-help">Leave the year blank only when the copyright owner is entered as “Public domain”.</p>'
+    +'<div class="copyright-field"><label for="source_'+part.key+'">Source (optional)</label><input id="source_'+part.key+'" data-part="'+part.key+'" data-field="source" type="text" value="'+esc(choice.source)+'" placeholder="Hymnal + number, publication or website"></div>'
+    +'<p class="copyright-help">Source is optional. Leave the year blank only when the copyright owner is entered as “Public domain”.</p>'
     +'</div></details>';
 }
 function renderMusicPlan(){
