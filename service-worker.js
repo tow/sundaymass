@@ -1,7 +1,8 @@
-const CACHE_NAME = "st-james-mass-planner-v13";
+const CACHE_NAME = "st-james-mass-planner-v14";
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./about.html",
   "./manifest.webmanifest",
   "./supabase-config.js",
   "./supabase-client.js",
@@ -30,14 +31,17 @@ self.addEventListener("fetch", event => {
   if (event.request.method !== "GET" || new URL(event.request.url).origin !== self.location.origin) return;
 
   if (event.request.mode === "navigate") {
+    const cacheTarget = new URL(event.request.url).pathname.endsWith("/about.html")
+      ? "./about.html"
+      : "./index.html";
     event.respondWith(
       fetch(event.request)
         .then(response => {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put("./index.html", copy));
+          caches.open(CACHE_NAME).then(cache => cache.put(cacheTarget, copy));
           return response;
         })
-        .catch(() => caches.match("./index.html"))
+        .catch(() => caches.match(event.request).then(cached => cached || caches.match(cacheTarget)))
     );
     return;
   }

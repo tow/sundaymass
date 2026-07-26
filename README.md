@@ -8,10 +8,10 @@ Word planning sheet — optionally with a second page containing the full text o
 readings. Music choices are publicly viewable and authorized editors save changes live.
 
 **The standalone deliverable is `StJames_Mass_Planner.html`** (same planner as
-`index.html`). It is fully self-contained and works offline — all data and both Word
-templates are embedded.
+`index.html`). The planner itself is self-contained and works offline — all data and
+both Word templates are embedded. Deploy `about.html` alongside it for the help page.
 
-For deployment, serve `index.html` together with `supabase-config.js`,
+For deployment, serve `index.html` and `about.html` together with `supabase-config.js`,
 `supabase-client.js`, `manifest.webmanifest`, `service-worker.js`, and `icons/`. On
 HTTPS, the planner can be installed to a phone's home screen.
 

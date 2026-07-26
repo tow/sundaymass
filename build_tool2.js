@@ -46,6 +46,8 @@ const html = `<!DOCTYPE html>
   header.app h1{ color:var(--ink); font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:34px; font-weight:400; line-height:1.18; margin:0 0 6px; letter-spacing:-.4px; }
   header.app p{ color:var(--muted); margin:0; font-size:14px; }
   .church-link{ display:inline-block; margin-top:8px; color:var(--accent); font-size:12px; font-weight:650; text-underline-offset:3px; }
+  .app-meta{ display:flex; align-items:center; gap:7px; margin-top:8px; color:var(--muted); font-size:11px; }
+  .app-meta a{ color:var(--accent); font-weight:700; text-underline-offset:2px; }
   .card{ background:#fff; border:1px solid var(--line); border-radius:4px; padding:24px; margin-bottom:20px; box-shadow:0 2px 10px rgba(39,26,1,.045); }
   .setup-head,.section-heading{ display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:18px; }
   .eyebrow{ color:var(--accent); font-size:11px; font-weight:750; letter-spacing:.8px; text-transform:uppercase; margin-bottom:4px; }
@@ -164,6 +166,7 @@ const html = `<!DOCTYPE html>
     header.app{ padding:14px 4px 11px; }
     header.app h1{ font-size:25px; line-height:1.1; margin:0; }
     header.app p,.church-link{ display:none; }
+    .app-meta{ margin-top:6px; font-size:10.5px; }
     .card{ padding:14px; border-radius:3px; margin-bottom:12px; }
     .planner-card{ margin-left:-4px; margin-right:-4px; }
     .setup-head{ margin-bottom:10px; }
@@ -225,6 +228,7 @@ const html = `<!DOCTYPE html>
     <h1><span class="desktop-title">St James the Apostle — 6pm Mass</span><span class="mobile-title">6pm Mass music planner</span></h1>
     <p>Create a music-planning sheet for any Sunday Mass.</p>
     <a class="church-link" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener">Visit the church webpage ↗</a>
+    <div class="app-meta"><a href="./about.html">About &amp; help</a><span aria-hidden="true">·</span><span>&copy; 2026 Datamediate Oy</span></div>
   </header>
 
   <div class="card planner-card">

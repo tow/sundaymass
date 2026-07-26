@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About &amp; Help — St James Mass Music Planner</title>
+  <meta name="theme-color" content="#002F45">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <style>
+    :root{ --accent:#002F45; --accent-dark:#001F2D; --accentlt:#F0E5C8; --ink:#271A01; --muted:#675F52; --line:#D8CDB8; --canvas:#FBF6EF; }
+    html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; padding:0 22px 40px; color:var(--ink); background:var(--canvas); font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+    a{ color:var(--accent); text-underline-offset:3px; }
+    a:focus-visible{ outline:3px solid rgba(0,47,69,.22); outline-offset:2px; }
+    .parish-bar{ margin:0 -22px; padding:11px 22px; background:var(--accent); color:#fff; }
+    .parish-bar-inner{ display:flex; align-items:center; justify-content:space-between; gap:18px; max-width:760px; margin:0 auto; font-size:12px; }
+    .parish-home,.back-link{ color:#fff; font-weight:650; text-decoration:none; white-space:nowrap; }
+    .parish-home:hover,.back-link:hover{ text-decoration:underline; }
+    .wrap{ max-width:760px; margin:0 auto; }
+    header{ padding:34px 2px 22px; }
+    .eyebrow{ margin-bottom:5px; color:var(--accent); font-size:11px; font-weight:750; letter-spacing:.8px; text-transform:uppercase; }
+    h1,h2{ font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-weight:400; }
+    h1{ margin:0 0 7px; font-size:36px; line-height:1.15; letter-spacing:-.4px; }
+    header p{ max-width:620px; margin:0; color:var(--muted); font-size:14px; line-height:1.5; }
+    .card{ margin-bottom:16px; padding:24px 26px; border:1px solid var(--line); border-radius:4px; background:#fff; box-shadow:0 2px 10px rgba(39,26,1,.045); }
+    .card h2{ margin:0 0 11px; color:var(--ink); font-size:23px; line-height:1.2; }
+    .card p{ margin:0 0 11px; font-size:14px; line-height:1.55; }
+    .card p:last-child{ margin-bottom:0; }
+    .steps{ margin:0; padding:0; list-style:none; counter-reset:help-step; }
+    .steps li{ position:relative; min-height:34px; margin-top:12px; padding-left:42px; font-size:14px; line-height:1.5; counter-increment:help-step; }
+    .steps li:first-child{ margin-top:0; }
+    .steps li:before{ content:counter(help-step); position:absolute; top:0; left:0; display:grid; place-items:center; width:28px; height:28px; border-radius:50%; color:#fff; background:var(--accent); font-size:12px; font-weight:750; }
+    .steps strong{ color:var(--accent); }
+    .note{ padding:13px 15px; border-left:4px solid var(--accent); background:var(--canvas); color:var(--muted); font-size:12.5px; line-height:1.5; }
+    .help-list{ margin:0; padding-left:20px; }
+    .help-list li{ margin:8px 0; padding-left:2px; font-size:14px; line-height:1.5; }
+    footer{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:5px 2px 0; color:var(--muted); font-size:11px; }
+    footer a{ font-weight:700; }
+    @media (max-width:700px){
+      body{ padding:0 12px calc(28px + env(safe-area-inset-bottom)); }
+      .parish-bar{ margin:0 -12px; padding:9px 12px; }
+      .parish-bar-inner{ font-size:11px; }
+      header{ padding:20px 4px 15px; }
+      h1{ font-size:29px; }
+      header p{ font-size:13px; }
+      .card{ margin-bottom:12px; padding:19px 17px; border-radius:3px; }
+      .card h2{ font-size:21px; }
+      .card p,.steps li,.help-list li{ font-size:14px; }
+      footer{ flex-direction:column; justify-content:center; padding-top:5px; text-align:center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="parish-bar">
+    <div class="parish-bar-inner">
+      <a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener">St James the Apostle ↗</a>
+      <a class="back-link" href="./">← Music planner</a>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <header>
+      <div class="eyebrow">St James 6pm Mass</div>
+      <h1>About &amp; help</h1>
+      <p>A quick guide to choosing a Sunday, recording the music plan and preparing a printable sheet.</p>
+    </header>
+
+    <section class="card" aria-labelledby="about-title">
+      <h2 id="about-title">About the planner</h2>
+      <p>This is an independent planning aid for the 6pm Sunday Mass at St James the Apostle. Music plans are publicly visible so singers and musicians can prepare from the same information.</p>
+      <p>It is not an official parish or Diocese of Helsinki publication. Always confirm the liturgical details and proclaimed readings against the parish Ordo.</p>
+    </section>
+
+    <section class="card" aria-labelledby="use-title">
+      <h2 id="use-title">Planning a Sunday</h2>
+      <ol class="steps">
+        <li><strong>Choose the Sunday.</strong> Use the arrows, date control or “Jump to upcoming Sunday”.</li>
+        <li><strong>Review the readings.</strong> Tap a reading citation to jump to its full text.</li>
+        <li><strong>Choose the music.</strong> Editors sign in, enter each song and may add a YouTube practice link.</li>
+        <li><strong>Record copyright details.</strong> For songs whose lyrics will be projected, fill in the authors, copyright owner or publisher, year and source.</li>
+        <li><strong>Print the plan.</strong> Choose either the music sheet alone or music together with the full readings.</li>
+      </ol>
+    </section>
+
+    <section class="card" aria-labelledby="copyright-title">
+      <h2 id="copyright-title">Copyright information</h2>
+      <p>Once a song is chosen, its copyright section shows whether the required planning information is complete. The planner combines those fields into a consistent attribution line in public viewing and in the printed sheets.</p>
+      <div class="note">Recording attribution does not itself grant permission to reproduce or project protected lyrics. The church remains responsible for holding the appropriate copying licence or direct permission.</div>
+    </section>
+
+    <section class="card" aria-labelledby="editing-title">
+      <h2 id="editing-title">Editing and saving</h2>
+      <ul class="help-list">
+        <li>Only authorised editors can change a plan; everyone else can view it.</li>
+        <li>Changes save automatically after a short pause and become visible immediately.</li>
+        <li>There is no separate draft or publish step.</li>
+        <li>If a reading differs from the computed lectionary, use “Adjust liturgical day or readings” near the bottom of the planner.</li>
+      </ul>
+    </section>
+
+    <section class="card" aria-labelledby="install-title">
+      <h2 id="install-title">Install on your phone</h2>
+      <p>On iPhone or iPad, open the planner in Safari, tap Share and choose “Add to Home Screen”. On supported Android browsers, use the Install button shown in the planner header.</p>
+      <p>The installed app keeps the main planner and this help page available for reference when the connection is unavailable. Live plans update again when the device reconnects.</p>
+    </section>
+
+    <footer>
+      <a href="./">Return to the music planner</a>
+      <span>&copy; 2026 Datamediate Oy</span>
+    </footer>
+  </main>
+  <script>
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js"));
+    }
+  </script>
+</body>
+</html>
