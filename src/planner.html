@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>St James the Apostle — 6pm Mass Music Planner</title>
+<meta name="theme-color" content="#002F45">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mass Planner">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<style>
+@@STYLES@@
+</style></head>
+<body>
+<div class="parish-bar"><div class="parish-bar-inner"><a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener" aria-label="Visit the St James the Apostle church webpage">St James the Apostle ↗</a><div class="parish-bar-actions"><span>Church of St. James the Apostle</span><a class="help-button" href="./about.html">Help</a><button class="install-app" id="installApp" hidden>Install</button><button class="auth-button" id="authButton">Sign in</button></div></div></div>
+<div class="wrap">
+  <header class="app">
+    <h1><span class="desktop-title">St James the Apostle — 6pm Mass</span><span class="mobile-title">6pm Mass music planner</span></h1>
+    <p>Create a music-planning sheet for any Sunday Mass.</p>
+    <a class="church-link" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener">Visit the church webpage ↗</a>
+    <div class="app-meta">&copy; 2026 Datamediate Oy</div>
+  </header>
+
+  <div class="card planner-card">
+    <div class="setup-head">
+      <div>
+        <div class="eyebrow">Music planning sheet</div>
+        <h2>Choose the Sunday</h2>
+      </div>
+    </div>
+    <label class="fld sr-only" for="date">Choose a Sunday</label>
+    <div class="daterow">
+      <button class="nav" id="prev" title="Previous Sunday" aria-label="Previous Sunday"><span class="nav-desktop">‹ Previous</span><span class="nav-mobile" aria-hidden="true">‹</span></button>
+      <div class="date-slot"><span class="date-display" id="dateDisplay" aria-hidden="true"></span><input type="date" id="date"></div>
+      <button class="nav" id="next" title="Following Sunday" aria-label="Following Sunday"><span class="nav-desktop">Next ›</span><span class="nav-mobile" aria-hidden="true">›</span></button>
+      <button class="nav" id="today">Jump to upcoming Sunday</button>
+    </div>
+    <div class="resolved" id="resolved"></div>
+    <div class="warn" id="warn" style="display:none"></div>
+
+    <div class="actions">
+      <button class="primary" id="printMusic">Print music sheet</button>
+      <button id="printMusicReadings">Print music + readings</button>
+    </div>
+    <div class="reading-summary" id="readingSummary"></div>
+  </div>
+
+  <section class="card music-card" aria-labelledby="musicTitle">
+    <div class="music-head">
+      <div>
+        <div class="eyebrow">Live plan</div>
+        <h2 id="musicTitle">Music choices</h2>
+        <p id="musicIntro">Selections for this Sunday appear here as they are chosen.</p>
+      </div>
+      <span class="sync-status" id="syncStatus" role="status">Connecting…</span>
+    </div>
+    <div class="editor-help" id="editorHelp" hidden>Changes save automatically and are immediately visible to everyone.</div>
+    <div class="music-list" id="musicList"></div>
+  </section>
+
+  <section class="card readings-card" id="fullReadings" aria-labelledby="readingsTitle">
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow">Readings</div>
+        <h2 id="readingsTitle">Full texts</h2>
+        <p id="readingsIntro"></p>
+      </div>
+    </div>
+    <div id="readingTexts"></div>
+  </section>
+
+  <div class="liturgical-edit-launch" id="liturgicalEditLaunch" hidden>
+    <button type="button" id="openLiturgicalEditor">Edit celebration or readings</button>
+  </div>
+</div>
+
+<dialog class="reading-dialog" id="liturgicalDialog">
+  <div class="reading-dialog-form">
+    <div class="reading-dialog-head">
+      <div>
+        <div class="eyebrow">Rarely needed</div>
+        <h2>Edit celebration or readings</h2>
+        <p>Use another Mass as a complete set, or fine-tune an individual reading.</p>
+      </div>
+      <button class="reading-dialog-close" id="liturgicalDialogClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="reading-dialog-body">
+      <div class="celebration-current" id="celebrationCurrent"></div>
+      <div class="celebration-actions">
+        <button class="primary" type="button" id="chooseCelebration">Use another celebration</button>
+        <button type="button" id="restoreCelebration" hidden>Restore Sunday</button>
+      </div>
+      <div class="fine-tune-head">
+        <h3>Fine-tune individual readings</h3>
+        <p>Only use this when one reading differs from the selected celebration.</p>
+      </div>
+      <div class="reading-editor-list liturgical-dialog-list" id="readingEditorList"></div>
+      <div class="reading-editor-footer" id="readingEditorFooter" hidden>
+        <button type="button" id="restoreAllReadings">Restore all individual readings</button>
+      </div>
+      <span class="sync-status" id="readingSaveStatus" role="status"></span>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="reading-dialog" id="celebrationDialog">
+  <form class="reading-dialog-form" id="celebrationForm">
+    <div class="reading-dialog-head">
+      <div>
+        <div class="eyebrow">Use another Mass</div>
+        <h2>Choose a celebration</h2>
+        <p id="celebrationDialogContext"></p>
+      </div>
+      <button class="reading-dialog-close" id="celebrationDialogClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="reading-dialog-body">
+      <div class="celebration-search">
+        <label for="celebrationSearch">Search the standard lectionary</label>
+        <input id="celebrationSearch" type="search" autocomplete="off" placeholder="e.g. St James, Christmas, 25 July">
+      </div>
+      <div class="celebration-results-heading" id="celebrationResultsHeading">Nearby celebrations</div>
+      <div class="celebration-results" id="celebrationResults"></div>
+      <div class="celebration-preview" id="celebrationPreview" hidden></div>
+    </div>
+    <div class="reading-dialog-actions">
+      <button type="button" id="celebrationCancel">Cancel</button>
+      <button class="primary" type="submit" id="celebrationUse" disabled>Use this celebration</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="reading-dialog" id="readingDialog">
+  <form class="reading-dialog-form" id="readingForm">
+    <div class="reading-dialog-head">
+      <div>
+        <div class="eyebrow">Change reading</div>
+        <h2 id="readingDialogTitle"></h2>
+        <p id="readingDialogContext"></p>
+      </div>
+      <button class="reading-dialog-close" id="readingDialogClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="reading-dialog-body">
+      <fieldset>
+        <legend>Options for this celebration</legend>
+        <div class="suggested-readings" id="readingSuggested"></div>
+      </fieldset>
+      <div class="reading-search">
+        <label for="readingCitationInput">Another passage from the lectionary</label>
+        <input id="readingCitationInput" type="text" list="readingCitationOptions" autocomplete="off" spellcheck="false" placeholder="Start typing a citation">
+        <datalist id="readingCitationOptions"></datalist>
+        <p class="reading-search-help" id="readingSearchHelp"></p>
+        <p class="reading-validation" id="readingValidation" role="status"></p>
+      </div>
+      <div class="reading-text-preview" id="readingTextPreview" hidden></div>
+      <label class="ordo-confirm" id="ordoConfirmWrap" hidden>
+        <input id="ordoConfirm" type="checkbox">
+        <span>I have checked this selection against the parish Ordo or with the celebrant.</span>
+      </label>
+    </div>
+    <div class="reading-dialog-actions">
+      <button type="button" id="readingCancel">Cancel</button>
+      <button class="primary" type="submit" id="readingUse" disabled>Use reading</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="login-dialog" id="loginDialog">
+  <form class="login-form" id="loginForm">
+    <h2>Editor sign in</h2>
+    <p>Sign in to edit music choices. Your session stays signed in on this device.</p>
+    <label for="loginEmail">Email</label>
+    <input id="loginEmail" name="email" type="email" autocomplete="username" required>
+    <label for="loginPassword">Password</label>
+    <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+    <p class="login-error" id="loginError" role="alert"></p>
+    <div class="login-actions">
+      <button type="button" id="loginCancel">Cancel</button>
+      <button class="primary" type="submit" id="loginSubmit">Sign in</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+@@APP_SCRIPT@@
+</script>
+<script src="./supabase-config.js"></script>
+<script type="module" src="./src/services/plan-store.js"></script>
+</body></html>

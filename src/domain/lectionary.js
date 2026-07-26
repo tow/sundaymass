@@ -1,3 +1,4 @@
+// Pure lectionary selection and validation rules shared by the app and tests.
 (function (global) {
   "use strict";
 

@@ -1,3 +1,4 @@
+// Persistence adapter: Supabase in production, local storage during local development.
 const SUPABASE_MODULE_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 function emptyPlan() {

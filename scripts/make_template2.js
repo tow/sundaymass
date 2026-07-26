@@ -5,7 +5,7 @@ const {
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
-const ROOT = __dirname;
+const ROOT = path.resolve(__dirname, "..");
 const TEMPLATE_PATH = path.join(ROOT, "template2.docx");
 const PARTS_DIR = path.join(ROOT, "tpl2");
 

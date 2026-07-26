@@ -1,7 +1,9 @@
 const https = require("https");
 const fs = require("fs");
 const path = require("path");
-const cpbjr = require("./lectionary_table.json"); // slotKey "Cycle | Name" -> {first,psalm,second,gospel,...}
+const ROOT = path.resolve(__dirname, "..");
+const GENERATED_DATA = path.join(ROOT, "data", "generated");
+const cpbjr = require("../data/generated/lectionary_table.json"); // slotKey "Cycle | Name" -> {first,psalm,second,gospel,...}
 
 function fetchJson(url) {
   return new Promise((resolve) => {
@@ -172,7 +174,7 @@ const FIXED_FEAST_FALLBACKS = {
     }
   }
 
-  fs.writeFileSync(path.join(__dirname, "readings_master.json"), JSON.stringify({ bySlot: table, feastByName }, null, 1));
+  fs.writeFileSync(path.join(GENERATED_DATA, "readings_master.json"), JSON.stringify({ bySlot: table, feastByName }, null, 1));
 
   // ---- VERIFY: my Felix Year C OT gospel transcription vs Felix's independent gospel-overview page ----
   const OVERVIEW_C = {2:"John 2:1-12",3:"Luke 1:1-4; 4:14-21",4:"Luke 4:21-30",5:"Luke 5:1-11",6:"Luke 6:17, 20-26",7:"Luke 6:27-38",8:"Luke 6:39-45",9:"Luke 7:1-10",10:"Luke 7:11-17",11:"Luke 7:36-8:3",12:"Luke 9:18-24",13:"Luke 9:51-62",14:"Luke 10:1-12, 17-20",15:"Luke 10:25-37",16:"Luke 10:38-42",17:"Luke 11:1-13",18:"Luke 12:13-21",19:"Luke 12:32-48",20:"Luke 12:49-53",21:"Luke 13:22-30",22:"Luke 14:1, 7-14",23:"Luke 14:25-33",24:"Luke 15:1-32",25:"Luke 16:1-13",26:"Luke 16:19-31",27:"Luke 17:5-10",28:"Luke 17:11-19",29:"Luke 18:1-8",30:"Luke 18:9-14",31:"Luke 19:1-10",32:"Luke 20:27-38",33:"Luke 21:5-19"};

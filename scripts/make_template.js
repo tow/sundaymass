@@ -4,7 +4,7 @@ const {
 } = require("docx");
 const fs = require("fs");
 const path = require("path");
-const ROOT = __dirname;
+const ROOT = path.resolve(__dirname, "..");
 const TEMPLATE_PATH = path.join(ROOT, "template.docx");
 const PARTS_DIR = path.join(ROOT, "tpl");
 

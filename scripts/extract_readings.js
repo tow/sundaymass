@@ -1,10 +1,13 @@
 const fs = require("fs");
+const path = require("path");
+const ROOT = path.resolve(__dirname, "..");
+const GENERATED_DATA = path.join(ROOT, "data", "generated");
 // ---- parse WEB (by book number) ----
-const webRaw = require("./web.json").resultset.row;
+const webRaw = require("../data/sources/web.json").resultset.row;
 const WEB = {}; // num -> ch -> v -> text
 webRaw.forEach(r => { const [id, b, c, v, t] = r.field; (WEB[b] = WEB[b] || {}); (WEB[b][c] = WEB[b][c] || {}); WEB[b][c][v] = cleanText(t); });
 // ---- parse KJVA (by book name) ----
-const kjva = require("./kjva.json").books;
+const kjva = require("../data/sources/kjva.json").books;
 const KJV = {}; // name -> ch -> v -> text
 kjva.forEach(bk => { const m = {}; bk.chapters.forEach(ch => { const cm = {}; ch.verses.forEach(vs => cm[vs.verse] = cleanText(vs.text)); m[ch.chapter] = cm; }); KJV[bk.name] = m; });
 
@@ -119,9 +122,9 @@ function expandAlternatives(cite) {
 }
 
 // ---- run over all distinct citations ----
-const sundayLectionary = require("./sunday-lectionary.json");
-const celebrations = require("./celebrations.json");
-const commons = require("./commons.json");
+const sundayLectionary = require("../data/generated/sunday-lectionary.json");
+const celebrations = require("../data/generated/celebrations.json");
+const commons = require("../data/generated/commons.json");
 const cites = new Set();
 sundayLectionary.forEach(o => [o.f, o.p, o.e, o.g].forEach(c => c && cites.add(c)));
 celebrations.forEach(o => [o.f, o.p, o.e, o.g].forEach(c => c && cites.add(c)));
@@ -142,7 +145,7 @@ const map = {}; let full = 0, partial = 0, none = 0; const problems = [];
   else if (r.missing.length) { partial++; problems.push("PARTIAL " + c + "  missing " + r.missing.join(",")); }
   else full++;
 });
-const outputPath = require("path").join(__dirname, "readings_text.json");
+const outputPath = path.join(GENERATED_DATA, "readings_text.json");
 fs.writeFileSync(outputPath, JSON.stringify(map));
 console.log("calendar citation strings:", cites.size, "| expanded entries:", extractableCites.size, "| full:", full, "| partial:", partial, "| none:", none);
 console.log("readings_text.json KB:", Math.round(fs.statSync(outputPath).size/1024));

@@ -1,6 +1,8 @@
 const romcal = require("romcal");
 const https = require("https");
 const fs = require("fs");
+const path = require("path");
+const GENERATED_DATA = path.resolve(__dirname, "..", "data", "generated");
 
 function fetchJson(url) {
   return new Promise((resolve) => {
@@ -46,7 +48,7 @@ function slotKey(d) { return d.data.meta.cycle.value + " | " + d.name; }
       missingFetch.push({ key, date: d.moment.slice(0, 10) });
     }
   }
-  fs.writeFileSync("/root/lectionary_table.json", JSON.stringify(table, null, 1));
+  fs.writeFileSync(path.join(GENERATED_DATA, "lectionary_table.json"), JSON.stringify(table, null, 1));
 
   // What slots does a 50-year horizon need?
   const need = {};
@@ -69,5 +71,5 @@ function slotKey(d) { return d.data.meta.cycle.value + " | " + d.name; }
     console.log(`\n== missing ${c} (${arr.length}) ==`);
     arr.forEach(m => console.log(`  [${m.type}] ${m.name}  (needed ${m.count}x)`));
   }
-  fs.writeFileSync("/root/missing_slots.json", JSON.stringify(missingSlots, null, 1));
+  fs.writeFileSync(path.join(GENERATED_DATA, "missing_slots.json"), JSON.stringify(missingSlots, null, 1));
 })();

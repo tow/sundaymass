@@ -1,7 +1,9 @@
 const romcal = require("romcal");
 const fs = require("fs");
 const path = require("path");
-const { bySlot, feastByName } = require("./readings_master.json");
+const ROOT = path.resolve(__dirname, "..");
+const GENERATED_DATA = path.join(ROOT, "data", "generated");
+const { bySlot, feastByName } = require("../data/generated/readings_master.json");
 
 // Cycle-independent special readings (editable in the tool)
 const ALL_SOULS = { first: "Wisdom 3:1-9", psalm: "Psalm 23:1-3a, 3b-4, 5, 6", second: "Romans 5:5-11", gospel: "John 6:37-40" };
@@ -62,8 +64,8 @@ Object.values(byDate).sort((a,b)=>a.moment.localeCompare(b.moment)).forEach(d =>
 // Map insertion order is the first calendar occurrence of each entry. Preserve it
 // so celebration-picker ordering and generated scripture-text ordering remain stable.
 const sundayLectionary = Array.from(lectionaryById.values());
-fs.writeFileSync(path.join(__dirname, "sunday-calendar.json"), JSON.stringify(calendar));
-fs.writeFileSync(path.join(__dirname, "sunday-lectionary.json"), JSON.stringify(sundayLectionary));
+fs.writeFileSync(path.join(GENERATED_DATA, "sunday-calendar.json"), JSON.stringify(calendar));
+fs.writeFileSync(path.join(GENERATED_DATA, "sunday-lectionary.json"), JSON.stringify(sundayLectionary));
 console.log("Sundays 2025-2075 (Finland):", calendar.length);
 console.log("distinct Sunday lectionary sets:", sundayLectionary.length);
 console.log("complete required readings:", sundayLectionary.filter(o=>o.f&&o.p&&o.g).length);
@@ -78,7 +80,7 @@ notes.gaps.slice(0,10).forEach(g=>console.log("  gap", g));
 });
 calendar.filter(o=>o.n.includes("Henry")).slice(0,3).forEach(o=>{
   const r=lectionaryById.get(o.l);
-  console.log("  HENRY",o.d,o.n,"(blank readings:",!r.g,")");
+  console.log("  HENRY",o.d,o.n,"(missing readings:",!r.g,")");
 });
 calendar.filter(o=>o.n==="All Souls").slice(0,3).forEach(o=>{
   const r=lectionaryById.get(o.l);

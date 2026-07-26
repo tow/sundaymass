@@ -2,7 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const zlib = require("zlib");
 
-const OUTPUT_DIR = path.join(__dirname, "icons");
+const ROOT = path.resolve(__dirname, "..");
+const OUTPUT_DIR = path.join(ROOT, "icons");
 
 function crc32(buffer) {
   let crc = 0xffffffff;

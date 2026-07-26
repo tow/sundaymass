@@ -1,5 +1,7 @@
 const fs = require("fs");
 const path = require("path");
+const ROOT = path.resolve(__dirname, "..");
+const GENERATED_DATA = path.join(ROOT, "data", "generated");
 
 const SOURCE_URL = "https://catholic-resources.org/Lectionary/2002USL-Sanctoral.htm";
 const COMMONS_URL = "https://catholic-resources.org/Lectionary/2002USL-Masses-Commons.htm";
@@ -224,8 +226,8 @@ async function main() {
   });
 
   celebrations.sort((a, b) => a.monthDay.localeCompare(b.monthDay) || a.name.localeCompare(b.name));
-  const outputPath = path.join(__dirname, "celebrations.json");
-  const commonsPath = path.join(__dirname, "commons.json");
+  const outputPath = path.join(GENERATED_DATA, "celebrations.json");
+  const commonsPath = path.join(GENERATED_DATA, "commons.json");
   fs.writeFileSync(outputPath, JSON.stringify(celebrations));
   fs.writeFileSync(commonsPath, JSON.stringify(commons));
   console.log("wrote", celebrations.length, "standard celebrations to", outputPath);

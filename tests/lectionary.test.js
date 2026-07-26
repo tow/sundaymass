@@ -1,13 +1,13 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-require("./lectionary-catalog.js");
+require("../src/domain/lectionary.js");
 
-const calendar = require("./sunday-calendar.json");
-const sundayLectionary = require("./sunday-lectionary.json");
-const celebrations = require("./celebrations.json");
-const commons = require("./commons.json");
-const readings = require("./readings_text.json");
+const calendar = require("../data/generated/sunday-calendar.json");
+const sundayLectionary = require("../data/generated/sunday-lectionary.json");
+const celebrations = require("../data/generated/celebrations.json");
+const commons = require("../data/generated/commons.json");
+const readings = require("../data/generated/readings_text.json");
 const catalog = global.LectionaryCatalog.create({ calendar, sundayLectionary, celebrations, commons, readings });
 const ordinarySunday = calendar.find(sunday => sunday.d === "2026-07-26");
 
