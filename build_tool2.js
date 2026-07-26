@@ -311,7 +311,8 @@ const MUSIC_PARTS = [
   {key:"amen",token:"AMEN",label:"Great Amen",note:""},
   {key:"lordPrayer",token:"LORD_PRAYER",label:"The Lord's Prayer — Our Father",note:"(if sung)"},
   {key:"agnus",token:"AGNUS",label:"Agnus Dei — Lamb of God",note:""},
-  {key:"communion",token:"COMMUNION",label:"Communion Hymn",note:""},
+  {key:"communion",token:"COMMUNION",label:"Communion Hymn 1",note:""},
+  {key:"communion2",token:"COMMUNION_2",label:"Communion Hymn 2",note:""},
   {key:"recessional",token:"RECESSIONAL",label:"Recessional / Closing Hymn",note:""},
 ];
 const byDate = {}; SUNDAYS.forEach((s,i)=>byDate[s.d]=i);

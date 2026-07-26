@@ -19,7 +19,8 @@ const PARTS = [
   ["PSALM_MUSIC", "Responsorial Psalm", ""], ["ACCLAMATION", "Gospel Acclamation — Alleluia", "(Lenten acclamation in Lent)"],
   ["OFFERTORY", "Preparation of the Gifts / Offertory", ""], ["SANCTUS", "Sanctus — Holy, Holy, Holy", ""], ["MEMORIAL", "Memorial Acclamation — Mystery of Faith", ""],
   ["AMEN", "Great Amen", ""], ["LORD_PRAYER", "The Lord's Prayer — Our Father", "(if sung)"], ["AGNUS", "Agnus Dei — Lamb of God", ""],
-  ["COMMUNION", "Communion Hymn", ""], ["RECESSIONAL", "Recessional / Closing Hymn", ""],
+  ["COMMUNION", "Communion Hymn 1", ""], ["COMMUNION_2", "Communion Hymn 2", ""],
+  ["RECESSIONAL", "Recessional / Closing Hymn", ""],
 ];
 function labelCell(text, note) {
   const runs = [new TextRun({ text, bold: true, size: 22, color: ACCENT })];
