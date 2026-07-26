@@ -35,6 +35,7 @@ const html = `<!DOCTYPE html>
   .parish-bar{ margin:0 -22px; padding:11px 22px; background:var(--accent); color:#fff; }
   .parish-bar-inner{ max-width:880px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:20px; font-size:12px; letter-spacing:.15px; }
   .parish-home{ color:#fff; text-decoration:none; font-weight:650; }
+  .parish-home:hover,.parish-home:focus-visible{ text-decoration:underline; text-underline-offset:3px; }
   .bar-mobile,.mobile-title,.nav-mobile{ display:none; }
   .parish-bar-actions{ display:flex; align-items:center; gap:12px; }
   .install-app{ min-height:0; padding:4px 8px; border-color:rgba(255,255,255,.7); color:#fff; background:transparent; font-size:11px; }
@@ -66,20 +67,14 @@ const html = `<!DOCTYPE html>
   .reading-summary{ margin-top:14px; border:1px solid var(--line); }
   .reading-summary-title{ padding:9px 12px; background:var(--accentlt); color:var(--ink); font-size:11px; font-weight:750; letter-spacing:.6px; text-transform:uppercase; }
   .reading-grid{ display:grid; grid-template-columns:1fr 1fr; }
-  .reading-item{ min-width:0; padding:10px 12px; border-top:1px solid #eee6d5; }
+  .reading-item{ display:block; min-width:0; padding:10px 12px; border-top:1px solid #eee6d5; color:inherit; text-decoration:none; }
   .reading-item:nth-child(odd){ border-right:1px solid #eee6d5; }
+  .reading-item:hover{ background:#fcfaf6; }
   .reading-label{ display:block; color:var(--muted); font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.35px; margin-bottom:2px; }
   .reading-cite{ display:block; color:var(--ink); font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:13.5px; overflow-wrap:anywhere; }
   .warn{ color:#8a4b00; font-size:13px; margin-top:8px; }
-  .actions{ display:flex; align-items:center; gap:10px; margin-top:16px; flex-wrap:wrap; }
-  .actions .primary{ min-height:48px; padding:11px 19px; font-size:15px; }
-  details.options{ margin-top:14px; border-top:1px solid #eee6d5; padding-top:12px; }
-  details.options summary{ width:max-content; color:var(--muted); cursor:pointer; touch-action:manipulation; font-size:13px; font-weight:600; }
-  .option-body{ padding:11px 0 0 2px; }
-  .print-option{ margin-top:12px; }
-  .checkrow{ display:flex; align-items:flex-start; gap:9px; color:var(--ink); font-size:13.5px; cursor:pointer; }
-  .checkrow input{ width:17px; height:17px; margin-top:1px; accent-color:var(--accent); }
-  .checkrow small{ display:block; color:var(--muted); margin-top:2px; font-size:11.5px; }
+  .actions{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:16px; }
+  .actions button{ width:100%; min-width:0; min-height:48px; padding:10px 12px; font-size:14px; line-height:1.2; }
   .edit label{ display:block; font-size:11.5px; color:var(--accent); font-weight:600; margin:10px 0 3px; }
   .edit input{ width:100%; font-size:16px; padding:10px; border:1px solid #ccc; border-radius:8px; }
   .edit .two{ display:grid; grid-template-columns:1fr; gap:2px; }
@@ -126,50 +121,19 @@ const html = `<!DOCTYPE html>
   .login-form input{ width:100%; height:44px; padding:9px 11px; border:1px solid #c9c0b1; border-radius:7px; color:var(--ink); font-size:16px; }
   .login-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
   .login-error{ min-height:18px; margin:9px 0 -3px!important; color:#9a3b22!important; }
-  .pchoice{ font-size:13px; font-weight:650; }
-  .pchoice a{ display:block; margin-top:3px; color:var(--accent); font-size:10px; font-weight:650; }
-  .preview-heading{ padding:4px 2px 0; }
-  .preview-heading p{ color:var(--muted); font-size:12.5px; margin:4px 0 0; }
-  .sheet-frame{ width:100%; max-width:100%; min-width:0; margin-bottom:20px; }
-  /* printable sheet */
-  .sheet{ width:100%; max-width:100%; min-width:0; background:#fff; border:1px solid var(--line); border-radius:2px; padding:32px 40px 38px; box-shadow:0 2px 8px rgba(39,26,1,.07); }
-  .sheet h2{ text-align:center; color:var(--ink); font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:21px; font-weight:400; margin:0 0 2px; }
-  .sheet .sub{ text-align:center; color:#444; font-size:13px; margin:0; }
-  .rule{ height:2px; background:var(--accent); margin:7px 0 12px; }
-  .sheet .dayline{ text-align:center; font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-weight:400; color:var(--ink); font-size:16px; margin:8px 0 1px; }
-  .sheet .meta{ text-align:center; color:var(--muted); font-size:12.5px; margin:0 0 12px; }
-  .readings{ background:var(--accentlt); border:1px solid #e4d3d5; border-radius:8px; padding:6px 14px; margin:0 0 16px; }
-  .readings table{ width:100%; table-layout:fixed; border-collapse:collapse; }
-  .readings td{ padding:5px 0; font-size:13.5px; vertical-align:top; border-bottom:1px solid #ecdcde; }
-  .readings tr:last-child td{ border-bottom:none; }
-  .readings td.lbl{ width:150px; color:var(--muted); }
-  .readings td.cite{ font-weight:600; }
-  table.parts{ width:100%; table-layout:fixed; border-collapse:collapse; }
-  table.parts td{ min-width:0; overflow-wrap:anywhere; border:1px solid #aaa; padding:8px 12px; vertical-align:middle; }
-  td.plabel{ width:42%; background:var(--accentlt); font-weight:700; color:var(--ink); font-size:13.5px; }
-  td.plabel .note{ display:block; font-style:italic; font-weight:400; font-size:11px; color:#8a8a8a; margin-top:2px; }
-  td.pblank{ height:26px; }
-  .sectlabel{ font-size:11px; font-weight:700; color:#888; letter-spacing:.5px; margin:14px 0 6px; }
+  .readings-card{ padding:24px 28px 26px; }
+  .readings-card .section-heading{ margin-bottom:16px; }
+  .readings-card .section-heading p{ color:var(--muted); font-size:12.5px; margin:4px 0 0; }
+  .reading-anchor{ scroll-margin-top:16px; }
   .foot{ text-align:center; color:var(--muted); font-size:11px; margin-top:20px; }
-  .readingpage{ margin-top:26px; padding-top:22px; border-top:2px dashed #d8ccce; }
-  .rptitle{ text-align:center; color:var(--ink); font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:19px; font-weight:400; }
-  .rpsub{ text-align:center; color:var(--muted); font-size:12.5px; margin:2px 0 14px; border-bottom:1px solid #e4d3d5; padding-bottom:10px; }
-  .rblock{ margin:0 0 12px; }
+  .rblock{ margin:0; padding:16px 0; border-top:1px solid #eee6d5; }
+  .rblock:first-child{ border-top:none; padding-top:0; }
+  .rblock:last-of-type{ padding-bottom:0; }
   .rhead{ font-weight:700; color:var(--ink); font-size:14px; margin-bottom:3px; }
   .rhead .rcite{ font-style:italic; font-weight:400; color:var(--muted); font-size:12.5px; margin-left:8px; }
   .rtext{ font-size:13.5px; line-height:1.5; text-align:justify; }
   .rpcaveat{ font-size:11px; font-style:italic; color:var(--muted); margin-top:14px; }
   @media (display-mode:standalone){ .install-app{ display:none !important; } }
-  @page{ size:A4; margin:12mm; }
-  @media print{ .readingpage{ page-break-before:always; border-top:none; margin-top:0; padding-top:0; } }
-  @media print{
-    body{ background:#fff; padding:0; } .parish-bar,.app,.card,.foot{ display:none !important; }
-    .preview-heading{ display:none; } .sheet-frame{ margin:0; overflow:visible; }
-    .sheet{ min-width:0; border:none; box-shadow:none; border-radius:0; padding:0; }
-    .readingpage.no-print{ display:none !important; }
-    .sheet,.readings,table.parts,table.parts tr,table.parts td{ page-break-inside:avoid; }
-    table.parts td{ padding:6px 12px; } td.pblank{ height:22px; }
-  }
   @media (max-width:700px){
     body{ padding:0 12px calc(28px + env(safe-area-inset-bottom)); }
     .parish-bar{ margin:0 -12px; padding:7px 14px; }
@@ -198,9 +162,8 @@ const html = `<!DOCTYPE html>
     .selected-date{ display:none; }
     .selected-day{ font-size:17px; line-height:1.2; }
     .selected-meta{ grid-column:1; grid-row:auto; text-align:left; margin-top:2px; font-size:11px; }
-    .actions{ display:grid; grid-template-columns:1fr; margin-top:10px; }
-    .actions button{ width:100%; }
-    .actions .primary{ min-height:50px; }
+    .actions{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; margin-top:10px; }
+    .actions button{ min-height:50px; padding:8px 7px; font-size:12.5px; }
     .reading-summary{ margin-top:11px; }
     .reading-summary-title{ padding:7px 9px; font-size:10px; }
     .reading-grid{ grid-template-columns:1fr; }
@@ -208,23 +171,8 @@ const html = `<!DOCTYPE html>
     .reading-item:nth-child(odd){ border-right:none; }
     .reading-label{ margin:1px 0 0; font-size:9.5px; }
     .reading-cite{ font-size:12.5px; line-height:1.25; }
-    details.options{ margin-top:10px; padding-top:9px; }
-    details.options summary{ font-size:12px; }
-    .print-option{ width:100%; }
-    .preview-heading{ padding:8px 4px 0; }
-    .sheet-frame{ overflow:visible; margin:0 0 14px; padding:0; }
-    .sheet{ width:100%; padding:22px 14px 26px; }
-    .sheet h2{ font-size:18px; }
-    .sheet .sub{ font-size:12px; }
-    .sheet .dayline{ font-size:15px; }
-    .sheet .meta{ font-size:11px; }
-    .readings{ padding:5px 9px; }
-    .readings td{ font-size:11.5px; }
-    .readings td.lbl{ width:39%; padding-right:7px; }
-    table.parts td{ padding:7px 8px; }
-    td.plabel{ width:52%; font-size:11.5px; }
-    td.plabel .note{ font-size:9.5px; }
-    .readingpage{ margin-top:22px; padding-top:20px; }
+    .readings-card{ padding:18px 16px 20px; }
+    .readings-card .section-heading{ margin-bottom:12px; }
     .rhead .rcite{ display:block; margin:1px 0 0; }
     .rtext{ font-size:14.5px; line-height:1.55; text-align:left; }
     .edit-card{ padding:0; }
@@ -246,7 +194,7 @@ const html = `<!DOCTYPE html>
   }
 </style></head>
 <body>
-<div class="parish-bar"><div class="parish-bar-inner"><a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener"><span class="bar-desktop">St. Henry’s Cathedral Parish</span><span class="bar-mobile">St James the Apostle</span></a><div class="parish-bar-actions"><span>Church of St. James the Apostle</span><button class="install-app" id="installApp" hidden>Install app</button><button class="auth-button" id="authButton">Editor sign in</button></div></div></div>
+<div class="parish-bar"><div class="parish-bar-inner"><a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener" aria-label="Visit the St James the Apostle church webpage">St James the Apostle ↗</a><div class="parish-bar-actions"><span>Church of St. James the Apostle</span><button class="install-app" id="installApp" hidden>Install app</button><button class="auth-button" id="authButton">Editor sign in</button></div></div></div>
 <div class="wrap">
   <header class="app">
     <h1><span class="desktop-title">St James the Apostle — 6pm Mass</span><span class="mobile-title">6pm Mass music planner</span></h1>
@@ -272,19 +220,10 @@ const html = `<!DOCTYPE html>
     <div class="warn" id="warn" style="display:none"></div>
 
     <div class="actions">
-      <button class="primary" id="dl">↓ Download music sheet</button>
+      <button class="primary" id="printMusic">Print music sheet</button>
+      <button id="printMusicReadings">Print music + readings</button>
     </div>
     <div class="reading-summary" id="readingSummary"></div>
-    <details class="options">
-      <summary>Print settings</summary>
-      <div class="option-body">
-        <label class="checkrow">
-          <input type="checkbox" id="incl">
-          <span>Print full reading texts on a second page<small>The full texts always remain visible in the on-screen preview below.</small></span>
-        </label>
-        <button class="print-option" id="print">Print / Save as PDF</button>
-      </div>
-    </details>
   </div>
 
   <section class="card music-card" aria-labelledby="musicTitle">
@@ -300,28 +239,32 @@ const html = `<!DOCTYPE html>
     <div class="music-list" id="musicList"></div>
   </section>
 
-  <div class="preview-heading section-heading">
-    <div>
-      <div class="eyebrow">Preview</div>
-      <h2>Your music-planning sheet</h2>
-      <p>Saved music choices are included in the downloadable sheet.</p>
+  <section class="card readings-card" id="fullReadings" aria-labelledby="readingsTitle">
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow">Readings</div>
+        <h2 id="readingsTitle">Full texts</h2>
+        <p id="readingsIntro"></p>
+      </div>
     </div>
-  </div>
-  <div class="sheet-frame"><div class="sheet" id="sheet"></div></div>
+    <div id="readingTexts"></div>
+  </section>
 
   <details class="card edit-card">
     <summary>
       <span><strong>Adjust liturgical day or readings</strong><small>Only needed when the parish readings differ from the lectionary.</small></span>
       <span class="summary-action">Edit</span>
     </summary>
-    <div class="edit">
-      <label for="e_day">Liturgical day (editable)</label>
-      <input id="e_day" type="text">
-      <label for="e_first">First Reading</label><input id="e_first" type="text">
-      <label for="e_psalm">Responsorial Psalm</label><input id="e_psalm" type="text">
-      <label for="e_second">Second Reading</label><input id="e_second" type="text">
-      <label for="e_gospel">Gospel</label><input id="e_gospel" type="text">
-      <p class="editnote">These are auto-filled from the lectionary. Edit any field to override — the priest's choice wins; the sheet above updates as you type. <a href="#" id="reset">Reset to computed</a>.</p>
+    <div>
+      <div class="edit">
+        <label for="e_day">Liturgical day (editable)</label>
+        <input id="e_day" type="text">
+        <label for="e_first">First Reading</label><input id="e_first" type="text">
+        <label for="e_psalm">Responsorial Psalm</label><input id="e_psalm" type="text">
+        <label for="e_second">Second Reading</label><input id="e_second" type="text">
+        <label for="e_gospel">Gospel</label><input id="e_gospel" type="text">
+        <p class="editnote">These are auto-filled from the lectionary. Edit any field to override — the priest's choice wins; the full texts above update as you type. <a href="#" id="reset">Reset to computed</a>.</p>
+      </div>
     </div>
   </details>
   <div class="foot">Calendar: Catholic Church in Finland (Diocese of Helsinki) — Epiphany on 6 Jan, St Henry, All Souls handled. Sunday cycles A–C <span id="range"></span>, readings from the Order of Readings for Mass. Always confirm against your parish Ordo; edit any field to override.</div>
@@ -429,30 +372,16 @@ function renderMusicPlan(){
     }).join("");
   }
 }
-function renderSheet(){
+function renderFullReadings(){
   const v = vals();
-  const rows = [["First Reading",v.first],["Responsorial Psalm",v.psalm],["Second Reading",v.second],["Gospel",v.gospel]]
-    .map(r=>'<tr><td class="lbl">'+esc(r[0])+'</td><td class="cite">'+(esc(r[1])||"—")+'</td></tr>').join('');
-  const partsHtml = MUSIC_PARTS.map(part=>{
-    const choice=choiceFor(part.key);
-    const link=safeYoutubeUrl(choice.youtubeUrl);
-    return '<tr><td class="plabel">'+esc(part.label)+(part.note?'<span class="note">'+esc(part.note)+'</span>':'')+'</td><td class="pblank">'
-      +(choice.song?'<span class="pchoice">'+esc(choice.song)+(link?'<a href="'+esc(link)+'" target="_blank" rel="noopener">Listen / practise ↗</a>':'')+'</span>':'')+'</td></tr>';
-  }).join('');
-  const printReadings = document.getElementById("incl") && document.getElementById("incl").checked;
-  const blk = (label,cite,text) => '<div class="rblock"><div class="rhead">'+esc(label)+'<span class="rcite">'+esc(cite)+'</span></div><div class="rtext">'+(esc(text)||'<em>(see citation)</em>')+'</div></div>';
-  const page2 = '<div class="readingpage'+(printReadings?'':' no-print')+'"><div class="rptitle">Mass Readings</div><div class="rpsub">'+esc(v.day)+'  ·  '+esc(v.meta)+'</div>'
-    + blk("First Reading", v.first, textFor(v.first))
-    + blk("Responsorial Psalm", v.psalm, textFor(v.psalm)||"(sung — see citation)")
-    + blk("Second Reading", v.second, textFor(v.second))
-    + blk("Gospel", v.gospel, textFor(v.gospel))
-    + '<div class="rpcaveat">Scripture: World English Bible (public domain). Verse numbering — especially in the Psalms — can differ slightly from the lectionary.</div></div>';
-  sheet.innerHTML =
-    '<h2>St James the Apostle — 6pm Mass</h2><div class="sub">Music Planning Sheet</div><div class="rule"></div>'
-    + '<div class="dayline">'+esc(v.day)+'</div><div class="meta">'+esc(v.meta)+'</div>'
-    + '<div class="readings"><table>'+rows+'</table></div>'
-    + '<div class="sectlabel">SUNG PARTS OF THE MASS</div><table class="parts">'+partsHtml+'</table>'
-    + page2;
+  readingsIntro.textContent=v.day+" · "+v.meta;
+  const blk = (id,label,cite,text) => '<article class="rblock reading-anchor" id="'+id+'"><div class="rhead">'+esc(label)+'<span class="rcite">'+esc(cite)+'</span></div><div class="rtext">'+(esc(text)||'<em>(see citation)</em>')+'</div></article>';
+  readingTexts.innerHTML =
+    blk("reading-first","First Reading",v.first,textFor(v.first))
+    + blk("reading-psalm","Responsorial Psalm",v.psalm,textFor(v.psalm)||"(sung — see citation)")
+    + blk("reading-second","Second Reading",v.second,textFor(v.second))
+    + blk("reading-gospel","Gospel",v.gospel,textFor(v.gospel))
+    + '<div class="rpcaveat">Scripture: World English Bible (public domain). Verse numbering — especially in the Psalms — can differ slightly from the lectionary.</div>';
 }
 function renderResolved(){
   const s = current();
@@ -462,13 +391,18 @@ function renderResolved(){
 }
 function renderReadingSummary(){
   const v=vals();
-  const readings=[["First Reading",v.first],["Responsorial Psalm",v.psalm],["Second Reading",v.second],["Gospel",v.gospel]];
+  const readings=[
+    ["First Reading",v.first,"reading-first"],
+    ["Responsorial Psalm",v.psalm,"reading-psalm"],
+    ["Second Reading",v.second,"reading-second"],
+    ["Gospel",v.gospel,"reading-gospel"],
+  ];
   readingSummary.innerHTML='<div class="reading-summary-title">Readings for this Sunday</div><div class="reading-grid">'
-    + readings.map(r=>'<div class="reading-item"><span class="reading-label">'+esc(r[0])+'</span><span class="reading-cite">'+(esc(r[1])||"—")+'</span></div>').join('')
+    + readings.map(r=>'<a class="reading-item" href="#'+r[2]+'"><span class="reading-label">'+esc(r[0])+'</span><span class="reading-cite">'+(esc(r[1])||"—")+'</span></a>').join('')
     + '</div>';
 }
 function refresh(){
-  renderResolved(); renderReadingSummary(); renderEditors(); renderSheet();
+  renderResolved(); renderReadingSummary(); renderEditors(); renderFullReadings();
   prev.disabled=curIdx===0; next.disabled=curIdx===SUNDAYS.length-1;
   today.hidden=curIdx===nextSundayIdx();
   const v = vals();
@@ -484,13 +418,11 @@ function subscribeToCurrentPlan(){
   if(stopPlanSubscription){ stopPlanSubscription(); stopPlanSubscription=null; }
   musicChoices={};
   renderMusicPlan();
-  renderSheet();
   if(!planStore){ setSyncStatus("Connecting…",""); return; }
   setSyncStatus("Loading…","");
   stopPlanSubscription=planStore.subscribePlan(current().d,(choices,meta)=>{
     musicChoices=choices || {};
     renderMusicPlan();
-    renderSheet();
     setSyncStatus(meta && meta.offline ? "Offline — showing saved copy" : "Up to date",meta && meta.offline ? "" : "saved");
   },error=>{
     console.error(error);
@@ -519,7 +451,6 @@ musicList.addEventListener("input",event=>{
   const choice=choiceFor(key);
   choice[field]=input.value;
   musicChoices[key]=choice;
-  renderSheet();
   clearTimeout(saveTimers[key]);
   setSyncStatus("Saving…","");
   saveTimers[key]=setTimeout(async ()=>{
@@ -598,9 +529,8 @@ function zipStore(files){
   const out=new Uint8Array(total); let p=0; for(const c of all){ out.set(c,p); p+=c.length; } return out;
 }
 function textFor(cite){ return READINGS[cite] || ""; }
-function downloadWord(){
+function downloadWord(withRd){
   const v=vals(); const dec=new TextDecoder();
-  const withRd = document.getElementById("incl").checked;
   const src = withRd ? PARTS2 : PARTS;
   let docXml=dec.decode(b64ToBytes(src["word/document.xml"]));
   const repl={ "@@DAY@@":v.day, "@@META@@":v.meta, "@@FIRST@@":v.first, "@@PSALM@@":v.psalm, "@@SECOND@@":(v.second||"—"), "@@GOSPEL@@":v.gospel };
@@ -616,23 +546,23 @@ function downloadWord(){
   const enc=new TextEncoder();
   const files=Object.keys(src).map(name=> name==="word/document.xml" ? {name, data:enc.encode(docXml)} : {name, data:b64ToBytes(src[name])});
   const blob=new Blob([zipStore(files)],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
-  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="StJames_6pm_Mass_"+v.date+".docx";
+  const suffix=withRd ? "_with_readings" : "";
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="StJames_6pm_Mass_"+v.date+suffix+".docx";
   document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
 }
 
 // wire up
 function nextSundayIdx(){ const today=new Date().toISOString().slice(0,10); let i=SUNDAYS.findIndex(s=>s.d>=today); return i<0?SUNDAYS.length-1:i; }
 [["e_day","day"],["e_first","first"],["e_psalm","psalm"],["e_second","second"],["e_gospel","gospel"]].forEach(([id,key])=>{
-  document.getElementById(id).addEventListener("input", e=>{ override[key]=e.target.value; renderReadingSummary(); renderSheet(); });
+  document.getElementById(id).addEventListener("input", e=>{ override[key]=e.target.value; renderReadingSummary(); renderFullReadings(); });
 });
 document.getElementById("reset").addEventListener("click", e=>{ e.preventDefault(); override={}; refresh(); });
 prev.addEventListener("click", ()=>{ if(curIdx>0){curIdx--; override={}; date.value=current().d; refresh(); subscribeToCurrentPlan(); } });
 next.addEventListener("click", ()=>{ if(curIdx<SUNDAYS.length-1){curIdx++; override={}; date.value=current().d; refresh(); subscribeToCurrentPlan(); } });
 document.getElementById("today").addEventListener("click", ()=>{ curIdx=nextSundayIdx(); override={}; date.value=current().d; refresh(); subscribeToCurrentPlan(); });
 date.addEventListener("change", ()=>{ goToDate(date.value); date.value=current().d; });
-dl.addEventListener("click", downloadWord);
-document.getElementById("print").addEventListener("click", ()=>window.print());
-document.getElementById("incl").addEventListener("change", renderSheet);
+printMusic.addEventListener("click", ()=>downloadWord(false));
+printMusicReadings.addEventListener("click", ()=>downloadWord(true));
 document.getElementById("range").textContent = "("+SUNDAYS[0].d.slice(0,4)+"–"+SUNDAYS[SUNDAYS.length-1].d.slice(0,4)+")";
 
 curIdx=nextSundayIdx(); date.value=current().d; refresh(); renderMusicPlan();
