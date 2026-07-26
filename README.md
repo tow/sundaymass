@@ -37,8 +37,8 @@ HTTPS, the planner can be installed to a phone's home screen.
   year; entering `Public domain` as the owner allows the year to be blank.
 - Recording attribution does not itself grant permission to reproduce or project
   lyrics. That warning belongs in the help page.
-- Future LLM song suggestions should fill empty slots without requiring a catalogue;
-  the existing per-Sunday, per-part data model can remain the source of truth.
+- Phase 1 remains free-form, but the next major phase should introduce a proper song
+  library. Automatic suggestions should preferentially draw from that known repertoire.
 
 ## Files to edit
 
@@ -211,6 +211,40 @@ viewport (390 × 844 is the established baseline) and at a desktop width:
 - Test the locally served app in Chrome with an iPhone Safari user agent when possible,
   then verify the deployed GitHub Pages version after its build completes.
 
+## Future song library and projector slides
+
+Songs should become first-class entities rather than repeated strings inside weekly
+plans. A song record should own its title and aliases, full lyrics, YouTube practice
+link, and copyright/attribution metadata. Weekly plan slots should reference stable song
+IDs.
+
+This enables three connected capabilities:
+
+1. **Automatic projector slides.** Generate each Sunday's slide deck from the ordered
+   music plan and the selected songs' full lyrics. Lyrics should preserve meaningful
+   structure such as verses, choruses, responses, and repeated sections rather than
+   being stored only as an undifferentiated text blob.
+2. **A parish repertoire.** Build up the set of songs the community already knows.
+   Planning and future recommendations should prefer familiar or previously used songs
+   when they are suitable; plan history can provide useful usage and recency signals.
+3. **Semantic lyric search.** Create embeddings from the lyrics so editors and future
+   LLM suggestions can search by theme, scripture, imagery, or meaning rather than only
+   exact title words.
+
+The relational song/lyric record should remain canonical. Vector embeddings are derived
+search data and must be regenerable when lyrics or embedding models change. Since the
+app already uses Supabase Postgres, `pgvector` is the natural first option before adding
+a separate vector database.
+
+Changing a song later must not silently rewrite historical plans or previously generated
+slides. The implementation should therefore define lyric/version snapshots or another
+explicit history policy when weekly plans move from free-form titles to song IDs.
+
+Full lyric storage and projection also make licensing material, not merely attribution.
+Before this phase ships, confirm that the church's licences or direct permissions cover
+storing lyrics in the app and generating projector slides, and design public/editor
+access accordingly.
+
 ## Suggested next steps / TODO
 
 - Verify St Henry's odd-looking first-reading citation ("Sirach 45:12-20, 4-5") against a
@@ -221,7 +255,11 @@ viewport (390 × 844 is the established baseline) and at a desktop width:
 - Decide whether reading/day overrides should be persisted per Sunday and restricted to
   authorized editors.
 - Optional: hymnal / hymn-number column on the sung-parts grid.
-- Add optional automatic song suggestions as a separate phase.
+- Design the song entity, structured lyric format, version/history policy, and migration
+  from existing free-form weekly choices.
+- Add lyric embeddings and semantic search, preferably with Supabase `pgvector`.
+- Generate projector slides from each Sunday's ordered plan.
+- Add automatic song suggestions that rank suitable known-repertoire songs first.
 
 ## Dependencies
 
