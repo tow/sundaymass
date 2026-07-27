@@ -13,6 +13,7 @@
 @@SONG_PICKER_VIEW_JS@@
 @@SONG_PICKER_CONTROLLER_JS@@
 @@SONG_MUTATION_CONTROLLER_JS@@
+@@SONG_WORKFLOW_JS@@
 @@CELEBRATION_PICKER_VIEW_JS@@
 @@CELEBRATION_CONTROLLER_JS@@
 @@READING_OVERRIDE_CONTROLLER_JS@@
@@ -101,16 +102,6 @@ let celebrationOverride = null;
 let planStore = null;
 let isEditor = false;
 let signedIn = false;
-let editingSong = null;
-let songPickerState = {
-  open:false,
-  partKey:null,
-  selectedSong:null,
-  searchResults:[],
-  searchStatus:"idle",
-  suggestions:[],
-  suggestionStatus:"idle",
-};
 let celebrationPickerState = {
   open:false,
   query:"",
@@ -368,8 +359,7 @@ const planSessionController=PlanSessionController.create({
       if(liturgicalDialog.open) liturgicalDialog.close();
       if(celebrationDialog.open) celebrationDialog.close();
       if(readingDialog.open) readingDialog.close();
-      if(songPickerDialog.open) songPickerDialog.close();
-      if(songEditorDialog.open) songEditorDialog.close();
+      songWorkflow.closeAll();
     }
     renderMusicPlan();
     renderReadingEditor();
@@ -384,27 +374,51 @@ function connectPlanStore(store){
 }
 window.massPlanApp={connect:connectPlanStore};
 
-function songPart(key){ return MUSIC_PARTS.find(part=>part.key===key); }
-function currentReadingCitations(){
-  return READING_SLOTS.map(slot=>displayedCitation(slot)).filter(Boolean);
-}
-const songPickerController=SongPickerController.create({
-  getStore:()=>planStore,
-  isEditor:()=>isEditor,
-  getReadingCitations:currentReadingCitations,
-  suggestionPartFor,
-  onChange:state=>{
-    songPickerState=state;
-    renderSongResults();
-    renderSongSuggestions();
+const songWorkflow=SongWorkflow.create({
+  elements:{
+    musicList,
+    dialog:songPickerDialog,
+    title:songPickerTitle,
+    close:songPickerClose,
+    modes:songPickerModes,
+    suggestedPanel:songSuggestedPanel,
+    searchPanel:songSearchPanel,
+    currentActions:songCurrentActions,
+    currentName:songCurrentName,
+    currentAuthor:songCurrentAuthor,
+    editCurrent:editCurrentSong,
+    removeCurrent:removeCurrentSong,
+    suggestionResults:songSuggestionResults,
+    suggestionStatus:songSuggestionStatus,
+    search:songSearch,
+    resultsHeading:songResultsHeading,
+    results:songResults,
+    empty:songPickerEmpty,
+    use:useSong,
+    editorDialog:songEditorDialog,
+    editorForm:songEditorForm,
+    editorEyebrow:songEditorEyebrow,
+    editorTitle:songEditorTitle,
+    editorContext:songEditorContext,
+    editorClose:songEditorClose,
+    editorCancel:songEditorCancel,
+    sharedWarning:songSharedWarning,
+    editorError:songEditorError,
+    songTitle,
+    save:saveSong,
   },
-  logger:console,
-});
-const songMutationController=SongMutationController.create({
+  parts:MUSIC_PARTS,
+  suggestionPartFor,
+  pickerView:songPickerView,
+  songForm,
+  songCatalog:SongCatalog,
   getStore:()=>planStore,
   isEditor:()=>isEditor,
   isOnline:()=>navigator.onLine,
   getDate:()=>current().d,
+  getReadingCitations:()=>READING_SLOTS.map(slot=>displayedCitation(slot)).filter(Boolean),
+  getSongs:()=>musicSongs,
+  openModal,
   onStatus:setSyncStatus,
   onAssigned:(part,song)=>{
     musicSongs[part]=song;
@@ -420,187 +434,10 @@ const songMutationController=SongMutationController.create({
     });
     renderMusicPlan();
   },
+  confirm:message=>confirm(message),
   logger:console,
 });
-function renderSongResults(){
-  const view=songPickerView.renderSearchResults({
-    songs:songPickerState.searchResults,
-    selectedSong:songPickerState.selectedSong,
-  });
-  songResults.innerHTML=view.html;
-  songResults.hidden=!view.hasResults;
-  songResultsHeading.hidden=!view.hasResults;
-  songPickerEmpty.hidden=view.hasResults;
-  songPickerEmpty.textContent=songPickerState.searchStatus==="error"
-    ? "Could not load songs. Please try again."
-    : "No matching songs.";
-  useSong.disabled=view.useDisabled;
-}
-function renderSongSuggestions(){
-  const view=songPickerView.renderSuggestions({
-    songs:songPickerState.suggestions,
-    selectedSong:songPickerState.selectedSong,
-  });
-  songSuggestionResults.innerHTML=view.html;
-  songSuggestionStatus.hidden=view.hasSuggestions;
-  songSuggestionStatus.textContent={
-    loading:"Finding related songs…",
-    empty:"Suggestions are not indexed for these readings yet.",
-    error:"Suggestions are not available yet.",
-  }[songPickerState.suggestionStatus] || "";
-}
-function setSongPickerMode(mode){
-  if(mode==="create"){ openSongEditor(null); return; }
-  songSuggestedPanel.hidden=mode!=="suggested";
-  songSearchPanel.hidden=mode!=="search";
-  songPickerModes.querySelectorAll("[data-song-picker-mode]").forEach(button=>{
-    const selected=button.dataset.songPickerMode===mode;
-    button.classList.toggle("selected",selected);
-    button.setAttribute("aria-pressed",String(selected));
-  });
-  songPickerDialog.querySelector(".reading-dialog-body").scrollTop=0;
-  if(mode==="search"){
-    songPickerController.search(songSearch.value);
-    if(window.matchMedia("(min-width:701px)").matches){
-      setTimeout(()=>songSearch.focus({preventScroll:true}),0);
-    }
-  }
-}
-async function openSongPicker(partKey){
-  if(!isEditor || !planStore) return;
-  const part=songPart(partKey);
-  const currentSong=musicSongs[partKey];
-  const currentSelection=songPickerView.currentSelection(currentSong);
-  songPickerTitle.textContent="Choose "+(part?.label || "song");
-  songCurrentActions.hidden=currentSelection.hidden;
-  songCurrentName.textContent=currentSelection.name;
-  songCurrentAuthor.textContent=currentSelection.author;
-  songSearch.value="";
-  songPickerEmpty.textContent="No matching songs.";
-  setSongPickerMode("suggested");
-  openModal(songPickerDialog);
-  await songPickerController.open(partKey);
-}
-function closeSongPicker(){
-  songPickerController.close();
-  songPickerDialog.close();
-}
-function songDraftFromForm(){
-  return songForm.read();
-}
-function fillSongForm(song){
-  songForm.write(song,{
-    fallbackTitle:songSearch.value.trim(),
-    defaultSuggestionParts:[suggestionPartFor(songPickerState.partKey)],
-  });
-}
-function openSongEditor(song){
-  if(!isEditor || !songPickerState.partKey) return;
-  editingSong=song || null;
-  fillSongForm(editingSong);
-  songEditorEyebrow.textContent=editingSong ? "Shared song" : "New song";
-  songEditorTitle.textContent=editingSong ? "Edit song" : "Add a new song";
-  songEditorContext.textContent=editingSong
-    ? "Update the shared song record."
-    : "Only the title is required. Another song may use the same title.";
-  songSharedWarning.hidden=!editingSong;
-  saveSong.textContent=editingSong ? "Save song" : "Create and use song";
-  songEditorError.textContent="";
-  if(songPickerDialog.open){
-    songPickerDialog.close();
-    songPickerController.close();
-  }
-  openModal(songEditorDialog);
-  setTimeout(()=>songTitle.focus(),0);
-}
-function closeSongEditor(){
-  songEditorDialog.close();
-  editingSong=null;
-}
-musicList.addEventListener("click",async event=>{
-  const button=event.target.closest("button[data-song-action]");
-  if(!button || !isEditor) return;
-  const part=button.dataset.part;
-  if(button.dataset.songAction==="choose"){
-    openSongPicker(part);
-  }
-});
-let songSearchTimer=null;
-songSearch.addEventListener("input",()=>{
-  clearTimeout(songSearchTimer);
-  songSearchTimer=setTimeout(()=>songPickerController.search(songSearch.value),180);
-});
-songPickerModes.addEventListener("click",event=>{
-  const button=event.target.closest("[data-song-picker-mode]");
-  if(button) setSongPickerMode(button.dataset.songPickerMode);
-});
-songResults.addEventListener("click",event=>{
-  const button=event.target.closest("button[data-song-index]");
-  if(!button) return;
-  songPickerController.selectSearchResult(button.dataset.songIndex);
-});
-songSuggestionResults.addEventListener("click",event=>{
-  const button=event.target.closest("button[data-song-suggestion-index]");
-  if(!button)return;
-  songPickerController.selectSuggestion(button.dataset.songSuggestionIndex);
-});
-editCurrentSong.addEventListener("click",async ()=>{
-  const currentSong=musicSongs[songPickerState.partKey];
-  if(!currentSong || !isEditor) return;
-  try{
-    const song=await songMutationController.load(currentSong.id);
-    openSongEditor(song);
-  }catch(error){}
-});
-removeCurrentSong.addEventListener("click",async ()=>{
-  const part=songPickerState.partKey;
-  const currentSong=musicSongs[part];
-  if(!currentSong || !isEditor) return;
-  if(!confirm("Remove “"+currentSong.title+"” from "+(songPart(part)?.label || "this part")+"? The shared song will remain available.")) return;
-  try{
-    await songMutationController.clear(part);
-    closeSongPicker();
-  }catch(error){}
-});
-useSong.addEventListener("click",async ()=>{
-  const selectedSong=songPickerState.selectedSong;
-  if(!selectedSong || !songPickerState.partKey) return;
-  const part=songPickerState.partKey;
-  try{
-    await songMutationController.assign(part,selectedSong);
-    closeSongPicker();
-  }catch(error){}
-});
-songEditorForm.addEventListener("submit",async event=>{
-  event.preventDefault();
-  const validation=SongCatalog.validateDraft(songDraftFromForm());
-  if(!validation.valid){
-    songEditorError.textContent=validation.error;
-    songTitle.focus();
-    return;
-  }
-  saveSong.disabled=true;
-  const previousLabel=saveSong.textContent;
-  saveSong.textContent="Saving…";
-  try{
-    await songMutationController.save({
-      existingSong:editingSong,
-      part:songPickerState.partKey,
-      draft:validation.value,
-    });
-    closeSongEditor();
-  }catch(error){
-    songEditorError.textContent=error.message || "Could not save the song.";
-  }finally{
-    saveSong.disabled=false;
-    saveSong.textContent=previousLabel;
-  }
-});
-songPickerClose.addEventListener("click",closeSongPicker);
-songPickerDialog.addEventListener("click",event=>{ if(event.target===songPickerDialog) closeSongPicker(); });
-songEditorClose.addEventListener("click",closeSongEditor);
-songEditorCancel.addEventListener("click",closeSongEditor);
-songEditorDialog.addEventListener("click",event=>{ if(event.target===songEditorDialog) closeSongEditor(); });
+songWorkflow.start();
 AuthController.create({
   button:authButton,
   dialog:loginDialog,

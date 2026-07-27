@@ -18,6 +18,12 @@ test("a forward migration preserves an explicitly empty suggestion list", () => 
 });
 
 test("the planner UI, rather than the database, supplies the new-song default", () => {
-  const app = fs.readFileSync(path.resolve(__dirname, "../src/app/planner.js"), "utf8");
-  assert.match(app, /defaultSuggestionParts:\[suggestionPartFor\(songPickerState\.partKey\)\]/);
+  const workflow = fs.readFileSync(
+    path.resolve(__dirname, "../src/app/song-workflow.js"),
+    "utf8",
+  );
+  assert.match(
+    workflow,
+    /defaultSuggestionParts: \[suggestionPartFor\(pickerState\.partKey\)\]/,
+  );
 });

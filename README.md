@@ -96,6 +96,7 @@ appropriate source file:
 - `src/app/song-picker-view.js` — search/suggestion rows and duplicate-title disambiguation
 - `src/app/song-picker-controller.js` — picker queries, selection, and stale-response handling
 - `src/app/song-mutation-controller.js` — editor song loading, assignment, saving, and indexing
+- `src/app/song-workflow.js` — song picker/editor DOM wiring and Mass-slot coordination
 - `src/app/celebration-picker-view.js` — standard-lectionary search and reading preview
 - `src/app/celebration-controller.js` — celebration selection, resolved snapshots, and restore
 - `src/app/reading-override-controller.js` — individual reading save and restore persistence

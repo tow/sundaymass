@@ -63,28 +63,29 @@ test("Supabase Edge Function uses its native model and verifies editor access", 
 test("the planner requests suggestions only from effective reading citations", () => {
   const html = read("src/planner.html");
   const app = read("src/app/planner.js");
+  const workflow = read("src/app/song-workflow.js");
   const picker = read("src/app/song-picker-controller.js");
   const store = read("src/services/plan-store.js");
 
   assert.match(html, /id="songSuggestions"/);
   assert.match(html, /Suggestions from this Mass’s readings/);
-  assert.match(app, /function currentReadingCitations/);
-  assert.match(app, /getReadingCitations:currentReadingCitations/);
+  assert.match(app, /getReadingCitations:\(\)=>READING_SLOTS\.map\(slot=>displayedCitation\(slot\)\)\.filter\(Boolean\)/);
+  assert.match(workflow, /getReadingCitations,/);
   assert.match(picker, /store\.suggestSongs\(\s*getReadingCitations\(\),\s*suggestionPartFor\(partKey\)/);
   assert.match(store, /async suggestSongs\(/);
   assert.match(store, /\.functions\.invoke\("semantic-songs"/);
 });
 
 test("the song picker keeps a mobile-sized suggestion set visible before search", () => {
-  const app = read("src/app/planner.js");
+  const workflow = read("src/app/song-workflow.js");
   const picker = read("src/app/song-picker-controller.js");
   const edgeFunction = read("supabase/functions/semantic-songs/index.ts");
 
   assert.match(picker, /maxSuggestions = 3/);
   assert.match(picker, /suggestions\.slice\(0, maxSuggestions\)/);
-  assert.match(app, /songPickerDialog\.querySelector\("\.reading-dialog-body"\)\.scrollTop=0/);
-  assert.match(app, /matchMedia\("\(min-width:701px\)"\)\.matches/);
-  assert.match(app, /songSearch\.focus\(\{preventScroll:true\}\)/);
+  assert.match(workflow, /elements\.dialog\.querySelector\("\.reading-dialog-body"\)\.scrollTop = 0/);
+  assert.match(workflow, /matchMedia\("\(min-width:701px\)"\)\.matches/);
+  assert.match(workflow, /elements\.search\.focus\(\{ preventScroll: true \}\)/);
   assert.match(edgeFunction, /p_limit: 3/);
 });
 

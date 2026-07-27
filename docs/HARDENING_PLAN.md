@@ -495,3 +495,8 @@ Acceptance:
   suggestion positions, records private lyrics, submits by keyboard, checks the exact
   create-and-assign mutation and embedding request, and proves those lyrics never enter
   the rendered Mass plan.
+- 2026-07-27: Phase 5 resumed by extracting the remaining song picker/editor DOM
+  orchestration into `song-workflow.js`. The planner entry point now supplies page
+  state and callbacks while the feature module composes the existing picker-state and
+  mutation controllers, owns its dialogs and events, and closes itself on editor
+  revocation. The complete six-workflow Chrome suite passed unchanged.

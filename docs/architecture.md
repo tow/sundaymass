@@ -78,6 +78,11 @@ subscription, song mutation, celebration replacement, reading override, authenti
 printing, modal behavior, or PWA installation. Views turn already-decided state into
 escaped markup or update one bounded part of the DOM.
 
+`song-workflow.js` is the feature-level composition boundary for the picker and editor.
+It wires their DOM, combines the independently tested picker-state and mutation
+controllers, and reports canonical-song changes back to `planner.js`; it does not own
+the page's calendar, readings, authentication, or plan subscription.
+
 Controllers may depend on stores and pure domain functions. Views must not fetch or
 persist data. A controller should not reach into another controller's private state;
 their entry-point caller coordinates cross-feature changes.

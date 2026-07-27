@@ -8,7 +8,7 @@ const read = relativePath => fs.readFileSync(path.join(ROOT, relativePath), "utf
 
 test("planner contains a song picker and optional-lyrics editor", () => {
   const html = read("src/planner.html");
-  const app = read("src/app/planner.js");
+  const workflow = read("src/app/song-workflow.js");
   assert.match(html, /id="songPickerDialog"/);
   assert.match(html, /id="songSearch"/);
   assert.match(html, /id="songModeSuggested"/);
@@ -19,19 +19,19 @@ test("planner contains a song picker and optional-lyrics editor", () => {
   assert.match(html, /id="songSuggestionParts"/);
   assert.match(html, /Manual selection remains unrestricted/);
   assert.match(html, /Add lyrics now \(optional\)/);
-  assert.match(app, /defaultSuggestionParts:\[suggestionPartFor\(songPickerState\.partKey\)\]/);
+  assert.match(workflow, /defaultSuggestionParts: \[suggestionPartFor\(pickerState\.partKey\)\]/);
 });
 
 test("suggest, search, and create are explicit picker modes", () => {
   const html = read("src/planner.html");
-  const app = read("src/app/planner.js");
+  const workflow = read("src/app/song-workflow.js");
 
   assert.match(html, /id="songSuggestedPanel"/);
   assert.match(html, /id="songSearchPanel"[^>]*hidden/);
-  assert.match(app, /function setSongPickerMode\(mode\)/);
-  assert.match(app, /songSuggestedPanel\.hidden=mode!=="suggested"/);
-  assert.match(app, /songSearchPanel\.hidden=mode!=="search"/);
-  assert.match(app, /if\(mode==="create"\)\{ openSongEditor\(null\); return; \}/);
+  assert.match(workflow, /function setMode\(mode\)/);
+  assert.match(workflow, /elements\.suggestedPanel\.hidden = mode !== "suggested"/);
+  assert.match(workflow, /elements\.searchPanel\.hidden = mode !== "search"/);
+  assert.match(workflow, /if \(mode === "create"\) \{\s*openEditor\(null\)/);
 });
 
 test("the mobile song picker is a sheet over the plan, not a full-screen page", () => {
