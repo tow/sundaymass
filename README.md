@@ -88,6 +88,7 @@ behavior, and export changes in the appropriate source file:
 - `src/app/music-plan-view.js` — lyric-free public/editor music-row rendering
 - `src/app/reading-plan-view.js` — selected celebration, linked citations, and full-text rendering
 - `src/app/song-picker-view.js` — search/suggestion rows and duplicate-title disambiguation
+- `src/app/celebration-picker-view.js` — standard-lectionary search and reading preview
 - `src/domain/lectionary.js` — lectionary selection and validation rules
 - `src/domain/music-parts.js` — canonical Mass slots, labels, and suggestion normalization
 - `src/domain/song-presentation.js` — safe YouTube links and shared attribution formatting

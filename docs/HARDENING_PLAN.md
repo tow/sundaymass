@@ -371,3 +371,10 @@ Acceptance:
   lyric text is never rendered. A 390×844 local-editor Chrome check confirms the
   Suggested/Search transition, zero initial scroll offset, duplicate records, disabled
   action before selection, one scrolling sheet, and no horizontal overflow.
+- 2026-07-27: The celebration picker now delegates nearby-date filtering, multi-word
+  standard-lectionary search, ordering, metadata, selected-result markup, and
+  alternative-reading previews to a tested module. Coverage includes exclusion of the
+  computed Sunday, distant text matches, optional second readings, fixed/selectable
+  citations, and escaping. At 390×844 Chrome confirms 30 nearby results, a one-result
+  Saint James search, four previewed readings, an enabled selection action, and no
+  horizontal overflow.

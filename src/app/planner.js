@@ -9,6 +9,7 @@
 @@MUSIC_PLAN_VIEW_JS@@
 @@READING_PLAN_VIEW_JS@@
 @@SONG_PICKER_VIEW_JS@@
+@@CELEBRATION_PICKER_VIEW_JS@@
 @@SONG_CATALOG_JS@@
 @@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
@@ -31,7 +32,6 @@ const CITATION_ROLES=lectionary.citationRoles;
 const normalizedCitation=lectionary.normalizedCitation;
 const citationAlternatives=lectionary.citationAlternatives;
 const parseReadingCitation=lectionary.parseReadingCitation;
-const dayDistance=lectionary.dayDistance;
 const suggestionPartFor=MassMusicParts.suggestionPartFor;
 const copyrightComplete=SongPresentation.copyrightComplete;
 const attributionLine=SongPresentation.publicPlanAttribution;
@@ -48,6 +48,12 @@ const readingPlanView=ReadingPlanView.create({
   cycleName,
 });
 const songPickerView=SongPickerView.create({escapeHtml:esc});
+const celebrationPickerView=CelebrationPickerView.create({
+  escapeHtml:esc,
+  formatLong:fmtLong,
+  cycleName,
+  dayDistance:lectionary.dayDistance,
+});
 const modalController=ModalController.create({window,document});
 const openModal=modalController.open;
 modalController.start();
@@ -144,55 +150,23 @@ function renderReadingEditor(){
   }).join("");
   readingEditorFooter.hidden=changed.length===0;
 }
-function searchText(value){
-  return (value||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
-}
 let visibleCelebrationCandidates=[];
-function celebrationMeta(candidate){
-  return (candidate.rank||"Celebration")+" · "+fmtLong(candidate.sourceDate)
-    +(candidate.cycle && candidate.rank==="Sunday" ? " · "+cycleName(candidate.cycle) : "")
-    +(candidate.lectionary ? " · Lectionary "+candidate.lectionary : "");
-}
 function renderCelebrationPreview(){
-  if(!pendingCelebration){ celebrationPreview.hidden=true; celebrationUse.disabled=true; return; }
-  const readings=pendingCelebration.readings;
-  const field=(slot,label)=>{
-    const options=pendingCelebration.readingOptions?.[slot] || [];
-    const allowNone=slot==="second" && !pendingCelebration.requiresSecondReading && !readings.second;
-    if(options.length<=1 && !allowNone) return '<dt>'+esc(label)+'</dt><dd>'+(esc(readings[slot])||"—")+'</dd>';
-    return '<dt><label for="celebrationReading_'+slot+'">'+esc(label)+'</label></dt><dd><select id="celebrationReading_'+slot+'" data-celebration-reading="'+slot+'">'
-      +(slot==="second" && !pendingCelebration.requiresSecondReading?'<option value="">No second reading</option>':'')
-      +options.map(citation=>'<option value="'+esc(citation)+'"'+(citation===readings[slot]?' selected':'')+'>'+esc(citation)+'</option>').join("")
-      +'</select></dd>';
-  };
-  celebrationPreview.innerHTML='<h3>'+esc(pendingCelebration.name)+'</h3><p>'+esc(celebrationMeta(pendingCelebration))+'</p>'
-    +'<dl class="celebration-preview-grid">'+field("first","First Reading")+field("psalm","Psalm")
-    +field("second","Second Reading")+field("gospel","Gospel")+'</dl>'
-    +(pendingCelebration.commonNames?.length
-      ? '<p class="celebration-options-note">Reading choices include '+esc(pendingCelebration.commonNames.join(" and "))+".</p>"
-      : "");
-  celebrationPreview.hidden=false;
-  celebrationUse.disabled=false;
+  const view=celebrationPickerView.renderPreview(pendingCelebration);
+  celebrationPreview.innerHTML=view.html;
+  celebrationPreview.hidden=view.hidden;
+  celebrationUse.disabled=view.useDisabled;
 }
 function renderCelebrationResults(){
-  const query=searchText(celebrationSearch.value);
-  const anchor=current().d;
-  const all=lectionary.availableCelebrations(current()).filter(candidate=>!(candidate.sourceDate===current().d && candidate.name===current().n));
-  if(query){
-    celebrationResultsHeading.textContent="Matching celebrations";
-    visibleCelebrationCandidates=all.filter(candidate=>{
-      const haystack=searchText(candidate.name+" "+candidate.rank+" "+fmtLong(candidate.sourceDate)+" "+(candidate.cycle||"")+" "+(candidate.commonNames||[]).join(" "));
-      return query.split(" ").every(word=>haystack.includes(word));
-    }).sort((a,b)=>a.name.localeCompare(b.name) || a.sourceDate.localeCompare(b.sourceDate)).slice(0,40);
-  }else{
-    celebrationResultsHeading.textContent="Nearby celebrations";
-    visibleCelebrationCandidates=all.filter(candidate=>Math.abs(dayDistance(candidate.sourceDate,anchor))<=14)
-      .sort((a,b)=>Math.abs(dayDistance(a.sourceDate,anchor))-Math.abs(dayDistance(b.sourceDate,anchor)) || a.sourceDate.localeCompare(b.sourceDate))
-      .slice(0,30);
-  }
-  celebrationResults.innerHTML=visibleCelebrationCandidates.length
-    ? visibleCelebrationCandidates.map((candidate,index)=>'<button class="celebration-result'+(pendingCelebration?.id===candidate.id?' selected':'')+'" type="button" data-celebration-index="'+index+'"><strong>'+esc(candidate.name)+'</strong><small>'+esc(celebrationMeta(candidate))+'</small></button>').join("")
-    : '<p class="reading-validation">No available celebration matches that search.</p>';
+  const view=celebrationPickerView.search({
+    candidates:lectionary.availableCelebrations(current()),
+    currentSunday:current(),
+    query:celebrationSearch.value,
+    selectedId:pendingCelebration?.id || "",
+  });
+  visibleCelebrationCandidates=view.candidates;
+  celebrationResultsHeading.textContent=view.heading;
+  celebrationResults.innerHTML=view.html;
 }
 function openCelebrationDialog(){
   pendingCelebration=null;
