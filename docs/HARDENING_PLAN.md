@@ -481,3 +481,8 @@ Acceptance:
   workflow end to end: opening at a scrolled position, bounded suggestions, explicit
   search, duplicate-title author disambiguation, private-lyric exclusion, keyboard
   assignment, and exact page-scroll restoration.
+- 2026-07-27: The deployment gate now asks Chrome itself to render both print modes.
+  It verifies physical A4 page boxes, the forced readings page break, all fourteen
+  music slots including both Communion songs, hostile-title escaping, incomplete
+  copyright warnings, and absence of lyrics from both the print DOM and generated PDF
+  workflow.

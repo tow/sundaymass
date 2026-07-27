@@ -26,7 +26,10 @@ GitHub's Pages Actions deployment. A failed verification job cannot deploy.
   the public reading-anchor, Sunday-navigation, print, and lyric-privacy workflow. Its
   editor flow also covers the mobile song picker's page-scroll lock and restoration,
   bounded suggestions, explicit search mode, duplicate-title disambiguation, private
-  lyric exclusion, and keyboard activation of the selected song.
+  lyric exclusion, and keyboard activation of the selected song. Chrome also renders
+  both print modes to real PDF buffers; the suite verifies A4 media boxes, separate
+  reading pages, every music slot including both Communion songs, HTML escaping,
+  attribution warnings, and lyric exclusion.
 - `npm run test:integration` resets a local Supabase project and tests the migrated
   authorization, RLS, RPC, privacy, and semantic-suggestion contract. Run it separately
   because it requires Docker and the pinned Supabase CLI.
@@ -52,10 +55,9 @@ lyrics without exposing a real lyric record.
 ## Exploratory mobile checks
 
 Chrome DevTools remains useful after automated checks for visual review, especially
-native dialogs, mobile keyboard behavior, scroll restoration, and print preview. Use a
-390 × 844 viewport as the baseline and also inspect 320 px when changing headers,
-dialogs, or plan rows. Exploratory checks supplement `npm run check`; they do not
-replace it.
+  native dialogs and mobile keyboard behavior. Use a 390 × 844 viewport as the baseline
+  and also inspect 320 px when changing headers, dialogs, or plan rows. Exploratory
+  checks supplement `npm run check`; they do not replace it.
 
 ## Adding tests
 

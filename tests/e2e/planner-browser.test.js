@@ -94,6 +94,31 @@ async function plannerPage(browser, server, viewport) {
   return { context, page };
 }
 
+function pdfPageGeometry(pdf) {
+  const source = pdf.toString("latin1");
+  const boxes = [...source.matchAll(
+    /\/MediaBox\s*\[\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*\]/g,
+  )].map(match => ({
+    width: Number(match[1]),
+    height: Number(match[2]),
+  }));
+  return {
+    boxes,
+    pageCount: (source.match(/\/Type\s*\/Page\b/g) || []).length,
+  };
+}
+
+function assertA4Pages(pdf, minimumPages) {
+  const geometry = pdfPageGeometry(pdf);
+  assert.ok(geometry.pageCount >= minimumPages);
+  assert.ok(geometry.boxes.length >= minimumPages);
+  geometry.boxes.forEach(({ width, height }) => {
+    assert.ok(Math.abs(width - 595.28) < 2, `unexpected PDF width ${width}`);
+    assert.ok(Math.abs(height - 841.89) < 2, `unexpected PDF height ${height}`);
+  });
+  return geometry.pageCount;
+}
+
 let server;
 let browser;
 
@@ -305,5 +330,82 @@ test("editor song picker preserves the page and supports keyboard selection of d
     await page.locator('.music-edit-row:has([data-part="communion"])').innerText(),
     /Shared title[\s\S]*Second Author/,
   );
+  await context.close();
+});
+
+test("Chrome produces dedicated A4 music and readings PDFs without private lyrics", async () => {
+  const { context, page } = await plannerPage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+  await page.evaluate(() => {
+    const keys = [
+      "entrance", "kyrie", "gloria", "psalm", "acclamation", "offertory",
+      "sanctus", "memorial", "amen", "lordPrayer", "agnus", "communion",
+      "communion2", "recessional",
+    ];
+    const songs = Object.fromEntries(keys.map((key, index) => [key, {
+      id: `print-song-${index}`,
+      title: key === "entrance" ? "<Unsafe & hymn>" : `Print song ${index + 1}`,
+      authors: key === "recessional" ? "" : `Author ${index + 1}`,
+      copyrightYear: key === "recessional" ? "" : "2026",
+      copyrightOwner: key === "recessional" ? "" : "Test Publisher",
+      source: "",
+      lyrics: `PRIVATE PRINT LYRIC ${index + 1}`,
+    }]));
+    window.massPlanApp.connect({
+      subscribeAuth(callback) {
+        callback({ user: null, isEditor: false });
+        return () => {};
+      },
+      subscribePlan(date, onValue) {
+        onValue({ songs, readingOverrides: {}, celebrationOverride: null });
+        return () => {};
+      },
+    });
+    window.print = () => {};
+  });
+
+  await page.locator("#printMusic").click();
+  await page.emulateMedia({ media: "print" });
+  const printState = await page.evaluate(() => ({
+    appDisplay: getComputedStyle(document.querySelector(".wrap")).display,
+    sheetDisplay: getComputedStyle(document.querySelector("#printSheet")).display,
+    html: document.querySelector("#printSheet").innerHTML,
+    text: document.querySelector("#printSheet").innerText,
+  }));
+  assert.equal(printState.appDisplay, "none");
+  assert.equal(printState.sheetDisplay, "block");
+  assert.match(printState.html, /&lt;Unsafe &amp; hymn&gt;/);
+  assert.doesNotMatch(printState.html, /<unsafe/i);
+  assert.match(printState.text, /Communion Hymn 1[\s\S]*Print song 12/i);
+  assert.match(printState.text, /Communion Hymn 2[\s\S]*Print song 13/i);
+  assert.match(printState.text, /Copyright information incomplete/);
+  assert.doesNotMatch(printState.text, /PRIVATE PRINT LYRIC/);
+
+  const musicPdf = await page.pdf({
+    preferCSSPageSize: true,
+    printBackground: true,
+  });
+  const musicPages = assertA4Pages(musicPdf, 1);
+
+  await page.emulateMedia({ media: "screen" });
+  await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
+  await page.locator("#printMusicReadings").click();
+  await page.emulateMedia({ media: "print" });
+  const readingText = await page.locator("#printSheet").innerText();
+  assert.match(readingText, /Mass readings/);
+  assert.match(readingText, /First Reading/);
+  assert.match(readingText, /Gospel/);
+  assert.doesNotMatch(readingText, /PRIVATE PRINT LYRIC/);
+
+  const readingsPdf = await page.pdf({
+    preferCSSPageSize: true,
+    printBackground: true,
+  });
+  const readingPages = assertA4Pages(readingsPdf, 2);
+  assert.ok(readingPages > musicPages);
+
   await context.close();
 });
