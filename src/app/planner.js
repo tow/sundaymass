@@ -1,3 +1,4 @@
+@@MODAL_CONTROLLER_JS@@
 @@MUSIC_PARTS_JS@@
 @@SONG_PRESENTATION_JS@@
 @@SONG_CATALOG_JS@@
@@ -30,6 +31,9 @@ const safeYoutubeUrl=SongPresentation.safeYoutubeUrl;
 const copyrightComplete=SongPresentation.copyrightComplete;
 const attributionLine=SongPresentation.publicPlanAttribution;
 const editorAttributionLine=SongPresentation.editorPlanAttribution;
+const modalController=ModalController.create({window,document});
+const openModal=modalController.open;
+modalController.start();
 const byDate = {}; CALENDAR.forEach((s,i)=>byDate[s.d]=i);
 const cycleName = c => "Year " + c;
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
@@ -52,26 +56,8 @@ let selectedSong = null;
 let visibleSongs = [];
 let editingSong = null;
 let suggestedSongs = [];
-let modalPageScrollY = null;
 
 function current(){ return CALENDAR[curIdx]; }
-function openModal(dialog){
-  if(modalPageScrollY===null){
-    modalPageScrollY=window.scrollY;
-    document.body.style.setProperty("--modal-page-top","-"+modalPageScrollY+"px");
-    document.documentElement.classList.add("modal-open");
-  }
-  dialog.showModal();
-}
-function restoreModalPageScroll(){
-  if(document.querySelector("dialog[open]") || modalPageScrollY===null) return;
-  const scrollY=modalPageScrollY;
-  modalPageScrollY=null;
-  document.documentElement.classList.remove("modal-open");
-  document.body.style.removeProperty("--modal-page-top");
-  window.scrollTo(0,scrollY);
-}
-document.addEventListener("close",()=>requestAnimationFrame(restoreModalPageScroll),true);
 function baseCelebration(){
   const sunday=current();
   return celebrationOverride || lectionary.scheduledCelebration(sunday);

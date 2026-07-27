@@ -100,12 +100,13 @@ test("legacy free-text music editing and autosave are removed", () => {
 
 test("mobile dialogs lock and restore the page scroll position", () => {
   const app = read("src/app/planner.js");
+  const controller = read("src/app/modal-controller.js");
   const styles = read("src/styles/planner.css");
 
-  assert.match(app, /function openModal\(dialog\)/);
-  assert.match(app, /modalPageScrollY=window\.scrollY/);
-  assert.match(app, /window\.scrollTo\(0,scrollY\)/);
-  assert.doesNotMatch(app.replace(/dialog\.showModal\(\)/, ""), /\.showModal\(\)/);
+  assert.match(app, /const openModal=modalController\.open/);
+  assert.doesNotMatch(app, /modalPageScrollY/);
+  assert.match(controller, /pageScrollY = window\.scrollY/);
+  assert.match(controller, /window\.scrollTo\(0, scrollY\)/);
   assert.match(styles, /html\.modal-open body\{ position:fixed;/);
   assert.match(styles, /\.reading-dialog\{[^}]*overscroll-behavior:none;/);
 });

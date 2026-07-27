@@ -316,3 +316,6 @@ Acceptance:
   attribution formatting now live in one tested song-presentation module shared by
   the planner, repertoire, and DOCX export. The source field remains explicitly
   optional, and public-domain ownership consistently permits a blank year.
+- 2026-07-27: Native-dialog page locking and scroll restoration moved into a small
+  controller. Unit tests now cover nested dialogs, deferred restoration after the last
+  dialog closes, exact scroll-position recovery, and listener lifecycle.

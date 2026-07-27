@@ -78,6 +78,7 @@ behavior, and export changes in the appropriate source file:
 - `src/planner.html` — page structure
 - `src/styles/planner.css` — visual design and responsive layout
 - `src/app/planner.js` — UI state, rendering, and event handling
+- `src/app/modal-controller.js` — native-dialog page scroll locking and restoration
 - `src/domain/lectionary.js` — lectionary selection and validation rules
 - `src/domain/music-parts.js` — canonical Mass slots, labels, DOCX tokens, and suggestion normalization
 - `src/domain/song-presentation.js` — safe YouTube links and shared attribution formatting
