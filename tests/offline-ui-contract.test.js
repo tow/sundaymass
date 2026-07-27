@@ -9,10 +9,14 @@ const session = fs.readFileSync(
   path.join(ROOT, "src/app/plan-session-controller.js"),
   "utf8",
 );
+const songMutations = fs.readFileSync(
+  path.join(ROOT, "src/app/song-mutation-controller.js"),
+  "utf8",
+);
 
 test("the planner never presents an offline edit as successfully saved", () => {
-  assert.doesNotMatch(planner + session, /Saved offline/);
+  assert.doesNotMatch(planner + session + songMutations, /Saved offline/);
   assert.match(session, /Offline — showing saved copy/);
   assert.match(session, /Offline — no saved plan/);
-  assert.match(planner, /Offline — editing unavailable/);
+  assert.match(songMutations, /Offline — editing unavailable/);
 });

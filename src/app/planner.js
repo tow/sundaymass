@@ -11,6 +11,7 @@
 @@READING_PLAN_VIEW_JS@@
 @@SONG_PICKER_VIEW_JS@@
 @@SONG_PICKER_CONTROLLER_JS@@
+@@SONG_MUTATION_CONTROLLER_JS@@
 @@CELEBRATION_PICKER_VIEW_JS@@
 @@CELEBRATION_CONTROLLER_JS@@
 @@READING_OVERRIDE_CONTROLLER_JS@@
@@ -388,6 +389,28 @@ const songPickerController=SongPickerController.create({
   },
   logger:console,
 });
+const songMutationController=SongMutationController.create({
+  getStore:()=>planStore,
+  isEditor:()=>isEditor,
+  isOnline:()=>navigator.onLine,
+  getDate:()=>current().d,
+  onStatus:setSyncStatus,
+  onAssigned:(part,song)=>{
+    musicSongs[part]=song;
+    renderMusicPlan();
+  },
+  onCleared:part=>{
+    delete musicSongs[part];
+    renderMusicPlan();
+  },
+  onUpdated:song=>{
+    Object.keys(musicSongs).forEach(part=>{
+      if(musicSongs[part]?.id===song.id) musicSongs[part]=song;
+    });
+    renderMusicPlan();
+  },
+  logger:console,
+});
 function renderSongResults(){
   const view=songPickerView.renderSearchResults({
     songs:songPickerState.searchResults,
@@ -483,21 +506,6 @@ function closeSongEditor(){
   songEditorDialog.close();
   editingSong=null;
 }
-async function runSongMutation(work,success){
-  if(!navigator.onLine){
-    setSyncStatus("Offline — editing unavailable","error");
-    throw new Error("Editing requires an internet connection");
-  }
-  setSyncStatus("Saving…","");
-  try{
-    await work();
-    setSyncStatus(success,"saved");
-  }catch(error){
-    console.error(error);
-    setSyncStatus(navigator.onLine ? "Save failed" : "Offline — editing unavailable","error");
-    throw error;
-  }
-}
 musicList.addEventListener("click",async event=>{
   const button=event.target.closest("button[data-song-action]");
   if(!button || !isEditor) return;
@@ -528,15 +536,10 @@ songSuggestionResults.addEventListener("click",event=>{
 editCurrentSong.addEventListener("click",async ()=>{
   const currentSong=musicSongs[songPickerState.partKey];
   if(!currentSong || !isEditor) return;
-  setSyncStatus("Loading song…","");
   try{
-    const song=await planStore.getSong(currentSong.id);
-    setSyncStatus("Up to date","saved");
+    const song=await songMutationController.load(currentSong.id);
     openSongEditor(song);
-  }catch(error){
-    console.error(error);
-    setSyncStatus("Could not load song","error");
-  }
+  }catch(error){}
 });
 removeCurrentSong.addEventListener("click",async ()=>{
   const part=songPickerState.partKey;
@@ -544,10 +547,8 @@ removeCurrentSong.addEventListener("click",async ()=>{
   if(!currentSong || !isEditor) return;
   if(!confirm("Remove “"+currentSong.title+"” from "+(songPart(part)?.label || "this part")+"? The shared song will remain available.")) return;
   try{
-    await runSongMutation(()=>planStore.clearSong(current().d,part),"Saved");
-    delete musicSongs[part];
+    await songMutationController.clear(part);
     closeSongPicker();
-    renderMusicPlan();
   }catch(error){}
 });
 useSong.addEventListener("click",async ()=>{
@@ -555,10 +556,8 @@ useSong.addEventListener("click",async ()=>{
   if(!selectedSong || !songPickerState.partKey) return;
   const part=songPickerState.partKey;
   try{
-    await runSongMutation(()=>planStore.assignSong(current().d,part,selectedSong.id),"Saved");
-    musicSongs[part]=selectedSong;
+    await songMutationController.assign(part,selectedSong);
     closeSongPicker();
-    renderMusicPlan();
   }catch(error){}
 });
 songEditorForm.addEventListener("submit",async event=>{
@@ -573,26 +572,14 @@ songEditorForm.addEventListener("submit",async event=>{
   const previousLabel=saveSong.textContent;
   saveSong.textContent="Saving…";
   try{
-    if(editingSong){
-      const updated=await planStore.updateSong(editingSong.id,validation.value);
-      planStore.syncSongEmbedding(updated.id).catch(error=>console.warn("Song indexing failed",error));
-      Object.keys(musicSongs).forEach(part=>{
-        if(musicSongs[part]?.id===updated.id) musicSongs[part]=updated;
-      });
-      setSyncStatus("Saved","saved");
-    }else{
-      const part=songPickerState.partKey;
-      const created=await planStore.createAndAssignSong(current().d,part,validation.value);
-      planStore.syncSongEmbedding(created.id).catch(error=>console.warn("Song indexing failed",error));
-      musicSongs[part]=created;
-      setSyncStatus("Saved","saved");
-    }
+    await songMutationController.save({
+      existingSong:editingSong,
+      part:songPickerState.partKey,
+      draft:validation.value,
+    });
     closeSongEditor();
-    renderMusicPlan();
   }catch(error){
-    console.error(error);
     songEditorError.textContent=error.message || "Could not save the song.";
-    setSyncStatus("Save failed","error");
   }finally{
     saveSong.disabled=false;
     saveSong.textContent=previousLabel;

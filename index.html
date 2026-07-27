@@ -1759,6 +1759,111 @@
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window === "undefined" ? globalThis : window);
 
+// Owns editor-only song loading, Mass assignment, persistence, and explicit-save indexing.
+(function (global) {
+  "use strict";
+
+  function create({
+    getStore,
+    isEditor,
+    isOnline,
+    getDate,
+    onStatus,
+    onAssigned,
+    onCleared,
+    onUpdated,
+    logger = console,
+  }) {
+    function requireAccess() {
+      if (!isOnline()) {
+        onStatus("Offline — editing unavailable", "error");
+        throw new Error("Editing requires an internet connection");
+      }
+      if (!isEditor()) throw new Error("Editor access required");
+      const store = getStore();
+      if (!store) throw new Error("Song store unavailable");
+      return store;
+    }
+
+    async function runMutation(work, onSuccess) {
+      const store = requireAccess();
+      onStatus("Saving…", "");
+      try {
+        const result = await work(store);
+        onSuccess(result);
+        onStatus("Saved", "saved");
+        return result;
+      } catch (error) {
+        logger.error(error);
+        onStatus(
+          isOnline() ? "Save failed" : "Offline — editing unavailable",
+          "error",
+        );
+        throw error;
+      }
+    }
+
+    async function load(songId) {
+      const store = requireAccess();
+      onStatus("Loading song…", "");
+      try {
+        const song = await store.getSong(songId);
+        onStatus("Up to date", "saved");
+        return song;
+      } catch (error) {
+        logger.error(error);
+        onStatus("Could not load song", "error");
+        throw error;
+      }
+    }
+
+    async function assign(part, song) {
+      if (!part || !song?.id) throw new Error("Choose a song and Mass part");
+      return runMutation(
+        store => store.assignSong(getDate(), part, song.id),
+        () => onAssigned(part, song),
+      ).then(() => song);
+    }
+
+    async function clear(part) {
+      if (!part) throw new Error("Choose a Mass part");
+      await runMutation(
+        store => store.clearSong(getDate(), part),
+        () => onCleared(part),
+      );
+      return true;
+    }
+
+    function scheduleEmbedding(store, songId) {
+      Promise.resolve()
+        .then(() => store.syncSongEmbedding(songId))
+        .catch(error => logger.warn("Song indexing failed", error));
+    }
+
+    async function save({ existingSong, part, draft }) {
+      if (!part) throw new Error("Choose a Mass part");
+      const store = requireAccess();
+      const song = await runMutation(
+        activeStore => existingSong
+          ? activeStore.updateSong(existingSong.id, draft)
+          : activeStore.createAndAssignSong(getDate(), part, draft),
+        value => {
+          if (existingSong) onUpdated(value);
+          else onAssigned(part, value);
+        },
+      );
+      scheduleEmbedding(store, song.id);
+      return song;
+    }
+
+    return Object.freeze({ assign, clear, load, save });
+  }
+
+  const api = Object.freeze({ create });
+  global.SongMutationController = api;
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+})(typeof window === "undefined" ? globalThis : window);
+
 // Pure search and preview presentation for selecting another lectionary celebration.
 (function (global) {
   "use strict";
@@ -3099,6 +3204,28 @@ const songPickerController=SongPickerController.create({
   },
   logger:console,
 });
+const songMutationController=SongMutationController.create({
+  getStore:()=>planStore,
+  isEditor:()=>isEditor,
+  isOnline:()=>navigator.onLine,
+  getDate:()=>current().d,
+  onStatus:setSyncStatus,
+  onAssigned:(part,song)=>{
+    musicSongs[part]=song;
+    renderMusicPlan();
+  },
+  onCleared:part=>{
+    delete musicSongs[part];
+    renderMusicPlan();
+  },
+  onUpdated:song=>{
+    Object.keys(musicSongs).forEach(part=>{
+      if(musicSongs[part]?.id===song.id) musicSongs[part]=song;
+    });
+    renderMusicPlan();
+  },
+  logger:console,
+});
 function renderSongResults(){
   const view=songPickerView.renderSearchResults({
     songs:songPickerState.searchResults,
@@ -3194,21 +3321,6 @@ function closeSongEditor(){
   songEditorDialog.close();
   editingSong=null;
 }
-async function runSongMutation(work,success){
-  if(!navigator.onLine){
-    setSyncStatus("Offline — editing unavailable","error");
-    throw new Error("Editing requires an internet connection");
-  }
-  setSyncStatus("Saving…","");
-  try{
-    await work();
-    setSyncStatus(success,"saved");
-  }catch(error){
-    console.error(error);
-    setSyncStatus(navigator.onLine ? "Save failed" : "Offline — editing unavailable","error");
-    throw error;
-  }
-}
 musicList.addEventListener("click",async event=>{
   const button=event.target.closest("button[data-song-action]");
   if(!button || !isEditor) return;
@@ -3239,15 +3351,10 @@ songSuggestionResults.addEventListener("click",event=>{
 editCurrentSong.addEventListener("click",async ()=>{
   const currentSong=musicSongs[songPickerState.partKey];
   if(!currentSong || !isEditor) return;
-  setSyncStatus("Loading song…","");
   try{
-    const song=await planStore.getSong(currentSong.id);
-    setSyncStatus("Up to date","saved");
+    const song=await songMutationController.load(currentSong.id);
     openSongEditor(song);
-  }catch(error){
-    console.error(error);
-    setSyncStatus("Could not load song","error");
-  }
+  }catch(error){}
 });
 removeCurrentSong.addEventListener("click",async ()=>{
   const part=songPickerState.partKey;
@@ -3255,10 +3362,8 @@ removeCurrentSong.addEventListener("click",async ()=>{
   if(!currentSong || !isEditor) return;
   if(!confirm("Remove “"+currentSong.title+"” from "+(songPart(part)?.label || "this part")+"? The shared song will remain available.")) return;
   try{
-    await runSongMutation(()=>planStore.clearSong(current().d,part),"Saved");
-    delete musicSongs[part];
+    await songMutationController.clear(part);
     closeSongPicker();
-    renderMusicPlan();
   }catch(error){}
 });
 useSong.addEventListener("click",async ()=>{
@@ -3266,10 +3371,8 @@ useSong.addEventListener("click",async ()=>{
   if(!selectedSong || !songPickerState.partKey) return;
   const part=songPickerState.partKey;
   try{
-    await runSongMutation(()=>planStore.assignSong(current().d,part,selectedSong.id),"Saved");
-    musicSongs[part]=selectedSong;
+    await songMutationController.assign(part,selectedSong);
     closeSongPicker();
-    renderMusicPlan();
   }catch(error){}
 });
 songEditorForm.addEventListener("submit",async event=>{
@@ -3284,26 +3387,14 @@ songEditorForm.addEventListener("submit",async event=>{
   const previousLabel=saveSong.textContent;
   saveSong.textContent="Saving…";
   try{
-    if(editingSong){
-      const updated=await planStore.updateSong(editingSong.id,validation.value);
-      planStore.syncSongEmbedding(updated.id).catch(error=>console.warn("Song indexing failed",error));
-      Object.keys(musicSongs).forEach(part=>{
-        if(musicSongs[part]?.id===updated.id) musicSongs[part]=updated;
-      });
-      setSyncStatus("Saved","saved");
-    }else{
-      const part=songPickerState.partKey;
-      const created=await planStore.createAndAssignSong(current().d,part,validation.value);
-      planStore.syncSongEmbedding(created.id).catch(error=>console.warn("Song indexing failed",error));
-      musicSongs[part]=created;
-      setSyncStatus("Saved","saved");
-    }
+    await songMutationController.save({
+      existingSong:editingSong,
+      part:songPickerState.partKey,
+      draft:validation.value,
+    });
     closeSongEditor();
-    renderMusicPlan();
   }catch(error){
-    console.error(error);
     songEditorError.textContent=error.message || "Could not save the song.";
-    setSyncStatus("Save failed","error");
   }finally{
     saveSong.disabled=false;
     saveSong.textContent=previousLabel;

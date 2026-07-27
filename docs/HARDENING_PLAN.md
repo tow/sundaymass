@@ -408,3 +408,10 @@ Acceptance:
   editor-only access, confirmation before bulk restoration, and failed writes. At
   390×844 Chrome keeps Acts 4:32–35 disabled as a First Reading until confirmation,
   then saves and displays the override without overflow or warnings.
+- 2026-07-27: Song loading, Mass assignment/removal, create/update, online enforcement,
+  and post-save embedding scheduling now share a mutation controller. Tests cover
+  authorization, offline refusal, exact-part updates, editor-only detail loading,
+  global canonical-song updates, atomic creation, write failures, and non-blocking
+  indexing failures. At 390×844 Chrome confirms one explicit create produces exactly
+  one assignment and one embedding sync while private lyrics remain absent from the
+  rendered Mass plan.

@@ -33,6 +33,7 @@ const appValues = {
   "@@READING_PLAN_VIEW_JS@@": read("src/app/reading-plan-view.js"),
   "@@SONG_PICKER_VIEW_JS@@": read("src/app/song-picker-view.js"),
   "@@SONG_PICKER_CONTROLLER_JS@@": read("src/app/song-picker-controller.js"),
+  "@@SONG_MUTATION_CONTROLLER_JS@@": read("src/app/song-mutation-controller.js"),
   "@@CELEBRATION_PICKER_VIEW_JS@@": read("src/app/celebration-picker-view.js"),
   "@@CELEBRATION_CONTROLLER_JS@@": read("src/app/celebration-controller.js"),
   "@@READING_OVERRIDE_CONTROLLER_JS@@": read("src/app/reading-override-controller.js"),
