@@ -220,7 +220,7 @@ test("public users can open an ordered temporary YouTube practice queue", async 
   assert.equal(await page.locator("#practiceAll").isEnabled(), true);
   assert.equal(
     await page.locator("#practiceAllAvailability").textContent(),
-    "3 of 4 available",
+    "3/4",
   );
   await page.locator("#practiceAll").click();
 

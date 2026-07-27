@@ -25,6 +25,9 @@ function element() {
     removeAttribute(name) {
       if (name === "src") this.src = "";
     },
+    setAttribute(name, value) {
+      this[name] = value;
+    },
   };
 }
 
@@ -71,7 +74,11 @@ test("renders availability and opens a playable queue", () => {
   });
 
   assert.equal(elements.launch.disabled, false);
-  assert.equal(elements.availability.textContent, "1 of 2 available");
+  assert.equal(elements.availability.textContent, "1/2");
+  assert.equal(
+    elements.launch["aria-label"],
+    "Practice all: 1 of 2 selected songs have videos",
+  );
   elements.launch.dispatch("click");
   assert.deepEqual(opened, [elements.dialog]);
   assert.equal(elements.summary.textContent, "1 of 2 selected songs available. 1 will be skipped.");
@@ -89,7 +96,7 @@ test("disables practice when no selected song has a playable link", () => {
   });
 
   assert.equal(elements.launch.disabled, true);
-  assert.equal(elements.availability.textContent, "No videos available");
+  assert.equal(elements.availability.textContent, "0/2");
   elements.launch.dispatch("click");
   assert.deepEqual(opened, []);
 });

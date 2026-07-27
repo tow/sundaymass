@@ -57,6 +57,10 @@
     ].filter(Boolean).join(" · ");
   }
 
+  function planAuthor(song) {
+    return text(song?.authors);
+  }
+
   function repertoireDetails(song) {
     return [
       text(song?.authors),
@@ -71,6 +75,7 @@
     copyrightLine,
     publicPlanAttribution,
     editorPlanAttribution,
+    planAuthor,
     repertoireDetails,
   });
   global.SongPresentation = api;

@@ -52,8 +52,8 @@ const musicPlanView=MusicPlanView.create({
   escapeHtml:esc,
   safeYoutubeUrl:SongPresentation.safeYoutubeUrl,
   copyrightComplete,
-  publicAttribution:attributionLine,
-  editorAttribution:SongPresentation.editorPlanAttribution,
+  publicAttribution:SongPresentation.planAuthor,
+  editorAttribution:SongPresentation.planAuthor,
 });
 const readingPlanView=ReadingPlanView.create({
   escapeHtml:esc,

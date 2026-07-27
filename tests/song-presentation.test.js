@@ -77,6 +77,11 @@ test("attribution variants preserve the existing page presentations", () => {
   );
 });
 
+test("the on-screen Mass plan shows only the unlabelled author", () => {
+  assert.equal(presentation.planAuthor(completeSong), "Dan Schutte");
+  assert.equal(presentation.planAuthor({ authors: "" }), "");
+});
+
 test("public-domain attribution omits the copyright mark", () => {
   const traditional = {
     title: "Traditional hymn",

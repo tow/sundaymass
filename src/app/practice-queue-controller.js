@@ -18,9 +18,15 @@
     }
 
     function availabilityText(queue) {
-      if (!queue.assignedCount) return "No songs selected";
-      if (!queue.playableCount) return "No videos available";
-      return `${queue.playableCount} of ${queue.assignedCount} available`;
+      return `${queue.playableCount}/${queue.assignedCount}`;
+    }
+
+    function availabilityLabel(queue) {
+      if (!queue.assignedCount) return "Practice all: no songs selected";
+      if (!queue.playableCount) {
+        return `Practice all: none of ${queue.assignedCount} selected songs have videos`;
+      }
+      return `Practice all: ${queue.playableCount} of ${queue.assignedCount} selected songs have videos`;
     }
 
     function summaryText(queue) {
@@ -91,6 +97,7 @@
       const queue = currentQueue();
       elements.launch.disabled = queue.playableCount === 0;
       elements.availability.textContent = availabilityText(queue);
+      elements.launch.setAttribute("aria-label", availabilityLabel(queue));
     }
 
     function start() {

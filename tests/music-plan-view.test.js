@@ -14,8 +14,8 @@ const view = MusicPlanView.create({
   escapeHtml,
   safeYoutubeUrl: SongPresentation.safeYoutubeUrl,
   copyrightComplete: SongPresentation.copyrightComplete,
-  publicAttribution: SongPresentation.publicPlanAttribution,
-  editorAttribution: SongPresentation.editorPlanAttribution,
+  publicAttribution: SongPresentation.planAuthor,
+  editorAttribution: SongPresentation.planAuthor,
 });
 
 const parts = [
@@ -55,7 +55,9 @@ test("public rendering includes safe metadata but never private lyrics", () => {
   assert.equal(result.editorHelpHidden, true);
   assert.match(result.intro, /Selections for this Sunday/);
   assert.match(result.html, /All &lt;Are&gt; Welcome/);
-  assert.match(result.html, /Authors: Marty Haugen · © 1994 GIA/);
+  assert.match(result.html, /Marty Haugen/);
+  assert.doesNotMatch(result.html, /Authors:/);
+  assert.doesNotMatch(result.html, /© 1994 GIA/);
   assert.match(result.html, /href="https:\/\/youtu\.be\/example"/);
   assert.match(result.html, /Not yet chosen/);
   assert.doesNotMatch(result.html, /Public rendering must never expose this/);

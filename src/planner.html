@@ -55,12 +55,12 @@
         <h2 id="musicTitle">Music choices</h2>
         <p id="musicIntro">Selections for this Sunday appear here as they are chosen.</p>
       </div>
-      <div class="music-head-actions">
-        <button class="practice-all" id="practiceAll" type="button">Practice all</button>
-        <span class="practice-availability" id="practiceAllAvailability">No songs selected</span>
-        <span class="sync-status" id="syncStatus" role="status">Connecting…</span>
-      </div>
+      <button class="practice-all" id="practiceAll" type="button">
+        <span>Practice all</span>
+        <span class="practice-availability" id="practiceAllAvailability">0/0</span>
+      </button>
     </div>
+    <span class="sync-status music-sync-status" id="syncStatus" role="status">Connecting…</span>
     <div class="editor-help" id="editorHelp" hidden>Changes are live.</div>
     <div class="music-list" id="musicList"></div>
   </section>
