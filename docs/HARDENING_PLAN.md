@@ -288,3 +288,7 @@ Acceptance:
   client. Behavior tests prove that public browsing does not request lyrics, editor
   detail loading does, validated drafts map to the expected RPC payload, and database
   failures propagate to the UI.
+- 2026-07-27: The Supabase plan adapter now accepts injected client, cache, domain, and
+  scheduling dependencies. Tests cover cached-first delivery, suppression of late
+  network results after unsubscribe, lyric-free public queries, load-error delivery,
+  channel cleanup, and atomic create-and-assign payloads.

@@ -19,6 +19,12 @@ const planData = {
   emptyPlan() {
     return { songs: {}, readingOverrides: {}, celebrationOverride: null };
   },
+  planFromRow(row) {
+    return row?.mappedPlan || this.emptyPlan();
+  },
+  songFromRow(row) {
+    return row;
+  },
 };
 
 const songCatalog = {
@@ -122,4 +128,153 @@ test("local plan mutations enforce editor access and never publish lyrics", asyn
   await store.signOut();
   await assert.rejects(store.clearSong("2026-08-02", "entrance"), /Sign in before editing/);
   assert.deepEqual(authStates.map(state => state.isEditor), [false, true, false]);
+});
+
+function deferred() {
+  let resolve;
+  const promise = new Promise(done => { resolve = done; });
+  return { promise, resolve };
+}
+
+function supabaseFixture(planResult) {
+  const calls = { selects: [], rpcs: [], removedChannels: [] };
+  const channel = {
+    on() {
+      return channel;
+    },
+    subscribe() {
+      return channel;
+    },
+  };
+  const supabase = {
+    from(table) {
+      const query = {
+        select(columns) {
+          calls.selects.push({ table, columns });
+          return query;
+        },
+        eq() {
+          return query;
+        },
+        maybeSingle() {
+          return planResult;
+        },
+      };
+      return query;
+    },
+    channel() {
+      return channel;
+    },
+    removeChannel(value) {
+      calls.removedChannels.push(value);
+    },
+    rpc(name, params) {
+      calls.rpcs.push({ name, params });
+      return Promise.resolve({
+        data: name === "create_and_assign_song" ? "song-2" : null,
+        error: null,
+      });
+    },
+    functions: {
+      invoke() {
+        return Promise.resolve({ data: {}, error: null });
+      },
+    },
+    auth: {},
+  };
+  return { calls, channel, supabase };
+}
+
+test("Supabase plan subscription drops a late network result after unsubscribe", async () => {
+  const pending = deferred();
+  const cachedPlan = {
+    songs: { entrance: { id: "cached", title: "Cached song" } },
+    readingOverrides: {},
+    celebrationOverride: null,
+  };
+  const storage = memoryStorage({
+    "st-james-plan-cache-v2-2026-08-02": JSON.stringify(cachedPlan),
+  });
+  const { calls, channel, supabase } = supabaseFixture(pending.promise);
+  const store = storeModule.createSupabaseStore(supabase, {
+    storage,
+    planData,
+    songCatalog,
+    random: () => 0.5,
+  });
+  const values = [];
+
+  const unsubscribe = store.subscribePlan(
+    "2026-08-02",
+    (plan, status) => values.push({ plan, status }),
+  );
+  unsubscribe();
+  pending.resolve({
+    data: {
+      mappedPlan: {
+        songs: { entrance: { id: "live", title: "Live song" } },
+        readingOverrides: {},
+        celebrationOverride: null,
+      },
+    },
+    error: null,
+  });
+  await new Promise(resolve => setImmediate(resolve));
+
+  assert.deepEqual(values, [{ plan: cachedPlan, status: { offline: true } }]);
+  assert.deepEqual(calls.removedChannels, [channel]);
+  assert.doesNotMatch(calls.selects[0].columns, /song_lyrics/);
+});
+
+test("Supabase plan song creation maps validated drafts to the atomic RPC", async () => {
+  const { calls, supabase } = supabaseFixture(Promise.resolve({ data: null, error: null }));
+  const store = storeModule.createSupabaseStore(supabase, {
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+  });
+
+  const created = await store.createAndAssignSong("2026-08-02", "entrance", {
+    title: "  New Song  ",
+    authors: "Composer",
+    suggestionParts: [],
+  });
+
+  assert.equal(created.id, "song-2");
+  assert.deepEqual(calls.rpcs[0], {
+    name: "create_and_assign_song",
+    params: {
+      p_sunday: "2026-08-02",
+      p_part: "entrance",
+      p_title: "New Song",
+      p_youtube_url: "",
+      p_authors: "Composer",
+      p_copyright_owner: "",
+      p_copyright_year: "",
+      p_source: "",
+      p_lyrics: null,
+      p_suggestion_parts: [],
+    },
+  });
+});
+
+test("Supabase plan load failures reach the subscription error handler", async () => {
+  const failure = new Error("Network unavailable");
+  const { supabase } = supabaseFixture(Promise.resolve({ data: null, error: failure }));
+  const store = storeModule.createSupabaseStore(supabase, {
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+  });
+  const errors = [];
+
+  const unsubscribe = store.subscribePlan(
+    "2026-08-02",
+    () => {},
+    error => errors.push(error),
+  );
+  await new Promise(resolve => setImmediate(resolve));
+  unsubscribe();
+
+  assert.deepEqual(errors, [failure]);
 });

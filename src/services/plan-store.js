@@ -226,24 +226,27 @@ function unavailableStore() {
   };
 }
 
-async function supabaseStore(config) {
-  const { createClient } = await import(SUPABASE_MODULE_URL);
-  const supabase = createClient(config.url, config.publishableKey, {
-    auth: {
-      persistSession: true,
-      detectSessionInUrl: true,
-    },
-  });
+function createSupabaseStore(
+  supabase,
+  {
+    storage = globalThis.localStorage,
+    planData: planDataApi = planData(),
+    songCatalog: songCatalogApi = songCatalog(),
+    random = Math.random,
+    defer = setTimeout,
+    logger = console,
+  } = {},
+) {
   const cacheKey = date => "st-james-plan-cache-v2-" + date;
   const cacheRead = date => {
     try {
-      const raw = localStorage.getItem(cacheKey(date));
+      const raw = storage.getItem(cacheKey(date));
       return raw ? JSON.parse(raw) : null;
     } catch {
       return null;
     }
   };
-  const cacheWrite = (date, plan) => localStorage.setItem(cacheKey(date), JSON.stringify(plan));
+  const cacheWrite = (date, plan) => storage.setItem(cacheKey(date), JSON.stringify(plan));
   const loadPlan = async date => {
     const { data, error } = await supabase
       .from("plans")
@@ -267,10 +270,10 @@ async function supabaseStore(config) {
       .eq("sunday", date)
       .maybeSingle();
     if (error) throw error;
-    return planData().planFromRow(data);
+    return planDataApi.planFromRow(data);
   };
   const rpcDraft = draft => {
-    const value = songCatalog().validateDraft(draft);
+    const value = songCatalogApi.validateDraft(draft);
     if (!value.valid) throw new Error(value.error);
     return {
       value: value.value,
@@ -326,7 +329,7 @@ async function supabaseStore(config) {
       refresh();
 
       const channel = supabase
-        .channel("mass-plan-" + date + "-" + Math.random().toString(36).slice(2))
+        .channel("mass-plan-" + date + "-" + random().toString(36).slice(2))
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "plans", filter: "sunday=eq." + date },
@@ -360,7 +363,7 @@ async function supabaseStore(config) {
             .select("user_id")
             .eq("user_id", user.id)
             .maybeSingle();
-          if (error) console.warn("Could not verify editor access", error);
+          if (error) logger.warn("Could not verify editor access", error);
           isEditor = Boolean(data);
         }
         if (active) onValue({ user, isEditor });
@@ -368,7 +371,7 @@ async function supabaseStore(config) {
 
       supabase.auth.getSession().then(({ data }) => resolveEditor(data.session));
       const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-        setTimeout(() => resolveEditor(session), 0);
+        defer(() => resolveEditor(session), 0);
       });
       return () => {
         active = false;
@@ -391,11 +394,11 @@ async function supabaseStore(config) {
         `)
         .order("title");
       if (error) throw error;
-      return songCatalog().search((data || []).map(planData().songFromRow), query);
+      return songCatalogApi.search((data || []).map(planDataApi.songFromRow), query);
     },
     async suggestSongs(citations, part) {
       const result = await invokeSemantic({ action: "suggest", citations, part });
-      return (result.songs || []).map(planData().songFromRow);
+      return (result.songs || []).map(planDataApi.songFromRow);
     },
     async syncSongEmbedding(songId) {
       return invokeSemantic({ action: "sync-songs", songIds: [songId] });
@@ -417,7 +420,7 @@ async function supabaseStore(config) {
         .eq("id", songId)
         .single();
       if (error) throw error;
-      return planData().songFromRow(data);
+      return planDataApi.songFromRow(data);
     },
     async assignSong(date, part, songId) {
       const { error } = await supabase.rpc("assign_plan_song", {
@@ -492,6 +495,17 @@ async function supabaseStore(config) {
   };
 }
 
+async function supabaseStore(config) {
+  const { createClient } = await import(SUPABASE_MODULE_URL);
+  const supabase = createClient(config.url, config.publishableKey, {
+    auth: {
+      persistSession: true,
+      detectSessionInUrl: true,
+    },
+  });
+  return createSupabaseStore(supabase);
+}
+
 async function start() {
   const local = location.hostname === "localhost"
     || location.hostname === "127.0.0.1"
@@ -511,7 +525,7 @@ async function start() {
 }
 
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { emptyPlan, localStore, unavailableStore };
+  module.exports = { emptyPlan, localStore, unavailableStore, createSupabaseStore };
 }
 
 if (typeof window !== "undefined" && window.massPlanApp) start();
