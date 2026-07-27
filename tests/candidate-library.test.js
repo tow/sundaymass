@@ -18,7 +18,7 @@ test("candidate songs are a forward-compatible state on canonical songs", () => 
   assert.match(sql, /in_repertoire = coalesce\(p_in_repertoire,\s*true\)/i);
 });
 
-test("semantic suggestions reserve space for one starter-library candidate", () => {
+test("semantic suggestions reserve space for one extended-library candidate", () => {
   const sql = fs.readFileSync(migrationPath, "utf8");
   const suggestion = sql.slice(
     sql.indexOf("create function public.suggest_songs_for_readings"),

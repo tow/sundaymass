@@ -289,6 +289,7 @@ const songWorkflow=SongWorkflow.create({
   elements:{
     musicList,
     dialog:songPickerDialog,
+    eyebrow:songPickerEyebrow,
     title:songPickerTitle,
     close:songPickerClose,
     modes:songPickerModes,
@@ -310,6 +311,7 @@ const songWorkflow=SongWorkflow.create({
     results:songResults,
     empty:songPickerEmpty,
     use:useSong,
+    actions:songPickerActions,
     editorDialog:songEditorDialog,
     editorForm:songEditorForm,
     editorEyebrow:songEditorEyebrow,

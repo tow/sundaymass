@@ -320,7 +320,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       const libraryEntranceId = await expectOk(await editor.request("/rest/v1/rpc/create_song", {
         method: "POST",
         body: {
-          p_title: `Starter-library entrance ${suffix}`,
+          p_title: `Extended-library entrance ${suffix}`,
           p_suggestion_parts: ["entrance"],
           p_in_repertoire: false,
         },
@@ -360,7 +360,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
         ],
       }));
 
-      const suggestions = await expectOk(await editor.request(
+      const suggestions = await expectOk(await anonymous(
         "/rest/v1/rpc/suggest_songs_for_readings",
         {
           method: "POST",

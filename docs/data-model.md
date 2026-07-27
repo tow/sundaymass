@@ -99,7 +99,7 @@ their own membership row.
 Only `title` is required. Duplicate titles represent distinct UUID records and are
 disambiguated in editing interfaces with author information.
 
-Songs with `in_repertoire = false` are complete canonical song records in the starter
+Songs with `in_repertoire = false` are complete canonical song records in the extended
 library, not drafts or a second entity type. They can be searched and assigned normally,
 but the distinction prevents a candidate from being presented as a song already known
 to the choir. Assigning one to a Mass does not silently promote it into the repertoire;
@@ -110,6 +110,12 @@ The suggestion array accepts the normal classes `entrance`, `kyrie`, `gloria`, `
 `communion`, and `recessional`. Both Communion plan slots use the single `communion`
 class. An empty array means that the song remains searchable and assignable but is not
 automatically suggested.
+
+Anonymous and authenticated users may execute the bounded
+`suggest_songs_for_readings` function. It is a security-definer boundary over the
+private embedding tables and returns at most three rows containing public song
+metadata only. Song search, assignment, creation, editing, lyrics, and direct vector
+access retain their existing editor-only permissions.
 
 ### `song_lyrics`
 
@@ -184,7 +190,7 @@ like a successful no-op.
 | `clear_reading_override` | Clear one slot or all individual reading overrides |
 | `save_celebration_override` | Save one complete snapshot and clear individual overrides |
 | `clear_celebration_override` | Restore computed celebration and clear individual overrides |
-| `suggest_songs_for_readings` | Rank classified songs, reserving two places for repertoire songs and one for a starter-library candidate |
+| `suggest_songs_for_readings` | Rank classified songs, reserving two places for repertoire songs and one for an extended-library candidate |
 
 Successful writes are live immediately. There is no draft/publish table or status.
 

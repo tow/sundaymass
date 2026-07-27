@@ -14,7 +14,7 @@
         song.copyrightOwner,
         song.source,
       ].filter(Boolean);
-      if (song.inRepertoire === false) items.push("Starter library");
+      if (song.inRepertoire === false) items.push("Extended library");
       if (song.hasLyrics) items.push("Lyrics recorded");
       const title = normalizedTitle(song);
       const sameTitle = songs.filter(value => normalizedTitle(value) === title);
@@ -36,17 +36,20 @@
       });
     }
 
-    function renderSuggestions({ songs, selectedSong }) {
+    function renderSuggestions({ songs, selectedSong, interactive = true }) {
       return Object.freeze({
         html: songs.map((song, index) => {
           const selected = selectedSong?.id === song.id;
-          return `<button class="song-suggestion${selected ? " selected" : ""}" type="button" `
-            + `data-song-suggestion-index="${index}">`
+          const opening = interactive
+            ? `<button class="song-suggestion${selected ? " selected" : ""}" type="button" data-song-suggestion-index="${index}">`
+            : '<article class="song-suggestion song-suggestion-readonly">';
+          return opening
             + `<strong>${escapeHtml(song.title)}</strong>`
             + `<span>${escapeHtml([
               song.authors || "Author not recorded",
-              song.inRepertoire === false ? "Starter library" : "",
-            ].filter(Boolean).join(" · "))}</span></button>`;
+              song.inRepertoire === false ? "Extended library" : "",
+            ].filter(Boolean).join(" · "))}</span>`
+            + (interactive ? "</button>" : "</article>");
         }).join(""),
         hasSuggestions: songs.length > 0,
       });

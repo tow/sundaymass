@@ -77,7 +77,7 @@ test("renders availability and opens a playable queue", () => {
   assert.equal(elements.availability.textContent, "1/2");
   assert.equal(
     elements.launch["aria-label"],
-    "Practice all: 1 of 2 selected songs have videos",
+    "Listen to all: 1 of 2 selected songs have videos",
   );
   elements.launch.dispatch("click");
   assert.deepEqual(opened, [elements.dialog]);
@@ -87,7 +87,7 @@ test("renders availability and opens a playable queue", () => {
   assert.equal(elements.list.children[0].item, item);
 });
 
-test("disables practice when no selected song has a playable link", () => {
+test("disables listening when no selected song has a playable link", () => {
   const { elements, opened } = fixture({
     items: [],
     assignedCount: 2,

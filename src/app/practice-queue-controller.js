@@ -22,11 +22,11 @@
     }
 
     function availabilityLabel(queue) {
-      if (!queue.assignedCount) return "Practice all: no songs selected";
+      if (!queue.assignedCount) return "Listen to all: no songs selected";
       if (!queue.playableCount) {
-        return `Practice all: none of ${queue.assignedCount} selected songs have videos`;
+        return `Listen to all: none of ${queue.assignedCount} selected songs have videos`;
       }
-      return `Practice all: ${queue.playableCount} of ${queue.assignedCount} selected songs have videos`;
+      return `Listen to all: ${queue.playableCount} of ${queue.assignedCount} selected songs have videos`;
     }
 
     function summaryText(queue) {

@@ -125,7 +125,6 @@ function localStore({
       return songCatalogApi.search(readSongs(), query);
     },
     async suggestSongs(citations, part) {
-      requireEditor();
       return [];
     },
     async syncSongEmbedding() {
@@ -434,8 +433,13 @@ function createSupabaseStore(
     },
     async suggestSongs(citations, part) {
       requireOnline();
-      const result = await invokeSemantic({ action: "suggest", citations, part });
-      return (result.songs || []).map(planDataApi.songFromRow);
+      const { data, error } = await supabase.rpc("suggest_songs_for_readings", {
+        p_citations: citations,
+        p_part: part,
+        p_limit: 3,
+      });
+      if (error) throw error;
+      return (data || []).map(planDataApi.songFromRow);
     },
     async syncSongEmbedding(songId) {
       requireOnline();

@@ -172,7 +172,73 @@ test("music header omits redundant mobile copy", async () => {
   await desktop.context.close();
 });
 
-test("public users can open an ordered temporary YouTube practice queue", async () => {
+test("logged-out users can browse suggestions for an empty slot without editing", async () => {
+  const { context, page } = await plannerPage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+  await page.evaluate(() => {
+    window.__publicSuggestionCalls = [];
+    window.massPlanApp.connect({
+      subscribeAuth(callback) {
+        callback({ user: null, isEditor: false });
+        return () => {};
+      },
+      subscribePlan(date, onValue) {
+        onValue({ songs: {}, readingOverrides: {}, celebrationOverride: null });
+        return () => {};
+      },
+      suggestSongs(citations, part) {
+        window.__publicSuggestionCalls.push({ citations, part });
+        return Promise.resolve([
+          { id: "public-1", title: "Bread of Life", authors: "Composer One" },
+          { id: "public-2", title: "One Bread", authors: "Composer Two" },
+        ]);
+      },
+      assignSong() {
+        throw new Error("A logged-out user must not assign a song");
+      },
+    });
+  });
+
+  const launch = page.locator(
+    'button[data-song-action="suggestions"][data-part="communion"]',
+  );
+  await launch.scrollIntoViewIfNeeded();
+  await launch.click();
+
+  const dialog = page.locator("#songPickerDialog");
+  await assert.doesNotReject(() => dialog.waitFor({ state: "visible" }));
+  assert.equal(await page.locator("#songPickerTitle").textContent(), "Suggestions for Communion 1");
+  assert.equal(await page.locator("#songPickerModes").isHidden(), true);
+  assert.equal(await page.locator("#songPickerActions").isHidden(), true);
+  assert.equal(await page.locator("#previousSong").isHidden(), true);
+  assert.deepEqual(
+    await page.locator("#songSuggestionResults .song-suggestion").allTextContents(),
+    ["Bread of LifeComposer One", "One BreadComposer Two"],
+  );
+  assert.equal(
+    await page.locator("#songSuggestionResults button").count(),
+    0,
+  );
+  assert.equal(await page.getByText("Search by title").isHidden(), true);
+  assert.deepEqual(
+    await page.evaluate(() => window.__publicSuggestionCalls),
+    [{
+      citations: [
+        "Isaiah 55:1-3",
+        "Psalm 145:8-9, 15-16, 17-18",
+        "Romans 8:35, 37-39",
+        "Matthew 14:13-21",
+      ],
+      part: "communion",
+    }],
+  );
+  await context.close();
+});
+
+test("public users can open an ordered YouTube listening queue", async () => {
   const { context, page } = await plannerPage(
     browser,
     server,
@@ -226,6 +292,8 @@ test("public users can open an ordered temporary YouTube practice queue", async 
 
   const dialog = page.locator("#practiceDialog");
   await assert.doesNotReject(() => dialog.waitFor({ state: "visible" }));
+  assert.equal(await dialog.locator("h2").textContent(), "Listen to this Mass");
+  assert.equal(await dialog.getByText("Temporary YouTube queue").count(), 0);
   assert.equal(
     await page.locator("#practiceDialogSummary").textContent(),
     "3 of 4 selected songs available. 1 will be skipped.",

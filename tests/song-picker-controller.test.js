@@ -113,6 +113,34 @@ test("opening is unavailable without editor access or a connected store", async 
   assert.equal(state.states.length, 0);
 });
 
+test("logged-out users can open suggestions only without loading editor context", async () => {
+  const state = harness();
+  const calls = [];
+  state.setEditor(false);
+  state.setStore({
+    async getPlan() {
+      throw new Error("Public suggestion browsing must not load another plan");
+    },
+    async suggestSongs(citations, part) {
+      calls.push({ citations, part });
+      return [{ id: "public", title: "Public suggestion", authors: "Composer" }];
+    },
+  });
+
+  assert.equal(
+    await state.controller.open("communion_2", { suggestionsOnly: true }),
+    true,
+  );
+  assert.deepEqual(calls, [{
+    citations: ["Isaiah 55:1-3", "John 6:24-35"],
+    part: "communion",
+  }]);
+  assert.equal(state.controller.state().previousStatus, "empty");
+  assert.deepEqual(state.controller.state().suggestions, [
+    { id: "public", title: "Public suggestion", authors: "Composer" },
+  ]);
+});
+
 test("only the latest catalogue search can replace results", async () => {
   const state = harness();
   const first = deferred();

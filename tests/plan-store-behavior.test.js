@@ -148,7 +148,7 @@ function deferred() {
 }
 
 function supabaseFixture(planResult) {
-  const calls = { selects: [], rpcs: [], removedChannels: [] };
+  const calls = { selects: [], rpcs: [], functionInvokes: [], removedChannels: [] };
   const channel = {
     on() {
       return channel;
@@ -182,12 +182,17 @@ function supabaseFixture(planResult) {
     rpc(name, params) {
       calls.rpcs.push({ name, params });
       return Promise.resolve({
-        data: name === "create_and_assign_song" ? "song-2" : null,
+        data: name === "create_and_assign_song"
+          ? "song-2"
+          : name === "suggest_songs_for_readings"
+            ? [{ id: "suggested", title: "Suggested song" }]
+            : null,
         error: null,
       });
     },
     functions: {
-      invoke() {
+      invoke(name, options) {
+        calls.functionInvokes.push({ name, options });
         return Promise.resolve({ data: {}, error: null });
       },
     },
@@ -256,6 +261,29 @@ test("Supabase can load a previous plan without subscribing to it", async () => 
   assert.deepEqual(await store.getPlan("2026-07-26"), previousPlan);
   assert.equal(calls.selects[0].table, "plans");
   assert.doesNotMatch(calls.selects[0].columns, /song_lyrics/);
+});
+
+test("public suggestions use the bounded read-only RPC rather than the editor Edge Function", async () => {
+  const { calls, supabase } = supabaseFixture(Promise.resolve({ data: null, error: null }));
+  const store = storeModule.createSupabaseStore(supabase, {
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+  });
+
+  assert.deepEqual(
+    await store.suggestSongs(["Isaiah 55:1-3"], "communion"),
+    [{ id: "suggested", title: "Suggested song" }],
+  );
+  assert.deepEqual(calls.rpcs, [{
+    name: "suggest_songs_for_readings",
+    params: {
+      p_citations: ["Isaiah 55:1-3"],
+      p_part: "communion",
+      p_limit: 3,
+    },
+  }]);
+  assert.deepEqual(calls.functionInvokes, []);
 });
 
 test("Supabase plan song creation maps validated drafts to the atomic RPC", async () => {

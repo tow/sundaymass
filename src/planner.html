@@ -22,16 +22,9 @@
     <h1><span class="desktop-title">St James the Apostle — 6pm Mass</span><span class="mobile-title">6pm Mass music planner</span></h1>
     <p>Create a music-planning sheet for any Sunday Mass.</p>
     <a class="church-link" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener">Visit the church webpage ↗</a>
-    <div class="app-meta">&copy; 2026 Datamediate Oy</div>
   </header>
 
   <div class="card planner-card">
-    <div class="setup-head">
-      <div>
-        <div class="eyebrow">Music planning sheet</div>
-        <h2>Choose the Sunday</h2>
-      </div>
-    </div>
     <label class="fld sr-only" for="date">Choose a Sunday</label>
     <div class="daterow">
       <button class="nav" id="prev" title="Previous Sunday" aria-label="Previous Sunday"><span class="nav-desktop">‹ Previous</span><span class="nav-mobile" aria-hidden="true">‹</span></button>
@@ -56,7 +49,7 @@
         <p id="musicIntro">Selections for this Sunday appear here as they are chosen.</p>
       </div>
       <button class="practice-all" id="practiceAll" type="button">
-        <span>Practice all</span>
+        <span>Listen to all</span>
         <span class="practice-availability" id="practiceAllAvailability">0/0</span>
       </button>
     </div>
@@ -80,6 +73,8 @@
     <button type="button" id="openLiturgicalEditor">Edit celebration or readings</button>
   </div>
 </div>
+
+<footer class="site-footer">&copy; 2026 Datamediate Oy</footer>
 
 <main class="print-sheet" id="printSheet" aria-hidden="true"></main>
 
@@ -177,7 +172,7 @@
   <div class="reading-dialog-form">
     <div class="reading-dialog-head">
       <div>
-        <div class="eyebrow">Choose a song</div>
+        <div class="eyebrow" id="songPickerEyebrow">Choose a song</div>
         <h2 id="songPickerTitle">Select a song</h2>
       </div>
       <button class="reading-dialog-close" id="songPickerClose" type="button" aria-label="Close">×</button>
@@ -226,7 +221,7 @@
         <p class="song-picker-empty" id="songPickerEmpty" hidden>No matching songs.</p>
       </section>
     </div>
-    <div class="song-picker-actions">
+    <div class="song-picker-actions" id="songPickerActions">
       <button class="primary" type="button" id="useSong" disabled>Use song</button>
     </div>
   </div>
@@ -270,7 +265,7 @@
         <input id="songInRepertoire" type="checkbox" checked>
         This song is in the choir repertoire
       </label>
-      <p class="song-membership-help">Uncheck for a starter-library song that may be suggested but is not yet known to the choir.</p>
+      <p class="song-membership-help">Uncheck to keep the song in the extended library, where it may be suggested without being part of the choir's repertoire.</p>
       <fieldset class="song-suggestion-parts" id="songSuggestionParts">
         <legend>Suggest this song for</legend>
         <p>Select its normal uses, or leave blank to exclude it from suggestions. Manual selection remains unrestricted.</p>
@@ -309,8 +304,7 @@
   <div class="reading-dialog-form">
     <div class="reading-dialog-head">
       <div>
-        <div class="eyebrow">Temporary YouTube queue</div>
-        <h2>Practice this Mass</h2>
+        <h2>Listen to this Mass</h2>
         <p id="practiceDialogSummary"></p>
       </div>
       <button class="reading-dialog-close" id="practiceDialogClose" type="button" aria-label="Close">×</button>
@@ -319,7 +313,7 @@
       <div class="practice-player-shell">
         <iframe
           id="practicePlayer"
-          title="YouTube practice player"
+          title="YouTube player"
           allow="autoplay; encrypted-media; picture-in-picture"
           referrerpolicy="strict-origin-when-cross-origin"
           allowfullscreen

@@ -35,7 +35,7 @@ server between the browser and Supabase.
 - `index.html` is the single generated planner entry point. It is not a self-contained
   file.
 - `repertoire.html` is the public browser and editor surface for both the choir
-  repertoire and the distinct starter library.
+  repertoire and the distinct extended library.
 - `about.html` contains help, provenance, and limitations.
 - `vendor/supabase.js` is built locally from the exact pinned npm dependency.
 - `data/generated/` contains deterministic lectionary catalogues used by the planner.
@@ -153,12 +153,18 @@ database rejects an unauthorized direct request.
 
 ### Song selection and editing
 
-The picker has separate Suggested, Search, and Add modes. Suggestions are filtered by
-the slot's soft `suggestion_parts` classification before semantic ranking. Search can
-return every public song, and manual assignment to any Mass slot remains unrestricted.
-The suggestion result is deliberately bounded to two known repertoire songs plus one
-starter-library candidate. Candidate membership affects presentation and ranking, not
-song identity or eligibility.
+An empty public plan slot offers a read-only “See suggestions” action. It opens only
+the Suggested view: no previous-Sunday choice, search, creation, selection, or save
+controls are shown. Suggestions are filtered by the slot's soft
+`suggestion_parts` classification before semantic ranking. The result is deliberately
+bounded to two known repertoire songs plus one extended-library candidate. The public
+security-definer RPC bounds citation input and returns only safe song metadata; lyrics
+and the underlying song/reading vectors remain private.
+
+For editors, the same picker also provides Search and Add modes. Search can return
+every public song, and manual assignment to any Mass slot remains unrestricted.
+Candidate membership affects presentation and ranking, not song identity or
+eligibility.
 
 Creating a song and assigning it use one atomic RPC. Editing updates the canonical song,
 so every Mass referencing its UUID sees the new metadata. Lyrics are loaded only for
@@ -195,7 +201,7 @@ to a privacy-enhanced `youtube-nocookie.com` embed. Invalid or missing links are
 reported and omitted. Repeated assignments remain repeated in the queue because they
 represent distinct points in the Mass.
 
-The queue is created only when the user opens “Practice all”. It has no database row,
+The queue is created only when the user opens “Listen to all”. It has no database row,
 YouTube account, API key, or persistent playlist. Closing the dialog removes the
 iframe source to stop playback. The feature requires internet access even when the
 rest of a previously visited plan is available offline.

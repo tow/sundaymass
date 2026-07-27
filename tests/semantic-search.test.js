@@ -21,9 +21,9 @@ test("semantic schema uses private 384-dimensional pgvector storage", () => {
 });
 
 test("suggestion RPC returns public song metadata without lyrics or vectors", () => {
-  const sql = read("supabase/migrations/20260727210000_semantic_repertoire.sql");
+  const sql = read("supabase/migrations/20260728120000_public_song_suggestions.sql");
   const suggestion = sql.slice(
-    sql.indexOf("create function public.suggest_songs_for_readings"),
+    sql.indexOf("create or replace function public.suggest_songs_for_readings"),
     sql.indexOf("revoke execute on function public.suggest_songs_for_readings"),
   );
   const returnSignature = suggestion.slice(
@@ -31,11 +31,12 @@ test("suggestion RPC returns public song metadata without lyrics or vectors", ()
     suggestion.indexOf("language plpgsql"),
   );
 
-  assert.match(suggestion, /Editor access required/i);
+  assert.doesNotMatch(suggestion, /Editor access required/i);
   assert.match(suggestion, /p_citations text\[\]/i);
   assert.match(suggestion, /similarity/i);
   assert.match(suggestion, /song_embeddings/i);
   assert.match(suggestion, /reading_embeddings/i);
+  assert.match(sql, /to anon, authenticated/i);
   assert.doesNotMatch(suggestion, /\blyrics\b/i);
   assert.doesNotMatch(returnSignature, /\bembedding\b/i);
 });
@@ -73,7 +74,7 @@ test("the planner requests suggestions only from effective reading citations", (
   assert.match(workflow, /getReadingCitations,/);
   assert.match(picker, /store\.suggestSongs\(\s*getReadingCitations\(\),\s*suggestionPartFor\(partKey\)/);
   assert.match(store, /async suggestSongs\(/);
-  assert.match(store, /\.functions\.invoke\("semantic-songs"/);
+  assert.match(store, /\.rpc\("suggest_songs_for_readings"/);
 });
 
 test("the song picker keeps a mobile-sized suggestion set visible before search", () => {

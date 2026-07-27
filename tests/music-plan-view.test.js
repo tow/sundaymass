@@ -59,7 +59,15 @@ test("public rendering includes safe metadata but never private lyrics", () => {
   assert.doesNotMatch(result.html, /Authors:/);
   assert.doesNotMatch(result.html, /© 1994 GIA/);
   assert.match(result.html, /href="https:\/\/youtu\.be\/example"/);
-  assert.match(result.html, /Not yet chosen/);
+  assert.match(
+    result.html,
+    /<span class="music-song-title">All &lt;Are&gt; Welcome <a class="listen-link"[^>]*>Listen ↗<\/a><\/span>/,
+  );
+  assert.match(
+    result.html,
+    /data-song-action="suggestions" data-part="communion">See suggestions<\/button>/,
+  );
+  assert.equal((result.html.match(/See suggestions/g) || []).length, 1);
   assert.doesNotMatch(result.html, /Public rendering must never expose this/);
   assert.doesNotMatch(result.html, /\blyrics\b/i);
 });

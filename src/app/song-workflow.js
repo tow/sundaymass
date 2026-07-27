@@ -27,6 +27,7 @@
   }) {
     let editingSong = null;
     let searchTimer = null;
+    let readOnlyPicker = false;
     let pickerState = {
       open: false,
       partKey: null,
@@ -96,6 +97,7 @@
       const view = pickerView.renderSuggestions({
         songs: pickerState.suggestions,
         selectedSong: pickerState.selectedSong,
+        interactive: !readOnlyPicker,
       });
       elements.suggestionResults.innerHTML = view.html;
       elements.suggestionStatus.hidden = view.hasSuggestions;
@@ -127,12 +129,19 @@
       }
     }
 
-    async function open(partKey) {
-      if (!isEditor() || !getStore()) return;
+    async function open(partKey, { suggestionsOnly = false } = {}) {
+      const editor = isEditor();
+      readOnlyPicker = !editor && suggestionsOnly;
+      if ((!editor && !readOnlyPicker) || !getStore()) return;
       const part = partFor(partKey);
       const currentSong = getSongs()[partKey];
       const currentSelection = pickerView.currentSelection(currentSong);
-      elements.title.textContent = `Choose ${part?.label || "song"}`;
+      elements.eyebrow.textContent = readOnlyPicker ? "Song suggestions" : "Choose a song";
+      elements.title.textContent = readOnlyPicker
+        ? `Suggestions for ${part?.label || "this part"}`
+        : `Choose ${part?.label || "song"}`;
+      elements.modes.hidden = readOnlyPicker;
+      elements.actions.hidden = readOnlyPicker;
       elements.currentActions.hidden = currentSelection.hidden;
       elements.currentName.textContent = currentSelection.name;
       elements.currentAuthor.textContent = currentSelection.author;
@@ -141,12 +150,13 @@
       elements.empty.textContent = "No matching songs.";
       setMode("suggested");
       openModal(elements.dialog);
-      await pickerController.open(partKey);
+      await pickerController.open(partKey, { suggestionsOnly: readOnlyPicker });
     }
 
     function closePicker() {
       pickerController.close();
       if (elements.dialog.open) elements.dialog.close();
+      readOnlyPicker = false;
     }
 
     function fillEditor(song) {
@@ -188,6 +198,8 @@
         const button = event.target.closest("button[data-song-action]");
         if (button?.dataset.songAction === "choose" && isEditor()) {
           open(button.dataset.part);
+        } else if (button?.dataset.songAction === "suggestions" && !isEditor()) {
+          open(button.dataset.part, { suggestionsOnly: true });
         }
       });
       elements.search.addEventListener("input", () => {
@@ -207,7 +219,7 @@
       });
       elements.suggestionResults.addEventListener("click", event => {
         const button = event.target.closest("button[data-song-suggestion-index]");
-        if (button) {
+        if (button && isEditor()) {
           pickerController.selectSuggestion(button.dataset.songSuggestionIndex);
         }
       });
@@ -234,7 +246,7 @@
       elements.usePrevious.addEventListener("click", async () => {
         const song = pickerState.previousSong;
         const part = pickerState.partKey;
-        if (!song || !part) return;
+        if (!song || !part || !isEditor()) return;
         elements.usePrevious.disabled = true;
         try {
           await mutationController.assign(part, song);
@@ -248,7 +260,7 @@
       elements.use.addEventListener("click", async () => {
         const selectedSong = pickerState.selectedSong;
         const part = pickerState.partKey;
-        if (!selectedSong || !part) return;
+        if (!selectedSong || !part || !isEditor()) return;
         try {
           await mutationController.assign(part, selectedSong);
           closePicker();

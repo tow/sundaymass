@@ -34,7 +34,7 @@ function render(){
     ? song.inRepertoire===false
     : song.inRepertoire!==false);
   const visible=scoped.filter(song=>!query || `${song.title} ${song.authors}`.toLocaleLowerCase().includes(query));
-  repertoireCount.textContent=`${visible.length} ${repertoireScopeValue==="library"?"starter-library":"repertoire"} ${visible.length===1?"song":"songs"}`;
+  repertoireCount.textContent=`${visible.length} ${repertoireScopeValue==="library"?"extended library":"repertoire"} ${visible.length===1?"song":"songs"}`;
   repertoireScope.querySelectorAll("[data-repertoire-scope]").forEach(button=>{
     const selected=button.dataset.repertoireScope===repertoireScopeValue;
     button.classList.toggle("selected",selected);
@@ -42,10 +42,11 @@ function render(){
   });
   repertoireList.innerHTML=visible.map(song=>{
     const link=safeYoutube(song.youtubeUrl);
-    const badge=song.inRepertoire===false?`<span class="song-library-badge">Starter library</span>`:"";
-    return `<article class="song-card"><div class="song-card-copy">${badge}<h2>${esc(song.title)}</h2>`
+    const badge=song.inRepertoire===false?`<span class="song-library-badge">Extended library</span>`:"";
+    return `<article class="song-card"><div class="song-card-copy">${badge}<h2>${esc(song.title)}`
+      +(link?` <a href="${esc(link)}" target="_blank" rel="noopener">Listen ↗</a>`:"")
+      +`</h2>`
       +details(song).map(line=>`<p>${esc(line)}</p>`).join("")
-      +(link?`<a href="${esc(link)}" target="_blank" rel="noopener">Listen / practise ↗</a>`:"")
       +`</div>${isEditor?`<button type="button" data-edit-song="${song.id}">Edit details</button>`:""}</article>`;
   }).join("") || `<p class="empty-state">No songs match that search.</p>`;
   repertoireEditorActions.hidden=!isEditor;

@@ -59,14 +59,11 @@ test("the song picker removes the rubric and uses one compact footer action", ()
   assert.match(css, /\.song-picker-actions\{ display:flex; justify-content:flex-end;/);
 });
 
-test("empty editor slots use one Choose song control without a second empty-state line", () => {
+test("empty slots use one role-appropriate action without a second empty-state line", () => {
   const renderer = read("src/app/music-plan-view.js");
-  assert.equal(
-    (renderer.match(/Not yet chosen/g) || []).length,
-    1,
-    "Not yet chosen should appear only in the public read-only view",
-  );
+  assert.doesNotMatch(renderer, /Not yet chosen/);
   assert.match(renderer, /music-editor-actions empty/);
+  assert.match(renderer, /data-song-action="suggestions"[\s\S]*>See suggestions<\/button>/);
 });
 
 test("selected rows show only Change and move secondary actions into the picker", () => {

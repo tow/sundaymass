@@ -34,11 +34,15 @@
         : "";
     }
 
-    function practiceLink(choice) {
+    function listenLink(choice) {
       const link = safeYoutubeUrl(choice.youtubeUrl);
       return link
-        ? `<a class="listen-link" href="${escapeHtml(link)}" target="_blank" rel="noopener">Listen / practise ↗</a>`
+        ? ` <a class="listen-link" href="${escapeHtml(link)}" target="_blank" rel="noopener">Listen ↗</a>`
         : "";
+    }
+
+    function songTitle(choice) {
+      return escapeHtml(choice.song) + listenLink(choice);
     }
 
     function renderEditorRow(part, songs) {
@@ -47,12 +51,11 @@
       const attribution = editorAttribution(choice);
       const selected = song
         ? '<div class="music-editor-choice">'
-          + `<strong>${escapeHtml(song.title)}</strong>`
+          + `<strong class="music-song-title">${songTitle(choice)}</strong>`
           + (attribution
             ? `<span class="music-attribution">${escapeHtml(attribution)}</span>`
             : "")
           + copyrightWarning(choice)
-          + practiceLink(choice)
           + '</div><div class="music-editor-actions assigned">'
           + `<button type="button" data-song-action="choose" data-part="${escapeHtml(part.key)}">Change</button>`
           + "</div>"
@@ -73,13 +76,12 @@
         + `<div class="music-part-label">${musicLabel(part)}</div>`
         + '<div class="music-choice">'
         + (choice.song
-          ? escapeHtml(choice.song)
-          : '<span class="music-empty">Not yet chosen</span>')
+          ? `<span class="music-song-title">${songTitle(choice)}</span>`
+          : `<button class="music-suggestion-launch" type="button" data-song-action="suggestions" data-part="${escapeHtml(part.key)}">See suggestions</button>`)
         + (attribution
           ? `<span class="music-attribution">${escapeHtml(attribution)}</span>`
           : "")
         + copyrightWarning(choice)
-        + practiceLink(choice)
         + "</div></div>";
     }
 

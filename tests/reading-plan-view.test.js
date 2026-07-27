@@ -61,7 +61,7 @@ test("render builds the linked reading summary and all four full-text anchors", 
 
   assert.match(result.resolvedHtml, /Long 2026-08-02/);
   assert.match(result.resolvedHtml, /18th Sunday in Ordinary Time/);
-  assert.match(result.resolvedHtml, /Ordinary Time · Year A/);
+  assert.match(result.resolvedHtml, /selected-meta">Ordinary Time · Year A/);
   assert.equal((result.summaryHtml.match(/href="#reading-/g) || []).length, 4);
   assert.match(result.summaryHtml, /href="#reading-gospel"/);
   assert.equal((result.fullReadingsHtml.match(/class="rblock reading-anchor"/g) || []).length, 4);

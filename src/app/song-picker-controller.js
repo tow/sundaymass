@@ -46,13 +46,15 @@
       return snapshot();
     }
 
-    async function open(partKey) {
+    async function open(partKey, { suggestionsOnly = false } = {}) {
       const store = getStore();
-      if (!isEditor() || !store) return false;
+      const editor = isEditor();
+      if ((!editor && !suggestionsOnly) || !store) return false;
       const requestGeneration = ++generation;
       searchRequest += 1;
       const previousDate = getPreviousDate?.();
-      const canLoadPrevious = typeof store.getPlan === "function"
+      const canLoadPrevious = editor
+        && typeof store.getPlan === "function"
         && Boolean(previousDate);
       value = {
         ...initialState(partKey),

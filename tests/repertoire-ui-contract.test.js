@@ -61,7 +61,7 @@ test("repertoire editors can create and update canonical songs without assigning
   assert.match(app, /const songForm=SongForm\.create/);
   assert.match(app, /songForm\.write\(song\)/);
   assert.match(app, /song\.inRepertoire/);
-  assert.match(app, /Starter library/);
+  assert.match(app, /Extended library/);
   assert.match(html, /Only authorised editors can change song details/);
   assert.match(app, /status\.staleSongIds/);
   assert.match(app, /EmbeddingRepair\.repairStaleSongsOnce/);
@@ -76,9 +76,12 @@ test("the PWA caches and routes the repertoire independently", () => {
 
 test("public repertoire attribution is compact and includes the copyright mark", () => {
   const app = read("src/app/repertoire.js");
+  const styles = read("src/styles/repertoire.css");
 
   assert.match(app, /const details=SongPresentation\.repertoireDetails/);
   assert.doesNotMatch(app, /const copyrightLine=/);
+  assert.match(app, /<h2>\$\{esc\(song\.title\)\}[\s\S]*Listen ↗[\s\S]*<\/h2>/);
+  assert.match(styles, /\.song-card h2 a\{/);
 });
 
 test("all mobile headers use compact labels instead of overflowing the viewport", () => {

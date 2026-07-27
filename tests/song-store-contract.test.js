@@ -34,6 +34,6 @@ test("Supabase plan loading joins current song metadata without lyric text", () 
   assert.match(source, /suggestion_parts/);
   assert.match(source, /p_suggestion_parts/);
   assert.match(source, /async suggestSongs\(citations, part\)/);
-  assert.match(source, /action: "suggest", citations, part/);
+  assert.match(source, /\.rpc\("suggest_songs_for_readings"/);
   assert.match(source, /async getPlan\(date\)/);
 });

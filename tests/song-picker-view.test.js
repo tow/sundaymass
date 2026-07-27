@@ -47,7 +47,7 @@ test("search results preserve selection and disambiguate duplicate titles", () =
   assert.equal((result.html.match(/class="song-result/g) || []).length, 2);
   assert.match(result.html, /Amen &lt;Mass&gt;/);
   assert.match(result.html, /First Author · 2020 · Publisher · Lyrics recorded · Separate record aaaaaaaa/);
-  assert.match(result.html, /Starter library · Separate record bbbbbbbb/);
+  assert.match(result.html, /Extended library · Separate record bbbbbbbb/);
   assert.match(result.html, /data-song-index="1" aria-pressed="true"/);
   assert.doesNotMatch(result.html, /Private first lyrics|Private second lyrics/);
 });
@@ -74,8 +74,26 @@ test("suggestions show compact author details without private lyrics", () => {
   assert.match(result.html, /class="song-suggestion selected"/);
   assert.match(result.html, /First Author/);
   assert.match(result.html, /Author not recorded/);
-  assert.match(result.html, /Starter library/);
+  assert.match(result.html, /Extended library/);
   assert.doesNotMatch(result.html, /Private first lyrics|Private second lyrics|Lyrics recorded/);
+});
+
+test("read-only suggestions cannot be selected or assigned", () => {
+  const result = view.renderSuggestions({
+    songs: [{
+      id: "public",
+      title: "Public suggestion",
+      authors: "Composer",
+      lyrics: "private lyrics",
+    }],
+    selectedSong: null,
+    interactive: false,
+  });
+
+  assert.match(result.html, /<article class="song-suggestion song-suggestion-readonly">/);
+  assert.match(result.html, /Public suggestion/);
+  assert.match(result.html, /Composer/);
+  assert.doesNotMatch(result.html, /<button|data-song-suggestion-index|private lyrics/);
 });
 
 test("current selection context includes an author fallback", () => {

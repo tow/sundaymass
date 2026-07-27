@@ -1,4 +1,4 @@
--- Songs in the starter library are fully fledged song entities, but they must not
+-- Songs in the extended library are fully fledged song entities, but they must not
 -- imply that the choir already knows them. Existing and normally-created songs remain
 -- repertoire songs unless an editor explicitly changes this flag.
 alter table public.songs

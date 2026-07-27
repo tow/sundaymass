@@ -58,14 +58,14 @@ installed to a phone's home screen.
   and author matching. Semantic suggestions are shown separately in the song picker
   and never restrict which song can be chosen.
 - `in_repertoire` distinguishes songs the choir knows from complete candidate records
-  in the starter library. Both are canonical songs and both remain searchable. The
+  in the extended library. Both are canonical songs and both remain searchable. The
   semantic result reserves two places for repertoire songs and one for a candidate, so
   unfamiliar material can be discovered without displacing familiar choices.
 - Editing a canonical song immediately changes every Sunday which references it. This
   is an explicit product decision: the current small data set does not require weekly
   snapshots or immutable history.
 - There are two separate Communion slots: `communion` and `communion2`.
-- “Practice all” builds an unsaved, public YouTube queue from the selected Sunday in
+- “Listen to all” builds an unsaved, public YouTube queue from the selected Sunday in
   canonical Mass order. It includes every assigned slot with a valid YouTube video
   link, reports and skips missing links, and does not require a YouTube account, API
   key, or stored playlist. Reusing one video in two slots intentionally queues it twice.
@@ -79,10 +79,12 @@ installed to a phone's home screen.
   able to retrieve them. `song_lyrics` is physically separate from public song metadata
   solely to enforce that database permission boundary; it is not a separate domain
   concept. Without this requirement, the extra table would not be justified.
-- Song and reading embeddings are also private. Suggestions return only public song
-  metadata to authorised editors; they may include one clearly labelled starter-library
-  candidate alongside known repertoire songs.
-- The initial starter library was loaded on 2026-07-27 from a user-supplied, 244-page
+- Song and reading embeddings are also private. Logged-out users may view suggestions
+  for an empty Mass slot, but the bounded database function returns only public song
+  metadata. It may include one clearly labelled extended-library candidate alongside
+  known repertoire songs. Searching, assigning, creating, and editing remain
+  editor-only.
+- The initial extended library was loaded on 2026-07-27 from a user-supplied, 244-page
   historic hymn list. Of 575 usable full-lyric entries, 12 were exact matches to
   existing canonical songs and 563 became candidates. Title-only placeholders were not
   imported. This was a one-off production data import, not a schema migration: neither
