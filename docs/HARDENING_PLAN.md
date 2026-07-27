@@ -384,3 +384,9 @@ Acceptance:
   and mandatory confirmation for another valid passage in the same slot. Mobile
   Chrome confirms Gospel-in-First-Reading rejection and the Acts 4:32–35 preview,
   confirmation gate, and enabled action at 390 px with no horizontal overflow.
+- 2026-07-27: Authentication and date-scoped live-plan subscription ownership moved
+  from the planner orchestrator into a dependency-injected session controller. Tests
+  cover startup without a store, cached-first delivery, date changes, online and
+  offline errors, reconnect cleanup, and idempotent shutdown. At 390×844 Chrome
+  confirms that changing Sunday stops the previous subscription exactly once, loads
+  the new date, remains “Up to date,” has no horizontal overflow, and logs no warnings.

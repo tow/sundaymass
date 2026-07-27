@@ -952,6 +952,94 @@
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window === "undefined" ? globalThis : window);
 
+// Owns auth and date-scoped live-plan subscriptions plus their visible load status.
+(function (global) {
+  "use strict";
+
+  function create({
+    getDate,
+    isOnline,
+    onReset,
+    onPlan,
+    onAuth,
+    onStatus,
+    logger = console,
+  }) {
+    let store = null;
+    let stopPlanSubscription = null;
+    let stopAuthSubscription = null;
+    let showingCachedPlan = false;
+
+    function subscribe() {
+      if (stopPlanSubscription) {
+        stopPlanSubscription();
+        stopPlanSubscription = null;
+      }
+      showingCachedPlan = false;
+      onReset();
+      if (!store) {
+        onStatus("Connecting…", "");
+        return;
+      }
+
+      onStatus("Loading…", "");
+      stopPlanSubscription = store.subscribePlan(
+        getDate(),
+        (plan, meta = {}) => {
+          const offline = Boolean(meta.offline);
+          showingCachedPlan = Boolean(offline && meta.cached);
+          onPlan(plan, meta);
+          onStatus(
+            offline
+              ? (meta.cached ? "Offline — showing saved copy" : "Offline — no saved plan")
+              : "Up to date",
+            offline ? "" : "saved",
+          );
+        },
+        (error, meta = {}) => {
+          logger.error(error);
+          if (meta.offline || !isOnline()) {
+            const hasCachedPlan = showingCachedPlan || meta.cached;
+            onStatus(
+              hasCachedPlan ? "Offline — showing saved copy" : "Offline — no saved plan",
+              hasCachedPlan ? "" : "error",
+            );
+          } else {
+            onStatus("Could not load plan", "error");
+          }
+        },
+      );
+    }
+
+    function connect(value) {
+      if (stopAuthSubscription) {
+        stopAuthSubscription();
+        stopAuthSubscription = null;
+      }
+      store = value;
+      stopAuthSubscription = store.subscribeAuth(onAuth);
+      subscribe();
+    }
+
+    function stop() {
+      if (stopPlanSubscription) {
+        stopPlanSubscription();
+        stopPlanSubscription = null;
+      }
+      if (stopAuthSubscription) {
+        stopAuthSubscription();
+        stopAuthSubscription = null;
+      }
+    }
+
+    return Object.freeze({ connect, stop, subscribe });
+  }
+
+  const api = Object.freeze({ create });
+  global.PlanSessionController = api;
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+})(typeof window === "undefined" ? globalThis : window);
+
 // Canonical mapping between song editor controls and song draft values.
 (function (global) {
   "use strict";
@@ -2274,9 +2362,6 @@ let musicSongs = {};
 let readingOverrides = {};
 let celebrationOverride = null;
 let planStore = null;
-let stopPlanSubscription = null;
-let stopAuthSubscription = null;
-let showingCachedPlan = false;
 let isEditor = false;
 let signedIn = false;
 let editingReadingSlot = null;
@@ -2478,44 +2563,24 @@ function setSyncStatus(text,state){
   syncStatus.textContent=text;
   syncStatus.dataset.state=state || "";
 }
-function subscribeToCurrentPlan(){
-  if(stopPlanSubscription){ stopPlanSubscription(); stopPlanSubscription=null; }
-  musicSongs={};
-  readingOverrides={};
-  celebrationOverride=null;
-  showingCachedPlan=false;
-  renderMusicPlan();
-  refresh();
-  if(!planStore){ setSyncStatus("Connecting…",""); return; }
-  setSyncStatus("Loading…","");
-  stopPlanSubscription=planStore.subscribePlan(current().d,(plan,meta)=>{
+const planSessionController=PlanSessionController.create({
+  getDate:()=>current().d,
+  isOnline:()=>navigator.onLine,
+  onReset:()=>{
+    musicSongs={};
+    readingOverrides={};
+    celebrationOverride=null;
+    renderMusicPlan();
+    refresh();
+  },
+  onPlan:(plan)=>{
     musicSongs=plan?.songs || {};
     readingOverrides=plan?.readingOverrides || {};
     celebrationOverride=plan?.celebrationOverride || null;
     renderMusicPlan();
     refresh();
-    const offline=meta && meta.offline;
-    showingCachedPlan=Boolean(offline && meta.cached);
-    setSyncStatus(
-      offline ? (meta.cached ? "Offline — showing saved copy" : "Offline — no saved plan") : "Up to date",
-      offline ? "" : "saved",
-    );
-  },(error,meta={})=>{
-    console.error(error);
-    if(meta.offline || !navigator.onLine){
-      setSyncStatus(
-        showingCachedPlan || meta.cached ? "Offline — showing saved copy" : "Offline — no saved plan",
-        showingCachedPlan || meta.cached ? "" : "error",
-      );
-    }else{
-      setSyncStatus("Could not load plan","error");
-    }
-  });
-}
-function connectPlanStore(store){
-  planStore=store;
-  if(stopAuthSubscription) stopAuthSubscription();
-  stopAuthSubscription=store.subscribeAuth(auth=>{
+  },
+  onAuth:(auth)=>{
     isEditor=!!auth.isEditor;
     signedIn=!!auth.user;
     authButton.textContent=signedIn ? "Sign out" : "Sign in";
@@ -2528,8 +2593,14 @@ function connectPlanStore(store){
     }
     renderMusicPlan();
     renderReadingEditor();
-  });
-  subscribeToCurrentPlan();
+  },
+  onStatus:setSyncStatus,
+  logger:console,
+});
+function subscribeToCurrentPlan(){ planSessionController.subscribe(); }
+function connectPlanStore(store){
+  planStore=store;
+  planSessionController.connect(store);
 }
 window.massPlanApp={connect:connectPlanStore};
 

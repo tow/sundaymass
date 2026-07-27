@@ -2,6 +2,7 @@
 @@PWA_CONTROLLER_JS@@
 @@CALENDAR_NAVIGATION_JS@@
 @@AUTH_CONTROLLER_JS@@
+@@PLAN_SESSION_CONTROLLER_JS@@
 @@SONG_FORM_JS@@
 @@PRINT_CONTROLLER_JS@@
 @@MUSIC_PARTS_JS@@
@@ -87,9 +88,6 @@ let musicSongs = {};
 let readingOverrides = {};
 let celebrationOverride = null;
 let planStore = null;
-let stopPlanSubscription = null;
-let stopAuthSubscription = null;
-let showingCachedPlan = false;
 let isEditor = false;
 let signedIn = false;
 let editingReadingSlot = null;
@@ -291,44 +289,24 @@ function setSyncStatus(text,state){
   syncStatus.textContent=text;
   syncStatus.dataset.state=state || "";
 }
-function subscribeToCurrentPlan(){
-  if(stopPlanSubscription){ stopPlanSubscription(); stopPlanSubscription=null; }
-  musicSongs={};
-  readingOverrides={};
-  celebrationOverride=null;
-  showingCachedPlan=false;
-  renderMusicPlan();
-  refresh();
-  if(!planStore){ setSyncStatus("Connecting…",""); return; }
-  setSyncStatus("Loading…","");
-  stopPlanSubscription=planStore.subscribePlan(current().d,(plan,meta)=>{
+const planSessionController=PlanSessionController.create({
+  getDate:()=>current().d,
+  isOnline:()=>navigator.onLine,
+  onReset:()=>{
+    musicSongs={};
+    readingOverrides={};
+    celebrationOverride=null;
+    renderMusicPlan();
+    refresh();
+  },
+  onPlan:(plan)=>{
     musicSongs=plan?.songs || {};
     readingOverrides=plan?.readingOverrides || {};
     celebrationOverride=plan?.celebrationOverride || null;
     renderMusicPlan();
     refresh();
-    const offline=meta && meta.offline;
-    showingCachedPlan=Boolean(offline && meta.cached);
-    setSyncStatus(
-      offline ? (meta.cached ? "Offline — showing saved copy" : "Offline — no saved plan") : "Up to date",
-      offline ? "" : "saved",
-    );
-  },(error,meta={})=>{
-    console.error(error);
-    if(meta.offline || !navigator.onLine){
-      setSyncStatus(
-        showingCachedPlan || meta.cached ? "Offline — showing saved copy" : "Offline — no saved plan",
-        showingCachedPlan || meta.cached ? "" : "error",
-      );
-    }else{
-      setSyncStatus("Could not load plan","error");
-    }
-  });
-}
-function connectPlanStore(store){
-  planStore=store;
-  if(stopAuthSubscription) stopAuthSubscription();
-  stopAuthSubscription=store.subscribeAuth(auth=>{
+  },
+  onAuth:(auth)=>{
     isEditor=!!auth.isEditor;
     signedIn=!!auth.user;
     authButton.textContent=signedIn ? "Sign out" : "Sign in";
@@ -341,8 +319,14 @@ function connectPlanStore(store){
     }
     renderMusicPlan();
     renderReadingEditor();
-  });
-  subscribeToCurrentPlan();
+  },
+  onStatus:setSyncStatus,
+  logger:console,
+});
+function subscribeToCurrentPlan(){ planSessionController.subscribe(); }
+function connectPlanStore(store){
+  planStore=store;
+  planSessionController.connect(store);
 }
 window.massPlanApp={connect:connectPlanStore};
 
