@@ -83,6 +83,10 @@ It wires their DOM, combines the independently tested picker-state and mutation
 controllers, and reports canonical-song changes back to `planner.js`; it does not own
 the page's calendar, readings, authentication, or plan subscription.
 
+`reading-workflow.js` is the corresponding editor boundary for celebration replacement
+and individual reading overrides. It composes their state and persistence controllers,
+owns the three editor dialogs, and reports effective-plan changes back to `planner.js`.
+
 Controllers may depend on stores and pure domain functions. Views must not fetch or
 persist data. A controller should not reach into another controller's private state;
 their entry-point caller coordinates cross-feature changes.

@@ -46,6 +46,7 @@ test("the generated planner contains no unresolved build tokens", () => {
     "@@CELEBRATION_CONTROLLER_JS@@",
     "@@READING_OVERRIDE_CONTROLLER_JS@@",
     "@@READING_DIALOG_CONTROLLER_JS@@",
+    "@@READING_WORKFLOW_JS@@",
     "@@SONG_CATALOG_JS@@",
     "@@PLAN_MUSIC_DATA_JS@@",
     "@@LECTIONARY_CATALOG_JS@@",

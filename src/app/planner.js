@@ -18,6 +18,7 @@
 @@CELEBRATION_CONTROLLER_JS@@
 @@READING_OVERRIDE_CONTROLLER_JS@@
 @@READING_DIALOG_CONTROLLER_JS@@
+@@READING_WORKFLOW_JS@@
 @@SONG_CATALOG_JS@@
 @@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
@@ -102,34 +103,6 @@ let celebrationOverride = null;
 let planStore = null;
 let isEditor = false;
 let signedIn = false;
-let celebrationPickerState = {
-  open:false,
-  query:"",
-  selectedCelebration:null,
-  results:{heading:"",candidates:[],html:""},
-  preview:{hidden:true,useDisabled:true,html:""},
-  saving:false,
-};
-let readingDialogState = {
-  open:false,
-  slotKey:null,
-  slotLabel:"",
-  suggestions:[],
-  citationOptions:[],
-  input:"",
-  selectedSuggestion:"",
-  confirmed:false,
-  pendingSelection:null,
-  validation:{
-    message:"",
-    state:"",
-    previewText:"",
-    previewHidden:true,
-    confirmHidden:true,
-    buttonLabel:"Use reading",
-    useDisabled:true,
-  },
-};
 
 function current(){ return CALENDAR[curIdx]; }
 function baseCelebration(){
@@ -162,146 +135,87 @@ function renderMusicPlan(){
 }
 function computedCitation(slot){ return baseCelebration().readings?.[slot.key] || ""; }
 function displayedCitation(slot){ return readingOverrides[slot.key]?.citation || computedCitation(slot); }
-function setReadingStatus(text,state){
-  readingSaveStatus.textContent=text || "";
-  readingSaveStatus.dataset.state=state || "";
-}
-function renderReadingEditor(){
-  const view=readingEditorView.render({
-    isEditor,
-    celebration:baseCelebration(),
-    celebrationOverride,
-    sunday:current(),
-    readingOverrides,
-    readingSlots:READING_SLOTS,
-    citations:Object.fromEntries(READING_SLOTS.map(slot=>[
-      slot.key,
-      displayedCitation(slot),
-    ])),
-  });
-  liturgicalEditLaunch.hidden=view.launchHidden;
-  if(!view.editorVisible) return;
-  celebrationCurrent.classList.toggle("changed",view.celebrationChanged);
-  celebrationCurrent.innerHTML=view.celebrationHtml;
-  restoreCelebration.hidden=view.restoreCelebrationHidden;
-  readingEditorList.innerHTML=view.readingsHtml;
-  readingEditorFooter.hidden=view.footerHidden;
-}
-const celebrationController=CelebrationController.create({
+const readingWorkflow=ReadingWorkflow.create({
+  elements:{
+    launch:liturgicalEditLaunch,
+    launchButton:openLiturgicalEditor,
+    liturgicalDialog,
+    liturgicalClose:liturgicalDialogClose,
+    celebrationCurrent,
+    restoreCelebration,
+    editorList:readingEditorList,
+    editorFooter:readingEditorFooter,
+    saveStatus:readingSaveStatus,
+    chooseCelebration,
+    celebrationDialog,
+    celebrationContext:celebrationDialogContext,
+    celebrationSearch,
+    celebrationResultsHeading,
+    celebrationResults,
+    celebrationPreview,
+    celebrationUse,
+    celebrationClose:celebrationDialogClose,
+    celebrationCancel,
+    celebrationForm,
+    restoreAll:restoreAllReadings,
+    readingDialog,
+    readingTitle:readingDialogTitle,
+    readingContext:readingDialogContext,
+    readingSuggested,
+    citationOptions:readingCitationOptions,
+    searchHelp:readingSearchHelp,
+    citationInput:readingCitationInput,
+    confirm:ordoConfirm,
+    validation:readingValidation,
+    textPreview:readingTextPreview,
+    confirmWrap:ordoConfirmWrap,
+    readingUse,
+    readingClose:readingDialogClose,
+    readingCancel,
+    readingForm,
+  },
+  readingSlots:READING_SLOTS,
+  roleCitations:ROLE_CITATIONS,
+  normalizedCitation,
+  selectionPolicy:readingSelection,
+  pickerView:celebrationPickerView,
+  editorView:readingEditorView,
   getStore:()=>planStore,
   isEditor:()=>isEditor,
   getDate:()=>current().d,
   getCurrentSunday:current,
+  getBaseCelebration:baseCelebration,
+  getCelebrationOverride:()=>celebrationOverride,
+  getReadingOverrides:()=>readingOverrides,
+  getComputedCitation:computedCitation,
+  getDisplayedCitation:displayedCitation,
   getCandidates:()=>lectionary.availableCelebrations(current()),
-  pickerView:celebrationPickerView,
-  confirmRestore:message=>confirm(message),
-  onChange:state=>{
-    celebrationPickerState=state;
-    renderCelebrationResults();
-    renderCelebrationPreview();
-    if(!state.open && celebrationDialog.open) celebrationDialog.close();
-  },
-  onStatus:setReadingStatus,
-  onSaved:payload=>{
+  onCelebrationSaved:payload=>{
     celebrationOverride=payload;
     readingOverrides={};
     refresh();
   },
-  onRestored:()=>{
+  onCelebrationRestored:()=>{
     celebrationOverride=null;
     readingOverrides={};
     refresh();
   },
-  logger:console,
-});
-const readingOverrideController=ReadingOverrideController.create({
-  getStore:()=>planStore,
-  isEditor:()=>isEditor,
-  getDate:()=>current().d,
-  confirmAll:message=>confirm(message),
-  onStatus:setReadingStatus,
-  onOverrideChanged:(slot,value)=>{
+  onReadingOverrideChanged:(slot,value)=>{
     if(value) readingOverrides[slot]=value;
     else delete readingOverrides[slot];
     refresh();
   },
-  onAllRestored:()=>{
+  onAllReadingsRestored:()=>{
     readingOverrides={};
     refresh();
   },
+  openModal,
+  formatLong:fmtLong,
+  escapeHtml:esc,
+  confirmAction:message=>confirm(message),
   logger:console,
 });
-const readingDialogController=ReadingDialogController.create({
-  readingSlots:READING_SLOTS,
-  roleCitations:ROLE_CITATIONS,
-  selectionPolicy:readingSelection,
-  normalizedCitation,
-  isEditor:()=>isEditor,
-  getComputedCitation:computedCitation,
-  getExistingCitation:slot=>readingOverrides[slot.key]?.citation || "",
-  onChange:state=>{
-    readingDialogState=state;
-    renderReadingDialog();
-    if(!state.open && readingDialog.open) readingDialog.close();
-  },
-});
-function renderCelebrationPreview(){
-  const view=celebrationPickerState.preview;
-  celebrationPreview.innerHTML=view.html;
-  celebrationPreview.hidden=view.hidden;
-  celebrationUse.disabled=view.useDisabled || celebrationPickerState.saving;
-  celebrationUse.textContent=celebrationPickerState.saving
-    ? "Saving…"
-    : "Use this celebration";
-}
-function renderCelebrationResults(){
-  const view=celebrationPickerState.results;
-  celebrationResultsHeading.textContent=view.heading;
-  celebrationResults.innerHTML=view.html;
-}
-function openCelebrationDialog(){
-  if(!celebrationController.open()) return;
-  celebrationSearch.value="";
-  celebrationDialogContext.textContent="For the Mass on "+fmtLong(current().d);
-  openModal(celebrationDialog);
-  setTimeout(()=>celebrationSearch.focus(),0);
-}
-function renderReadingDialog(){
-  readingDialogTitle.textContent=readingDialogState.slotLabel;
-  readingSuggested.innerHTML=readingDialogState.suggestions.map(option=>
-    '<label class="suggested-reading"><input type="radio" name="suggestedReading" value="'+esc(option.citation)+'" data-default="'+(option.isDefault?'true':'false')+'">'
-    +'<span><strong>'+esc(option.label)+'</strong><small>'+esc(option.note)+'</small></span></label>'
-  ).join("");
-  readingCitationOptions.innerHTML=readingDialogState.citationOptions
-    .map(citation=>'<option value="'+esc(citation)+'"></option>')
-    .join("");
-  readingSearchHelp.textContent=readingDialogState.slotLabel
-    ? "Only "+readingDialogState.slotLabel.toLowerCase()+" passages contained in this app’s lectionary data can be selected."
-    : "";
-  readingCitationInput.value=readingDialogState.input;
-  readingSuggested.querySelectorAll('input[name="suggestedReading"]').forEach(input=>{
-    input.checked=normalizedCitation(input.value)===normalizedCitation(readingDialogState.selectedSuggestion);
-  });
-  ordoConfirm.checked=readingDialogState.confirmed;
-  readingValidation.textContent=readingDialogState.validation.message;
-  readingValidation.className="reading-validation"
-    +(readingDialogState.validation.state?" "+readingDialogState.validation.state:"");
-  readingTextPreview.innerHTML='<strong>Full text preview</strong>'
-    +esc(readingDialogState.validation.previewText);
-  readingTextPreview.hidden=readingDialogState.validation.previewHidden;
-  ordoConfirmWrap.hidden=readingDialogState.validation.confirmHidden;
-  readingUse.textContent=readingDialogState.validation.buttonLabel;
-  readingUse.disabled=readingDialogState.validation.useDisabled;
-}
-function openReadingDialog(key){
-  if(!readingDialogController.open(key)) return;
-  readingDialogContext.textContent=baseCelebration().name+" · "+fmtLong(current().d);
-  openModal(readingDialog);
-  setTimeout(()=>readingCitationInput.focus(),0);
-}
-async function restoreReadingOverride(slotKey){
-  await readingOverrideController.restore(slotKey);
-}
+readingWorkflow.start();
 function renderReadingPlan(){
   const view=readingPlanView.render({
     sunday:current(),
@@ -322,7 +236,7 @@ function syncDateControl(){
   dateDisplay.textContent=fmtPicker(current().d);
 }
 function refresh(){
-  syncDateControl(); renderReadingPlan(); renderReadingEditor();
+  syncDateControl(); renderReadingPlan(); readingWorkflow.renderEditor();
   prev.disabled=curIdx===0; next.disabled=curIdx===CALENDAR.length-1;
   today.hidden=curIdx===nextSundayIdx();
   const v = vals();
@@ -356,13 +270,11 @@ const planSessionController=PlanSessionController.create({
     signedIn=!!auth.user;
     authButton.textContent=signedIn ? "Sign out" : "Sign in";
     if(!isEditor){
-      if(liturgicalDialog.open) liturgicalDialog.close();
-      if(celebrationDialog.open) celebrationDialog.close();
-      if(readingDialog.open) readingDialog.close();
+      readingWorkflow.closeAll();
       songWorkflow.closeAll();
     }
     renderMusicPlan();
-    renderReadingEditor();
+    readingWorkflow.renderEditor();
   },
   onStatus:setSyncStatus,
   logger:console,
@@ -454,84 +366,6 @@ AuthController.create({
   onUnavailable:()=>setSyncStatus("Editor sign-in unavailable","error"),
   onActionFailure:()=>setSyncStatus("Sign-in failed","error"),
 }).start();
-openLiturgicalEditor.addEventListener("click",()=>{
-  if(!isEditor) return;
-  renderReadingEditor();
-  openModal(liturgicalDialog);
-});
-function closeLiturgicalDialog(){ liturgicalDialog.close(); }
-liturgicalDialogClose.addEventListener("click",closeLiturgicalDialog);
-liturgicalDialog.addEventListener("click",event=>{ if(event.target===liturgicalDialog) closeLiturgicalDialog(); });
-chooseCelebration.addEventListener("click",openCelebrationDialog);
-celebrationSearch.addEventListener("input",()=>{
-  celebrationController.search(celebrationSearch.value);
-});
-celebrationResults.addEventListener("click",event=>{
-  const button=event.target.closest("button[data-celebration-index]");
-  if(!button) return;
-  celebrationController.select(button.dataset.celebrationIndex);
-  celebrationPreview.scrollIntoView({block:"nearest"});
-});
-celebrationPreview.addEventListener("change",event=>{
-  const select=event.target.closest("select[data-celebration-reading]");
-  if(!select) return;
-  celebrationController.setReading(select.dataset.celebrationReading,select.value);
-});
-function closeCelebrationDialog(){
-  celebrationController.close();
-}
-celebrationDialogClose.addEventListener("click",closeCelebrationDialog);
-celebrationCancel.addEventListener("click",closeCelebrationDialog);
-celebrationDialog.addEventListener("click",event=>{ if(event.target===celebrationDialog) closeCelebrationDialog(); });
-celebrationForm.addEventListener("submit",async event=>{
-  event.preventDefault();
-  await celebrationController.save();
-});
-restoreCelebration.addEventListener("click",async ()=>{
-  await celebrationController.restore();
-});
-readingEditorList.addEventListener("click",event=>{
-  const button=event.target.closest("button[data-reading-action]");
-  if(!button || !isEditor) return;
-  if(button.dataset.readingAction==="change") openReadingDialog(button.dataset.readingSlot);
-  if(button.dataset.readingAction==="restore") restoreReadingOverride(button.dataset.readingSlot);
-});
-restoreAllReadings.addEventListener("click",async ()=>{
-  await readingOverrideController.restoreAll();
-});
-readingSuggested.addEventListener("change",event=>{
-  const input=event.target.closest('input[name="suggestedReading"]');
-  if(!input) return;
-  readingDialogController.chooseSuggestion(input.value);
-});
-readingCitationInput.addEventListener("input",()=>{
-  readingDialogController.setInput(readingCitationInput.value);
-});
-ordoConfirm.addEventListener("change",()=>{
-  readingDialogController.setConfirmed(ordoConfirm.checked);
-});
-function closeReadingDialog(){
-  readingDialogController.close();
-}
-readingDialogClose.addEventListener("click",closeReadingDialog);
-readingCancel.addEventListener("click",closeReadingDialog);
-readingDialog.addEventListener("click",event=>{ if(event.target===readingDialog) closeReadingDialog(); });
-readingForm.addEventListener("submit",async event=>{
-  event.preventDefault();
-  const selection=readingDialogState.pendingSelection;
-  if(!selection || !isEditor || !planStore || readingUse.disabled) return;
-  readingUse.disabled=true;
-  readingUse.textContent="Saving…";
-  const saved=await readingOverrideController.save(selection,readingDialogState.confirmed);
-  if(saved){
-    closeReadingDialog();
-  }else{
-    readingValidation.textContent="The reading could not be saved. Please try again.";
-    readingValidation.className="reading-validation error";
-    readingUse.textContent=selection.isDefault ? "Use computed reading" : "Use reading";
-    readingUse.disabled=false;
-  }
-});
 
 // pick nearest Sunday to a chosen date
 function goToDate(iso){

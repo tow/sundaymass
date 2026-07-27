@@ -500,3 +500,7 @@ Acceptance:
   state and callbacks while the feature module composes the existing picker-state and
   mutation controllers, owns its dialogs and events, and closes itself on editor
   revocation. The complete six-workflow Chrome suite passed unchanged.
+- 2026-07-27: Supabase client creation is now one validated browser bootstrap shared by
+  both stores and included explicitly in the Pages/PWA shell. Celebration and
+  individual-reading editor orchestration moved into `reading-workflow.js`, reducing
+  `planner.js` from 600 to 434 lines while all six Chrome workflows remained green.
