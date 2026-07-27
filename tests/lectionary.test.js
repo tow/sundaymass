@@ -3,7 +3,6 @@ const assert = require("node:assert/strict");
 
 require("../src/domain/lectionary.js");
 
-const calendar = require("../data/generated/sunday-calendar.json");
 const sundayLectionary = require("../data/generated/sunday-lectionary.json");
 const celebrations = require("../data/generated/celebrations.json");
 const commons = require("../data/generated/commons.json");
@@ -16,7 +15,7 @@ const catalog = global.LectionaryCatalog.create({
   commons,
   readings,
 });
-const ordinarySunday = calendar.find(sunday => sunday.d === "2026-07-26");
+const ordinarySunday = liturgicalCalendar.resolveSunday("2026-07-26");
 
 test("citation alternatives distinguish an implied chapter from a numbered book", () => {
   assert.deepEqual(
@@ -80,15 +79,18 @@ test("Sunday override candidates find real nearby occurrences at runtime", () =>
   assert.ok(Math.abs(catalog.dayDistance(ordinary.sourceDate, futureSunday.d)) < 365 * 31);
 });
 
-test("the dated calendar contains only references to complete unique lectionary entries", () => {
+test("runtime Sundays resolve only to complete unique lectionary entries", () => {
   const byId = new Map(sundayLectionary.map(item => [item.id, item]));
   assert.equal(byId.size, sundayLectionary.length, "lectionary IDs must be unique");
-  calendar.forEach(day => {
+  const reached = new Set();
+  liturgicalCalendar.sundaysBetween("1900-01-01", "2200-12-31").forEach(day => {
     assert.ok(byId.has(day.l), `${day.d} must reference a known lectionary entry`);
+    reached.add(day.l);
     ["f", "p", "e", "g"].forEach(field => {
-      assert.ok(!(field in day), `${day.d} must not duplicate its ${field} citation`);
+      assert.ok(!(field in day), `${day.d} must not embed its ${field} citation`);
     });
   });
+  assert.equal(reached.size, byId.size, "every lectionary template must be reachable");
   sundayLectionary.forEach(item => {
     assert.ok(item.f && item.p && item.e && item.g, `${item.id} must contain all four Sunday readings`);
   });

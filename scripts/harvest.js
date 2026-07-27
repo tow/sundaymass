@@ -50,9 +50,10 @@ function slotKey(d) { return d.data.meta.cycle.value + " | " + d.name; }
   }
   fs.writeFileSync(path.join(GENERATED_DATA, "lectionary_table.json"), JSON.stringify(table, null, 1));
 
-  // What slots does a 50-year horizon need?
+  // Diagnose gaps in the finite source window. Complete, date-independent template
+  // coverage is enforced later by build_sunday_lectionary.js.
   const need = {};
-  sundaysInYears(Array.from({ length: 51 }, (_, i) => 2025 + i)).forEach(d => {
+  harvestSundays.forEach(d => {
     const key = slotKey(d);
     (need[key] = need[key] || { count: 0, name: d.name, cycle: d.data.meta.cycle.value, type: d.type });
     need[key].count++;
@@ -63,7 +64,7 @@ function slotKey(d) { return d.data.meta.cycle.value + " | " + d.name; }
     .sort((a, b) => b.count - a.count);
 
   console.log("harvested slots with citations:", Object.keys(table).length);
-  console.log("distinct slots needed (50yr):", Object.keys(need).length);
+  console.log("distinct slots in source window:", Object.keys(need).length);
   console.log("MISSING slots:", missingSlots.length);
   const byCycle = {};
   missingSlots.forEach(m => { const c = m.cycle || "?"; (byCycle[c] = byCycle[c] || []).push(m); });

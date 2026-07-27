@@ -57,5 +57,6 @@ test("reviewed generated lectionary data remains versioned build input", () => {
     { cwd: root, encoding: "utf8" },
   ).trim().split("\n");
   assert.equal(tracked.includes("data/generated/readings_text.json"), true);
-  assert.equal(tracked.includes("data/generated/sunday-calendar.json"), true);
+  assert.equal(tracked.includes("data/generated/sunday-lectionary.json"), true);
+  assert.equal(fs.existsSync(path.join(root, "data/generated/sunday-calendar.json")), false);
 });

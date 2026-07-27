@@ -192,19 +192,14 @@ const FIXED_FEAST_FALLBACKS = {
   }
   console.log("Year C OT gospels checked; mismatches:", qaMismatch);
 
-  // ---- coverage vs 50-year need ----
-  const romcal = require("romcal");
-  const years = Array.from({ length: 51 }, (_, i) => 2025 + i);
-  const cal = [].concat(...years.map(y => romcal.calendarFor({ year: y, country: "general", locale: "en" })));
-  const byDate = {};
-  cal.forEach(d => { const dt = new Date(d.moment); if (dt.getUTCDay() !== 0) return; const iso = d.moment.slice(0,10); const rank = t=>({SOLEMNITY:3,FEAST:2,SUNDAY:1})[t]||0; if(!byDate[iso]||rank(d.type)>rank(byDate[iso].type)) byDate[iso]=d; });
-  let miss = {};
-  Object.values(byDate).forEach(d => {
-    const key = d.data.meta.cycle.value + " | " + d.name;
-    if (!table[key] && !feastByName[d.name]) { miss[key] = (miss[key]||0)+1; }
-  });
-  const missArr = Object.entries(miss).sort((a,b)=>b[1]-a[1]);
-  console.log("\n=== coverage: uncovered slots over 50yr:", missArr.length, "===");
-  missArr.forEach(([k,n]) => console.log(`  ${k}  (${n}x)`));
+  // ---- structural coverage ----
+  const incomplete = [
+    ...Object.entries(table),
+    ...Object.entries(feastByName),
+  ].filter(([, readings]) =>
+    !readings.first || !readings.psalm || !readings.second || !readings.gospel);
+  if (incomplete.length) {
+    throw new Error("Incomplete Sunday reading sets: " + incomplete.map(([key]) => key).join(", "));
+  }
   console.log("\ntotal slots in table:", Object.keys(table).length, "| fixed feasts:", Object.keys(feastByName).length);
 })();
