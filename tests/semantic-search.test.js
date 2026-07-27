@@ -42,17 +42,19 @@ test("suggestion RPC returns public song metadata without lyrics or vectors", ()
 
 test("Supabase Edge Function uses its native model and verifies editor access", () => {
   const source = read("supabase/functions/semantic-songs/index.ts");
+  const helpers = read("supabase/functions/semantic-songs/request.mjs");
 
   assert.match(source, /new Supabase\.ai\.Session\(["']gte-small["']\)/);
-  assert.match(source, /function chunks\(/);
+  assert.match(source, /embeddingChunks/);
+  assert.match(helpers, /function embeddingChunks\(/);
   assert.match(source, /new Array\(384\)/);
   assert.match(source, /mean_pool:\s*true/);
   assert.match(source, /normalize:\s*true/);
   assert.match(source, /\.from\(["']editors["']\)/);
   assert.match(source, /SUPABASE_SERVICE_ROLE_KEY/);
   assert.match(source, /bearerToken === serviceKey/);
-  assert.match(source, /sync-songs/);
-  assert.match(source, /sync-readings/);
+  assert.match(helpers, /sync-songs/);
+  assert.match(helpers, /sync-readings/);
   assert.match(source, /staleSongIds/);
   assert.match(source, /suggest/);
   assert.doesNotMatch(source, /OPENAI|openai/i);

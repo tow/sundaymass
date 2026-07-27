@@ -5,6 +5,7 @@ import {
   staleSongIds,
   storedSongEmbeddingHash,
 } from "./song-content.mjs";
+import { embeddingChunks, parseSemanticRequest } from "./request.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,10 +13,6 @@ const corsHeaders = {
 };
 const model = new Supabase.ai.Session("gte-small");
 const encoder = new TextEncoder();
-const suggestionParts = new Set([
-  "entrance", "kyrie", "gloria", "psalm", "acclamation", "offertory",
-  "sanctus", "memorial", "amen", "lordPrayer", "agnus", "communion", "recessional",
-]);
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -29,28 +26,8 @@ async function digest(value: string) {
   return Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("");
 }
 
-function chunks(value: string) {
-  const result: string[] = [];
-  let remaining = value.trim().slice(0, 30000);
-  while (remaining) {
-    if (remaining.length <= 1600) {
-      result.push(remaining);
-      break;
-    }
-    const candidate = remaining.slice(0, 1600);
-    const splitAt = Math.max(candidate.lastIndexOf("\n"), candidate.lastIndexOf(" "));
-    const end = splitAt > 1000 ? splitAt : 1600;
-    result.push(remaining.slice(0, end).trim());
-    remaining = remaining.slice(end).trim();
-  }
-  if (result.length <= 4) return result;
-  return [0, 1 / 3, 2 / 3, 1]
-    .map(position => result[Math.round(position * (result.length - 1))])
-    .filter((part, index, selected) => selected.indexOf(part) === index);
-}
-
 async function vector(value: string) {
-  const parts = chunks(value);
+  const parts = embeddingChunks(value);
   const vectors: number[][] = [];
   for (const part of parts) {
     vectors.push(await model.run(part, {
@@ -97,14 +74,11 @@ Deno.serve(async request => {
 
   const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
   const body = await request.json().catch(() => ({}));
-  const action = typeof body.action === "string" ? body.action : "";
+  const command = parseSemanticRequest(body);
 
-  if (action === "suggest") {
-    const citations = Array.isArray(body.citations)
-      ? body.citations.filter((value: unknown) => typeof value === "string").slice(0, 8)
-      : [];
-    const part = typeof body.part === "string" ? body.part : "";
-    if (!citations.length || !suggestionParts.has(part)) return json({ songs: [] });
+  if (command.action === "suggest") {
+    const { citations, part } = command;
+    if (!citations.length || !part) return json({ songs: [] });
     const { data, error } = await userClient.rpc("suggest_songs_for_readings", {
       p_citations: citations,
       p_part: part,
@@ -114,7 +88,7 @@ Deno.serve(async request => {
     return json({ songs: data || [] });
   }
 
-  if (action === "status") {
+  if (command.action === "status") {
     const [songs, readingVectors] = await Promise.all([
       admin.from("songs").select(
         "id,title,authors,source,song_lyrics(lyrics),song_embeddings(content_hash)",
@@ -134,10 +108,8 @@ Deno.serve(async request => {
     });
   }
 
-  if (action === "sync-songs") {
-    const songIds = Array.isArray(body.songIds)
-      ? body.songIds.filter((value: unknown) => typeof value === "string").slice(0, 20)
-      : [];
+  if (command.action === "sync-songs") {
+    const { songIds } = command;
     if (!songIds.length) return json({ processed: 0, skipped: 0 });
     const { data: songs, error } = await admin
       .from("songs")
@@ -172,14 +144,12 @@ Deno.serve(async request => {
     return json({ processed, skipped });
   }
 
-  if (action === "sync-readings") {
-    const readings = Array.isArray(body.readings) ? body.readings.slice(0, 20) : [];
+  if (command.action === "sync-readings") {
+    const { readings } = command;
     let processed = 0;
     let skipped = 0;
     for (const reading of readings) {
-      const citation = typeof reading?.citation === "string" ? reading.citation.trim() : "";
-      const text = typeof reading?.text === "string" ? reading.text.trim() : "";
-      if (!citation || !text || citation.length > 300 || text.length > 30000) continue;
+      const { citation, text } = reading;
       const content = `${citation}\n${text}`;
       const contentHash = await digest(content);
       const { data: existing } = await admin

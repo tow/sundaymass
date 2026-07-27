@@ -24,7 +24,7 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 |---|---|---|
 | 1. Correctness defects | Complete locally; deployment pending | Hash-based embedding staleness and truly empty suggestion positions |
 | 2. Reproducible build and CI | In progress | Pinned installs and deterministic, CI-verified builds |
-| 3. Testable stores and Edge logic | In progress | Dependency-injected adapters and executable behavior tests |
+| 3. Testable stores and Edge logic | Complete locally | Dependency-injected adapters and executable behavior tests |
 | 4. Supabase integration tests | Pending | Proven RLS, RPC, privacy, and suggestion behavior |
 | 5. Application modularization | Pending | Small feature controllers and shared definitions |
 | 6. Offline/PWA guarantees | Pending | Reliable cached public viewing and explicit online-only editing |
@@ -292,3 +292,7 @@ Acceptance:
   scheduling dependencies. Tests cover cached-first delivery, suppression of late
   network results after unsubscribe, lyric-free public queries, load-error delivery,
   channel cleanup, and atomic create-and-assign payloads.
+- 2026-07-27: Phase 3 completed locally by extracting Edge request parsing and
+  embedding chunk selection. Node tests now cover input caps, malformed data,
+  suggestion-position validation, reading sanitization, and bounded representative
+  chunks without needing Deno or a deployed function.
