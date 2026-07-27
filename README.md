@@ -239,6 +239,13 @@ defaults.
   network-first; other same-origin assets use the cached response while refreshing it.
 - The Supabase browser client is built locally from the exact npm version into
   `vendor/supabase.js`; production startup does not depend on a third-party CDN.
+- After a Sunday has loaded successfully, its public plan is retained locally. An
+  offline reload shows that saved copy together with the embedded readings and keeps
+  both print modes available. A Sunday that has never been visited shows an explicit
+  “Offline — no saved plan” state.
+- Shared editing requires an internet connection. Editor reads and mutations stop
+  before making a request while offline, and the interface never reports an offline
+  edit as saved.
 - **Increment `CACHE_NAME` whenever a deployed app-shell file changes.** Without a new
   cache name, an installed home-screen app can continue showing stale HTML. Users may
   still need to close and reopen an already-running installed app once after deployment.

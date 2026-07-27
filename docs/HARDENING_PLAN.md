@@ -27,7 +27,7 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 | 3. Testable stores and Edge logic | Complete locally | Dependency-injected adapters and executable behavior tests |
 | 4. Supabase integration tests | Complete locally | Proven RLS, RPC, privacy, and suggestion behavior |
 | 5. Application modularization | In progress | Small feature controllers and shared definitions |
-| 6. Offline/PWA guarantees | Pending | Reliable cached public viewing and explicit online-only editing |
+| 6. Offline/PWA guarantees | In progress | Reliable cached public viewing and explicit online-only editing |
 | 7. Browser and print coverage | In progress | Automated primary-workflow and A4 print tests |
 | 8. Documentation | Pending | Accurate, split developer and operations documentation |
 | 9. Repository cleanup | Pending | Intentional artifacts and generated-output enforcement |
@@ -343,3 +343,7 @@ Acceptance:
   The exact npm client is bundled locally with a pinned build-only esbuild version,
   included in deterministic-output checks, and cached in the PWA shell. An executable
   smoke test verifies that the generated module exports `createClient`.
+- 2026-07-27: Shared-plan startup now preserves the last cached public plan even when
+  Supabase startup or loading fails. Offline editor reads and mutations are rejected
+  before any request, cached and never-visited Sundays have distinct status text, and
+  no successful offline-save message remains.

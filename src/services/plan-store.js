@@ -5,6 +5,27 @@ const SUPABASE_MODULE_URL = typeof document === "undefined"
 
 const planData = () => globalThis.window?.PlanMusicData;
 const songCatalog = () => globalThis.window?.SongCatalog;
+const sharedPlanCacheKey = date => "st-james-plan-cache-v2-" + date;
+
+function readSharedPlanCache(storage, date) {
+  try {
+    const raw = storage?.getItem(sharedPlanCacheKey(date));
+    const value = raw ? JSON.parse(raw) : null;
+    return value && typeof value === "object" && !Array.isArray(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSharedPlanCache(storage, date, value) {
+  storage?.setItem(sharedPlanCacheKey(date), JSON.stringify(value));
+}
+
+function isNetworkFailure(error) {
+  return /failed to fetch|network(?:error| request)?|internet connection/i.test(
+    [error?.message, error?.details].filter(Boolean).join(" "),
+  );
+}
 
 function emptyPlan() {
   return planData().emptyPlan();
@@ -197,14 +218,19 @@ function localStore({
   };
 }
 
-function unavailableStore() {
+function unavailableStore({
+  storage = globalThis.localStorage,
+  planData: planDataApi = planData(),
+  reason = new Error("Supabase has not been configured"),
+} = {}) {
   const unavailable = async () => {
-    throw new Error("Supabase has not been configured");
+    throw new Error("Shared editing is unavailable");
   };
   return {
     subscribePlan(date, onValue, onError) {
-      onValue(emptyPlan(), { offline: false });
-      if (onError) onError(new Error("Supabase has not been configured"));
+      const cached = readSharedPlanCache(storage, date);
+      onValue(cached || planDataApi.emptyPlan(), { offline: true, cached: Boolean(cached) });
+      if (onError) onError(reason, { offline: true, cached: Boolean(cached) });
       return () => {};
     },
     subscribeAuth(onValue) {
@@ -237,18 +263,12 @@ function createSupabaseStore(
     random = Math.random,
     defer = setTimeout,
     logger = console,
+    isOnline = () => globalThis.navigator?.onLine !== false,
   } = {},
 ) {
-  const cacheKey = date => "st-james-plan-cache-v2-" + date;
-  const cacheRead = date => {
-    try {
-      const raw = storage.getItem(cacheKey(date));
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
+  const requireOnline = () => {
+    if (!isOnline()) throw new Error("Editing requires an internet connection");
   };
-  const cacheWrite = (date, plan) => storage.setItem(cacheKey(date), JSON.stringify(plan));
   const loadPlan = async date => {
     const { data, error } = await supabase
       .from("plans")
@@ -300,8 +320,8 @@ function createSupabaseStore(
 
   return {
     subscribePlan(date, onValue, onError) {
-      const cached = cacheRead(date);
-      if (cached) onValue(cached, { offline: true });
+      const cached = readSharedPlanCache(storage, date);
+      if (cached) onValue(cached, { offline: true, cached: true });
 
       let active = true;
       let loading = false;
@@ -316,10 +336,15 @@ function createSupabaseStore(
         try {
           const plan = await loadPlan(date);
           if (!active) return;
-          cacheWrite(date, plan);
+          writeSharedPlanCache(storage, date, plan);
           onValue(plan, { offline: false });
         } catch (error) {
-          if (active && onError) onError(error);
+          if (active && onError) {
+            onError(error, {
+              offline: !isOnline() || isNetworkFailure(error),
+              cached: Boolean(cached),
+            });
+          }
         } finally {
           loading = false;
           if (refreshPending) {
@@ -381,6 +406,7 @@ function createSupabaseStore(
       };
     },
     async searchSongs(query) {
+      requireOnline();
       const { data, error } = await supabase
         .from("songs")
         .select(`
@@ -399,13 +425,16 @@ function createSupabaseStore(
       return songCatalogApi.search((data || []).map(planDataApi.songFromRow), query);
     },
     async suggestSongs(citations, part) {
+      requireOnline();
       const result = await invokeSemantic({ action: "suggest", citations, part });
       return (result.songs || []).map(planDataApi.songFromRow);
     },
     async syncSongEmbedding(songId) {
+      requireOnline();
       return invokeSemantic({ action: "sync-songs", songIds: [songId] });
     },
     async getSong(songId) {
+      requireOnline();
       const { data, error } = await supabase
         .from("songs")
         .select(`
@@ -425,6 +454,7 @@ function createSupabaseStore(
       return planDataApi.songFromRow(data);
     },
     async assignSong(date, part, songId) {
+      requireOnline();
       const { error } = await supabase.rpc("assign_plan_song", {
         p_sunday: date,
         p_part: part,
@@ -433,6 +463,7 @@ function createSupabaseStore(
       if (error) throw error;
     },
     async createAndAssignSong(date, part, draft) {
+      requireOnline();
       const song = rpcDraft(draft);
       const { data, error } = await supabase.rpc("create_and_assign_song", {
         p_sunday: date,
@@ -443,6 +474,7 @@ function createSupabaseStore(
       return { id: data, ...song.value };
     },
     async updateSong(songId, draft) {
+      requireOnline();
       const song = rpcDraft(draft);
       const { error } = await supabase.rpc("update_song", {
         p_song_id: songId,
@@ -452,6 +484,7 @@ function createSupabaseStore(
       return { id: songId, ...song.value };
     },
     async clearSong(date, part) {
+      requireOnline();
       const { error } = await supabase.rpc("clear_plan_song", {
         p_sunday: date,
         p_part: part,
@@ -459,6 +492,7 @@ function createSupabaseStore(
       if (error) throw error;
     },
     async saveReadingOverride(date, slot, readingOverride) {
+      requireOnline();
       const { error } = await supabase.rpc("save_reading_override", {
         p_sunday: date,
         p_slot: slot,
@@ -467,6 +501,7 @@ function createSupabaseStore(
       if (error) throw error;
     },
     async clearReadingOverride(date, slot) {
+      requireOnline();
       const { error } = await supabase.rpc("clear_reading_override", {
         p_sunday: date,
         p_slot: slot || null,
@@ -474,6 +509,7 @@ function createSupabaseStore(
       if (error) throw error;
     },
     async saveCelebrationOverride(date, celebrationOverride) {
+      requireOnline();
       const { error } = await supabase.rpc("save_celebration_override", {
         p_sunday: date,
         p_override: celebrationOverride,
@@ -481,12 +517,14 @@ function createSupabaseStore(
       if (error) throw error;
     },
     async clearCelebrationOverride(date) {
+      requireOnline();
       const { error } = await supabase.rpc("clear_celebration_override", {
         p_sunday: date,
       });
       if (error) throw error;
     },
     async signIn(email, password) {
+      requireOnline();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
     },
@@ -518,7 +556,7 @@ async function start() {
       store = await supabaseStore(window.MASS_PLANNER_SUPABASE_CONFIG);
     } catch (error) {
       console.error("Supabase startup failed", error);
-      store = unavailableStore();
+      store = unavailableStore({ reason: error });
     }
   } else {
     store = local ? localStore() : unavailableStore();

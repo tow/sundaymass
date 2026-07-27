@@ -221,7 +221,7 @@ test("Supabase plan subscription drops a late network result after unsubscribe",
   });
   await new Promise(resolve => setImmediate(resolve));
 
-  assert.deepEqual(values, [{ plan: cachedPlan, status: { offline: true } }]);
+  assert.deepEqual(values, [{ plan: cachedPlan, status: { offline: true, cached: true } }]);
   assert.deepEqual(calls.removedChannels, [channel]);
   assert.doesNotMatch(calls.selects[0].columns, /song_lyrics/);
 });
@@ -277,4 +277,91 @@ test("Supabase plan load failures reach the subscription error handler", async (
   unsubscribe();
 
   assert.deepEqual(errors, [failure]);
+});
+
+test("Supabase network failures report whether an offline copy exists", async () => {
+  const cachedPlan = {
+    songs: {},
+    readingOverrides: {},
+    celebrationOverride: null,
+  };
+  const failure = {
+    message: "TypeError: Failed to fetch",
+    details: "TypeError: Failed to fetch",
+  };
+  const { supabase } = supabaseFixture(Promise.resolve({ data: null, error: failure }));
+  const store = storeModule.createSupabaseStore(supabase, {
+    storage: memoryStorage({
+      "st-james-plan-cache-v2-2026-08-02": JSON.stringify(cachedPlan),
+    }),
+    planData,
+    songCatalog,
+    isOnline: () => true,
+  });
+  const failures = [];
+
+  const unsubscribe = store.subscribePlan(
+    "2026-08-02",
+    () => {},
+    (error, status) => failures.push({ error, status }),
+  );
+  await new Promise(resolve => setImmediate(resolve));
+  unsubscribe();
+
+  assert.deepEqual(failures, [{
+    error: failure,
+    status: { offline: true, cached: true },
+  }]);
+});
+
+test("an unavailable shared store preserves the last cached public plan", async () => {
+  const cachedPlan = {
+    songs: { entrance: { id: "cached", title: "Cached song" } },
+    readingOverrides: {},
+    celebrationOverride: null,
+  };
+  const failure = new Error("Supabase startup failed");
+  const store = storeModule.unavailableStore({
+    storage: memoryStorage({
+      "st-james-plan-cache-v2-2026-08-02": JSON.stringify(cachedPlan),
+    }),
+    planData,
+    reason: failure,
+  });
+  const values = [];
+  const errors = [];
+
+  store.subscribePlan(
+    "2026-08-02",
+    (plan, status) => values.push({ plan, status }),
+    error => errors.push(error),
+  );
+
+  assert.deepEqual(values, [{
+    plan: cachedPlan,
+    status: { offline: true, cached: true },
+  }]);
+  assert.deepEqual(errors, [failure]);
+  await assert.rejects(
+    store.assignSong("2026-08-02", "entrance", "song-1"),
+    /Shared editing is unavailable/,
+  );
+});
+
+test("Supabase editor mutations stop before making requests while offline", async () => {
+  const { calls, supabase } = supabaseFixture(Promise.resolve({ data: null, error: null }));
+  const store = storeModule.createSupabaseStore(supabase, {
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+    isOnline: () => false,
+  });
+
+  await assert.rejects(
+    store.assignSong("2026-08-02", "entrance", "song-1"),
+    /internet connection/,
+  );
+  await assert.rejects(store.searchSongs("Gather"), /internet connection/);
+  assert.deepEqual(calls.rpcs, []);
+  assert.deepEqual(calls.selects, []);
 });

@@ -1715,6 +1715,7 @@ let celebrationOverride = null;
 let planStore = null;
 let stopPlanSubscription = null;
 let stopAuthSubscription = null;
+let showingCachedPlan = false;
 let isEditor = false;
 let signedIn = false;
 let editingReadingSlot = null;
@@ -2062,6 +2063,7 @@ function subscribeToCurrentPlan(){
   musicSongs={};
   readingOverrides={};
   celebrationOverride=null;
+  showingCachedPlan=false;
   renderMusicPlan();
   refresh();
   if(!planStore){ setSyncStatus("Connecting…",""); return; }
@@ -2072,10 +2074,22 @@ function subscribeToCurrentPlan(){
     celebrationOverride=plan?.celebrationOverride || null;
     renderMusicPlan();
     refresh();
-    setSyncStatus(meta && meta.offline ? "Offline — showing saved copy" : "Up to date",meta && meta.offline ? "" : "saved");
-  },error=>{
+    const offline=meta && meta.offline;
+    showingCachedPlan=Boolean(offline && meta.cached);
+    setSyncStatus(
+      offline ? (meta.cached ? "Offline — showing saved copy" : "Offline — no saved plan") : "Up to date",
+      offline ? "" : "saved",
+    );
+  },(error,meta={})=>{
     console.error(error);
-    setSyncStatus("Could not load plan","error");
+    if(meta.offline || !navigator.onLine){
+      setSyncStatus(
+        showingCachedPlan || meta.cached ? "Offline — showing saved copy" : "Offline — no saved plan",
+        showingCachedPlan || meta.cached ? "" : "error",
+      );
+    }else{
+      setSyncStatus("Could not load plan","error");
+    }
   });
 }
 function connectPlanStore(store){
@@ -2236,13 +2250,17 @@ function closeSongEditor(){
   editingSong=null;
 }
 async function runSongMutation(work,success){
+  if(!navigator.onLine){
+    setSyncStatus("Offline — editing unavailable","error");
+    throw new Error("Editing requires an internet connection");
+  }
   setSyncStatus("Saving…","");
   try{
     await work();
-    setSyncStatus(navigator.onLine ? success : "Saved offline","saved");
+    setSyncStatus(success,"saved");
   }catch(error){
     console.error(error);
-    setSyncStatus("Save failed","error");
+    setSyncStatus(navigator.onLine ? "Save failed" : "Offline — editing unavailable","error");
     throw error;
   }
 }
