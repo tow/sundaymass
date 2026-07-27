@@ -107,6 +107,7 @@ their entry-point caller coordinates cross-feature changes.
 - Mass-part definitions and suggestion normalization
 - canonical song validation and presentation
 - public plan projection
+- runtime Finnish Sunday calculation
 - lectionary selection and role-aware reading validation
 - embedding content and repair policy
 
@@ -165,10 +166,11 @@ can repair missing or stale vectors in bounded batches.
 
 ### Reading and celebration changes
 
-The normal Sunday lectionary is computed from checked-in generated catalogues. Editors
-may rarely replace it with any supported standard celebration. The browser resolves
-the selected alternative options into a complete snapshot, and one RPC stores that
-snapshot while clearing individual overrides atomically.
+The normal Sunday and its lectionary key are calculated locally at runtime, then
+resolved through a checked-in catalogue of reusable reading templates. Editors may
+rarely replace it with any supported standard celebration. The browser resolves the
+selected alternative options into a complete snapshot, and one RPC stores that snapshot
+while clearing individual overrides atomically.
 
 Individual overrides remain available for fine-tuning. Domain validation constrains
 each slot to its sane book family and requires an explicit confirmation for another

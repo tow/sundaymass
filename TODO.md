@@ -23,7 +23,7 @@ to be decided.
 ## Communication
 
 - Make a short demo video covering Sunday selection, music planning, repertoire
-  editing, suggestions, and Word export.
+  editing, suggestions, and PDF export.
 - Check permissions and consent for any music, recordings, people, lyrics, or church
   interior shown in the video.
 

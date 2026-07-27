@@ -1,9 +1,9 @@
 # Calendar and lectionary
 
-The planner precomputes the finite Finnish Sunday calendar and stores each distinct
-Sunday lectionary set once. It separately carries a searchable catalogue of standard
-celebrations and Commons for rare editor overrides. Browser domain logic resolves those
-catalogues into usable, role-aware choices at runtime.
+The planner calculates the Finnish Sunday calendar locally at runtime and stores each
+distinct Sunday lectionary set once. It separately carries a searchable catalogue of
+standard celebrations and Commons for rare editor overrides. Browser domain logic
+resolves those catalogues into usable, role-aware choices at runtime.
 
 This is an independent planning aid, not an authoritative Finnish lectionary or parish
 Ordo. National, diocesan, later-decreed, or current-Ordo choices may differ. The UI must
@@ -11,11 +11,11 @@ continue to tell editors to confirm exceptional choices against the parish Ordo.
 
 ## Data boundary
 
-Calendar occurrence and reading selection are deliberately separate:
+Calendar calculation and reading selection are deliberately separate:
 
 ```text
-sunday-calendar.json
-  date, title, season, cycle, lectionary key
+liturgical-calendar.js
+  selected date -> title, season, cycle, lectionary key
                          |
                          v
 sunday-lectionary.json
@@ -30,14 +30,13 @@ celebrations.json --references--> commons.json
                  full text by citation
 ```
 
-`sunday-calendar.json` must not contain duplicated first-reading, Psalm, second-reading,
-or Gospel fields. Its `l` key joins to one `sunday-lectionary.json` record through
-`LectionaryCatalog.scheduledCelebration()`.
+The calculated Sunday's `l` key joins to one `sunday-lectionary.json` record through
+`LectionaryCatalog.scheduledCelebration()`. No dated Sunday dataset is built, checked
+in, embedded, downloaded, or cached.
 
-This boundary avoids materializing another copy of the readings for every date while
-still making date selection deterministic and offline-capable. A saved celebration
-override is different: it is intentionally a complete resolved snapshot of the choices
-an editor reviewed.
+This boundary keeps date selection deterministic and offline-capable without
+materializing decades of occurrences. A saved celebration override is different: it
+is intentionally a complete resolved snapshot of the choices an editor reviewed.
 
 ## Generated files
 
@@ -45,16 +44,15 @@ an editor reviewed.
 |---|---|
 | `lectionary_table.json` | Harvested A/B by-date citation input |
 | `readings_master.json` | Normalized Sunday and fixed-feast citation source |
-| `sunday-calendar.json` | 2,661 dated Sunday occurrences from 2025–2075 |
 | `sunday-lectionary.json` | 207 distinct scheduled reading sets |
 | `celebrations.json` | 235 usable Proper/Finnish celebrations |
 | `commons.json` | Seven role-specific Common groups |
 | `readings_text.json` | 974 current selectable citation-to-full-text entries |
 
 Counts are useful diagnostics, not permanent schema constants. Executable tests verify
-that every dated key resolves uniquely, selectable celebrations are usable, required
-second readings exist, alternatives remain selectable, and every generated citation
-has text.
+that runtime dates resolve uniquely, every runtime key has a complete template,
+selectable celebrations are usable, required second readings exist, alternatives
+remain selectable, and every generated citation has text.
 
 ## Build pipeline
 
@@ -65,8 +63,8 @@ The full data rebuild is ordered:
 2. `scripts/build_readings.js` merges those citations with Year C, displaced weeks, and
    fixed feasts. Year C comes from the Felix Just tables because the harvested 2025
    source is known to mislabel All Souls.
-3. `scripts/build_sunday_schedule.js` applies the Finland calendar and project-specific
-   corrections, then writes separate dated and unique-lectionary files.
+3. `scripts/build_sunday_lectionary.js` converts the normalized sources directly into
+   cycle-keyed reading templates. It does not enumerate calendar dates.
 4. `scripts/build_celebrations.js` imports the Proper of Saints, explicit alternatives,
    Common references, and all seven Commons from the 2002 US lectionary citation
    indexes. It then applies Finnish and parish-specific entries.
@@ -95,7 +93,7 @@ npm ci
 bash scripts/fetch_sources.sh
 node scripts/harvest.js
 node scripts/build_readings.js
-node scripts/build_sunday_schedule.js
+node scripts/build_sunday_lectionary.js
 node scripts/build_celebrations.js
 node scripts/extract_readings.js
 npm run check
@@ -106,8 +104,9 @@ structure, abbreviations, or liturgical coverage.
 
 ## Finland calendar corrections
 
-`romcal` provides the calendar base. `scripts/build_sunday_schedule.js` adjusts cases
-where the General Roman behavior does not match this planner's Finland rules:
+`src/domain/liturgical-calendar.js` implements Gregorian Easter, the Sunday cycle,
+seasons, movable Sundays, and the Finland-specific fixed celebrations needed by this
+planner:
 
 - Epiphany remains fixed on 6 January, a Finnish public holiday, rather than being
   transferred to a Sunday. A displaced early-January Sunday becomes the Second Sunday
@@ -116,8 +115,12 @@ where the General Roman behavior does not match this planner's Finland rules:
 - Saint Henry, patron of Finland, is a solemnity with the currently encoded option-one
   readings from the Finnish diocesan Ordo.
 
-The script records unexpected gaps and rejects conflicting reading sets for a shared
-lectionary key. Tests require the complete generated range to resolve.
+The runtime calculator returns only a date, display metadata, and a lectionary key.
+`scripts/build_sunday_lectionary.js` rejects incomplete reading templates. Tests compare
+every Sunday from 2025 through 2075 with an independent development-only `romcal`
+oracle, exercise navigation beyond that former horizon, and prove across 1900–2200 that
+every calculated key resolves to exactly one complete reusable template. `romcal` is
+not included in the browser bundle.
 
 ## Proper celebrations and Commons
 

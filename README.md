@@ -1,8 +1,8 @@
 # St James the Apostle 6pm Mass — Music Planner
 
 A mobile-first tool for planning the sung parts of the 6pm Sunday Mass at St James the
-Apostle. Pick any Sunday from 2025–2075, review the liturgical day and full text of all
-four readings, choose the music, and print or save an A4 PDF planning sheet with or
+Apostle. Pick any Sunday, review the liturgical day and full text of all four readings,
+choose the music, and print or save an A4 PDF planning sheet with or
 without the readings. Music choices are publicly viewable and authorized editors save
 changes live.
 
@@ -205,11 +205,11 @@ and incident priorities are documented in
 
 ## Calendar and lectionary
 
-The planner embeds a precomputed 2025–2075 Finnish Sunday calendar, one canonical
-reading set per distinct Sunday/cycle, a searchable standard-celebration and Commons
-catalogue, and public-domain full reading texts. Browser domain logic keeps reading
-roles distinct and resolves Proper and Common alternatives without duplicating every
-reading onto every calendar date.
+The planner calculates Finnish Sundays locally as they are selected. It embeds one
+canonical reading set per distinct Sunday/cycle, a searchable standard-celebration and
+Commons catalogue, and public-domain full reading texts. Browser domain logic keeps
+calendar rules separate from reading data and resolves Proper and Common alternatives
+without materializing dated rows.
 
 This remains an independent planning aid, not the authoritative Finnish lectionary or
 parish Ordo. The sources, Finland corrections, Saint James titular solemnity, Commons
@@ -298,6 +298,6 @@ access accordingly.
 ## Dependencies
 
 Node 22.20.x and npm 10.9.3; use the committed `.node-version` and
-`package-lock.json`. Browser/runtime packages are pinned exactly (`romcal` and the
-Supabase JavaScript client); `esbuild` is a pinned build-only dependency used to
-produce the local Supabase module.
+`package-lock.json`. The Supabase JavaScript client is the only browser/runtime npm
+package. `romcal` is a development-only independent calendar oracle, and `esbuild` is a
+pinned build-only dependency used to produce the local Supabase module.

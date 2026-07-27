@@ -525,3 +525,8 @@ Acceptance:
   error in the newly shared Supabase bootstrap: localhost is hosted at `/`, while the
   Pages project is hosted at `/sundaymass/`. A red-green regression now proves the
   vendor bundle resolves from the document base on project-subdirectory deployments.
+- 2026-07-27: The finite 2025–2075 Sunday snapshot was removed. A small pure domain
+  module now calculates Finnish Sundays when selected, while 207 checked-in lectionary
+  templates remain reusable reading data. The app navigates beyond the former horizon;
+  tests compare the old 51-year range against a development-only Romcal oracle and
+  prove all runtime keys across 1900–2200 resolve to complete templates.
