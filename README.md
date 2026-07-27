@@ -400,9 +400,13 @@ Ordo; do not describe this catalogue as an authoritative Finnish lectionary.
 ```bash
 npm ci
 npm run build             # regenerates icons, vendor code and both planner HTML files
-npm test                  # lectionary alternatives, Commons and picker invariants
-npm run check             # tests, rebuilds, and rejects stale generated output
+npm test                  # fast Node behavior and invariant suite
+npm run test:e2e          # system-Chrome mobile, navigation, print and privacy checks
+npm run check             # unit + browser tests, rebuild, and stale-output rejection
 ```
+
+See [`docs/testing.md`](docs/testing.md) for test layers, Chrome requirements, local
+Supabase integration tests, and where new tests belong.
 
 ### Full rebuild from scratch
 
@@ -470,8 +474,8 @@ viewport (390 × 844 is the established baseline) and at a desktop width:
 - Both print buttons remain equal-width columns on mobile.
 - Song forms save only when submitted; typing does not move focus or dismiss the
   keyboard.
-- The song picker opens full-screen on mobile. The create-new action remains visible
-  above results with zero, partial, exact, or duplicate-title matches.
+- The song picker opens as a tall single-scroller sheet over the plan on mobile. Its
+  Suggested, Search, and Add modes avoid competing nested result areas.
 - Celebration/reading controls appear only after the bottom editor button is pressed.
   Their pickers open full-screen on mobile, keep action buttons reachable, block
   wrong-role citations, and require the Ordo checkbox for a non-standard individual
@@ -480,7 +484,7 @@ viewport (390 × 844 is the established baseline) and at a desktop width:
   elisions appear as `[...]`.
 - The About link is visible in the top bar; users must not need to reach a troublesome
   footer to discover help.
-- Test the locally served app in Chrome with an iPhone Safari user agent when possible,
+- Run `npm run check`, inspect native mobile interactions in Chrome when appropriate,
   then verify the deployed GitHub Pages version after its build completes.
 
 ## Future lyric-powered repertoire and projector slides

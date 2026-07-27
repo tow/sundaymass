@@ -1,0 +1,60 @@
+# Testing
+
+The default verification command is:
+
+```bash
+npm ci
+npm run check
+```
+
+`check` runs the Node behavior suite, the headless system-Chrome suite, and a clean
+deterministic rebuild. It is the deployment gate in `.github/workflows/verify.yml`.
+
+## Test layers
+
+- `npm run test:unit` runs the fast Node suite in `tests/*.test.js`. These tests cover
+  domain rules, controller state, rendering, store adapters, privacy projections,
+  generated-data invariants, and source/build contracts.
+- `npm run test:e2e` serves the repository on an ephemeral localhost port and controls
+  installed Chrome through pinned `playwright-core`. It does not download or bundle a
+  second browser. The suite currently checks 320 px, 390 px, and desktop overflow plus
+  the public reading-anchor, Sunday-navigation, print, and lyric-privacy workflow.
+- `npm run test:integration` resets a local Supabase project and tests the migrated
+  authorization, RLS, RPC, privacy, and semantic-suggestion contract. Run it separately
+  because it requires Docker and the pinned Supabase CLI.
+- `npm run test:coverage` runs the Node suite with Node's built-in coverage report.
+- `npm run verify:generated` rebuilds the deployable files and fails if tracked output
+  was stale before the rebuild.
+
+## Browser requirements
+
+Browser tests use the machine's existing Google Chrome or Chromium. They check the
+standard macOS and Linux installation paths. Set `CHROME_PATH` when Chrome lives
+elsewhere:
+
+```bash
+CHROME_PATH=/path/to/chrome npm run test:e2e
+```
+
+The browser test replaces `supabase-config.js` with an empty local configuration and
+injects controlled plan stores. Tests therefore do not read or mutate production data,
+and public lyric-exclusion checks can deliberately pass a hostile plan value containing
+lyrics without exposing a real lyric record.
+
+## Exploratory mobile checks
+
+Chrome DevTools remains useful after automated checks for visual review, especially
+native dialogs, mobile keyboard behavior, scroll restoration, and print preview. Use a
+390 × 844 viewport as the baseline and also inspect 320 px when changing headers,
+dialogs, or plan rows. Exploratory checks supplement `npm run check`; they do not
+replace it.
+
+## Adding tests
+
+- Put pure domain, controller, store, or rendering tests directly under `tests/`.
+- Put real migrated-database tests under `tests/integration/`.
+- Put system-browser workflows under `tests/e2e/`.
+- Assert user-visible behavior and module contracts rather than expecting an
+  implementation to remain inside `src/app/planner.js`.
+- Hard privacy rules need both a browser/store projection test and a migrated Supabase
+  authorization test.

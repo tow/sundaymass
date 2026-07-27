@@ -427,3 +427,9 @@ Acceptance:
   celebration replacement, and individual overrides. At 390×844 Chrome confirms all
   four rows and both override levels render with the correct restore controls and no
   overflow or warnings.
+- 2026-07-27: Phase 7 now has a deployment-gating system-Chrome suite using pinned
+  `playwright-core` without downloading another browser. It covers horizontal overflow
+  at 320, 390, and 1280 px plus reading anchors, Sunday navigation, music-and-readings
+  print output, and hostile public-plan lyric exclusion. `npm run check` runs it after
+  the Node suite. `docs/testing.md` records the test layers and browser requirements,
+  and the stale README claim that the song picker is full-screen is corrected.
