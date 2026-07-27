@@ -30,7 +30,7 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 | 6. Offline/PWA guarantees | Complete locally | Reliable cached public viewing and explicit online-only editing |
 | 7. Browser and print coverage | In progress | Automated primary-workflow and A4 print tests |
 | 8. Documentation | Complete locally | Accurate, split developer and operations documentation |
-| 9. Repository cleanup | Pending | Intentional artifacts and generated-output enforcement |
+| 9. Repository cleanup | In progress | Intentional artifacts and generated-output enforcement |
 
 ## Phase 1 — correctness defects
 
@@ -463,3 +463,7 @@ Acceptance:
   linked from a shorter README. An executable documentation contract now requires the
   inventory, resolves every relative Markdown link, and preserves the decision-record
   structure.
+- 2026-07-27: Phase 9 started by removing the obsolete tracked Sunday DOCX artifact.
+  DOCX export had already been replaced by the tested A4 print/PDF path; the repository
+  now ignores all DOCX files and an executable contract prevents a root DOCX from being
+  reintroduced.

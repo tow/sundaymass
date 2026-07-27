@@ -32,4 +32,9 @@ test("DOCX generation and its build dependency are removed", () => {
   assert.doesNotMatch(build, /DOCX|PARTS2|embeddedTemplateParts/);
   assert.doesNotMatch(app, /createDocxExporter|downloadWord/);
   assert.equal(fs.existsSync(path.join(ROOT, "src/export/docx.js")), false);
+  assert.equal(
+    fs.readdirSync(ROOT).some(file => file.toLowerCase().endsWith(".docx")),
+    false,
+  );
+  assert.match(read(".gitignore"), /^\*\.docx$/m);
 });
