@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
 
-  function create({ escapeHtml }) {
+  function create({ escapeHtml, safeYoutubeUrl = () => "" }) {
     function normalizedTitle(song) {
       return String(song?.title || "").trim().toLocaleLowerCase();
     }
@@ -40,11 +40,15 @@
       return Object.freeze({
         html: songs.map((song, index) => {
           const selected = selectedSong?.id === song.id;
+          const listenUrl = interactive ? "" : safeYoutubeUrl(song.youtubeUrl);
+          const listenLink = listenUrl
+            ? ` <a class="song-suggestion-listen" href="${escapeHtml(listenUrl)}" target="_blank" rel="noopener">Listen ↗</a>`
+            : "";
           const opening = interactive
             ? `<button class="song-suggestion${selected ? " selected" : ""}" type="button" data-song-suggestion-index="${index}">`
             : '<article class="song-suggestion song-suggestion-readonly">';
           return opening
-            + `<strong>${escapeHtml(song.title)}</strong>`
+            + `<strong>${escapeHtml(song.title)}${listenLink}</strong>`
             + `<span>${escapeHtml([
               song.authors || "Author not recorded",
               song.inRepertoire === false ? "Extended library" : "",

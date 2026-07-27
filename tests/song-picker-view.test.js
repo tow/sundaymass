@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const SongPickerView = require("../src/app/song-picker-view.js");
+const SongPresentation = require("../src/domain/song-presentation.js");
 
 const escapeHtml = value => String(value || "")
   .replace(/&/g, "&amp;")
@@ -9,7 +10,10 @@ const escapeHtml = value => String(value || "")
   .replace(/>/g, "&gt;")
   .replace(/"/g, "&quot;");
 
-const view = SongPickerView.create({ escapeHtml });
+const view = SongPickerView.create({
+  escapeHtml,
+  safeYoutubeUrl: SongPresentation.safeYoutubeUrl,
+});
 
 const songs = [
   {
@@ -84,6 +88,7 @@ test("read-only suggestions cannot be selected or assigned", () => {
       id: "public",
       title: "Public suggestion",
       authors: "Composer",
+      youtubeUrl: "https://youtu.be/AAAAAAAAAAA",
       lyrics: "private lyrics",
     }],
     selectedSong: null,
@@ -93,7 +98,25 @@ test("read-only suggestions cannot be selected or assigned", () => {
   assert.match(result.html, /<article class="song-suggestion song-suggestion-readonly">/);
   assert.match(result.html, /Public suggestion/);
   assert.match(result.html, /Composer/);
+  assert.match(
+    result.html,
+    /href="https:\/\/youtu\.be\/AAAAAAAAAAA"[^>]*>Listen ↗<\/a>/,
+  );
   assert.doesNotMatch(result.html, /<button|data-song-suggestion-index|private lyrics/);
+});
+
+test("read-only suggestions omit unsafe listening links", () => {
+  const result = view.renderSuggestions({
+    songs: [{
+      id: "unsafe",
+      title: "Unsafe link",
+      youtubeUrl: "https://example.com/not-youtube",
+    }],
+    selectedSong: null,
+    interactive: false,
+  });
+
+  assert.doesNotMatch(result.html, /<a\s|example\.com|Listen/);
 });
 
 test("current selection context includes an author fallback", () => {

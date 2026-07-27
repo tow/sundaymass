@@ -65,7 +65,10 @@ const readingEditorView=ReadingEditorView.create({
   formatLong:fmtLong,
   cycleName,
 });
-const songPickerView=SongPickerView.create({escapeHtml:esc});
+const songPickerView=SongPickerView.create({
+  escapeHtml:esc,
+  safeYoutubeUrl:SongPresentation.safeYoutubeUrl,
+});
 const celebrationPickerView=CelebrationPickerView.create({
   escapeHtml:esc,
   formatLong:fmtLong,

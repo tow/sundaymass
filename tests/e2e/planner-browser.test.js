@@ -192,8 +192,18 @@ test("logged-out users can browse suggestions for an empty slot without editing"
       suggestSongs(citations, part) {
         window.__publicSuggestionCalls.push({ citations, part });
         return Promise.resolve([
-          { id: "public-1", title: "Bread of Life", authors: "Composer One" },
-          { id: "public-2", title: "One Bread", authors: "Composer Two" },
+          {
+            id: "public-1",
+            title: "Bread of Life",
+            authors: "Composer One",
+            youtubeUrl: "https://youtu.be/AAAAAAAAAAA",
+          },
+          {
+            id: "public-2",
+            title: "One Bread",
+            authors: "Composer Two",
+            youtubeUrl: "https://example.com/not-youtube",
+          },
         ]);
       },
       assignSong() {
@@ -216,8 +226,12 @@ test("logged-out users can browse suggestions for an empty slot without editing"
   assert.equal(await page.locator("#previousSong").isHidden(), true);
   assert.deepEqual(
     await page.locator("#songSuggestionResults .song-suggestion").allTextContents(),
-    ["Bread of LifeComposer One", "One BreadComposer Two"],
+    ["Bread of Life Listen ↗Composer One", "One BreadComposer Two"],
   );
+  const listen = page.locator("#songSuggestionResults .song-suggestion-listen");
+  assert.equal(await listen.count(), 1);
+  assert.equal(await listen.getAttribute("href"), "https://youtu.be/AAAAAAAAAAA");
+  assert.equal(await listen.getAttribute("target"), "_blank");
   assert.equal(
     await page.locator("#songSuggestionResults button").count(),
     0,
