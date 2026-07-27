@@ -16,8 +16,12 @@ test("Pages deployment waits for both verification jobs", () => {
   );
   assert.match(workflow, /build-pages:[\s\S]*needs: \[check, supabase-integration\]/);
   assert.match(workflow, /deploy-pages:[\s\S]*needs: build-pages/);
-  assert.match(workflow, /uses: actions\/upload-pages-artifact@v4/);
-  assert.match(workflow, /uses: actions\/deploy-pages@v4/);
+  assert.doesNotMatch(workflow, /actions\/(?:checkout|setup-node)@v4/);
+  assert.match(workflow, /uses: actions\/checkout@v7/);
+  assert.match(workflow, /uses: actions\/setup-node@v7/);
+  assert.match(workflow, /uses: actions\/configure-pages@v6/);
+  assert.match(workflow, /uses: actions\/upload-pages-artifact@v5/);
+  assert.match(workflow, /uses: actions\/deploy-pages@v5/);
 });
 
 test("the Pages artifact contains only the explicit deployable surface", () => {

@@ -454,3 +454,7 @@ Acceptance:
   incident priorities. A read-only GitHub audit found legacy Pages publishing
   unprotected `main`; the replacement Actions deployment waits for both application and
   migrated-Supabase checks and uploads only an explicit public artifact.
+- 2026-07-27: The first gated Pages run passed both verification jobs and deployed its
+  explicit artifact successfully. Its deprecation annotations then drove a red-green
+  upgrade to the current Node-24 action majors for checkout, Node setup, Pages
+  configuration, artifact upload, and deployment.
