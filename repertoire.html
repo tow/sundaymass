@@ -140,6 +140,85 @@ details{margin-top:18px;padding:12px;border:1px solid var(--line)}summary{color:
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window === "undefined" ? globalThis : window);
 
+// Shared validation and attribution formatting for public and editor song views.
+(function (global) {
+  "use strict";
+
+  const text = value => typeof value === "string" ? value.trim() : "";
+
+  function isPublicDomain(song) {
+    return /\bpublic domain\b/i.test(text(song?.copyrightOwner));
+  }
+
+  function safeYoutubeUrl(value) {
+    if (!text(value)) return "";
+    try {
+      const url = new URL(value);
+      const host = url.hostname.toLowerCase().replace(/^www\./, "");
+      return url.protocol === "https:"
+        && (host === "youtube.com" || host.endsWith(".youtube.com") || host === "youtu.be")
+        ? url.href
+        : "";
+    } catch {
+      return "";
+    }
+  }
+
+  function copyrightComplete(song) {
+    const title = text(song?.song) || text(song?.title);
+    if (!title) return true;
+    return !!(
+      text(song?.authors)
+      && text(song?.copyrightOwner)
+      && (text(song?.copyrightYear) || isPublicDomain(song))
+    );
+  }
+
+  function copyrightLine(song) {
+    const copyright = [
+      text(song?.copyrightYear),
+      text(song?.copyrightOwner),
+    ].filter(Boolean).join(" ");
+    if (!copyright || isPublicDomain(song)) return copyright;
+    return `© ${copyright}`;
+  }
+
+  function publicPlanAttribution(song) {
+    return [
+      text(song?.authors) && `Authors: ${text(song.authors)}`,
+      copyrightLine(song),
+      text(song?.source) && `Source: ${text(song.source)}`,
+    ].filter(Boolean).join(" · ");
+  }
+
+  function editorPlanAttribution(song) {
+    return [
+      text(song?.authors),
+      copyrightLine(song),
+      text(song?.source),
+    ].filter(Boolean).join(" · ");
+  }
+
+  function repertoireDetails(song) {
+    return [
+      text(song?.authors),
+      copyrightLine(song),
+      text(song?.source) && `Source: ${text(song.source)}`,
+    ].filter(Boolean);
+  }
+
+  const api = Object.freeze({
+    safeYoutubeUrl,
+    copyrightComplete,
+    copyrightLine,
+    publicPlanAttribution,
+    editorPlanAttribution,
+    repertoireDetails,
+  });
+  global.SongPresentation = api;
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+})(typeof window === "undefined" ? globalThis : window);
+
 // Pure song validation and phase-one title search shared by the app and tests.
 (function (global) {
   "use strict";
@@ -256,24 +335,8 @@ let editingSong=null;
 let repairingIndex=false;
 
 const esc=value=>(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-const safeYoutube=value=>{
-  try{
-    const url=new URL(value);
-    const host=url.hostname.replace(/^www\./,"");
-    return url.protocol==="https:" && (host==="youtube.com" || host.endsWith(".youtube.com") || host==="youtu.be") ? url.href : "";
-  }catch{return "";}
-};
-const copyrightLine=song=>{
-  const copyright=[song.copyrightYear,song.copyrightOwner].filter(Boolean).join(" ");
-  return copyright&&song.copyrightOwner.trim().toLocaleLowerCase()!=="public domain"
-    ? `© ${copyright}`
-    : copyright;
-};
-const details=song=>[
-  song.authors,
-  copyrightLine(song),
-  song.source && `Source: ${song.source}`,
-].filter(Boolean);
+const safeYoutube=SongPresentation.safeYoutubeUrl;
+const details=SongPresentation.repertoireDetails;
 
 function render(){
   const query=repertoireSearch.value.trim().toLocaleLowerCase();

@@ -1,4 +1,5 @@
 @@MUSIC_PARTS_JS@@
+@@SONG_PRESENTATION_JS@@
 @@SONG_CATALOG_JS@@
 @@EMBEDDING_REPAIR_JS@@
 let store;
@@ -9,24 +10,8 @@ let editingSong=null;
 let repairingIndex=false;
 
 const esc=value=>(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-const safeYoutube=value=>{
-  try{
-    const url=new URL(value);
-    const host=url.hostname.replace(/^www\./,"");
-    return url.protocol==="https:" && (host==="youtube.com" || host.endsWith(".youtube.com") || host==="youtu.be") ? url.href : "";
-  }catch{return "";}
-};
-const copyrightLine=song=>{
-  const copyright=[song.copyrightYear,song.copyrightOwner].filter(Boolean).join(" ");
-  return copyright&&song.copyrightOwner.trim().toLocaleLowerCase()!=="public domain"
-    ? `© ${copyright}`
-    : copyright;
-};
-const details=song=>[
-  song.authors,
-  copyrightLine(song),
-  song.source && `Source: ${song.source}`,
-].filter(Boolean);
+const safeYoutube=SongPresentation.safeYoutubeUrl;
+const details=SongPresentation.repertoireDetails;
 
 function render(){
   const query=repertoireSearch.value.trim().toLocaleLowerCase();

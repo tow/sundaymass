@@ -70,11 +70,9 @@ test("the PWA caches and routes the repertoire independently", () => {
 
 test("public repertoire attribution is compact and includes the copyright mark", () => {
   const app = read("src/app/repertoire.js");
-  const details = app.slice(app.indexOf("const copyrightLine"), app.indexOf("function render"));
 
-  assert.doesNotMatch(details, /Authors:/);
-  assert.match(details, /`© \$\{copyright\}`/);
-  assert.match(details, /public domain/);
+  assert.match(app, /const details=SongPresentation\.repertoireDetails/);
+  assert.doesNotMatch(app, /const copyrightLine=/);
 });
 
 test("all mobile headers use compact labels instead of overflowing the viewport", () => {

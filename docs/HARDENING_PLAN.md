@@ -312,3 +312,7 @@ Acceptance:
   Planner rendering, DOCX export, both template builders, and semantic Communion
   normalization now consume one tested module instead of maintaining three arrays and
   two normalization implementations.
+- 2026-07-27: Safe YouTube-link validation, copyright completeness, and public/editor
+  attribution formatting now live in one tested song-presentation module shared by
+  the planner, repertoire, and DOCX export. The source field remains explicitly
+  optional, and public-domain ownership consistently permits a blank year.

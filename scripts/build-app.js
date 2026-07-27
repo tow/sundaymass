@@ -43,6 +43,7 @@ const appValues = {
   // Keep the source file's trailing newline: the historical single-file build
   // intentionally leaves a blank line between the domain module and embedded data.
   "@@MUSIC_PARTS_JS@@": read("src/domain/music-parts.js"),
+  "@@SONG_PRESENTATION_JS@@": read("src/domain/song-presentation.js"),
   "@@SONG_CATALOG_JS@@": read("src/domain/songs.js"),
   "@@PLAN_MUSIC_DATA_JS@@": read("src/domain/plan-music-data.js"),
   "@@LECTIONARY_CATALOG_JS@@": read("src/domain/lectionary.js"),
@@ -74,6 +75,11 @@ repertoireScript = replaceOnce(
   repertoireScript,
   "@@MUSIC_PARTS_JS@@",
   read("src/domain/music-parts.js"),
+);
+repertoireScript = replaceOnce(
+  repertoireScript,
+  "@@SONG_PRESENTATION_JS@@",
+  read("src/domain/song-presentation.js"),
 );
 repertoireScript = replaceOnce(repertoireScript, "@@SONG_CATALOG_JS@@", read("src/domain/songs.js"));
 repertoireScript = replaceOnce(

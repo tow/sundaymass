@@ -1,4 +1,5 @@
 @@MUSIC_PARTS_JS@@
+@@SONG_PRESENTATION_JS@@
 @@SONG_CATALOG_JS@@
 @@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
@@ -25,6 +26,10 @@ const citationAlternatives=lectionary.citationAlternatives;
 const parseReadingCitation=lectionary.parseReadingCitation;
 const dayDistance=lectionary.dayDistance;
 const suggestionPartFor=MassMusicParts.suggestionPartFor;
+const safeYoutubeUrl=SongPresentation.safeYoutubeUrl;
+const copyrightComplete=SongPresentation.copyrightComplete;
+const attributionLine=SongPresentation.publicPlanAttribution;
+const editorAttributionLine=SongPresentation.editorPlanAttribution;
 const byDate = {}; CALENDAR.forEach((s,i)=>byDate[s.d]=i);
 const cycleName = c => "Year " + c;
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
@@ -98,39 +103,8 @@ function choiceFor(key){
     source:value.source || "",
   };
 }
-function safeYoutubeUrl(value){
-  if(!value) return "";
-  try{
-    const url=new URL(value);
-    const host=url.hostname.toLowerCase().replace(/^www\./,"");
-    return url.protocol==="https:" && (host==="youtube.com" || host.endsWith(".youtube.com") || host==="youtu.be") ? url.href : "";
-  }catch(error){ return ""; }
-}
 function musicLabel(part){
   return esc(part.label)+(part.note?'<span class="music-part-note">'+esc(part.note)+'</span>':'');
-}
-function copyrightComplete(choice){
-  if(!choice.song) return true;
-  const publicDomain=/\bpublic domain\b/i.test(choice.copyrightOwner);
-  return !!(choice.authors.trim() && choice.copyrightOwner.trim() && (choice.copyrightYear.trim() || publicDomain));
-}
-function attributionLine(choice){
-  const items=[];
-  if(choice.authors.trim()) items.push("Authors: "+choice.authors.trim());
-  const publicDomain=/\bpublic domain\b/i.test(choice.copyrightOwner);
-  const copyright=[choice.copyrightYear.trim(),choice.copyrightOwner.trim()].filter(Boolean).join(" ");
-  if(copyright) items.push(publicDomain ? copyright : "© "+copyright);
-  if(choice.source.trim()) items.push("Source: "+choice.source.trim());
-  return items.join(" · ");
-}
-function editorAttributionLine(choice){
-  const items=[];
-  if(choice.authors.trim()) items.push(choice.authors.trim());
-  const publicDomain=/\bpublic domain\b/i.test(choice.copyrightOwner);
-  const copyright=[choice.copyrightYear.trim(),choice.copyrightOwner.trim()].filter(Boolean).join(" ");
-  if(copyright) items.push(publicDomain ? copyright : "© "+copyright);
-  if(choice.source.trim()) items.push(choice.source.trim());
-  return items.join(" · ");
 }
 function renderMusicPlan(){
   editorHelp.hidden=!isEditor;

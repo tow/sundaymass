@@ -80,6 +80,7 @@ behavior, and export changes in the appropriate source file:
 - `src/app/planner.js` — UI state, rendering, and event handling
 - `src/domain/lectionary.js` — lectionary selection and validation rules
 - `src/domain/music-parts.js` — canonical Mass slots, labels, DOCX tokens, and suggestion normalization
+- `src/domain/song-presentation.js` — safe YouTube links and shared attribution formatting
 - `src/domain/songs.js` — song validation and phase-one title search
 - `src/domain/plan-music-data.js` — database-row to browser-plan conversion
 - `src/export/docx.js` — browser-side Word generation
