@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { normalizeCoreProperties } = require("./docx-metadata.js");
 
 const ROOT = path.resolve(__dirname, "..");
 const GENERATED_DATA = path.join("data", "generated");
@@ -28,7 +29,12 @@ function embeddedTemplateParts(relativeDirectory) {
   const directory = path.join(ROOT, relativeDirectory);
   const parts = {};
   filesBelow(directory).forEach(file => {
-    parts[path.relative(directory, file)] = fs.readFileSync(file).toString("base64");
+    const relativePath = path.relative(directory, file);
+    const source = fs.readFileSync(file);
+    const deterministic = relativePath === path.join("docProps", "core.xml")
+      ? Buffer.from(normalizeCoreProperties(source.toString("utf8")))
+      : source;
+    parts[relativePath] = deterministic.toString("base64");
   });
   return JSON.stringify(parts);
 }

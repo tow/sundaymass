@@ -7,6 +7,9 @@ readings. Music choices are publicly viewable and authorized editors save change
 
 Live site: <https://tow.github.io/sundaymass/>
 
+Current engineering work is tracked in
+[`docs/HARDENING_PLAN.md`](docs/HARDENING_PLAN.md).
+
 This is an independent planning aid, not an official parish or Diocese of Helsinki
 publication. Liturgical details must always be checked against the parish Ordo.
 
@@ -366,15 +369,16 @@ Ordo; do not describe this catalogue as an authoritative Finnish lectionary.
 ### Minimal offline rebuild of the HTML (from the included JSON)
 
 ```bash
-npm install docx romcal
+npm ci
 npm run build             # regenerates icons, templates and both planner HTML files
 npm test                  # lectionary alternatives, Commons and picker invariants
+npm run check             # tests, rebuilds, and rejects stale generated output
 ```
 
 ### Full rebuild from scratch
 
 ```bash
-npm install docx romcal
+npm ci
 bash scripts/fetch_sources.sh                 # downloads public-domain Bible sources
 node scripts/harvest.js                       # network: USCCB citations (A/B)
 node scripts/build_readings.js
@@ -501,5 +505,7 @@ access accordingly.
 
 ## Dependencies
 
-Node ≥ 18. npm: `docx`, `romcal`. Rendering/verification used LibreOffice + poppler +
+Node 22.20.x and npm 10.9.3; use the committed `.node-version` and
+`package-lock.json`. Runtime build dependencies are `docx` and `romcal`.
+Rendering/verification used LibreOffice + poppler +
 Playwright (Chromium) — only needed if you re-run the visual tests, not to build the tool.
