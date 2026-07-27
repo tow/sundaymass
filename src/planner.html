@@ -56,7 +56,7 @@
       </div>
       <span class="sync-status" id="syncStatus" role="status">Connecting…</span>
     </div>
-    <div class="editor-help" id="editorHelp" hidden>Changes save automatically and are immediately visible to everyone.</div>
+    <div class="editor-help" id="editorHelp" hidden>Song selections are live immediately. Editing a song changes it everywhere it is used.</div>
     <div class="music-list" id="musicList"></div>
   </section>
 
@@ -162,6 +162,84 @@
     <div class="reading-dialog-actions">
       <button type="button" id="readingCancel">Cancel</button>
       <button class="primary" type="submit" id="readingUse" disabled>Use reading</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="reading-dialog song-picker-dialog" id="songPickerDialog">
+  <div class="reading-dialog-form">
+    <div class="reading-dialog-head">
+      <div>
+        <div class="eyebrow">Choose a song</div>
+        <h2 id="songPickerTitle">Select a song</h2>
+        <p id="songPickerContext"></p>
+      </div>
+      <button class="reading-dialog-close" id="songPickerClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="reading-dialog-body">
+      <div class="song-picker-tools">
+        <div class="reading-search">
+          <label for="songSearch">Search by title</label>
+          <input id="songSearch" type="search" autocomplete="off" placeholder="Start typing a song title">
+        </div>
+        <button class="song-create-action" id="createSongAction" type="button">Add a new song</button>
+      </div>
+      <div class="song-results-heading" id="songResultsHeading">Songs</div>
+      <div class="song-results" id="songResults"></div>
+      <p class="song-picker-empty" id="songPickerEmpty" hidden>No matching songs. You can still create a new one above.</p>
+    </div>
+    <div class="reading-dialog-actions">
+      <button type="button" id="songPickerCancel">Cancel</button>
+      <button class="primary" type="button" id="useSong" disabled>Use selected song</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="reading-dialog song-editor-dialog" id="songEditorDialog">
+  <form class="reading-dialog-form" id="songEditorForm">
+    <div class="reading-dialog-head">
+      <div>
+        <div class="eyebrow" id="songEditorEyebrow">New song</div>
+        <h2 id="songEditorTitle">Add a song</h2>
+        <p id="songEditorContext">Only the title is required.</p>
+      </div>
+      <button class="reading-dialog-close" id="songEditorClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="reading-dialog-body song-editor-body">
+      <p class="song-shared-warning" id="songSharedWarning" hidden>Changes apply to every Sunday that uses this song.</p>
+      <label for="songTitle">Song title <span>Required</span></label>
+      <input id="songTitle" type="text" maxlength="200" required>
+      <label for="songYoutube">YouTube link <span>Optional</span></label>
+      <input id="songYoutube" type="url" inputmode="url" maxlength="2000" placeholder="https://youtube.com/…">
+      <div class="song-editor-grid">
+        <div>
+          <label for="songAuthors">Author(s) <span>Optional</span></label>
+          <input id="songAuthors" type="text" maxlength="1000" placeholder="Composer, lyricist, translator">
+        </div>
+        <div>
+          <label for="songCopyrightOwner">Copyright owner / publisher <span>Optional</span></label>
+          <input id="songCopyrightOwner" type="text" maxlength="1000" placeholder="e.g. OCP or Public domain">
+        </div>
+        <div>
+          <label for="songCopyrightYear">Copyright year(s) <span>Optional</span></label>
+          <input id="songCopyrightYear" type="text" maxlength="200" placeholder="e.g. 1975, 2016">
+        </div>
+        <div>
+          <label for="songSource">Source <span>Optional</span></label>
+          <input id="songSource" type="text" maxlength="1000" placeholder="Hymnal, publication or website">
+        </div>
+      </div>
+      <details class="song-lyrics-section">
+        <summary>Add lyrics now (optional)</summary>
+        <p>Lyrics are restricted to signed-in editors and are never included in the public plan.</p>
+        <label for="songLyrics">Lyrics</label>
+        <textarea id="songLyrics" rows="12"></textarea>
+      </details>
+      <p class="reading-validation" id="songEditorError" role="alert"></p>
+    </div>
+    <div class="reading-dialog-actions">
+      <button type="button" id="songEditorCancel">Cancel</button>
+      <button class="primary" type="submit" id="saveSong">Create and use song</button>
     </div>
   </form>
 </dialog>

@@ -1,3 +1,5 @@
+@@SONG_CATALOG_JS@@
+@@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
 const CALENDAR = @@CALENDAR@@;
 const SUNDAY_LECTIONARY = @@SUNDAY_LECTIONARY@@;
@@ -42,7 +44,7 @@ function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDate
 function fmtPicker(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}); }
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 let curIdx = 0;  // index into CALENDAR
-let musicChoices = {};
+let musicSongs = {};
 let readingOverrides = {};
 let celebrationOverride = null;
 let planStore = null;
@@ -50,10 +52,13 @@ let stopPlanSubscription = null;
 let stopAuthSubscription = null;
 let isEditor = false;
 let signedIn = false;
-let saveTimers = {};
 let editingReadingSlot = null;
 let pendingReadingSelection = null;
 let pendingCelebration = null;
+let editingSongPart = null;
+let selectedSong = null;
+let visibleSongs = [];
+let editingSong = null;
 
 function current(){ return CALENDAR[curIdx]; }
 function baseCelebration(){
@@ -77,9 +82,9 @@ function vals(){
 }
 function textFor(citation){ return READINGS[citation] || ""; }
 function choiceFor(key){
-  const value=musicChoices[key] || {};
+  const value=musicSongs[key] || {};
   return {
-    song:value.song || "",
+    song:value.title || "",
     youtubeUrl:value.youtubeUrl || "",
     authors:value.authors || "",
     copyrightOwner:value.copyrightOwner || "",
@@ -112,47 +117,31 @@ function attributionLine(choice){
   if(choice.source.trim()) items.push("Source: "+choice.source.trim());
   return items.join(" · ");
 }
-function copyrightFields(part,choice){
-  const status=copyrightComplete(choice);
-  const statusLabel=!choice.song ? "After choosing song" : (status ? "Complete" : "Incomplete");
-  return '<details class="copyright-details"><summary><span>Copyright details</span><span class="copyright-status'+(status && choice.song?' complete':'')+'">'+statusLabel+'</span></summary>'
-    +'<div class="copyright-fields">'
-    +'<div class="copyright-field"><label for="authors_'+part.key+'">Author(s)</label><input id="authors_'+part.key+'" data-part="'+part.key+'" data-field="authors" type="text" value="'+esc(choice.authors)+'" placeholder="Composer, lyricist, translator"></div>'
-    +'<div class="copyright-field"><label for="owner_'+part.key+'">Copyright owner / publisher</label><input id="owner_'+part.key+'" data-part="'+part.key+'" data-field="copyrightOwner" type="text" value="'+esc(choice.copyrightOwner)+'" placeholder="e.g. OCP or Public domain"></div>'
-    +'<div class="copyright-field"><label for="year_'+part.key+'">Copyright year(s)</label><input id="year_'+part.key+'" data-part="'+part.key+'" data-field="copyrightYear" type="text" value="'+esc(choice.copyrightYear)+'" placeholder="e.g. 1975, 2016"></div>'
-    +'<div class="copyright-field"><label for="source_'+part.key+'">Source (optional)</label><input id="source_'+part.key+'" data-part="'+part.key+'" data-field="source" type="text" value="'+esc(choice.source)+'" placeholder="Hymnal + number, publication or website"></div>'
-    +'<p class="copyright-help">Source is optional. Leave the year blank only when the copyright owner is entered as “Public domain”.</p>'
-    +'</div></details>';
-}
 function renderMusicPlan(){
   editorHelp.hidden=!isEditor;
-  musicIntro.textContent=isEditor ? "Choose each song, then record the copyright details needed when its lyrics are projected." : "Selections for this Sunday appear here as they are chosen.";
+  musicIntro.textContent=isEditor ? "Choose an existing song or add a new one for each part of the Mass." : "Selections for this Sunday appear here as they are chosen.";
   if(isEditor){
-    if(musicList.dataset.mode!=="edit"){
-      musicList.innerHTML=MUSIC_PARTS.map(part=>{
-        const choice=choiceFor(part.key);
-        return '<div class="music-edit-row"><label class="music-part-label" for="song_'+part.key+'">'+musicLabel(part)+'</label>'
-          +'<div class="music-fields"><input id="song_'+part.key+'" data-part="'+part.key+'" data-field="song" type="text" value="'+esc(choice.song)+'" placeholder="Song title">'
-          +'<input id="youtube_'+part.key+'" data-part="'+part.key+'" data-field="youtubeUrl" type="url" inputmode="url" value="'+esc(choice.youtubeUrl)+'" placeholder="YouTube link (optional)" aria-label="'+esc(part.label)+' YouTube link"></div>'
-          +copyrightFields(part,choice)+'</div>';
-      }).join("");
-      musicList.dataset.mode="edit";
-    }else{
-      musicList.querySelectorAll("input[data-part]").forEach(input=>{
-        if(input===document.activeElement) return;
-        const choice=choiceFor(input.dataset.part);
-        const value=choice[input.dataset.field] || "";
-        if(input.value!==value) input.value=value;
-      });
-      MUSIC_PARTS.forEach(part=>{
-        const status=musicList.querySelector("#song_"+part.key)?.closest(".music-edit-row")?.querySelector(".copyright-status");
-        if(!status) return;
-        const choice=choiceFor(part.key);
-        const complete=copyrightComplete(choice);
-        status.textContent=!choice.song ? "After choosing song" : (complete ? "Complete" : "Incomplete");
-        status.classList.toggle("complete",complete && !!choice.song);
-      });
-    }
+    musicList.innerHTML=MUSIC_PARTS.map(part=>{
+      const song=musicSongs[part.key];
+      const choice=choiceFor(part.key);
+      const link=safeYoutubeUrl(choice.youtubeUrl);
+      const attribution=attributionLine(choice);
+      const incomplete=choice.song && !copyrightComplete(choice);
+      return '<div class="music-edit-row"><div class="music-part-label">'+musicLabel(part)+'</div>'
+        +(song
+          ? '<div class="music-editor-choice"><strong>'+esc(song.title)+'</strong>'
+            +(attribution?'<span class="music-attribution">'+esc(attribution)+'</span>':'')
+            +(incomplete?'<span class="music-attribution copyright-warning">Copyright information incomplete</span>':'')
+            +(link?'<a class="listen-link" href="'+esc(link)+'" target="_blank" rel="noopener">Listen / practise ↗</a>':'')
+            +'</div><div class="music-editor-actions">'
+            +'<button type="button" data-song-action="choose" data-part="'+part.key+'">Change</button>'
+            +'<button type="button" data-song-action="edit" data-part="'+part.key+'">Edit song</button>'
+            +'<button class="remove-song" type="button" data-song-action="remove" data-part="'+part.key+'">Remove</button>'
+            +'</div>'
+          : '<div class="music-editor-actions empty"><button class="primary choose-song" type="button" data-song-action="choose" data-part="'+part.key+'">Choose song</button></div>')
+        +'</div>';
+    }).join("");
+    musicList.dataset.mode="edit";
   }else{
     musicList.innerHTML=MUSIC_PARTS.map(part=>{
       const choice=choiceFor(part.key);
@@ -428,7 +417,7 @@ function setSyncStatus(text,state){
 }
 function subscribeToCurrentPlan(){
   if(stopPlanSubscription){ stopPlanSubscription(); stopPlanSubscription=null; }
-  musicChoices={};
+  musicSongs={};
   readingOverrides={};
   celebrationOverride=null;
   renderMusicPlan();
@@ -436,7 +425,7 @@ function subscribeToCurrentPlan(){
   if(!planStore){ setSyncStatus("Connecting…",""); return; }
   setSyncStatus("Loading…","");
   stopPlanSubscription=planStore.subscribePlan(current().d,(plan,meta)=>{
-    musicChoices=plan?.choices || {};
+    musicSongs=plan?.songs || {};
     readingOverrides=plan?.readingOverrides || {};
     celebrationOverride=plan?.celebrationOverride || null;
     renderMusicPlan();
@@ -458,6 +447,8 @@ function connectPlanStore(store){
       if(liturgicalDialog.open) liturgicalDialog.close();
       if(celebrationDialog.open) celebrationDialog.close();
       if(readingDialog.open) readingDialog.close();
+      if(songPickerDialog.open) songPickerDialog.close();
+      if(songEditorDialog.open) songEditorDialog.close();
     }
     renderMusicPlan();
     renderReadingEditor();
@@ -466,27 +457,211 @@ function connectPlanStore(store){
 }
 window.massPlanApp={connect:connectPlanStore};
 
-musicList.addEventListener("input",event=>{
-  const input=event.target.closest("input[data-part]");
-  if(!input || !isEditor) return;
-  const key=input.dataset.part;
-  const field=input.dataset.field;
-  const sunday=current().d;
-  const choice=choiceFor(key);
-  choice[field]=input.value;
-  musicChoices[key]=choice;
-  clearTimeout(saveTimers[key]);
+function songPart(key){ return MUSIC_PARTS.find(part=>part.key===key); }
+function songResultDescription(song){
+  const items=[song.authors,song.copyrightYear,song.copyrightOwner,song.source].filter(Boolean);
+  if(song.hasLyrics) items.push("Lyrics recorded");
+  const sameTitle=visibleSongs.filter(value=>value.title.trim().toLocaleLowerCase()===song.title.trim().toLocaleLowerCase());
+  if(sameTitle.length>1) items.push("Separate record "+song.id.slice(0,8));
+  return items.join(" · ") || "No additional details";
+}
+function renderSongResults(){
+  createSongAction.textContent=SongCatalog.creationActionLabel(songSearch.value);
+  songResults.innerHTML=visibleSongs.map((song,index)=>{
+    const selected=selectedSong?.id===song.id;
+    return '<button class="song-result'+(selected?' selected':'')+'" type="button" data-song-index="'+index+'" aria-pressed="'+selected+'">'
+      +'<strong>'+esc(song.title)+'</strong><span>'+esc(songResultDescription(song))+'</span></button>';
+  }).join("");
+  songResults.hidden=!visibleSongs.length;
+  songResultsHeading.hidden=!visibleSongs.length;
+  songPickerEmpty.hidden=!!visibleSongs.length;
+  useSong.disabled=!selectedSong;
+}
+let songSearchRequest=0;
+async function searchSongCatalog(){
+  if(!isEditor || !planStore) return;
+  const query=songSearch.value;
+  const request=++songSearchRequest;
+  createSongAction.textContent=SongCatalog.creationActionLabel(query);
+  try{
+    const matches=await planStore.searchSongs(query);
+    if(request!==songSearchRequest) return;
+    visibleSongs=matches;
+    selectedSong=null;
+    renderSongResults();
+  }catch(error){
+    if(request!==songSearchRequest) return;
+    console.error(error);
+    visibleSongs=[];
+    renderSongResults();
+    songPickerEmpty.hidden=false;
+    songPickerEmpty.textContent="Could not load songs. Please try again.";
+  }
+}
+async function openSongPicker(partKey){
+  if(!isEditor) return;
+  editingSongPart=partKey;
+  selectedSong=null;
+  visibleSongs=[];
+  const part=songPart(partKey);
+  songPickerTitle.textContent="Choose "+(part?.label || "song");
+  songPickerContext.textContent="Any song can be used in any part of the Mass. Search the whole repertoire, or create another song even when a title already exists.";
+  songSearch.value="";
+  songPickerEmpty.textContent="No matching songs. You can still create a new one above.";
+  renderSongResults();
+  songPickerDialog.showModal();
+  await searchSongCatalog();
+  setTimeout(()=>songSearch.focus(),0);
+}
+function closeSongPicker(){
+  songSearchRequest++;
+  songPickerDialog.close();
+  selectedSong=null;
+}
+function songDraftFromForm(){
+  return {
+    title:songTitle.value,
+    youtubeUrl:songYoutube.value,
+    authors:songAuthors.value,
+    copyrightOwner:songCopyrightOwner.value,
+    copyrightYear:songCopyrightYear.value,
+    source:songSource.value,
+    lyrics:songLyrics.value,
+  };
+}
+function fillSongForm(song){
+  songTitle.value=song?.title || songSearch.value.trim();
+  songYoutube.value=song?.youtubeUrl || "";
+  songAuthors.value=song?.authors || "";
+  songCopyrightOwner.value=song?.copyrightOwner || "";
+  songCopyrightYear.value=song?.copyrightYear || "";
+  songSource.value=song?.source || "";
+  songLyrics.value=song?.lyrics || "";
+}
+function openSongEditor(song){
+  if(!isEditor || !editingSongPart) return;
+  editingSong=song || null;
+  fillSongForm(editingSong);
+  songEditorEyebrow.textContent=editingSong ? "Shared song" : "New song";
+  songEditorTitle.textContent=editingSong ? "Edit song" : "Add a new song";
+  songEditorContext.textContent=editingSong
+    ? "Update the shared song record."
+    : "Only the title is required. Another song may use the same title.";
+  songSharedWarning.hidden=!editingSong;
+  saveSong.textContent=editingSong ? "Save song" : "Create and use song";
+  songEditorError.textContent="";
+  if(songPickerDialog.open) songPickerDialog.close();
+  songEditorDialog.showModal();
+  setTimeout(()=>songTitle.focus(),0);
+}
+function closeSongEditor(){
+  songEditorDialog.close();
+  editingSong=null;
+}
+async function runSongMutation(work,success){
   setSyncStatus("Saving…","");
-  saveTimers[key]=setTimeout(async ()=>{
+  try{
+    await work();
+    setSyncStatus(navigator.onLine ? success : "Saved offline","saved");
+  }catch(error){
+    console.error(error);
+    setSyncStatus("Save failed","error");
+    throw error;
+  }
+}
+musicList.addEventListener("click",async event=>{
+  const button=event.target.closest("button[data-song-action]");
+  if(!button || !isEditor) return;
+  const part=button.dataset.part;
+  if(button.dataset.songAction==="choose"){
+    openSongPicker(part);
+    return;
+  }
+  if(button.dataset.songAction==="edit"){
+    editingSongPart=part;
+    setSyncStatus("Loading song…","");
     try{
-      await planStore.savePart(sunday,key,choice);
-      setSyncStatus(navigator.onLine ? "Saved" : "Saved offline","saved");
+      const song=await planStore.getSong(musicSongs[part].id);
+      setSyncStatus("Up to date","saved");
+      openSongEditor(song);
     }catch(error){
       console.error(error);
-      setSyncStatus("Save failed","error");
+      setSyncStatus("Could not load song","error");
     }
-  },500);
+    return;
+  }
+  if(button.dataset.songAction==="remove"){
+    if(!confirm("Remove this song from "+(songPart(part)?.label || "this part")+"? The song itself will remain available.")) return;
+    try{
+      await runSongMutation(()=>planStore.clearSong(current().d,part),"Saved");
+      delete musicSongs[part];
+      renderMusicPlan();
+    }catch(error){}
+  }
 });
+let songSearchTimer=null;
+songSearch.addEventListener("input",()=>{
+  clearTimeout(songSearchTimer);
+  createSongAction.textContent=SongCatalog.creationActionLabel(songSearch.value);
+  songSearchTimer=setTimeout(searchSongCatalog,180);
+});
+songResults.addEventListener("click",event=>{
+  const button=event.target.closest("button[data-song-index]");
+  if(!button) return;
+  selectedSong=visibleSongs[Number(button.dataset.songIndex)] || null;
+  renderSongResults();
+});
+createSongAction.addEventListener("click",()=>openSongEditor(null));
+useSong.addEventListener("click",async ()=>{
+  if(!selectedSong || !editingSongPart) return;
+  const part=editingSongPart;
+  try{
+    await runSongMutation(()=>planStore.assignSong(current().d,part,selectedSong.id),"Saved");
+    musicSongs[part]=selectedSong;
+    closeSongPicker();
+    renderMusicPlan();
+  }catch(error){}
+});
+songEditorForm.addEventListener("submit",async event=>{
+  event.preventDefault();
+  const validation=SongCatalog.validateDraft(songDraftFromForm());
+  if(!validation.valid){
+    songEditorError.textContent=validation.error;
+    songTitle.focus();
+    return;
+  }
+  saveSong.disabled=true;
+  const previousLabel=saveSong.textContent;
+  saveSong.textContent="Saving…";
+  try{
+    if(editingSong){
+      const updated=await planStore.updateSong(editingSong.id,validation.value);
+      Object.keys(musicSongs).forEach(part=>{
+        if(musicSongs[part]?.id===updated.id) musicSongs[part]=updated;
+      });
+      setSyncStatus("Saved","saved");
+    }else{
+      const created=await planStore.createAndAssignSong(current().d,editingSongPart,validation.value);
+      musicSongs[editingSongPart]=created;
+      setSyncStatus("Saved","saved");
+    }
+    closeSongEditor();
+    renderMusicPlan();
+  }catch(error){
+    console.error(error);
+    songEditorError.textContent=error.message || "Could not save the song.";
+    setSyncStatus("Save failed","error");
+  }finally{
+    saveSong.disabled=false;
+    saveSong.textContent=previousLabel;
+  }
+});
+songPickerClose.addEventListener("click",closeSongPicker);
+songPickerCancel.addEventListener("click",closeSongPicker);
+songPickerDialog.addEventListener("click",event=>{ if(event.target===songPickerDialog) closeSongPicker(); });
+songEditorClose.addEventListener("click",closeSongEditor);
+songEditorCancel.addEventListener("click",closeSongEditor);
+songEditorDialog.addEventListener("click",event=>{ if(event.target===songEditorDialog) closeSongEditor(); });
 authButton.addEventListener("click",async ()=>{
   if(!planStore){ setSyncStatus("Editor sign-in unavailable","error"); return; }
   try{

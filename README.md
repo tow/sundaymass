@@ -33,8 +33,20 @@ On HTTPS, the planner can be installed to a phone's home screen.
   its readings atomically. Individual role-constrained reading changes remain a
   secondary fine-tuning option.
 - There is one public music-plan view, not separate "live plan" and "preview" sections.
-- Song entry is deliberately free-form. Phase 1 has no song catalogue: every Mass part
-  stores a title and an optional manually found YouTube practice link.
+- Songs are canonical entities referenced by weekly plan slots. Editors choose an
+  existing song or can always create another one, including when its title exactly
+  matches an existing title. Titles are intentionally non-unique; UUIDs are identity.
+- Songs have no fixed Mass-part classification or eligibility restriction. Any song
+  can be assigned to any music slot in extremis. Core settings may usually be reused
+  for Kyrie, Gloria, Sanctus, and similar parts, while historical use can later inform
+  soft ranking for entrance, offertory, and recessional, but neither convention may
+  become a hard picker filter. Communion 1 and 2 are fully general song assignments.
+- Only a title is required when creating a song. YouTube, attribution, and lyrics can
+  all be added later. Phase-one search is deliberately limited to alphabetical title
+  matching; recent/frequent ranking and semantic search are deferred.
+- Editing a canonical song immediately changes every Sunday which references it. This
+  is an explicit product decision: the current small data set does not require weekly
+  snapshots or immutable history.
 - There are two separate Communion slots: `communion` and `communion2`.
 - Copyright planning fields are `authors`, `copyrightOwner`, `copyrightYear`, and
   `source`. Source is optional and must not make an otherwise complete entry
@@ -42,8 +54,11 @@ On HTTPS, the planner can be installed to a phone's home screen.
   year; entering `Public domain` as the owner allows the year to be blank.
 - Recording attribution does not itself grant permission to reproduce or project
   lyrics. That warning belongs in the help page.
-- Phase 1 remains free-form, but the next major phase should introduce a proper song
-  library. Automatic suggestions should preferentially draw from that known repertoire.
+- Full lyrics are hard-private: public and signed-in non-editor clients must never be
+  able to retrieve them. `song_lyrics` is physically separate from public song metadata
+  solely to enforce that database permission boundary; it is not a separate domain
+  concept. Without this requirement, the extra table would not be justified.
+- Future automatic suggestions should preferentially draw from the known repertoire.
 
 ## Files to edit
 
@@ -54,6 +69,8 @@ behavior, and export changes in the appropriate source file:
 - `src/styles/planner.css` — visual design and responsive layout
 - `src/app/planner.js` — UI state, rendering, and event handling
 - `src/domain/lectionary.js` — lectionary selection and validation rules
+- `src/domain/songs.js` — song validation and phase-one title search
+- `src/domain/plan-music-data.js` — database-row to browser-plan conversion
 - `src/export/docx.js` — browser-side Word generation
 - `src/services/plan-store.js` — Supabase/local persistence adapter
 
@@ -83,11 +100,18 @@ layouts originate in `scripts/make_template.js` and `scripts/make_template2.js`.
 
 Live data uses Supabase Auth, Postgres, Realtime, and Row Level Security:
 
-- `plans` has one row per Sunday, a JSON `choices` object, a JSON
-  `reading_overrides` object, and an optional `celebration_override`. Each Mass part
-  stores `song`, `youtubeUrl`, `authors`, `copyrightOwner`, `copyrightYear`, and
-  `source`.
-- Anyone can read plans.
+- `plans` has one row per Sunday, a JSON `reading_overrides` object, and an optional
+  `celebration_override`.
+- `songs` owns the canonical title, YouTube link, attribution metadata, and audit
+  fields. Its metadata is public. `title` has a non-unique lowercase search index and
+  no uniqueness constraint.
+- `plan_songs` assigns one canonical song UUID to each `(sunday, part)`. Assignments and
+  current song metadata are public. `part` identifies the position in one Mass plan;
+  it is not a property of the song and imposes no song/part compatibility rule.
+- `song_lyrics` is an optional one-to-one extension keyed by song UUID. Anonymous users
+  receive no table privileges at all. Authenticated access is further restricted by
+  Row Level Security to members of `public.editors`. Public plan queries deliberately
+  never join this table.
 - Editors sign in with an administrator-created, manually confirmed email/password
   account. Public signup is disabled, so phase 1 requires no outgoing email service.
 - A signed-in user can write only when their user ID is also in `public.editors`.
@@ -95,12 +119,14 @@ Live data uses Supabase Auth, Postgres, Realtime, and Row Level Security:
   invoker`; the `plans` insert/update Row Level Security policies are the final
   database boundary. Hiding the edit button is only a usability measure, not the
   authorization mechanism.
-- Each part autosaves 500 ms after its latest edit. Realtime updates may refresh other
-  fields, but `renderMusicPlan()` deliberately does not replace the active input. This
-  is essential: replacing the editor DOM during autosave causes the iPhone keyboard
-  and focus to jump.
-- `save_music_choice` updates one JSON part and merges it into the Sunday row, preserving
-  all other song choices.
+- Song operations save only after an explicit choose/create/edit/remove action, so
+  ordinary typing in a form never triggers a Realtime rerender or steals mobile
+  keyboard focus.
+- `assign_plan_song` and `clear_plan_song` change one slot.
+  `create_and_assign_song` atomically creates a title-only-or-richer song and assigns
+  it. `update_song` updates canonical metadata plus the optional editor-only lyric row.
+  Each RPC repeats the editor-membership check and uses the tables' RLS policies as the
+  final boundary.
 - `save_reading_override` stores one structured override with its citation, parsed book
   and verse segments, origin, translation/text version, and Ordo-check flag.
   `clear_reading_override` restores one or all slots to their computed selections.
@@ -118,8 +144,13 @@ Live data uses Supabase Auth, Postgres, Realtime, and Row Level Security:
   citations, invalid structures, and passages with no embedded full text are blocked.
 - HTTPS YouTube and `youtu.be` URLs are rendered as practice links; other hosts remain
   stored but are not exposed as clickable links.
+- Migration `20260727020000_song_entities.sql` converts every non-empty legacy JSON
+  entry before dropping the old column and function. It merges only records whose
+  complete title/YouTube/attribution tuples match, never titles alone, and aborts if
+  the number of created assignments differs from the source count.
 - If no Supabase config is present, localhost and local-file builds fall back to
-  `localStorage` so the editing flow can be tested without a project.
+  `localStorage` with the same canonical-song operations so the flow can be tested
+  without a project.
 
 To connect a Supabase project:
 
@@ -365,7 +396,10 @@ viewport (390 × 844 is the established baseline) and at a desktop width:
   full-size overlay inside `.date-slot`; its separate `.date-display` avoids Safari's
   inconsistent native date formatting.
 - Both print buttons remain equal-width columns on mobile.
-- Editing and autosave do not move focus or dismiss the keyboard.
+- Song forms save only when submitted; typing does not move focus or dismiss the
+  keyboard.
+- The song picker opens full-screen on mobile. The create-new action remains visible
+  above results with zero, partial, exact, or duplicate-title matches.
 - Celebration/reading controls appear only after the bottom editor button is pressed.
   Their pickers open full-screen on mobile, keep action buttons reachable, block
   wrong-role citations, and require the Ordo checkbox for a non-standard individual
@@ -377,14 +411,11 @@ viewport (390 × 844 is the established baseline) and at a desktop width:
 - Test the locally served app in Chrome with an iPhone Safari user agent when possible,
   then verify the deployed GitHub Pages version after its build completes.
 
-## Future song library and projector slides
+## Future lyric-powered repertoire and projector slides
 
-Songs should become first-class entities rather than repeated strings inside weekly
-plans. A song record should own its title and aliases, full lyrics, YouTube practice
-link, and copyright/attribution metadata. Weekly plan slots should reference stable song
-IDs.
-
-This enables three connected capabilities:
+Canonical song entities, weekly song-ID assignments, optional lyrics, and basic title
+search are now implemented. Lyrics are editor-only and may be omitted at song creation.
+The next phases can build three connected capabilities on that foundation:
 
 1. **Automatic projector slides.** Generate each Sunday's slide deck from the ordered
    music plan and the selected songs' full lyrics. Lyrics should preserve meaningful
@@ -397,14 +428,15 @@ This enables three connected capabilities:
    LLM suggestions can search by theme, scripture, imagery, or meaning rather than only
    exact title words.
 
-The relational song/lyric record should remain canonical. Vector embeddings are derived
+The relational song/lyric record remains canonical. Vector embeddings are derived
 search data and must be regenerable when lyrics or embedding models change. Since the
 app already uses Supabase Postgres, `pgvector` is the natural first option before adding
 a separate vector database.
 
-Changing a song later must not silently rewrite historical plans or previously generated
-slides. The implementation should therefore define lyric/version snapshots or another
-explicit history policy when weekly plans move from free-form titles to song IDs.
+The accepted phase-one history policy is intentionally simple: editing a song rewrites
+what every referencing Sunday displays. Before generated slides become durable records,
+decide whether those exported artifacts need their own immutable snapshots; do not add
+snapshot complexity to weekly planning by default.
 
 Full lyric storage and projection also make licensing material, not merely attribution.
 Before this phase ships, confirm that the church's licences or direct permissions cover
@@ -419,8 +451,8 @@ access accordingly.
   with lectionary numbering.
 - Handle the Daniel 3 canticle (maps to KJVA "Prayer of Azariah").
 - Optional: hymnal / hymn-number column on the sung-parts grid.
-- Design the song entity, structured lyric format, version/history policy, and migration
-  from existing free-form weekly choices.
+- Define a structured lyric format for verses, choruses, responses, and repeats before
+  slide generation.
 - Add lyric embeddings and semantic search, preferably with Supabase `pgvector`.
 - Generate projector slides from each Sunday's ordered plan.
 - Add automatic song suggestions that rank suitable known-repertoire songs first.

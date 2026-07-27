@@ -1,39 +1,81 @@
 // Persistence adapter: Supabase in production, local storage during local development.
 const SUPABASE_MODULE_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-function emptyPlan() {
-  return { choices: {}, readingOverrides: {}, celebrationOverride: null };
-}
+const planData = () => window.PlanMusicData;
+const songCatalog = () => window.SongCatalog;
 
-function normalizePlan(value) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return emptyPlan();
-  if ("choices" in value || "readingOverrides" in value) {
-    return {
-      choices: value.choices && typeof value.choices === "object" ? value.choices : {},
-      readingOverrides: value.readingOverrides && typeof value.readingOverrides === "object" ? value.readingOverrides : {},
-      celebrationOverride: value.celebrationOverride && typeof value.celebrationOverride === "object" ? value.celebrationOverride : null,
-    };
-  }
-  // Backwards compatibility with localStorage values created before reading overrides.
-  return { choices: value, readingOverrides: {}, celebrationOverride: null };
+function emptyPlan() {
+  return planData().emptyPlan();
 }
 
 function localStore() {
   const listeners = new Map();
   let editor = false;
-  const storageKey = date => "st-james-plan-" + date;
-  const read = date => {
+  const planKey = date => "st-james-plan-v2-" + date;
+  const songsKey = "st-james-song-catalog-v1";
+
+  const readSongs = () => {
     try {
-      return normalizePlan(JSON.parse(localStorage.getItem(storageKey(date))));
+      const value = JSON.parse(localStorage.getItem(songsKey));
+      return Array.isArray(value) ? value : [];
+    } catch (error) {
+      console.warn("Could not read local songs", error);
+      return [];
+    }
+  };
+  const writeSongs = songs => localStorage.setItem(songsKey, JSON.stringify(songs));
+  const readPlanRecord = date => {
+    try {
+      const value = JSON.parse(localStorage.getItem(planKey(date)));
+      return value && typeof value === "object" && !Array.isArray(value)
+        ? {
+            songs: value.songs && typeof value.songs === "object" ? value.songs : {},
+            readingOverrides: value.readingOverrides && typeof value.readingOverrides === "object"
+              ? value.readingOverrides
+              : {},
+            celebrationOverride: value.celebrationOverride
+              && typeof value.celebrationOverride === "object"
+              ? value.celebrationOverride
+              : null,
+          }
+        : emptyPlan();
     } catch (error) {
       console.warn("Could not read local plan", error);
       return emptyPlan();
     }
   };
+  const writePlanRecord = (date, plan) => localStorage.setItem(planKey(date), JSON.stringify(plan));
+  const read = date => {
+    const record = readPlanRecord(date);
+    const songsById = Object.fromEntries(readSongs().map(song => [song.id, song]));
+    const publicSong = song => ({
+      id: song.id,
+      title: song.title,
+      youtubeUrl: song.youtubeUrl,
+      authors: song.authors,
+      copyrightOwner: song.copyrightOwner,
+      copyrightYear: song.copyrightYear,
+      source: song.source,
+    });
+    return {
+      songs: Object.fromEntries(
+        Object.entries(record.songs)
+          .map(([part, id]) => [part, songsById[id] ? publicSong(songsById[id]) : null])
+          .filter(([, song]) => Boolean(song)),
+      ),
+      readingOverrides: record.readingOverrides,
+      celebrationOverride: record.celebrationOverride,
+    };
+  };
+  const requireEditor = () => {
+    if (!editor) throw new Error("Sign in before editing");
+  };
   const emit = date => {
     const callback = listeners.get(date);
     if (callback) callback(read(date), { offline: true });
   };
+  const newId = () => globalThis.crypto?.randomUUID?.()
+    || "local-" + Date.now() + "-" + Math.random().toString(36).slice(2);
 
   return {
     subscribePlan(date, onValue) {
@@ -42,54 +84,91 @@ function localStore() {
       return () => listeners.delete(date);
     },
     subscribeAuth(onValue) {
-      const notify = () => onValue({ user: editor ? { displayName: "Local editor" } : null, isEditor: editor });
+      const notify = () => onValue({
+        user: editor ? { displayName: "Local editor" } : null,
+        isEditor: editor,
+      });
       this._notifyAuth = notify;
       notify();
       return () => {};
     },
-    async savePart(date, key, choice) {
-      if (!editor) throw new Error("Sign in before editing");
-      const plan = read(date);
-      plan.choices[key] = {
-        song: choice.song || "",
-        youtubeUrl: choice.youtubeUrl || "",
-        authors: choice.authors || "",
-        copyrightOwner: choice.copyrightOwner || "",
-        copyrightYear: choice.copyrightYear || "",
-        source: choice.source || "",
-      };
-      localStorage.setItem(storageKey(date), JSON.stringify(plan));
+    async searchSongs(query) {
+      requireEditor();
+      return songCatalog().search(readSongs(), query);
+    },
+    async getSong(songId) {
+      requireEditor();
+      const song = readSongs().find(value => value.id === songId);
+      if (!song) throw new Error("Song not found");
+      return song;
+    },
+    async assignSong(date, part, songId) {
+      requireEditor();
+      const plan = readPlanRecord(date);
+      plan.songs[part] = songId;
+      writePlanRecord(date, plan);
+      emit(date);
+    },
+    async createAndAssignSong(date, part, draft) {
+      requireEditor();
+      const validation = songCatalog().validateDraft(draft);
+      if (!validation.valid) throw new Error(validation.error);
+      const song = { id: newId(), ...validation.value };
+      writeSongs([...readSongs(), song]);
+      const plan = readPlanRecord(date);
+      plan.songs[part] = song.id;
+      writePlanRecord(date, plan);
+      emit(date);
+      return song;
+    },
+    async updateSong(songId, draft) {
+      requireEditor();
+      const validation = songCatalog().validateDraft(draft);
+      if (!validation.valid) throw new Error(validation.error);
+      const songs = readSongs();
+      const index = songs.findIndex(song => song.id === songId);
+      if (index < 0) throw new Error("Song not found");
+      songs[index] = { id: songId, ...validation.value };
+      writeSongs(songs);
+      listeners.forEach((callback, date) => callback(read(date), { offline: true }));
+      return songs[index];
+    },
+    async clearSong(date, part) {
+      requireEditor();
+      const plan = readPlanRecord(date);
+      delete plan.songs[part];
+      writePlanRecord(date, plan);
       emit(date);
     },
     async saveReadingOverride(date, slot, readingOverride) {
-      if (!editor) throw new Error("Sign in before editing");
-      const plan = read(date);
+      requireEditor();
+      const plan = readPlanRecord(date);
       plan.readingOverrides[slot] = readingOverride;
-      localStorage.setItem(storageKey(date), JSON.stringify(plan));
+      writePlanRecord(date, plan);
       emit(date);
     },
     async clearReadingOverride(date, slot) {
-      if (!editor) throw new Error("Sign in before editing");
-      const plan = read(date);
+      requireEditor();
+      const plan = readPlanRecord(date);
       if (slot) delete plan.readingOverrides[slot];
       else plan.readingOverrides = {};
-      localStorage.setItem(storageKey(date), JSON.stringify(plan));
+      writePlanRecord(date, plan);
       emit(date);
     },
     async saveCelebrationOverride(date, celebrationOverride) {
-      if (!editor) throw new Error("Sign in before editing");
-      const plan = read(date);
+      requireEditor();
+      const plan = readPlanRecord(date);
       plan.celebrationOverride = celebrationOverride;
       plan.readingOverrides = {};
-      localStorage.setItem(storageKey(date), JSON.stringify(plan));
+      writePlanRecord(date, plan);
       emit(date);
     },
     async clearCelebrationOverride(date) {
-      if (!editor) throw new Error("Sign in before editing");
-      const plan = read(date);
+      requireEditor();
+      const plan = readPlanRecord(date);
       plan.celebrationOverride = null;
       plan.readingOverrides = {};
-      localStorage.setItem(storageKey(date), JSON.stringify(plan));
+      writePlanRecord(date, plan);
       emit(date);
     },
     async signIn() {
@@ -104,6 +183,9 @@ function localStore() {
 }
 
 function unavailableStore() {
+  const unavailable = async () => {
+    throw new Error("Supabase has not been configured");
+  };
   return {
     subscribePlan(date, onValue, onError) {
       onValue(emptyPlan(), { offline: false });
@@ -114,24 +196,17 @@ function unavailableStore() {
       onValue({ user: null, isEditor: false });
       return () => {};
     },
-    async savePart() {
-      throw new Error("Supabase has not been configured");
-    },
-    async saveReadingOverride() {
-      throw new Error("Supabase has not been configured");
-    },
-    async clearReadingOverride() {
-      throw new Error("Supabase has not been configured");
-    },
-    async saveCelebrationOverride() {
-      throw new Error("Supabase has not been configured");
-    },
-    async clearCelebrationOverride() {
-      throw new Error("Supabase has not been configured");
-    },
-    async signIn() {
-      throw new Error("Supabase has not been configured");
-    },
+    searchSongs: unavailable,
+    getSong: unavailable,
+    assignSong: unavailable,
+    createAndAssignSong: unavailable,
+    updateSong: unavailable,
+    clearSong: unavailable,
+    saveReadingOverride: unavailable,
+    clearReadingOverride: unavailable,
+    saveCelebrationOverride: unavailable,
+    clearCelebrationOverride: unavailable,
+    signIn: unavailable,
     async signOut() {},
   };
 }
@@ -144,23 +219,54 @@ async function supabaseStore(config) {
       detectSessionInUrl: true,
     },
   });
-  const cacheKey = date => "st-james-plan-cache-" + date;
+  const cacheKey = date => "st-james-plan-cache-v2-" + date;
   const cacheRead = date => {
     try {
       const raw = localStorage.getItem(cacheKey(date));
-      return raw ? normalizePlan(JSON.parse(raw)) : null;
+      return raw ? JSON.parse(raw) : null;
     } catch {
       return null;
     }
   };
-  const cacheWrite = (date, plan) => {
-    localStorage.setItem(cacheKey(date), JSON.stringify(normalizePlan(plan)));
+  const cacheWrite = (date, plan) => localStorage.setItem(cacheKey(date), JSON.stringify(plan));
+  const loadPlan = async date => {
+    const { data, error } = await supabase
+      .from("plans")
+      .select(`
+        reading_overrides,
+        celebration_override,
+        plan_songs (
+          part,
+          song:songs (
+            id,
+            title,
+            youtube_url,
+            authors,
+            copyright_owner,
+            copyright_year,
+            source
+          )
+        )
+      `)
+      .eq("sunday", date)
+      .maybeSingle();
+    if (error) throw error;
+    return planData().planFromRow(data);
   };
-  const planFromRow = row => {
+  const rpcDraft = draft => {
+    const value = songCatalog().validateDraft(draft);
+    if (!value.valid) throw new Error(value.error);
     return {
-      choices: row?.choices || {},
-      readingOverrides: row?.reading_overrides || {},
-      celebrationOverride: row?.celebration_override || null,
+      value: value.value,
+      params: {
+        p_title: value.value.title,
+        p_youtube_url: value.value.youtubeUrl,
+        p_authors: value.value.authors,
+        p_copyright_owner: value.value.copyrightOwner,
+        p_copyright_year: value.value.copyrightYear,
+        p_source: value.value.source,
+        p_lyrics: value.value.lyrics || null,
+      },
     };
   };
 
@@ -170,33 +276,48 @@ async function supabaseStore(config) {
       if (cached) onValue(cached, { offline: true });
 
       let active = true;
-      supabase
-        .from("plans")
-        .select("choices, reading_overrides, celebration_override")
-        .eq("sunday", date)
-        .maybeSingle()
-        .then(({ data, error }) => {
+      let loading = false;
+      let refreshPending = false;
+      const refresh = async () => {
+        if (!active) return;
+        if (loading) {
+          refreshPending = true;
+          return;
+        }
+        loading = true;
+        try {
+          const plan = await loadPlan(date);
           if (!active) return;
-          if (error) {
-            onError(error);
-            return;
-          }
-          const plan = planFromRow(data);
           cacheWrite(date, plan);
           onValue(plan, { offline: false });
-        });
+        } catch (error) {
+          if (active && onError) onError(error);
+        } finally {
+          loading = false;
+          if (refreshPending) {
+            refreshPending = false;
+            refresh();
+          }
+        }
+      };
+      refresh();
 
       const channel = supabase
         .channel("mass-plan-" + date + "-" + Math.random().toString(36).slice(2))
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "plans", filter: "sunday=eq." + date },
-          payload => {
-            if (!active) return;
-            const plan = planFromRow(payload.new);
-            cacheWrite(date, plan);
-            onValue(plan, { offline: false });
-          },
+          refresh,
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "plan_songs", filter: "sunday=eq." + date },
+          refresh,
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "songs" },
+          refresh,
         )
         .subscribe();
 
@@ -217,7 +338,7 @@ async function supabaseStore(config) {
             .eq("user_id", user.id)
             .maybeSingle();
           if (error) console.warn("Could not verify editor access", error);
-          isEditor = !!data;
+          isEditor = Boolean(data);
         }
         if (active) onValue({ user, isEditor });
       };
@@ -231,16 +352,72 @@ async function supabaseStore(config) {
         authListener.subscription.unsubscribe();
       };
     },
-    async savePart(date, key, choice) {
-      const { error } = await supabase.rpc("save_music_choice", {
+    async searchSongs(query) {
+      const { data, error } = await supabase
+        .from("songs")
+        .select(`
+          id,
+          title,
+          youtube_url,
+          authors,
+          copyright_owner,
+          copyright_year,
+          source,
+          song_lyrics (lyrics)
+        `)
+        .order("title");
+      if (error) throw error;
+      return songCatalog().search((data || []).map(planData().songFromRow), query);
+    },
+    async getSong(songId) {
+      const { data, error } = await supabase
+        .from("songs")
+        .select(`
+          id,
+          title,
+          youtube_url,
+          authors,
+          copyright_owner,
+          copyright_year,
+          source,
+          song_lyrics (lyrics)
+        `)
+        .eq("id", songId)
+        .single();
+      if (error) throw error;
+      return planData().songFromRow(data);
+    },
+    async assignSong(date, part, songId) {
+      const { error } = await supabase.rpc("assign_plan_song", {
         p_sunday: date,
-        p_part: key,
-        p_song: choice.song || "",
-        p_youtube_url: choice.youtubeUrl || "",
-        p_authors: choice.authors || "",
-        p_copyright_owner: choice.copyrightOwner || "",
-        p_copyright_year: choice.copyrightYear || "",
-        p_source: choice.source || "",
+        p_part: part,
+        p_song_id: songId,
+      });
+      if (error) throw error;
+    },
+    async createAndAssignSong(date, part, draft) {
+      const song = rpcDraft(draft);
+      const { data, error } = await supabase.rpc("create_and_assign_song", {
+        p_sunday: date,
+        p_part: part,
+        ...song.params,
+      });
+      if (error) throw error;
+      return { id: data, ...song.value };
+    },
+    async updateSong(songId, draft) {
+      const song = rpcDraft(draft);
+      const { error } = await supabase.rpc("update_song", {
+        p_song_id: songId,
+        ...song.params,
+      });
+      if (error) throw error;
+      return { id: songId, ...song.value };
+    },
+    async clearSong(date, part) {
+      const { error } = await supabase.rpc("clear_plan_song", {
+        p_sunday: date,
+        p_part: part,
       });
       if (error) throw error;
     },
@@ -284,7 +461,9 @@ async function supabaseStore(config) {
 }
 
 async function start() {
-  const local = location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "file:";
+  const local = location.hostname === "localhost"
+    || location.hostname === "127.0.0.1"
+    || location.protocol === "file:";
   let store;
   if (window.MASS_PLANNER_SUPABASE_CONFIG) {
     try {
