@@ -161,6 +161,17 @@ test("planner has no horizontal overflow at mobile and desktop widths", async ()
   }
 });
 
+test("music header omits redundant mobile copy", async () => {
+  const mobile = await plannerPage(browser, server, { width: 390, height: 844 });
+  assert.equal(await mobile.page.locator(".music-head .eyebrow").count(), 0);
+  assert.equal(await mobile.page.locator("#musicIntro").isVisible(), false);
+  await mobile.context.close();
+
+  const desktop = await plannerPage(browser, server, { width: 1280, height: 900 });
+  assert.equal(await desktop.page.locator("#musicIntro").isVisible(), true);
+  await desktop.context.close();
+});
+
 test("mobile reading links reveal unobscured text without orphaning verse numbers", async () => {
   const { context, page } = await plannerPage(
     browser,
