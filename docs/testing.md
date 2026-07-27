@@ -29,9 +29,12 @@ GitHub's Pages Actions deployment. A failed verification job cannot deploy.
   `[...]` elisions. Its editor flow covers the mobile song picker's page-scroll lock and
   restoration, bounded suggestions, explicit search mode, duplicate-title
   disambiguation, private lyric exclusion, and keyboard activation of the selected
-  song. Chrome also renders both print modes to real PDF buffers; the suite verifies A4
-  media boxes, separate reading pages, every music slot including both Communion songs,
-  HTML escaping, attribution warnings, and lyric exclusion.
+  song. A second editor workflow creates a song from Communion 2, changes its soft
+  suggestion positions, enters private lyrics, submits by keyboard, verifies the exact
+  mutation, and confirms those lyrics never enter the plan DOM. Chrome also renders
+  both print modes to real PDF buffers; the suite verifies A4 media boxes, separate
+  reading pages, every music slot including both Communion songs, HTML escaping,
+  attribution warnings, and lyric exclusion.
 - `npm run test:integration` resets a local Supabase project and tests the migrated
   authorization, RLS, RPC, privacy, and semantic-suggestion contract. Run it separately
   because it requires Docker and the pinned Supabase CLI.

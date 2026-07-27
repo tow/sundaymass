@@ -490,3 +490,8 @@ Acceptance:
   target is visible rather than hidden beyond the viewport, measures every superscript
   verse marker with its following word on one rendered line, and confirms that omitted
   verse ranges are visibly marked with `[...]`.
+- 2026-07-27: Phase 7 completed locally. The final editor workflow creates a song from
+  Communion 2, verifies normalized default positioning, changes the explicit soft
+  suggestion positions, records private lyrics, submits by keyboard, checks the exact
+  create-and-assign mutation and embedding request, and proves those lyrics never enter
+  the rendered Mass plan.

@@ -382,6 +382,86 @@ test("editor song picker preserves the page and supports keyboard selection of d
   await context.close();
 });
 
+test("editor can create a private-lyric song with explicit suggestion positions", async () => {
+  const { context, page } = await plannerPage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+  await page.evaluate(() => {
+    window.massPlanApp.connect({
+      subscribeAuth(callback) {
+        callback({ user: { id: "editor" }, isEditor: true });
+        return () => {};
+      },
+      subscribePlan(date, onValue) {
+        onValue({ songs: {}, readingOverrides: {}, celebrationOverride: null });
+        return () => {};
+      },
+      suggestSongs() {
+        return Promise.resolve([]);
+      },
+      searchSongs() {
+        return Promise.resolve([]);
+      },
+      createAndAssignSong(date, part, draft) {
+        window.__createdSong = { date, part, draft };
+        return Promise.resolve({ id: "created-song", ...draft });
+      },
+      syncSongEmbedding(songId) {
+        window.__indexedSong = songId;
+        return Promise.resolve();
+      },
+    });
+  });
+
+  const selectedDate = await page.locator("#date").inputValue();
+  await page.locator(
+    'button[data-song-action="choose"][data-part="communion2"]',
+  ).click();
+  await page.locator("#songModeCreate").click();
+  const editor = page.locator("#songEditorDialog");
+  await assert.doesNotReject(() => editor.waitFor({ state: "visible" }));
+  await page.waitForFunction(() => document.activeElement?.id === "songTitle");
+
+  const communionPart = page.locator(
+    '#songSuggestionParts input[value="communion"]',
+  );
+  assert.equal(await communionPart.isChecked(), true);
+  assert.equal(
+    await page.locator('#songSuggestionParts input[value="communion2"]').count(),
+    0,
+  );
+  await communionPart.uncheck();
+  await page.locator(
+    '#songSuggestionParts input[value="offertory"]',
+  ).check();
+  await page.locator(
+    '#songSuggestionParts input[value="recessional"]',
+  ).check();
+  await page.locator("#songTitle").fill("New duplicate title");
+  await page.locator("#songAuthors").fill("Test Composer");
+  await page.locator(".song-lyrics-section summary").click();
+  await page.locator("#songLyrics").fill("EDITOR-ONLY CREATED LYRIC");
+  await page.locator("#saveSong").focus();
+  await page.keyboard.press("Enter");
+  await assert.doesNotReject(() => editor.waitFor({ state: "hidden" }));
+  await page.waitForFunction(() => window.__indexedSong === "created-song");
+
+  const created = await page.evaluate(() => window.__createdSong);
+  assert.equal(created.date, selectedDate);
+  assert.equal(created.part, "communion2");
+  assert.equal(created.draft.title, "New duplicate title");
+  assert.equal(created.draft.lyrics, "EDITOR-ONLY CREATED LYRIC");
+  assert.deepEqual(created.draft.suggestionParts, ["offertory", "recessional"]);
+  const communionRow = page.locator(
+    '.music-edit-row:has([data-part="communion2"])',
+  );
+  assert.match(await communionRow.innerText(), /New duplicate title/);
+  assert.equal(await page.getByText("EDITOR-ONLY CREATED LYRIC").count(), 0);
+  await context.close();
+});
+
 test("Chrome produces dedicated A4 music and readings PDFs without private lyrics", async () => {
   const { context, page } = await plannerPage(
     browser,
