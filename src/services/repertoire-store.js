@@ -87,11 +87,10 @@ function localStore({
   };
 }
 
-async function supabaseStore(config) {
-  const { createClient } = await import(SUPABASE_MODULE_URL);
-  const supabase = createClient(config.url, config.publishableKey, {
-    auth: { persistSession: true, detectSessionInUrl: true },
-  });
+function createSupabaseStore(
+  supabase,
+  { songCatalog = globalThis.window?.SongCatalog } = {},
+) {
   const invoke = async body => {
     const { data, error } = await supabase.functions.invoke("semantic-songs", { body });
     if (error) throw error;
@@ -117,13 +116,13 @@ async function supabaseStore(config) {
       return mapSong(data);
     },
     async createSong(draft) {
-      const song = draftParams(draft);
+      const song = draftParams(draft, songCatalog);
       const { data, error } = await supabase.rpc("create_song", song.params);
       if (error) throw error;
       return { id: data, ...song.value };
     },
     async updateSong(songId, draft) {
-      const song = draftParams(draft);
+      const song = draftParams(draft, songCatalog);
       const { error } = await supabase.rpc("update_song", { p_song_id: songId, ...song.params });
       if (error) throw error;
       return { id: songId, ...song.value };
@@ -159,6 +158,14 @@ async function supabaseStore(config) {
   };
 }
 
+async function supabaseStore(config) {
+  const { createClient } = await import(SUPABASE_MODULE_URL);
+  const supabase = createClient(config.url, config.publishableKey, {
+    auth: { persistSession: true, detectSessionInUrl: true },
+  });
+  return createSupabaseStore(supabase);
+}
+
 async function start() {
   const local = location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "file:";
   const store = window.MASS_PLANNER_SUPABASE_CONFIG
@@ -168,7 +175,7 @@ async function start() {
 }
 
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { mapSong, draftParams, localStore };
+  module.exports = { mapSong, draftParams, localStore, createSupabaseStore };
 }
 
 if (typeof window !== "undefined" && window.repertoireApp) {

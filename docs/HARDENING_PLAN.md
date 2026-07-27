@@ -284,3 +284,7 @@ Acceptance:
   dependency injection. Executable tests cover offline subscription state, corrupt
   cache recovery, editor authorization, missing-song assignment, reading/celebration
   overrides, and the hard rule that public plan values never expose lyrics.
+- 2026-07-27: The Supabase repertoire adapter is now constructed from an injected
+  client. Behavior tests prove that public browsing does not request lyrics, editor
+  detail loading does, validated drafts map to the expected RPC payload, and database
+  failures propagate to the UI.

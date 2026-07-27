@@ -85,3 +85,102 @@ test("local repertoire mutations require an editor and retain canonical songs", 
   await assert.rejects(store.getSong("song-1"), /Editor access required/);
   assert.deepEqual(authStates.map(state => state.isEditor), [false, true, false]);
 });
+
+function supabaseFixture() {
+  const calls = { selects: [], rpcs: [] };
+  const publicRow = {
+    id: "song-1",
+    title: "Table of Plenty",
+    youtube_url: "https://youtu.be/example",
+    authors: "Dan Schutte",
+    copyright_owner: "OCP",
+    copyright_year: "1992",
+    source: "",
+    suggestion_parts: ["entrance"],
+  };
+  const privateRow = {
+    ...publicRow,
+    song_lyrics: { lyrics: "Come to the feast" },
+  };
+  const supabase = {
+    from(table) {
+      const query = {
+        select(columns) {
+          calls.selects.push({ table, columns });
+          return query;
+        },
+        order() {
+          return Promise.resolve({ data: [publicRow], error: null });
+        },
+        eq() {
+          return query;
+        },
+        single() {
+          return Promise.resolve({ data: privateRow, error: null });
+        },
+      };
+      return query;
+    },
+    rpc(name, params) {
+      calls.rpcs.push({ name, params });
+      return Promise.resolve({ data: name === "create_song" ? "song-2" : null, error: null });
+    },
+    functions: {
+      invoke() {
+        return Promise.resolve({ data: {}, error: null });
+      },
+    },
+    auth: {},
+  };
+  return { calls, supabase };
+}
+
+test("Supabase repertoire projections keep public browsing separate from editor lyrics", async () => {
+  const { calls, supabase } = supabaseFixture();
+  const store = storeModule.createSupabaseStore(supabase, { songCatalog });
+
+  const [publicSong] = await store.browseSongs();
+  const privateSong = await store.getSong("song-1");
+
+  assert.equal(publicSong.lyrics, "");
+  assert.equal(privateSong.lyrics, "Come to the feast");
+  assert.doesNotMatch(calls.selects[0].columns, /song_lyrics/);
+  assert.match(calls.selects[1].columns, /song_lyrics/);
+});
+
+test("Supabase repertoire mutations send validated canonical RPC parameters", async () => {
+  const { calls, supabase } = supabaseFixture();
+  const store = storeModule.createSupabaseStore(supabase, { songCatalog });
+
+  const created = await store.createSong({
+    title: "  New Song  ",
+    authors: "Composer",
+    suggestionParts: [],
+  });
+
+  assert.equal(created.id, "song-2");
+  assert.deepEqual(calls.rpcs[0], {
+    name: "create_song",
+    params: {
+      p_title: "New Song",
+      p_youtube_url: "",
+      p_authors: "Composer",
+      p_copyright_owner: "",
+      p_copyright_year: "",
+      p_source: "",
+      p_lyrics: null,
+      p_suggestion_parts: [],
+    },
+  });
+});
+
+test("Supabase repertoire mutation failures reach the caller", async () => {
+  const { supabase } = supabaseFixture();
+  supabase.rpc = async () => ({ data: null, error: new Error("Editor access required") });
+  const store = storeModule.createSupabaseStore(supabase, { songCatalog });
+
+  await assert.rejects(
+    store.createSong({ title: "New Song" }),
+    /Editor access required/,
+  );
+});

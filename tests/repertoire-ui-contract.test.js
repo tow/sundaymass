@@ -24,7 +24,10 @@ test("the public repertoire is a first-class mobile page linked from the app", (
 
 test("public repertoire loading never requests private lyrics", () => {
   const store = read("src/services/repertoire-store.js");
-  const supabaseStore = store.slice(store.indexOf("async function supabaseStore"));
+  const supabaseStore = store.slice(
+    store.indexOf("function createSupabaseStore"),
+    store.indexOf("async function supabaseStore"),
+  );
   const publicQuery = supabaseStore.slice(
     supabaseStore.indexOf("async browseSongs"),
     supabaseStore.indexOf("async getSong"),
