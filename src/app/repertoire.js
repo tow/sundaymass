@@ -1,3 +1,4 @@
+@@REPERTOIRE_URL_STATE_JS@@
 @@MUSIC_PARTS_JS@@
 @@PWA_CONTROLLER_JS@@
 @@AUTH_CONTROLLER_JS@@
@@ -11,7 +12,8 @@ let isEditor=false;
 let signedIn=false;
 let editingSong=null;
 let repairingIndex=false;
-let repertoireScopeValue="repertoire";
+const initialUrlState=RepertoireUrlState.read(location);
+let repertoireScopeValue=initialUrlState.scope;
 
 const esc=value=>(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const safeYoutube=SongPresentation.safeYoutubeUrl;
@@ -139,6 +141,8 @@ async function loadIndexStatus(){
   }catch{ indexStatus.textContent="Suggestion index not available yet."; }
 }
 
+repertoireSearch.value=initialUrlState.query;
+
 window.repertoireApp={
   connect(value){
     store=value;
@@ -151,11 +155,27 @@ window.repertoireApp={
   fail(error){ console.error(error); repertoireStatus.textContent="Could not connect"; },
 };
 
-repertoireSearch.addEventListener("input",render);
+repertoireSearch.addEventListener("input",()=>{
+  RepertoireUrlState.write(window,{
+    scope:repertoireScopeValue,
+    query:repertoireSearch.value,
+  },{replace:true});
+  render();
+});
 repertoireScope.addEventListener("click",event=>{
   const button=event.target.closest("[data-repertoire-scope]");
   if(!button)return;
   repertoireScopeValue=button.dataset.repertoireScope;
+  RepertoireUrlState.write(window,{
+    scope:repertoireScopeValue,
+    query:repertoireSearch.value,
+  });
+  render();
+});
+window.addEventListener("popstate",()=>{
+  const state=RepertoireUrlState.read(location);
+  repertoireScopeValue=state.scope;
+  repertoireSearch.value=state.query;
   render();
 });
 repertoireList.addEventListener("click",event=>{

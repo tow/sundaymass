@@ -2,6 +2,7 @@
 @@PWA_CONTROLLER_JS@@
 @@LITURGICAL_CALENDAR_JS@@
 @@CALENDAR_NAVIGATION_JS@@
+@@DATE_URL_STATE_JS@@
 @@AUTH_CONTROLLER_JS@@
 @@PLAN_SESSION_CONTROLLER_JS@@
 @@PLANNER_STATE_JS@@
@@ -88,6 +89,10 @@ const modalController=ModalController.create({window,document});
 const openModal=modalController.open;
 modalController.start();
 const calendarNavigation=CalendarNavigation.create(LiturgicalCalendar);
+const initialUrlDate=DateUrlState.read(location);
+const initialUrlSelection=initialUrlDate
+  ? calendarNavigation.selectionFor(initialUrlDate)
+  : null;
 const songForm=SongForm.create({
   title:songTitle,
   youtubeUrl:songYoutube,
@@ -108,7 +113,8 @@ let isEditor = false;
 let signedIn = false;
 
 const plannerState=PlannerState.create({
-  initialSunday:calendarNavigation.upcomingSunday(new Date().toISOString().slice(0,10)),
+  initialSunday:initialUrlSelection?.sunday
+    || calendarNavigation.upcomingSunday(new Date().toISOString().slice(0,10)),
   readingSlots:READING_SLOTS,
   scheduledCelebration:sunday=>lectionary.scheduledCelebration(sunday),
   formatLong:fmtLong,
@@ -375,7 +381,14 @@ AuthController.create({
 }).start();
 
 // pick nearest Sunday to a chosen date
-function goToDate(iso){
+function selectSunday(sunday,{updateUrl=true,replaceUrl=false}={}){
+  plannerState.setSunday(sunday);
+  if(updateUrl) DateUrlState.write(window,sunday.d,{replace:replaceUrl});
+  refresh();
+  subscribeToCurrentPlan();
+}
+
+function goToDate(iso,{updateUrl=true,replaceUrl=false}={}){
   const selection=calendarNavigation.selectionFor(iso);
   if(!selection){
     warn.style.display="block";
@@ -383,9 +396,7 @@ function goToDate(iso){
     return;
   }
   warn.style.display="none";
-  plannerState.setSunday(selection.sunday);
-  refresh();
-  subscribeToCurrentPlan();
+  selectSunday(selection.sunday,{updateUrl,replaceUrl});
 }
 
 const printController=PrintController.create({
@@ -417,26 +428,27 @@ function upcomingSunday(){
   return calendarNavigation.upcomingSunday(new Date().toISOString().slice(0,10));
 }
 prev.addEventListener("click", ()=>{
-  plannerState.setSunday(calendarNavigation.previousSunday(current()));
-  refresh();
-  subscribeToCurrentPlan();
+  selectSunday(calendarNavigation.previousSunday(current()));
 });
 next.addEventListener("click", ()=>{
-  plannerState.setSunday(calendarNavigation.nextSunday(current()));
-  refresh();
-  subscribeToCurrentPlan();
+  selectSunday(calendarNavigation.nextSunday(current()));
 });
 document.getElementById("today").addEventListener("click", ()=>{
-  plannerState.setSunday(upcomingSunday());
-  refresh();
-  subscribeToCurrentPlan();
+  selectSunday(upcomingSunday());
 });
 date.addEventListener("change", ()=>{ if(date.value) goToDate(date.value); else syncDateControl(); });
+window.addEventListener("popstate",()=>{
+  const urlDate=DateUrlState.read(location);
+  goToDate(urlDate || upcomingSunday().d,{updateUrl:false});
+});
 printMusic.addEventListener("click", ()=>printController.print("music"));
 printMusicReadings.addEventListener("click", ()=>printController.print("music-readings"));
 
 refresh();
 renderMusicPlan();
+if(initialUrlDate && initialUrlDate!==current().d){
+  DateUrlState.write(window,current().d,{replace:true});
+}
 
 // iPhone/iPad uses Safari's Share → Add to Home Screen flow.
 PwaController.createInstallController({

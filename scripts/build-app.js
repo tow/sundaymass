@@ -24,6 +24,7 @@ const appValues = {
   "@@PWA_CONTROLLER_JS@@": read("src/app/pwa-controller.js"),
   "@@LITURGICAL_CALENDAR_JS@@": read("src/domain/liturgical-calendar.js"),
   "@@CALENDAR_NAVIGATION_JS@@": read("src/app/calendar-navigation.js"),
+  "@@DATE_URL_STATE_JS@@": read("src/app/date-url-state.js"),
   "@@AUTH_CONTROLLER_JS@@": read("src/app/auth-controller.js"),
   "@@PLAN_SESSION_CONTROLLER_JS@@": read("src/app/plan-session-controller.js"),
   "@@PLANNER_STATE_JS@@": read("src/app/planner-state.js"),
@@ -68,6 +69,11 @@ fs.writeFileSync(path.join(ROOT, "index.html"), html);
 fs.rmSync(path.join(ROOT, "StJames_Mass_Planner.html"), { force: true });
 
 let repertoireScript = read("src/app/repertoire.js").trimEnd();
+repertoireScript = replaceOnce(
+  repertoireScript,
+  "@@REPERTOIRE_URL_STATE_JS@@",
+  read("src/app/repertoire-url-state.js"),
+);
 repertoireScript = replaceOnce(
   repertoireScript,
   "@@MUSIC_PARTS_JS@@",

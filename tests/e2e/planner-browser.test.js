@@ -94,6 +94,44 @@ async function plannerPage(browser, server, viewport) {
   return { context, page };
 }
 
+async function repertoirePage(browser, server, viewport) {
+  const context = await browser.newContext({ viewport, serviceWorkers: "block" });
+  await context.addInitScript(() => {
+    localStorage.setItem("st-james-song-catalog-v1", JSON.stringify([
+      {
+        id: "repertoire-city",
+        title: "City of God",
+        authors: "Dan Schutte",
+        inRepertoire: true,
+      },
+      {
+        id: "library-city",
+        title: "City of Hope",
+        authors: "Guest Composer",
+        inRepertoire: false,
+      },
+      {
+        id: "library-bread",
+        title: "Bread for the World",
+        authors: "Guest Composer",
+        inRepertoire: false,
+      },
+    ]));
+  });
+  const page = await context.newPage();
+  await page.route("**/supabase-config.js", route =>
+    route.fulfill({
+      contentType: "text/javascript",
+      body: "window.MASS_PLANNER_SUPABASE_CONFIG = null;",
+    }),
+  );
+  await page.goto(`${server.origin}/repertoire.html`);
+  await page.waitForFunction(() =>
+    document.querySelector("#repertoireStatus")?.textContent === "Up to date",
+  );
+  return { context, page };
+}
+
 function pdfPageGeometry(pdf) {
   const source = pdf.toString("latin1");
   const boxes = [...source.matchAll(
@@ -440,13 +478,16 @@ test("public reading, navigation, and print workflow excludes private lyrics", a
   const beforeDate = await page.locator("#dateDisplay").textContent();
   await page.locator("#next").click();
   assert.notEqual(await page.locator("#dateDisplay").textContent(), beforeDate);
+  assert.equal(new URL(page.url()).searchParams.get("date"), "2026-08-09");
   await page.locator("#prev").click();
   assert.equal(await page.locator("#dateDisplay").textContent(), beforeDate);
+  assert.equal(new URL(page.url()).searchParams.get("date"), "2026-08-02");
 
   await page.locator("#date").fill("2126-07-27");
   await page.locator("#date").dispatchEvent("change");
   assert.equal(await page.locator("#date").inputValue(), "2126-07-28");
   assert.match(await page.locator("#dateDisplay").textContent(), /28 Jul 2126/);
+  assert.equal(new URL(page.url()).searchParams.get("date"), "2126-07-28");
   await page.locator("#prev").click();
   assert.equal(await page.locator("#date").inputValue(), "2126-07-21");
   await page.locator("#next").click();
@@ -464,6 +505,71 @@ test("public reading, navigation, and print workflow excludes private lyrics", a
   await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
 
   assert.deepEqual(consoleProblems, []);
+  await context.close();
+});
+
+test("the selected Sunday survives a reload and browser history navigation", async () => {
+  const { context, page } = await plannerPage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+
+  const initialDate = await page.locator("#date").inputValue();
+  await page.locator("#next").click();
+  const nextDate = await page.locator("#date").inputValue();
+  assert.notEqual(nextDate, initialDate);
+  assert.equal(new URL(page.url()).searchParams.get("date"), nextDate);
+
+  await page.reload();
+  assert.equal(await page.locator("#date").inputValue(), nextDate);
+
+  await page.goBack();
+  assert.equal(await page.locator("#date").inputValue(), initialDate);
+
+  await page.goForward();
+  assert.equal(await page.locator("#date").inputValue(), nextDate);
+  await context.close();
+});
+
+test("repertoire collection and search state survive reload and browser history", async () => {
+  const { context, page } = await repertoirePage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+
+  await page.locator('[data-repertoire-scope="library"]').click();
+  await page.locator("#repertoireSearch").fill("city");
+  await page.waitForFunction(() =>
+    new URL(location.href).searchParams.get("q") === "city",
+  );
+  assert.equal(
+    new URL(page.url()).search,
+    "?scope=library&q=city",
+  );
+  assert.match(await page.locator("#repertoireList").innerText(), /City of Hope/);
+  assert.doesNotMatch(await page.locator("#repertoireList").innerText(), /Bread for the World/);
+
+  await page.reload();
+  await page.waitForFunction(() =>
+    document.querySelector("#repertoireStatus")?.textContent === "Up to date",
+  );
+  assert.equal(await page.locator("#repertoireSearch").inputValue(), "city");
+  assert.equal(
+    await page.locator('[data-repertoire-scope="library"]').getAttribute("aria-pressed"),
+    "true",
+  );
+  assert.match(await page.locator("#repertoireList").innerText(), /City of Hope/);
+
+  await page.locator('[data-repertoire-scope="repertoire"]').click();
+  assert.match(await page.locator("#repertoireList").innerText(), /City of God/);
+  await page.goBack();
+  assert.equal(
+    await page.locator('[data-repertoire-scope="library"]').getAttribute("aria-pressed"),
+    "true",
+  );
+  assert.match(await page.locator("#repertoireList").innerText(), /City of Hope/);
   await context.close();
 });
 

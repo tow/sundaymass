@@ -101,6 +101,8 @@ appropriate source file:
 - `src/app/planner.js` — UI state, rendering, and event handling
 - `src/app/auth-controller.js` — shared sign-in dialog and sign-out interactions
 - `src/app/calendar-navigation.js` — Sunday/date selection and calendar boundaries
+- `src/app/date-url-state.js` — reloadable and back/forward-aware Sunday URLs
+- `src/app/repertoire-url-state.js` — shareable repertoire collection and search state
 - `src/app/modal-controller.js` — native-dialog page scroll locking and restoration
 - `src/app/pwa-controller.js` — install prompt and service-worker registration behavior
 - `src/app/plan-session-controller.js` — authentication and date-scoped live-plan subscriptions
