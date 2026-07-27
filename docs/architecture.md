@@ -34,7 +34,8 @@ server between the browser and Supabase.
 
 - `index.html` is the single generated planner entry point. It is not a self-contained
   file.
-- `repertoire.html` is the public repertoire browser and editor surface.
+- `repertoire.html` is the public browser and editor surface for both the choir
+  repertoire and the distinct starter library.
 - `about.html` contains help, provenance, and limitations.
 - `vendor/supabase.js` is built locally from the exact pinned npm dependency.
 - `data/generated/` contains deterministic lectionary catalogues used by the planner.
@@ -155,6 +156,9 @@ database rejects an unauthorized direct request.
 The picker has separate Suggested, Search, and Add modes. Suggestions are filtered by
 the slot's soft `suggestion_parts` classification before semantic ranking. Search can
 return every public song, and manual assignment to any Mass slot remains unrestricted.
+The suggestion result is deliberately bounded to two known repertoire songs plus one
+starter-library candidate. Candidate membership affects presentation and ranking, not
+song identity or eligibility.
 
 Creating a song and assigning it use one atomic RPC. Editing updates the canonical song,
 so every Mass referencing its UUID sees the new metadata. Lyrics are loaded only for

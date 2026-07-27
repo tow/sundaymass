@@ -57,6 +57,10 @@ installed to a phone's home screen.
   all be added later. Repertoire search is deliberately limited to alphabetical title
   and author matching. Semantic suggestions are shown separately in the song picker
   and never restrict which song can be chosen.
+- `in_repertoire` distinguishes songs the choir knows from complete candidate records
+  in the starter library. Both are canonical songs and both remain searchable. The
+  semantic result reserves two places for repertoire songs and one for a candidate, so
+  unfamiliar material can be discovered without displacing familiar choices.
 - Editing a canonical song immediately changes every Sunday which references it. This
   is an explicit product decision: the current small data set does not require weekly
   snapshots or immutable history.
@@ -72,7 +76,8 @@ installed to a phone's home screen.
   solely to enforce that database permission boundary; it is not a separate domain
   concept. Without this requirement, the extra table would not be justified.
 - Song and reading embeddings are also private. Suggestions return only public song
-  metadata to authorised editors and always draw from the known repertoire.
+  metadata to authorised editors; they may include one clearly labelled starter-library
+  candidate alongside known repertoire songs.
 
 ## Files to edit
 

@@ -10,8 +10,6 @@ to be decided.
   breaks, punctuation, and line endings.
 - Evaluate the quality of automatic song suggestions with real Sundays and repertoire
   choices; define examples of good and bad recommendations before tuning the ranking.
-- Explore a starter library of common songs that are not yet in the parish repertoire.
-  Keep imported candidates distinct from songs known to be in active use.
 
 ## Authentication
 

@@ -92,11 +92,18 @@ their own membership row.
 | `copyright_owner` | Optional owner or publisher |
 | `copyright_year` | Optional text, not a number; values such as `1975, 2016` are valid |
 | `source` | Optional source or collection |
+| `in_repertoire` | Whether the choir currently knows and uses the song |
 | `suggestion_parts` | Soft allow-list for automatic recommendations |
 | audit fields | Creator and last editor/time |
 
 Only `title` is required. Duplicate titles represent distinct UUID records and are
 disambiguated in editing interfaces with author information.
+
+Songs with `in_repertoire = false` are complete canonical song records in the starter
+library, not drafts or a second entity type. They can be searched and assigned normally,
+but the distinction prevents a candidate from being presented as a song already known
+to the choir. Assigning one to a Mass does not silently promote it into the repertoire;
+an editor changes the membership flag explicitly.
 
 The suggestion array accepts the normal classes `entrance`, `kyrie`, `gloria`, `psalm`,
 `acclamation`, `offertory`, `sanctus`, `memorial`, `amen`, `lordPrayer`, `agnus`,
@@ -177,7 +184,7 @@ like a successful no-op.
 | `clear_reading_override` | Clear one slot or all individual reading overrides |
 | `save_celebration_override` | Save one complete snapshot and clear individual overrides |
 | `clear_celebration_override` | Restore computed celebration and clear individual overrides |
-| `suggest_songs_for_readings` | Rank only songs classified for the requested suggestion part |
+| `suggest_songs_for_readings` | Rank classified songs, reserving two places for repertoire songs and one for a starter-library candidate |
 
 Successful writes are live immediately. There is no draft/publish table or status.
 
