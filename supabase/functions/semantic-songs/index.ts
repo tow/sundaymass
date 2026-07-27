@@ -7,6 +7,17 @@ import {
 } from "./song-content.mjs";
 import { embeddingChunks, parseSemanticRequest } from "./request.mjs";
 
+declare const Supabase: {
+  ai: {
+    Session: new (model: string) => {
+      run: (
+        value: string,
+        options: { mean_pool: boolean; normalize: boolean },
+      ) => Promise<number[]>;
+    };
+  };
+};
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
@@ -77,7 +88,8 @@ Deno.serve(async request => {
   const command = parseSemanticRequest(body);
 
   if (command.action === "suggest") {
-    const { citations, part } = command;
+    const citations = command.citations || [];
+    const part = command.part || "";
     if (!citations.length || !part) return json({ songs: [] });
     const { data, error } = await userClient.rpc("suggest_songs_for_readings", {
       p_citations: citations,
@@ -109,7 +121,7 @@ Deno.serve(async request => {
   }
 
   if (command.action === "sync-songs") {
-    const { songIds } = command;
+    const songIds = command.songIds || [];
     if (!songIds.length) return json({ processed: 0, skipped: 0 });
     const { data: songs, error } = await admin
       .from("songs")

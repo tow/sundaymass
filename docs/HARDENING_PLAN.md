@@ -508,3 +508,7 @@ Acceptance:
   directly-tested `planner-state.js`. It owns atomic celebration replacement, reading
   precedence, duplicate canonical-song updates, and reset/apply transitions while the
   planner entry point remains responsible for feature composition.
+- 2026-07-27: The deployment gate now syntax-checks all tracked JavaScript and
+  type-checks the Supabase Edge Function with an npm-pinned Deno runtime and locked
+  dependency graph. Enabling the check exposed and fixed loose request-union handling
+  plus the platform AI runtime's missing ambient type declaration.

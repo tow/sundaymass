@@ -7,9 +7,10 @@ npm ci
 npm run check
 ```
 
-`check` runs the Node behavior suite, the headless system-Chrome suite, and a clean
-deterministic rebuild. `.github/workflows/verify.yml` runs it for pull requests and
-pushes to `main`.
+`check` first syntax-checks the JavaScript sources and type-checks the Supabase Edge
+Function with the npm-pinned Deno runtime. It then runs the Node behavior suite, the
+headless system-Chrome suite, and a clean deterministic rebuild.
+`.github/workflows/verify.yml` runs it for pull requests and pushes to `main`.
 
 For a `main` push, the Pages build waits for both `check` and the migrated-Supabase
 integration job. Only then does it stage the explicit public files and publish through
@@ -39,6 +40,10 @@ GitHub's Pages Actions deployment. A failed verification job cannot deploy.
   authorization, RLS, RPC, privacy, and semantic-suggestion contract. Run it separately
   because it requires Docker and the pinned Supabase CLI.
 - `npm run test:coverage` runs the Node suite with Node's built-in coverage report.
+- `npm run lint` syntax-checks tracked JavaScript modules. Build-tokenized entry points
+  are syntax-checked after assembly by the build-contract tests.
+- `npm run check:edge` type-checks the deployed Edge Function and resolves its locked
+  Deno/JSR dependency graph without invoking the function.
 - `npm run verify:generated` rebuilds the ignored deployable files and fails if the same
   source inputs produce different bytes on a second build.
 

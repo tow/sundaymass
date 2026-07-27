@@ -30,6 +30,7 @@ service-role key, lyric export, or backup in the repository.
 ## Required tools
 
 - Node 22.20.x and npm 10.9.x, as pinned by `.node-version` and `package.json`
+- Deno 2.8.1, installed locally by `npm ci` from the pinned development dependency
 - Google Chrome or Chromium for the browser gate
 - Git and GitHub credentials for frontend deployment
 - Docker-compatible runtime for local Supabase integration tests
