@@ -23,7 +23,10 @@ GitHub's Pages Actions deployment. A failed verification job cannot deploy.
 - `npm run test:e2e` serves the repository on an ephemeral localhost port and controls
   installed Chrome through pinned `playwright-core`. It does not download or bundle a
   second browser. The suite currently checks 320 px, 390 px, and desktop overflow plus
-  the public reading-anchor, Sunday-navigation, print, and lyric-privacy workflow.
+  the public reading-anchor, Sunday-navigation, print, and lyric-privacy workflow. Its
+  editor flow also covers the mobile song picker's page-scroll lock and restoration,
+  bounded suggestions, explicit search mode, duplicate-title disambiguation, private
+  lyric exclusion, and keyboard activation of the selected song.
 - `npm run test:integration` resets a local Supabase project and tests the migrated
   authorization, RLS, RPC, privacy, and semantic-suggestion contract. Run it separately
   because it requires Docker and the pinned Supabase CLI.

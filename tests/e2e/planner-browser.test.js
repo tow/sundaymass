@@ -200,3 +200,110 @@ test("public reading, navigation, and print workflow excludes private lyrics", a
   assert.deepEqual(consoleProblems, []);
   await context.close();
 });
+
+test("editor song picker preserves the page and supports keyboard selection of duplicate titles", async () => {
+  const { context, page } = await plannerPage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+  await page.evaluate(() => {
+    const duplicateSongs = [
+      {
+        id: "aaaaaaaa-1111-2222-3333-444444444444",
+        title: "Shared title",
+        authors: "First Author",
+        lyrics: "FIRST PRIVATE LYRIC",
+      },
+      {
+        id: "bbbbbbbb-1111-2222-3333-444444444444",
+        title: "Shared title",
+        authors: "Second Author",
+        lyrics: "SECOND PRIVATE LYRIC",
+      },
+    ];
+    window.massPlanApp.connect({
+      subscribeAuth(callback) {
+        callback({ user: { id: "editor" }, isEditor: true });
+        return () => {};
+      },
+      subscribePlan(date, onValue) {
+        onValue({ songs: {}, readingOverrides: {}, celebrationOverride: null });
+        return () => {};
+      },
+      suggestSongs() {
+        return Promise.resolve([
+          { id: "suggested-1", title: "Suggested one", authors: "One" },
+          { id: "suggested-2", title: "Suggested two", authors: "Two" },
+          { id: "suggested-3", title: "Suggested three", authors: "Three" },
+        ]);
+      },
+      searchSongs() {
+        return Promise.resolve(duplicateSongs);
+      },
+      assignSong(date, part, songId) {
+        window.__assignedSong = { date, part, songId };
+        return Promise.resolve();
+      },
+    });
+  });
+
+  const chooseCommunion = page.locator(
+    'button[data-song-action="choose"][data-part="communion"]',
+  );
+  const selectedDate = await page.locator("#date").inputValue();
+  await chooseCommunion.scrollIntoViewIfNeeded();
+  const pageScroll = await page.evaluate(() => window.scrollY);
+  assert.ok(pageScroll > 0);
+  await chooseCommunion.click();
+
+  const picker = page.locator("#songPickerDialog");
+  await assert.doesNotReject(() => picker.waitFor({ state: "visible" }));
+  assert.equal(
+    await page.locator("#songSuggestionResults .song-suggestion").count(),
+    3,
+  );
+  const locked = await page.evaluate(() => ({
+    modalOpen: document.documentElement.classList.contains("modal-open"),
+    pageTop: document.body.style.getPropertyValue("--modal-page-top"),
+    activeId: document.activeElement?.id,
+  }));
+  assert.equal(locked.modalOpen, true);
+  assert.equal(locked.pageTop, `-${pageScroll}px`);
+  assert.notEqual(locked.activeId, "songSearch");
+
+  await page.locator("#songModeSearch").click();
+  await page.locator("#songSearch").fill("Shared title");
+  const results = page.locator("#songResults .song-result");
+  await assert.doesNotReject(() => results.first().waitFor({ state: "visible" }));
+  assert.equal(await results.count(), 2);
+  assert.match(await results.nth(0).innerText(), /First Author/);
+  assert.match(await results.nth(1).innerText(), /Second Author/);
+  assert.equal(await page.getByText("FIRST PRIVATE LYRIC").count(), 0);
+  assert.equal(await page.getByText("SECOND PRIVATE LYRIC").count(), 0);
+
+  await results.nth(1).click();
+  const useSong = page.locator("#useSong");
+  assert.equal(await useSong.isEnabled(), true);
+  await useSong.focus();
+  await page.keyboard.press("Enter");
+  await assert.doesNotReject(() => picker.waitFor({ state: "hidden" }));
+  await page.waitForFunction(() =>
+    !document.documentElement.classList.contains("modal-open"),
+  );
+
+  assert.deepEqual(
+    await page.evaluate(() => window.__assignedSong),
+    {
+      date: selectedDate,
+      part: "communion",
+      songId: "bbbbbbbb-1111-2222-3333-444444444444",
+    },
+  );
+  assert.ok(Math.abs(await page.evaluate(() => window.scrollY) - pageScroll) <= 1);
+  assert.match(
+    await page.locator('.music-edit-row:has([data-part="communion"])').innerText(),
+    /Shared title[\s\S]*Second Author/,
+  );
+  await context.close();
+});

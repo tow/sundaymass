@@ -477,3 +477,7 @@ Acceptance:
   alias was removed, `index.html` is now the sole planner entry point, no binary
   artifacts remain tracked, and the repository explicitly records Datamediate Oy's
   proprietary source-code status.
+- 2026-07-27: Phase 7 browser coverage now exercises the editor's 390 px song-picker
+  workflow end to end: opening at a scrolled position, bounded suggestions, explicit
+  search, duplicate-title author disambiguation, private-lyric exclusion, keyboard
+  assignment, and exact page-scroll restoration.
