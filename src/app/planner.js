@@ -60,8 +60,26 @@ let selectedSong = null;
 let visibleSongs = [];
 let editingSong = null;
 let suggestedSongs = [];
+let modalPageScrollY = null;
 
 function current(){ return CALENDAR[curIdx]; }
+function openModal(dialog){
+  if(modalPageScrollY===null){
+    modalPageScrollY=window.scrollY;
+    document.body.style.setProperty("--modal-page-top","-"+modalPageScrollY+"px");
+    document.documentElement.classList.add("modal-open");
+  }
+  dialog.showModal();
+}
+function restoreModalPageScroll(){
+  if(document.querySelector("dialog[open]") || modalPageScrollY===null) return;
+  const scrollY=modalPageScrollY;
+  modalPageScrollY=null;
+  document.documentElement.classList.remove("modal-open");
+  document.body.style.removeProperty("--modal-page-top");
+  window.scrollTo(0,scrollY);
+}
+document.addEventListener("close",()=>requestAnimationFrame(restoreModalPageScroll),true);
 function baseCelebration(){
   const sunday=current();
   return celebrationOverride || lectionary.scheduledCelebration(sunday);
@@ -252,7 +270,7 @@ function openCelebrationDialog(){
   celebrationDialogContext.textContent="For the Mass on "+fmtLong(current().d);
   renderCelebrationResults();
   renderCelebrationPreview();
-  celebrationDialog.showModal();
+  openModal(celebrationDialog);
   setTimeout(()=>celebrationSearch.focus(),0);
 }
 function suggestedCitations(slot){
@@ -356,7 +374,7 @@ function openReadingDialog(key){
   ordoConfirm.checked=false;
   readingUse.textContent="Use reading";
   validateReadingSelection();
-  readingDialog.showModal();
+  openModal(readingDialog);
   setTimeout(()=>readingCitationInput.focus(),0);
 }
 async function restoreReadingOverride(slotKey){
@@ -549,7 +567,7 @@ async function openSongPicker(partKey){
   songSearch.value="";
   songPickerEmpty.textContent="No matching songs. You can still create a new one above.";
   renderSongResults();
-  songPickerDialog.showModal();
+  openModal(songPickerDialog);
   await Promise.all([searchSongCatalog(),loadSongSuggestions()]);
   setTimeout(()=>songSearch.focus(),0);
 }
@@ -591,7 +609,7 @@ function openSongEditor(song){
   saveSong.textContent=editingSong ? "Save song" : "Create and use song";
   songEditorError.textContent="";
   if(songPickerDialog.open) songPickerDialog.close();
-  songEditorDialog.showModal();
+  openModal(songEditorDialog);
   setTimeout(()=>songTitle.focus(),0);
 }
 function closeSongEditor(){
@@ -720,7 +738,7 @@ authButton.addEventListener("click",async ()=>{
     if(signedIn) await planStore.signOut();
     else{
       loginError.textContent="";
-      loginDialog.showModal();
+      openModal(loginDialog);
       setTimeout(()=>loginEmail.focus(),0);
     }
   }catch(error){
@@ -752,7 +770,7 @@ loginForm.addEventListener("submit",async event=>{
 openLiturgicalEditor.addEventListener("click",()=>{
   if(!isEditor) return;
   renderReadingEditor();
-  liturgicalDialog.showModal();
+  openModal(liturgicalDialog);
 });
 function closeLiturgicalDialog(){ liturgicalDialog.close(); }
 liturgicalDialogClose.addEventListener("click",closeLiturgicalDialog);

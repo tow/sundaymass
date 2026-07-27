@@ -74,3 +74,15 @@ test("legacy free-text music editing and autosave are removed", () => {
   assert.doesNotMatch(store, /save_music_choice/);
   assert.doesNotMatch(store, /\bchoices\b/);
 });
+
+test("mobile dialogs lock and restore the page scroll position", () => {
+  const app = read("src/app/planner.js");
+  const styles = read("src/styles/planner.css");
+
+  assert.match(app, /function openModal\(dialog\)/);
+  assert.match(app, /modalPageScrollY=window\.scrollY/);
+  assert.match(app, /window\.scrollTo\(0,scrollY\)/);
+  assert.doesNotMatch(app.replace(/dialog\.showModal\(\)/, ""), /\.showModal\(\)/);
+  assert.match(styles, /html\.modal-open body\{ position:fixed;/);
+  assert.match(styles, /\.reading-dialog\{[^}]*overscroll-behavior:none;/);
+});

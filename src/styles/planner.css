@@ -4,6 +4,8 @@
   [hidden]{ display:none!important; }
   .sr-only{ position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
   body{ margin:0; font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--canvas); padding:0 22px 40px; }
+  html.modal-open{ overflow:hidden; }
+  html.modal-open body{ position:fixed; top:var(--modal-page-top); left:0; right:0; width:100%; overflow:hidden; }
   .parish-bar{ margin:0 -22px; padding:11px 22px; background:var(--accent); color:#fff; }
   .parish-bar-inner{ min-height:26px; max-width:880px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:20px; font-size:12px; letter-spacing:.15px; }
   .parish-home{ flex:none; color:#fff; text-decoration:none; font-weight:650; white-space:nowrap; }
@@ -70,7 +72,7 @@
   .reading-editor-footer button{ min-height:38px; padding:7px 10px; font-size:12px; }
   .reading-adjusted-note{ margin-left:7px; color:#86510d; font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:9px; font-weight:750; letter-spacing:.25px; text-transform:uppercase; white-space:nowrap; }
   .reading-item.changed{ box-shadow:inset 3px 0 #c79238; }
-  .reading-dialog{ width:min(650px,calc(100% - 28px)); max-height:min(760px,calc(100dvh - 28px)); padding:0; border:1px solid var(--line); border-radius:5px; color:var(--ink); background:#fff; box-shadow:0 18px 55px rgba(0,31,45,.24); }
+  .reading-dialog{ width:min(650px,calc(100% - 28px)); max-height:min(760px,calc(100dvh - 28px)); padding:0; border:1px solid var(--line); border-radius:5px; color:var(--ink); background:#fff; box-shadow:0 18px 55px rgba(0,31,45,.24); overscroll-behavior:none; }
   .reading-dialog::backdrop{ background:rgba(0,31,45,.48); }
   .reading-dialog-form{ display:flex; flex-direction:column; max-height:inherit; }
   .reading-dialog-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; padding:20px 22px 14px; border-bottom:1px solid #eee6d5; }
@@ -218,12 +220,13 @@
   @media (max-width:700px){
     body{ padding:0 12px calc(28px + env(safe-area-inset-bottom)); }
     .parish-bar{ margin:0 -12px; padding:7px 12px; }
-    .parish-bar-inner{ min-height:34px; display:flex; gap:8px; font-size:11px; }
-    .parish-bar-actions{ gap:6px; }
+    .parish-bar-inner{ min-width:0; min-height:34px; display:flex; gap:6px; font-size:11px; }
+    .parish-home,.parish-bar-actions{ min-width:0; }
+    .parish-bar-actions{ gap:4px; }
     .parish-bar-actions > span{ display:none; }
     .bar-desktop,.desktop-title,.nav-desktop{ display:none; }
     .bar-mobile,.mobile-title,.nav-mobile{ display:inline; }
-    .install-app,.auth-button,.help-button{ min-height:34px; padding:5px 7px; font-size:10.5px; line-height:1; }
+    .install-app,.auth-button,.help-button{ min-height:34px; padding:5px 6px; font-size:10.5px; line-height:1; }
     header.app{ padding:14px 4px 11px; }
     header.app h1{ font-size:25px; line-height:1.1; margin:0; }
     header.app p,.church-link{ display:none; }

@@ -11,8 +11,10 @@ test("the public repertoire is a first-class mobile page linked from the app", (
   const about = read("about.html");
   const repertoire = read("src/repertoire.html");
 
-  assert.match(planner, /href="\.\/repertoire\.html"[^>]*>Repertoire</);
-  assert.match(about, /href="\.\/repertoire\.html"[^>]*>Repertoire</);
+  assert.match(planner, /href="\.\/repertoire\.html"/);
+  assert.match(planner, /class="bar-desktop">Repertoire</);
+  assert.match(about, /href="\.\/repertoire\.html"/);
+  assert.match(about, /class="bar-desktop">Repertoire</);
   assert.match(repertoire, /id="repertoireSearch"/);
   assert.match(repertoire, /id="repertoireList"/);
   assert.match(repertoire, /id="repertoireCount"/);
@@ -66,4 +68,19 @@ test("public repertoire attribution is compact and includes the copyright mark",
   assert.doesNotMatch(details, /Authors:/);
   assert.match(details, /`© \$\{copyright\}`/);
   assert.match(details, /public domain/);
+});
+
+test("all mobile headers use compact labels instead of overflowing the viewport", () => {
+  const planner = read("src/planner.html");
+  const repertoire = read("src/repertoire.html");
+  const about = read("about.html");
+  const plannerStyles = read("src/styles/planner.css");
+  const repertoireStyles = read("src/styles/repertoire.css");
+
+  [planner, repertoire, about].forEach(html => {
+    assert.match(html, /class="bar-mobile">St James ↗</);
+  });
+  assert.match(planner, /class="bar-mobile">Songs</);
+  assert.match(plannerStyles, /\.parish-bar-actions\{ gap:4px; \}/);
+  assert.match(repertoireStyles, /\.bar-mobile\{display:none\}/);
 });
