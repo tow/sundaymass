@@ -254,6 +254,7 @@ test("Supabase plan song creation maps validated drafts to the atomic RPC", asyn
       p_source: "",
       p_lyrics: null,
       p_suggestion_parts: [],
+      p_in_repertoire: true,
     },
   });
 });

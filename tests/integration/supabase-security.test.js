@@ -317,7 +317,15 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
           p_suggestion_parts: ["communion"],
         },
       }));
-      songIds.push(entranceId, communionId);
+      const libraryEntranceId = await expectOk(await editor.request("/rest/v1/rpc/create_song", {
+        method: "POST",
+        body: {
+          p_title: `Starter-library entrance ${suffix}`,
+          p_suggestion_parts: ["entrance"],
+          p_in_repertoire: false,
+        },
+      }));
+      songIds.push(entranceId, communionId, libraryEntranceId);
 
       const citation = `Test Reading ${suffix}`;
       readingCitations.push(citation);
@@ -344,6 +352,11 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
             content_hash: `communion-${suffix}`,
             embedding,
           },
+          {
+            song_id: libraryEntranceId,
+            content_hash: `library-entrance-${suffix}`,
+            embedding,
+          },
         ],
       }));
 
@@ -358,7 +371,8 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
           },
         },
       ));
-      assert.deepEqual(suggestions.map(song => song.id), [entranceId]);
+      assert.deepEqual(suggestions.map(song => song.id), [entranceId, libraryEntranceId]);
+      assert.deepEqual(suggestions.map(song => song.in_repertoire), [true, false]);
       assert.equal(Object.hasOwn(suggestions[0], "lyrics"), false);
       assert.equal(Object.hasOwn(suggestions[0], "embedding"), false);
     });

@@ -281,6 +281,7 @@ function createSupabaseStore(
             copyright_owner,
             copyright_year,
             source,
+            in_repertoire,
             suggestion_parts
           )
         )
@@ -304,6 +305,7 @@ function createSupabaseStore(
         p_source: value.value.source,
         p_lyrics: value.value.lyrics || null,
         p_suggestion_parts: value.value.suggestionParts,
+        p_in_repertoire: value.value.inRepertoire !== false,
       },
     };
   };
@@ -413,6 +415,7 @@ function createSupabaseStore(
           copyright_owner,
           copyright_year,
           source,
+          in_repertoire,
           suggestion_parts,
           song_lyrics (lyrics)
         `)
@@ -441,6 +444,7 @@ function createSupabaseStore(
           copyright_owner,
           copyright_year,
           source,
+          in_repertoire,
           suggestion_parts,
           song_lyrics (lyrics)
         `)

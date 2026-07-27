@@ -17,6 +17,7 @@ function harness() {
     copyrightYear: { value: "" },
     source: { value: "" },
     lyrics: { value: "" },
+    inRepertoire: { checked: true },
     suggestionParts: {
       querySelectorAll(selector) {
         assert.equal(selector, 'input[type="checkbox"]');
@@ -36,6 +37,7 @@ test("reading a song form returns every canonical field and checked suggestion p
   Object.assign(elements.copyrightYear, { value: "1975, 2016" });
   Object.assign(elements.source, { value: "A hymnal" });
   Object.assign(elements.lyrics, { value: "Private lyrics" });
+  elements.inRepertoire.checked = false;
   suggestionInputs[0].checked = true;
   suggestionInputs[2].checked = true;
 
@@ -47,6 +49,7 @@ test("reading a song form returns every canonical field and checked suggestion p
     copyrightYear: "1975, 2016",
     source: "A hymnal",
     lyrics: "Private lyrics",
+    inRepertoire: false,
     suggestionParts: ["entrance", "communion"],
   });
 });
@@ -62,12 +65,14 @@ test("writing an existing song populates fields and replaces checkbox state", ()
     copyrightYear: "2026",
     source: "Book",
     lyrics: "Words",
+    inRepertoire: false,
     suggestionParts: ["memorial"],
   });
 
   assert.equal(elements.title.value, "Mass setting");
   assert.equal(elements.copyrightYear.value, "2026");
   assert.equal(elements.lyrics.value, "Words");
+  assert.equal(elements.inRepertoire.checked, false);
   assert.deepEqual(
     suggestionInputs.map(input => input.checked),
     [false, true, false],
@@ -84,6 +89,7 @@ test("writing a new song accepts contextual title and suggestion defaults", () =
   assert.equal(elements.title.value, "Search text");
   assert.equal(elements.youtubeUrl.value, "");
   assert.equal(elements.lyrics.value, "");
+  assert.equal(elements.inRepertoire.checked, true);
   assert.deepEqual(
     suggestionInputs.map(input => input.checked),
     [false, false, true],
@@ -97,4 +103,5 @@ test("missing optional song values become empty form values", () => {
   assert.equal(elements.authors.value, "");
   assert.equal(elements.copyrightOwner.value, "");
   assert.equal(elements.source.value, "");
+  assert.equal(elements.inRepertoire.checked, true);
 });

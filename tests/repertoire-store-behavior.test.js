@@ -28,6 +28,7 @@ const songCatalog = {
         copyrightYear: draft.copyrightYear || "",
         source: draft.source || "",
         lyrics: draft.lyrics || "",
+        inRepertoire: draft.inRepertoire !== false,
         suggestionParts: draft.suggestionParts || [],
       },
     };
@@ -77,6 +78,7 @@ test("local repertoire mutations require an editor and retain canonical songs", 
     copyrightYear: "",
     source: "",
     lyrics: "",
+    inRepertoire: true,
     suggestionParts: ["entrance"],
   });
   assert.equal((await store.browseSongs())[0].id, "song-1");
@@ -96,6 +98,7 @@ function supabaseFixture() {
     copyright_owner: "OCP",
     copyright_year: "1992",
     source: "",
+    in_repertoire: false,
     suggestion_parts: ["entrance"],
   };
   const privateRow = {
@@ -143,6 +146,7 @@ test("Supabase repertoire projections keep public browsing separate from editor 
   const privateSong = await store.getSong("song-1");
 
   assert.equal(publicSong.lyrics, "");
+  assert.equal(publicSong.inRepertoire, false);
   assert.equal(privateSong.lyrics, "Come to the feast");
   assert.doesNotMatch(calls.selects[0].columns, /song_lyrics/);
   assert.match(calls.selects[1].columns, /song_lyrics/);
@@ -155,6 +159,7 @@ test("Supabase repertoire mutations send validated canonical RPC parameters", as
   const created = await store.createSong({
     title: "  New Song  ",
     authors: "Composer",
+    inRepertoire: false,
     suggestionParts: [],
   });
 
@@ -169,6 +174,7 @@ test("Supabase repertoire mutations send validated canonical RPC parameters", as
       p_copyright_year: "",
       p_source: "",
       p_lyrics: null,
+      p_in_repertoire: false,
       p_suggestion_parts: [],
     },
   });

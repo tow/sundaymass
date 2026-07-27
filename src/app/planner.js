@@ -91,6 +91,7 @@ const songForm=SongForm.create({
   copyrightYear:songCopyrightYear,
   source:songSource,
   lyrics:songLyrics,
+  inRepertoire:songInRepertoire,
   suggestionParts:songSuggestionParts,
 });
 function cycleName(c){ return "Year " + c; }

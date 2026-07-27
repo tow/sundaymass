@@ -14,10 +14,14 @@
 <main class="wrap">
   <header>
     <div class="eyebrow">St James 6pm Mass</div>
-    <h1>Choir repertoire</h1>
-    <p>Browse the songs known to the choir. Only authorised editors can change the shared repertoire.</p>
+    <h1>Choir songs</h1>
+    <p>Browse songs known to the choir or explore the starter library. Only authorised editors can change song details.</p>
   </header>
   <section class="toolbar" aria-label="Repertoire tools">
+    <div class="repertoire-scope" id="repertoireScope" role="group" aria-label="Song collection">
+      <button class="selected" type="button" data-repertoire-scope="repertoire" aria-pressed="true">Choir repertoire</button>
+      <button type="button" data-repertoire-scope="library" aria-pressed="false">Starter library</button>
+    </div>
     <label for="repertoireSearch">Search title or author</label>
     <input id="repertoireSearch" type="search" autocomplete="off" placeholder="Search the repertoire">
     <div class="toolbar-meta"><strong id="repertoireCount">0 songs</strong><span id="repertoireStatus">Connecting…</span></div>
@@ -42,6 +46,8 @@
         <div><label for="songCopyrightYear">Copyright year(s)</label><input id="songCopyrightYear" maxlength="200"></div>
         <div><label for="songSource">Source</label><input id="songSource" maxlength="1000"></div>
       </div>
+      <label class="song-membership"><input id="songInRepertoire" type="checkbox" checked> This song is in the choir repertoire</label>
+      <p class="song-membership-help">Uncheck for a starter-library song that may be suggested but is not yet known to the choir.</p>
       <fieldset class="song-suggestion-parts" id="songSuggestionParts">
         <legend>Suggest this song for</legend>
         <p>Select its normal uses, or leave blank to exclude it from suggestions. Manual selection remains unrestricted.</p>

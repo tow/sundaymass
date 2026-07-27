@@ -44,6 +44,7 @@
       copyrightYear: text(draft.copyrightYear),
       source: text(draft.source),
       lyrics: text(draft.lyrics),
+      inRepertoire: draft.inRepertoire !== false,
       suggestionParts: suggestionParts(draft.suggestionParts),
     };
   }

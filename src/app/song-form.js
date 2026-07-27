@@ -16,6 +16,7 @@
         copyrightYear: elements.copyrightYear.value,
         source: elements.source.value,
         lyrics: elements.lyrics.value,
+        inRepertoire: elements.inRepertoire.checked,
         suggestionParts: suggestionInputs()
           .filter(input => input.checked)
           .map(input => input.value),
@@ -34,6 +35,7 @@
       elements.copyrightYear.value = value.copyrightYear || "";
       elements.source.value = value.source || "";
       elements.lyrics.value = value.lyrics || "";
+      elements.inRepertoire.checked = song ? value.inRepertoire !== false : true;
       const selected = new Set(song
         ? value.suggestionParts || []
         : defaultSuggestionParts);

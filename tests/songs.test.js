@@ -28,6 +28,7 @@ test("lyrics and all metadata except title are optional", () => {
     copyrightYear: "",
     source: "",
     lyrics: "",
+    inRepertoire: true,
     suggestionParts: [],
   });
   assert.equal(catalog.hasLyrics(result.value), false);

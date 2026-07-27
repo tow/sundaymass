@@ -11,6 +11,7 @@ let isEditor=false;
 let signedIn=false;
 let editingSong=null;
 let repairingIndex=false;
+let repertoireScopeValue="repertoire";
 
 const esc=value=>(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const safeYoutube=SongPresentation.safeYoutubeUrl;
@@ -23,16 +24,26 @@ const songForm=SongForm.create({
   copyrightYear:songCopyrightYear,
   source:songSource,
   lyrics:songLyrics,
+  inRepertoire:songInRepertoire,
   suggestionParts:songSuggestionParts,
 });
 
 function render(){
   const query=repertoireSearch.value.trim().toLocaleLowerCase();
-  const visible=songs.filter(song=>!query || `${song.title} ${song.authors}`.toLocaleLowerCase().includes(query));
-  repertoireCount.textContent=`${visible.length} ${visible.length===1?"song":"songs"}`;
+  const scoped=songs.filter(song=>repertoireScopeValue==="library"
+    ? song.inRepertoire===false
+    : song.inRepertoire!==false);
+  const visible=scoped.filter(song=>!query || `${song.title} ${song.authors}`.toLocaleLowerCase().includes(query));
+  repertoireCount.textContent=`${visible.length} ${repertoireScopeValue==="library"?"starter-library":"repertoire"} ${visible.length===1?"song":"songs"}`;
+  repertoireScope.querySelectorAll("[data-repertoire-scope]").forEach(button=>{
+    const selected=button.dataset.repertoireScope===repertoireScopeValue;
+    button.classList.toggle("selected",selected);
+    button.setAttribute("aria-pressed",String(selected));
+  });
   repertoireList.innerHTML=visible.map(song=>{
     const link=safeYoutube(song.youtubeUrl);
-    return `<article class="song-card"><div class="song-card-copy"><h2>${esc(song.title)}</h2>`
+    const badge=song.inRepertoire===false?`<span class="song-library-badge">Starter library</span>`:"";
+    return `<article class="song-card"><div class="song-card-copy">${badge}<h2>${esc(song.title)}</h2>`
       +details(song).map(line=>`<p>${esc(line)}</p>`).join("")
       +(link?`<a href="${esc(link)}" target="_blank" rel="noopener">Listen / practise ↗</a>`:"")
       +`</div>${isEditor?`<button type="button" data-edit-song="${song.id}">Edit details</button>`:""}</article>`;
@@ -140,6 +151,12 @@ window.repertoireApp={
 };
 
 repertoireSearch.addEventListener("input",render);
+repertoireScope.addEventListener("click",event=>{
+  const button=event.target.closest("[data-repertoire-scope]");
+  if(!button)return;
+  repertoireScopeValue=button.dataset.repertoireScope;
+  render();
+});
 repertoireList.addEventListener("click",event=>{
   const button=event.target.closest("[data-edit-song]");
   if(button&&isEditor)loadForEditing(button.dataset.editSong);

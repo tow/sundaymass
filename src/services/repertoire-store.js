@@ -6,6 +6,7 @@ const mapSong = row => ({
   copyrightOwner: row.copyright_owner || "",
   copyrightYear: row.copyright_year || "",
   source: row.source || "",
+  inRepertoire: row.in_repertoire !== false,
   suggestionParts: Array.isArray(row.suggestion_parts) ? row.suggestion_parts : [],
   lyrics: Array.isArray(row.song_lyrics)
     ? row.song_lyrics[0]?.lyrics || ""
@@ -25,6 +26,7 @@ const draftParams = (draft, songCatalog = globalThis.window?.SongCatalog) => {
       p_source: result.value.source,
       p_lyrics: result.value.lyrics || null,
       p_suggestion_parts: result.value.suggestionParts,
+      p_in_repertoire: result.value.inRepertoire !== false,
     },
   };
 };
@@ -99,7 +101,7 @@ function createSupabaseStore(
     async browseSongs() {
       const { data, error } = await supabase
         .from("songs")
-        .select("id,title,youtube_url,authors,copyright_owner,copyright_year,source,suggestion_parts")
+        .select("id,title,youtube_url,authors,copyright_owner,copyright_year,source,in_repertoire,suggestion_parts")
         .order("title");
       if (error) throw error;
       return (data || []).map(mapSong);
@@ -107,7 +109,7 @@ function createSupabaseStore(
     async getSong(songId) {
       const { data, error } = await supabase
         .from("songs")
-        .select("id,title,youtube_url,authors,copyright_owner,copyright_year,source,suggestion_parts,song_lyrics(lyrics)")
+        .select("id,title,youtube_url,authors,copyright_owner,copyright_year,source,in_repertoire,suggestion_parts,song_lyrics(lyrics)")
         .eq("id", songId)
         .single();
       if (error) throw error;

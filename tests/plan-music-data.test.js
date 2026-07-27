@@ -14,6 +14,7 @@ test("Supabase song rows become canonical browser song values", () => {
     copyright_owner: "Publisher",
     copyright_year: "1975, 2016",
     source: "Hymnal 12",
+    in_repertoire: false,
     suggestion_parts: ["communion"],
     song_lyrics: { lyrics: "[Verse 1]\nWords" },
   }), {
@@ -24,6 +25,7 @@ test("Supabase song rows become canonical browser song values", () => {
     copyrightOwner: "Publisher",
     copyrightYear: "1975, 2016",
     source: "Hymnal 12",
+    inRepertoire: false,
     lyrics: "[Verse 1]\nWords",
     hasLyrics: true,
     suggestionParts: ["communion"],
@@ -51,6 +53,7 @@ test("public plan rows omit lyrics while retaining current canonical metadata", 
   assert.equal(plan.songs.entrance.title, "Entrance Song");
   assert.equal(plan.songs.entrance.lyrics, "");
   assert.equal(plan.songs.entrance.hasLyrics, false);
+  assert.equal(plan.songs.entrance.inRepertoire, true);
   assert.deepEqual(plan.readingOverrides, {});
   assert.equal(plan.celebrationOverride, null);
 });

@@ -14,6 +14,7 @@
         song.copyrightOwner,
         song.source,
       ].filter(Boolean);
+      if (song.inRepertoire === false) items.push("Starter library");
       if (song.hasLyrics) items.push("Lyrics recorded");
       const title = normalizedTitle(song);
       const sameTitle = songs.filter(value => normalizedTitle(value) === title);
@@ -42,7 +43,10 @@
           return `<button class="song-suggestion${selected ? " selected" : ""}" type="button" `
             + `data-song-suggestion-index="${index}">`
             + `<strong>${escapeHtml(song.title)}</strong>`
-            + `<span>${escapeHtml(song.authors || "Author not recorded")}</span></button>`;
+            + `<span>${escapeHtml([
+              song.authors || "Author not recorded",
+              song.inRepertoire === false ? "Starter library" : "",
+            ].filter(Boolean).join(" · "))}</span></button>`;
         }).join(""),
         hasSuggestions: songs.length > 0,
       });

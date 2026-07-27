@@ -23,6 +23,7 @@
       copyrightOwner: string(source.copyright_owner),
       copyrightYear: string(source.copyright_year),
       source: string(source.source),
+      inRepertoire: source.in_repertoire !== false,
       lyrics,
       hasLyrics: Boolean(lyrics.trim()),
       suggestionParts: Array.isArray(source.suggestion_parts)
