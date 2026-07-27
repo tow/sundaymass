@@ -186,6 +186,20 @@ Print actions construct a dedicated escaped A4 document rather than printing the
 mobile interface. Music-only and music-plus-readings modes share the same renderer.
 The output includes public song attribution but never private lyrics.
 
+### YouTube practice queue
+
+The public planner derives an ephemeral practice queue from the selected plan in
+canonical Mass-slot order. The pure `practice-queue` domain module accepts only
+recognised HTTPS YouTube video URL forms and passes validated 11-character video IDs
+to a privacy-enhanced `youtube-nocookie.com` embed. Invalid or missing links are
+reported and omitted. Repeated assignments remain repeated in the queue because they
+represent distinct points in the Mass.
+
+The queue is created only when the user opens “Practice all”. It has no database row,
+YouTube account, API key, or persistent playlist. Closing the dialog removes the
+iframe source to stop playback. The feature requires internet access even when the
+rest of a previously visited plan is available offline.
+
 ### Offline behavior
 
 The service worker caches the static application shell. The plan store preserves the

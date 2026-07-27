@@ -31,6 +31,8 @@ const appValues = {
   "@@PRINT_CONTROLLER_JS@@": read("src/app/print-controller.js"),
   "@@MUSIC_PARTS_JS@@": read("src/domain/music-parts.js"),
   "@@SONG_PRESENTATION_JS@@": read("src/domain/song-presentation.js"),
+  "@@PRACTICE_QUEUE_JS@@": read("src/domain/practice-queue.js"),
+  "@@PRACTICE_QUEUE_CONTROLLER_JS@@": read("src/app/practice-queue-controller.js"),
   "@@MUSIC_PLAN_VIEW_JS@@": read("src/app/music-plan-view.js"),
   "@@READING_PLAN_VIEW_JS@@": read("src/app/reading-plan-view.js"),
   "@@READING_EDITOR_VIEW_JS@@": read("src/app/reading-editor-view.js"),

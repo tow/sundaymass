@@ -9,6 +9,8 @@
 @@PRINT_CONTROLLER_JS@@
 @@MUSIC_PARTS_JS@@
 @@SONG_PRESENTATION_JS@@
+@@PRACTICE_QUEUE_JS@@
+@@PRACTICE_QUEUE_CONTROLLER_JS@@
 @@MUSIC_PLAN_VIEW_JS@@
 @@READING_PLAN_VIEW_JS@@
 @@READING_EDITOR_VIEW_JS@@
@@ -109,6 +111,22 @@ const plannerState=PlannerState.create({
   formatLong:fmtLong,
   cycleName,
 });
+const practiceQueueController=PracticeQueueController.create({
+  elements:{
+    launch:practiceAll,
+    availability:practiceAllAvailability,
+    dialog:practiceDialog,
+    close:practiceDialogClose,
+    summary:practiceDialogSummary,
+    player:practicePlayer,
+    list:practiceQueueList,
+  },
+  parts:MUSIC_PARTS,
+  getSongs:plannerState.songs,
+  queueBuilder:PracticeQueue,
+  openModal,
+});
+practiceQueueController.start();
 function current(){ return plannerState.current(); }
 function baseCelebration(){ return plannerState.baseCelebration(); }
 function vals(){ return plannerState.values(); }
@@ -120,6 +138,7 @@ function renderMusicPlan(){
   musicIntro.textContent=view.intro;
   musicList.innerHTML=view.html;
   musicList.dataset.mode=view.mode;
+  practiceQueueController.render();
 }
 function computedCitation(slot){ return plannerState.computedCitation(slot); }
 function displayedCitation(slot){ return plannerState.displayedCitation(slot); }

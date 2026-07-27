@@ -172,6 +172,96 @@ test("music header omits redundant mobile copy", async () => {
   await desktop.context.close();
 });
 
+test("public users can open an ordered temporary YouTube practice queue", async () => {
+  const { context, page } = await plannerPage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+  await page.route("https://www.youtube-nocookie.com/**", route => route.abort());
+  await page.evaluate(() => {
+    window.massPlanApp.connect({
+      subscribeAuth(callback) {
+        callback({ user: null, isEditor: false });
+        return () => {};
+      },
+      subscribePlan(date, onValue) {
+        onValue({
+          songs: {
+            entrance: {
+              id: "practice-entrance",
+              title: "Opening Hymn",
+              youtubeUrl: "https://youtu.be/AAAAAAAAAAA",
+            },
+            psalm: {
+              id: "practice-psalm",
+              title: "Psalm without video",
+              youtubeUrl: "",
+            },
+            communion: {
+              id: "practice-communion",
+              title: "Communion Hymn",
+              youtubeUrl: "https://youtube.com/watch?v=BBBBBBBBBBB",
+            },
+            communion2: {
+              id: "practice-communion-repeat",
+              title: "Opening Hymn reprise",
+              youtubeUrl: "https://youtu.be/AAAAAAAAAAA",
+            },
+          },
+          readingOverrides: {},
+          celebrationOverride: null,
+        });
+        return () => {};
+      },
+    });
+  });
+
+  assert.equal(await page.locator("#practiceAll").isEnabled(), true);
+  assert.equal(
+    await page.locator("#practiceAllAvailability").textContent(),
+    "3 of 4 available",
+  );
+  await page.locator("#practiceAll").click();
+
+  const dialog = page.locator("#practiceDialog");
+  await assert.doesNotReject(() => dialog.waitFor({ state: "visible" }));
+  assert.equal(
+    await page.locator("#practiceDialogSummary").textContent(),
+    "3 of 4 selected songs available. 1 will be skipped.",
+  );
+  assert.deepEqual(
+    await page.locator("#practiceQueueList .practice-queue-item").allTextContents(),
+    [
+      "Entrance / Processional HymnOpening Hymn",
+      "Communion Hymn 1Communion Hymn",
+      "Communion Hymn 2Opening Hymn reprise",
+    ],
+  );
+  const source = await page.locator("#practicePlayer").getAttribute("src");
+  const playerUrl = new URL(source);
+  assert.equal(playerUrl.hostname, "www.youtube-nocookie.com");
+  assert.equal(playerUrl.pathname, "/embed/AAAAAAAAAAA");
+  assert.equal(
+    playerUrl.searchParams.get("playlist"),
+    "BBBBBBBBBBB,AAAAAAAAAAA",
+  );
+
+  const layout = await dialog.evaluate(element => ({
+    dialogBottom: element.getBoundingClientRect().bottom,
+    viewportHeight: innerHeight,
+    documentWidth: document.documentElement.scrollWidth,
+    viewportWidth: innerWidth,
+  }));
+  assert.ok(layout.dialogBottom <= layout.viewportHeight);
+  assert.equal(layout.documentWidth, layout.viewportWidth);
+
+  await page.locator("#practiceDialogClose").click();
+  await assert.doesNotReject(() => dialog.waitFor({ state: "hidden" }));
+  assert.equal(await page.locator("#practicePlayer").getAttribute("src"), null);
+  await context.close();
+});
+
 test("mobile reading links reveal unobscured text without orphaning verse numbers", async () => {
   const { context, page } = await plannerPage(
     browser,

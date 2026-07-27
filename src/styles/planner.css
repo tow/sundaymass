@@ -131,6 +131,11 @@
   .music-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:20px 22px 15px; border-bottom:1px solid #eee6d5; }
   .music-head h2{ font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:23px; font-weight:400; line-height:1.2; margin:0; }
   .music-head p{ color:var(--muted); font-size:12.5px; line-height:1.4; margin:4px 0 0; }
+  .music-head-actions{ display:flex; flex:none; flex-direction:column; align-items:flex-end; gap:3px; }
+  .practice-all{ min-height:36px; padding:7px 12px; color:#fff; background:var(--accent); font-size:11.5px; }
+  .practice-all:hover{ background:var(--accent-dark); }
+  .practice-all:disabled{ color:#7f898d; border-color:#cad1d4; background:#edf1f2; }
+  .practice-availability{ color:var(--muted); font-size:10px; white-space:nowrap; }
   .sync-status{ flex:none; color:var(--muted); font-size:11.5px; padding-top:4px; }
   .sync-status[data-state="saved"]{ color:#38704b; }
   .sync-status[data-state="error"]{ color:#9a3b22; }
@@ -213,6 +218,16 @@
   .song-lyrics-section summary{ color:var(--accent); cursor:pointer; font-size:13px; font-weight:750; }
   .song-lyrics-section p{ margin:8px 0 0; color:var(--muted); font-size:11px; line-height:1.4; }
   .editor-help{ padding:10px 22px; color:var(--muted); background:#fcfaf6; border-bottom:1px solid #eee6d5; font-size:11.5px; }
+  .practice-dialog{ width:min(720px,calc(100% - 28px)); }
+  .practice-dialog-body{ display:flex; min-height:0; flex-direction:column; gap:14px; }
+  .practice-player-shell{ flex:none; width:100%; aspect-ratio:16 / 9; overflow:hidden; border-radius:5px; background:#071116; }
+  .practice-player-shell iframe{ display:block; width:100%; height:100%; border:0; }
+  .practice-queue-heading{ color:var(--accent); font-size:11px; font-weight:750; letter-spacing:.4px; text-transform:uppercase; }
+  .practice-queue-list{ display:grid; gap:6px; }
+  .practice-queue-item{ display:grid; width:100%; min-height:0; grid-template-columns:minmax(120px,35%) minmax(0,1fr); gap:10px; align-items:baseline; padding:9px 10px; border-color:#d4cbbb; color:var(--ink); background:#fff; text-align:left; }
+  .practice-queue-item:hover,.practice-queue-item.current{ border-color:var(--accent); background:#f4f7f7; }
+  .practice-queue-position{ color:var(--muted); font-size:10px; font-weight:700; line-height:1.3; text-transform:uppercase; }
+  .practice-queue-item strong{ font-size:13px; line-height:1.3; }
   .auth-button{ flex:none; min-height:0; padding:5px 9px; border-color:rgba(255,255,255,.72); color:#fff; background:transparent; font-size:11px; white-space:nowrap; }
   .auth-button:hover{ background:rgba(255,255,255,.12); }
   .login-dialog{ width:min(420px,calc(100% - 28px)); padding:0; border:1px solid var(--line); border-radius:5px; color:var(--ink); background:#fff; box-shadow:0 18px 55px rgba(0,31,45,.24); }
@@ -295,6 +310,10 @@
     .reading-dialog-form{ height:100%; max-height:none; }
     .song-picker-dialog{ inset:auto 0 8px; width:calc(100% - 16px); height:min(90dvh,760px); max-width:650px; max-height:calc(100dvh - 16px); margin:auto 8px 8px; border:1px solid var(--line); border-radius:12px 12px 5px 5px; }
     .song-picker-dialog .reading-dialog-form{ height:100%; max-height:none; }
+    .practice-dialog{ inset:auto 0 8px; width:calc(100% - 16px); height:min(92dvh,760px); max-width:650px; max-height:calc(100dvh - 16px); margin:auto 8px 8px; border:1px solid var(--line); border-radius:12px 12px 5px 5px; }
+    .practice-dialog .reading-dialog-form{ height:100%; max-height:none; }
+    .practice-dialog-body{ flex:1; overflow:auto; }
+    .practice-queue-item{ grid-template-columns:105px minmax(0,1fr); padding:9px; }
     .reading-dialog-head{ padding:15px 16px 12px; }
     .reading-dialog-head h2{ font-size:22px; }
     .reading-dialog-body{ padding:14px 16px; }
@@ -303,6 +322,9 @@
     .celebration-preview-grid{ grid-template-columns:100px minmax(0,1fr); }
     .music-head{ padding:15px 16px 12px; }
     .music-head h2{ font-size:21px; }
+    .music-head-actions{ gap:2px; }
+    .practice-all{ min-height:36px; padding:6px 10px; font-size:11px; }
+    .practice-availability{ font-size:9.5px; }
     #musicIntro{ display:none; }
     .music-view-row{ grid-template-columns:112px minmax(0,1fr); gap:10px; padding:10px 16px; }
     .music-part-label{ font-size:10px; }

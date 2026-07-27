@@ -65,6 +65,10 @@ installed to a phone's home screen.
   is an explicit product decision: the current small data set does not require weekly
   snapshots or immutable history.
 - There are two separate Communion slots: `communion` and `communion2`.
+- “Practice all” builds an unsaved, public YouTube queue from the selected Sunday in
+  canonical Mass order. It includes every assigned slot with a valid YouTube video
+  link, reports and skips missing links, and does not require a YouTube account, API
+  key, or stored playlist. Reusing one video in two slots intentionally queues it twice.
 - Copyright planning fields are `authors`, `copyrightOwner`, `copyrightYear`, and
   `source`. Source is optional and must not make an otherwise complete entry
   "incomplete". The current completeness rule requires authors, owner/publisher, and
@@ -103,6 +107,7 @@ appropriate source file:
 - `src/service-worker-assets.json` — complete same-origin app shell
 - `src/app/song-form.js` — canonical song editor form read/write mapping
 - `src/app/music-plan-view.js` — lyric-free public/editor music-row rendering
+- `src/app/practice-queue-controller.js` — temporary player dialog lifecycle and queue navigation
 - `src/app/reading-plan-view.js` — selected celebration, linked citations, and full-text rendering
 - `src/app/reading-editor-view.js` — editor celebration and reading-override summary
 - `src/app/song-picker-view.js` — search/suggestion rows and duplicate-title disambiguation
@@ -118,6 +123,7 @@ appropriate source file:
 - `src/domain/reading-selection.js` — role-aware override validation and confirmation policy
 - `src/domain/music-parts.js` — canonical Mass slots, labels, and suggestion normalization
 - `src/domain/song-presentation.js` — safe YouTube links and shared attribution formatting
+- `src/domain/practice-queue.js` — validated YouTube IDs and ordered ephemeral queue URLs
 - `src/domain/songs.js` — song validation and phase-one title search
 - `src/domain/plan-music-data.js` — database-row to browser-plan conversion
 - `src/app/print-controller.js` — print-only A4 document rendering and browser print lifecycle
