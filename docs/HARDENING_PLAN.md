@@ -323,3 +323,6 @@ Acceptance:
   dependency-injected PWA controller. Tests cover Android prompt retention, iOS manual
   instructions, standalone suppression, load-time registration, and local-file
   exclusion.
+- 2026-07-27: Sunday navigation now uses a pure calendar-navigation module. Tests cover
+  exact dates, nearest Sundays, range warnings, invalid input, initial upcoming-Sunday
+  selection, and previous/next boundary clamping.

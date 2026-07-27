@@ -44,6 +44,7 @@ const appValues = {
   // intentionally leaves a blank line between the domain module and embedded data.
   "@@MODAL_CONTROLLER_JS@@": read("src/app/modal-controller.js"),
   "@@PWA_CONTROLLER_JS@@": read("src/app/pwa-controller.js"),
+  "@@CALENDAR_NAVIGATION_JS@@": read("src/app/calendar-navigation.js"),
   "@@MUSIC_PARTS_JS@@": read("src/domain/music-parts.js"),
   "@@SONG_PRESENTATION_JS@@": read("src/domain/song-presentation.js"),
   "@@SONG_CATALOG_JS@@": read("src/domain/songs.js"),

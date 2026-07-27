@@ -1,5 +1,6 @@
 @@MODAL_CONTROLLER_JS@@
 @@PWA_CONTROLLER_JS@@
+@@CALENDAR_NAVIGATION_JS@@
 @@MUSIC_PARTS_JS@@
 @@SONG_PRESENTATION_JS@@
 @@SONG_CATALOG_JS@@
@@ -35,7 +36,7 @@ const editorAttributionLine=SongPresentation.editorPlanAttribution;
 const modalController=ModalController.create({window,document});
 const openModal=modalController.open;
 modalController.start();
-const byDate = {}; CALENDAR.forEach((s,i)=>byDate[s.d]=i);
+const calendarNavigation=CalendarNavigation.create(CALENDAR);
 const cycleName = c => "Year " + c;
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
 function fmtPicker(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}); }
@@ -901,13 +902,18 @@ readingForm.addEventListener("submit",async event=>{
 
 // pick nearest Sunday to a chosen date
 function goToDate(iso){
-  if(byDate[iso]!==undefined){ curIdx=byDate[iso]; warn.style.display="none"; refresh(); subscribeToCurrentPlan(); return; }
-  // find nearest Sunday record
-  let best=-1,bestDiff=1e15; const t=new Date(iso+"T12:00:00Z").getTime();
-  CALENDAR.forEach((s,i)=>{ const diff=Math.abs(new Date(s.d+"T12:00:00Z").getTime()-t); if(diff<bestDiff){bestDiff=diff;best=i;} });
-  if(best<0 || bestDiff>1000*3600*24*366){ warn.style.display="block"; warn.textContent="That date is outside the computed range (2025–2075)."; }
-  else warn.style.display="none";
-  curIdx=best; refresh(); subscribeToCurrentPlan();
+  const selection=calendarNavigation.selectionFor(iso);
+  if(selection.index<0){
+    warn.style.display="block";
+    warn.textContent="Choose a valid date.";
+    return;
+  }
+  if(selection.withinRange) warn.style.display="none";
+  else{
+    warn.style.display="block";
+    warn.textContent="That date is outside the computed range (2025–2075).";
+  }
+  curIdx=selection.index; refresh(); subscribeToCurrentPlan();
 }
 
 // ---- Word (.docx) generation in-browser ----
@@ -925,9 +931,9 @@ const downloadWord=createDocxExporter({
 });
 
 // wire up
-function nextSundayIdx(){ const today=new Date().toISOString().slice(0,10); let i=CALENDAR.findIndex(s=>s.d>=today); return i<0?CALENDAR.length-1:i; }
-prev.addEventListener("click", ()=>{ if(curIdx>0){curIdx--; refresh(); subscribeToCurrentPlan(); } });
-next.addEventListener("click", ()=>{ if(curIdx<CALENDAR.length-1){curIdx++; refresh(); subscribeToCurrentPlan(); } });
+function nextSundayIdx(){ return calendarNavigation.upcomingIndex(new Date().toISOString().slice(0,10)); }
+prev.addEventListener("click", ()=>{ const index=calendarNavigation.previousIndex(curIdx); if(index!==curIdx){curIdx=index; refresh(); subscribeToCurrentPlan();} });
+next.addEventListener("click", ()=>{ const index=calendarNavigation.nextIndex(curIdx); if(index!==curIdx){curIdx=index; refresh(); subscribeToCurrentPlan();} });
 document.getElementById("today").addEventListener("click", ()=>{ curIdx=nextSundayIdx(); refresh(); subscribeToCurrentPlan(); });
 date.addEventListener("change", ()=>{ if(date.value) goToDate(date.value); else syncDateControl(); });
 printMusic.addEventListener("click", ()=>downloadWord(false));
