@@ -18,8 +18,7 @@ test("Mass music parts have one canonical ordered definition", () => {
     "communion2", "recessional",
   ]);
   assert.equal(new Set(musicParts.parts.map(part => part.key)).size, musicParts.parts.length);
-  assert.equal(new Set(musicParts.parts.map(part => part.token)).size, musicParts.parts.length);
-  assert.equal(musicParts.byKey("communion2").token, "COMMUNION_2");
+  assert.equal(musicParts.byKey("communion2").label, "Communion Hymn 2");
 });
 
 test("both Communion slots use the same semantic suggestion class", () => {

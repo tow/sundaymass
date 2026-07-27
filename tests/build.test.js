@@ -29,6 +29,7 @@ test("the generated planner contains no unresolved build tokens", () => {
     "@@CALENDAR_NAVIGATION_JS@@",
     "@@AUTH_CONTROLLER_JS@@",
     "@@SONG_FORM_JS@@",
+    "@@PRINT_CONTROLLER_JS@@",
     "@@MUSIC_PARTS_JS@@",
     "@@SONG_PRESENTATION_JS@@",
     "@@SONG_CATALOG_JS@@",
@@ -38,10 +39,7 @@ test("the generated planner contains no unresolved build tokens", () => {
     "@@SUNDAY_LECTIONARY@@",
     "@@CELEBRATIONS@@",
     "@@COMMONS@@",
-    "@@PARTS@@",
-    "@@PARTS2@@",
     "@@READINGS@@",
-    "@@DOCX_EXPORT_JS@@",
   ].forEach(token => assert.ok(!html.includes(token), `${token} must be resolved by the build`));
 });
 

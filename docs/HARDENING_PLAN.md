@@ -28,7 +28,7 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 | 4. Supabase integration tests | Complete locally | Proven RLS, RPC, privacy, and suggestion behavior |
 | 5. Application modularization | In progress | Small feature controllers and shared definitions |
 | 6. Offline/PWA guarantees | Pending | Reliable cached public viewing and explicit online-only editing |
-| 7. Browser and DOCX coverage | Pending | Automated primary-workflow and artifact tests |
+| 7. Browser and print coverage | In progress | Automated primary-workflow and A4 print tests |
 | 8. Documentation | Pending | Accurate, split developer and operations documentation |
 | 9. Repository cleanup | Pending | Intentional artifacts and generated-output enforcement |
 
@@ -158,13 +158,13 @@ src/app/planner/
 
 Centralize:
 
-- Music-part keys, labels, notes, DOCX tokens, and Communion normalization.
+- Music-part keys, labels, notes, and Communion normalization.
 - Song normalization and row/RPC mapping.
 - Attribution and copyright completeness.
 - Safe YouTube URL handling.
 - Authentication and Supabase client creation.
 
-Generate repeated HTML controls and DOCX rows from the canonical music-part definition.
+Generate repeated HTML controls and print rows from the canonical music-part definition.
 Use a contract test where SQL must repeat the same allow-list.
 
 Acceptance:
@@ -198,7 +198,7 @@ Acceptance:
 - Editing is explicitly unavailable rather than silently local.
 - A service-worker upgrade replaces the previous shell.
 
-## Phase 7 — browser and DOCX coverage
+## Phase 7 — browser and print coverage
 
 Add automated browser tests at 390 × 844, 320 px wide, and desktop width for:
 
@@ -211,9 +211,10 @@ Add automated browser tests at 390 × 844, 320 px wide, and desktop width for:
 - Public/editor visibility and lyric privacy.
 - Keyboard reachability of dialog actions.
 
-Refactor DOCX generation into byte construction plus a separate browser download wrapper.
-Test valid archive output, all music slots, both Communion songs, reading inclusion,
-overrides, XML escaping, attribution warnings, filename, and absence of private lyrics.
+Use a dedicated A4 print-only document rather than printing the mobile interface. Test
+all music slots, both Communion songs, citation and full-reading modes, overrides, HTML
+escaping, attribution warnings, page-break rules, and absence of private lyrics. Verify
+the actual browser print preview at A4 size.
 
 Acceptance:
 
@@ -249,7 +250,7 @@ Acceptance:
 
 ## Phase 9 — repository hygiene
 
-- Remove or relocate accidental generated DOCX files.
+- Remove legacy generated DOCX files and template directories.
 - Put intentional fixtures under `tests/fixtures/`.
 - Decide whether both identical planner HTML outputs remain necessary.
 - Keep generated deployment outputs only when the deployment mechanism requires them.
@@ -333,3 +334,8 @@ Acceptance:
 - 2026-07-27: Planner and repertoire song editors now share one tested form mapper for
   canonical metadata, private lyrics, and suggestion positions. Context-specific new
   song title and Mass-position defaults remain explicit caller options.
+- 2026-07-27: DOCX generation was replaced with a dependency-free, print-only A4
+  document that supports physical printing and the browser's Save as PDF action.
+  Music-only and full-reading modes share tested markup; private lyrics are excluded,
+  music rows cannot split, reading headings stay with their text, and browser print
+  lifecycle behavior is covered.

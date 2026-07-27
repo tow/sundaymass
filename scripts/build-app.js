@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-const { normalizeCoreProperties } = require("./docx-metadata.js");
 
 const ROOT = path.resolve(__dirname, "..");
 const GENERATED_DATA = path.join("data", "generated");
@@ -18,27 +17,6 @@ function replaceOnce(source, token, value) {
   return source.replace(token, () => value);
 }
 
-function filesBelow(directory) {
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
-    const resolved = path.join(directory, entry.name);
-    return entry.isDirectory() ? filesBelow(resolved) : [resolved];
-  });
-}
-
-function embeddedTemplateParts(relativeDirectory) {
-  const directory = path.join(ROOT, relativeDirectory);
-  const parts = {};
-  filesBelow(directory).forEach(file => {
-    const relativePath = path.relative(directory, file);
-    const source = fs.readFileSync(file);
-    const deterministic = relativePath === path.join("docProps", "core.xml")
-      ? Buffer.from(normalizeCoreProperties(source.toString("utf8")))
-      : source;
-    parts[relativePath] = deterministic.toString("base64");
-  });
-  return JSON.stringify(parts);
-}
-
 const appValues = {
   // Keep the source file's trailing newline: the historical single-file build
   // intentionally leaves a blank line between the domain module and embedded data.
@@ -47,6 +25,7 @@ const appValues = {
   "@@CALENDAR_NAVIGATION_JS@@": read("src/app/calendar-navigation.js"),
   "@@AUTH_CONTROLLER_JS@@": read("src/app/auth-controller.js"),
   "@@SONG_FORM_JS@@": read("src/app/song-form.js"),
+  "@@PRINT_CONTROLLER_JS@@": read("src/app/print-controller.js"),
   "@@MUSIC_PARTS_JS@@": read("src/domain/music-parts.js"),
   "@@SONG_PRESENTATION_JS@@": read("src/domain/song-presentation.js"),
   "@@SONG_CATALOG_JS@@": read("src/domain/songs.js"),
@@ -56,10 +35,7 @@ const appValues = {
   "@@SUNDAY_LECTIONARY@@": read(path.join(GENERATED_DATA, "sunday-lectionary.json")),
   "@@CELEBRATIONS@@": read(path.join(GENERATED_DATA, "celebrations.json")),
   "@@COMMONS@@": read(path.join(GENERATED_DATA, "commons.json")),
-  "@@PARTS@@": embeddedTemplateParts("tpl"),
-  "@@PARTS2@@": embeddedTemplateParts("tpl2"),
   "@@READINGS@@": read(path.join(GENERATED_DATA, "readings_text.json")),
-  "@@DOCX_EXPORT_JS@@": read("src/export/docx.js").trimEnd(),
 };
 
 let appScript = read("src/app/planner.js").trimEnd();

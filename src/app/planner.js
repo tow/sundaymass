@@ -3,6 +3,7 @@
 @@CALENDAR_NAVIGATION_JS@@
 @@AUTH_CONTROLLER_JS@@
 @@SONG_FORM_JS@@
+@@PRINT_CONTROLLER_JS@@
 @@MUSIC_PARTS_JS@@
 @@SONG_PRESENTATION_JS@@
 @@SONG_CATALOG_JS@@
@@ -12,8 +13,6 @@ const CALENDAR = @@CALENDAR@@;
 const SUNDAY_LECTIONARY = @@SUNDAY_LECTIONARY@@;
 const CELEBRATIONS = @@CELEBRATIONS@@;
 const COMMONS = @@COMMONS@@;
-const PARTS = @@PARTS@@;
-const PARTS2 = @@PARTS2@@;
 const READINGS = @@READINGS@@;
 const MUSIC_PARTS=MassMusicParts.parts;
 const lectionary=LectionaryCatalog.create({
@@ -890,19 +889,29 @@ function goToDate(iso){
   curIdx=selection.index; refresh(); subscribeToCurrentPlan();
 }
 
-// ---- Word (.docx) generation in-browser ----
-@@DOCX_EXPORT_JS@@
-const downloadWord=createDocxExporter({
-  templates:PARTS,
-  templatesWithReadings:PARTS2,
-  readings:READINGS,
-  musicParts:MUSIC_PARTS,
-  values:vals,
-  choiceFor,
-  attributionLine,
-  copyrightComplete,
-  escapeXml:esc,
+const printController=PrintController.create({
+  window,
+  root:printSheet,
+  render:mode=>{
+    const value=vals();
+    return PrintController.renderSheet({
+      mode,
+      celebration:value.day,
+      meta:value.meta,
+      musicParts:MUSIC_PARTS,
+      readings:[
+        {key:"first",label:"First Reading",citation:value.first,text:textFor(value.first)},
+        {key:"psalm",label:"Responsorial Psalm",citation:value.psalm,text:textFor(value.psalm)},
+        {key:"second",label:"Second Reading",citation:value.second,text:textFor(value.second)},
+        {key:"gospel",label:"Gospel",citation:value.gospel,text:textFor(value.gospel)},
+      ],
+      choiceFor,
+      attributionLine,
+      copyrightComplete,
+    });
+  },
 });
+printController.start();
 
 // wire up
 function nextSundayIdx(){ return calendarNavigation.upcomingIndex(new Date().toISOString().slice(0,10)); }
@@ -910,8 +919,8 @@ prev.addEventListener("click", ()=>{ const index=calendarNavigation.previousInde
 next.addEventListener("click", ()=>{ const index=calendarNavigation.nextIndex(curIdx); if(index!==curIdx){curIdx=index; refresh(); subscribeToCurrentPlan();} });
 document.getElementById("today").addEventListener("click", ()=>{ curIdx=nextSundayIdx(); refresh(); subscribeToCurrentPlan(); });
 date.addEventListener("change", ()=>{ if(date.value) goToDate(date.value); else syncDateControl(); });
-printMusic.addEventListener("click", ()=>downloadWord(false));
-printMusicReadings.addEventListener("click", ()=>downloadWord(true));
+printMusic.addEventListener("click", ()=>printController.print("music"));
+printMusicReadings.addEventListener("click", ()=>printController.print("music-readings"));
 
 curIdx=nextSundayIdx(); refresh(); renderMusicPlan();
 

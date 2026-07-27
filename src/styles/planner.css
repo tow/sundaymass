@@ -228,6 +228,7 @@
   .rtext{ font-size:13.5px; line-height:1.5; text-align:justify; }
   .rpcaveat{ font-size:11px; font-style:italic; color:var(--muted); margin-top:14px; }
   @media (display-mode:standalone){ .install-app{ display:none !important; } }
+  .print-sheet{ display:none; }
   @media (max-width:700px){
     body{ padding:0 12px calc(28px + env(safe-area-inset-bottom)); }
     .parish-bar{ margin:0 -12px; padding:7px 12px; }
@@ -314,4 +315,40 @@
     .sync-status{ font-size:10.5px; }
     .login-form{ padding:20px; }
     .login-actions{ display:grid; grid-template-columns:1fr 1fr; }
+  }
+  @media print{
+    @page{ size:A4; margin:12mm 14mm; }
+    html,body{ width:auto; min-width:0; margin:0!important; padding:0!important; color:#111; background:#fff; font-family:Arial,Helvetica,sans-serif; font-size:9pt; line-height:1.25; }
+    body > :not(#printSheet){ display:none!important; }
+    #printSheet{ display:block!important; width:auto; margin:0; padding:0; color:#111; background:#fff; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+    .print-plan-page{ display:block; }
+    .print-plan-header{ margin:0 0 3mm; padding:0 0 2.5mm; border-bottom:1.2pt solid #002f45; text-align:center; }
+    .print-plan-header>div{ color:#002f45; font-size:15pt; font-weight:700; }
+    .print-plan-header>span{ display:block; margin-top:.7mm; color:#555; font-size:9pt; text-transform:uppercase; letter-spacing:.5pt; }
+    .print-plan-header h1{ margin:2mm 0 .5mm; color:#111; font-family:Georgia,"Times New Roman",serif; font-size:14pt; line-height:1.15; }
+    .print-plan-header p{ margin:0; color:#555; font-size:8.5pt; }
+    .print-reading-summary,.print-music-plan,.print-notes{ margin:0 0 3mm; }
+    .print-reading-summary h2,.print-music-plan h2{ margin:0; padding:1.1mm 2mm; color:#002f45; background:#f0e5c8; font-size:8.5pt; letter-spacing:.35pt; text-transform:uppercase; }
+    .print-reading-summary-row{ display:grid; grid-template-columns:34% 66%; border:solid #aaa08d; border-width:0 .5pt .5pt; break-inside:avoid; }
+    .print-reading-summary-row>*{ padding:1.1mm 2mm; }
+    .print-reading-summary-row strong{ color:#002f45; border-right:.5pt solid #aaa08d; font-size:8.3pt; }
+    .print-music-row{ display:grid; grid-template-columns:36% 64%; min-height:8mm; border:solid #aaa08d; border-width:0 .5pt .5pt; break-inside:avoid; page-break-inside:avoid; }
+    .print-music-label,.print-music-choice{ display:flex; flex-direction:column; justify-content:center; padding:1.1mm 2mm; }
+    .print-music-label{ color:#002f45; background:#f7f0df; border-right:.5pt solid #aaa08d; font-size:8.3pt; font-weight:700; text-transform:uppercase; }
+    .print-music-label small,.print-music-choice small{ display:block; margin-top:.4mm; color:#666; font-size:7pt; font-weight:400; line-height:1.2; text-transform:none; }
+    .print-music-choice strong{ font-size:9pt; }
+    .print-notes{ border:.5pt solid #aaa08d; break-inside:avoid; }
+    .print-notes strong{ display:block; padding:1.1mm 2mm; color:#002f45; background:#f0e5c8; font-size:8.5pt; text-transform:uppercase; }
+    .print-notes div{ height:11mm; }
+    .print-plan-page footer{ margin-top:2mm; color:#777; font-size:7pt; text-align:center; }
+    .print-reading-pages{ break-before:page; page-break-before:always; }
+    .print-reading-pages>header{ margin:0 0 5mm; padding-bottom:2.5mm; border-bottom:1pt solid #002f45; text-align:center; }
+    .print-reading-pages>header>div{ color:#002f45; font-size:12pt; font-weight:700; }
+    .print-reading-pages h2{ margin:1.5mm 0 .5mm; font-family:Georgia,"Times New Roman",serif; font-size:17pt; }
+    .print-reading-pages header p{ margin:0; color:#555; font-size:8.5pt; }
+    .print-reading-block{ margin:0 0 5mm; }
+    .print-reading-block h3{ margin:0 0 1.3mm; color:#002f45; font-size:10pt; break-after:avoid; page-break-after:avoid; }
+    .print-reading-block h3 span{ margin-left:1.5mm; color:#555; font-size:9pt; font-style:italic; font-weight:400; }
+    .print-reading-block p{ margin:0; font-family:Georgia,"Times New Roman",serif; font-size:9.5pt; line-height:1.42; text-align:justify; orphans:3; widows:3; }
+    .print-scripture-note{ margin-top:6mm; color:#666; font-size:7.5pt; font-style:italic; break-inside:avoid; }
   }
