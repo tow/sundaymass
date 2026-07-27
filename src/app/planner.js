@@ -12,6 +12,7 @@
 @@SONG_PICKER_VIEW_JS@@
 @@SONG_PICKER_CONTROLLER_JS@@
 @@CELEBRATION_PICKER_VIEW_JS@@
+@@CELEBRATION_CONTROLLER_JS@@
 @@SONG_CATALOG_JS@@
 @@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
@@ -93,7 +94,6 @@ let isEditor = false;
 let signedIn = false;
 let editingReadingSlot = null;
 let pendingReadingSelection = null;
-let pendingCelebration = null;
 let editingSong = null;
 let songPickerState = {
   open:false,
@@ -103,6 +103,14 @@ let songPickerState = {
   searchStatus:"idle",
   suggestions:[],
   suggestionStatus:"idle",
+};
+let celebrationPickerState = {
+  open:false,
+  query:"",
+  selectedCelebration:null,
+  results:{heading:"",candidates:[],html:""},
+  preview:{hidden:true,useDisabled:true,html:""},
+  saving:false,
 };
 
 function current(){ return CALENDAR[curIdx]; }
@@ -164,31 +172,51 @@ function renderReadingEditor(){
   }).join("");
   readingEditorFooter.hidden=changed.length===0;
 }
-let visibleCelebrationCandidates=[];
+const celebrationController=CelebrationController.create({
+  getStore:()=>planStore,
+  isEditor:()=>isEditor,
+  getDate:()=>current().d,
+  getCurrentSunday:current,
+  getCandidates:()=>lectionary.availableCelebrations(current()),
+  pickerView:celebrationPickerView,
+  confirmRestore:message=>confirm(message),
+  onChange:state=>{
+    celebrationPickerState=state;
+    renderCelebrationResults();
+    renderCelebrationPreview();
+    if(!state.open && celebrationDialog.open) celebrationDialog.close();
+  },
+  onStatus:setReadingStatus,
+  onSaved:payload=>{
+    celebrationOverride=payload;
+    readingOverrides={};
+    refresh();
+  },
+  onRestored:()=>{
+    celebrationOverride=null;
+    readingOverrides={};
+    refresh();
+  },
+  logger:console,
+});
 function renderCelebrationPreview(){
-  const view=celebrationPickerView.renderPreview(pendingCelebration);
+  const view=celebrationPickerState.preview;
   celebrationPreview.innerHTML=view.html;
   celebrationPreview.hidden=view.hidden;
-  celebrationUse.disabled=view.useDisabled;
+  celebrationUse.disabled=view.useDisabled || celebrationPickerState.saving;
+  celebrationUse.textContent=celebrationPickerState.saving
+    ? "Saving…"
+    : "Use this celebration";
 }
 function renderCelebrationResults(){
-  const view=celebrationPickerView.search({
-    candidates:lectionary.availableCelebrations(current()),
-    currentSunday:current(),
-    query:celebrationSearch.value,
-    selectedId:pendingCelebration?.id || "",
-  });
-  visibleCelebrationCandidates=view.candidates;
+  const view=celebrationPickerState.results;
   celebrationResultsHeading.textContent=view.heading;
   celebrationResults.innerHTML=view.html;
 }
 function openCelebrationDialog(){
-  pendingCelebration=null;
+  if(!celebrationController.open()) return;
   celebrationSearch.value="";
-  celebrationUse.textContent="Use this celebration";
   celebrationDialogContext.textContent="For the Mass on "+fmtLong(current().d);
-  renderCelebrationResults();
-  renderCelebrationPreview();
   openModal(celebrationDialog);
   setTimeout(()=>celebrationSearch.focus(),0);
 }
@@ -593,77 +621,31 @@ liturgicalDialogClose.addEventListener("click",closeLiturgicalDialog);
 liturgicalDialog.addEventListener("click",event=>{ if(event.target===liturgicalDialog) closeLiturgicalDialog(); });
 chooseCelebration.addEventListener("click",openCelebrationDialog);
 celebrationSearch.addEventListener("input",()=>{
-  pendingCelebration=null;
-  renderCelebrationResults();
-  renderCelebrationPreview();
+  celebrationController.search(celebrationSearch.value);
 });
 celebrationResults.addEventListener("click",event=>{
   const button=event.target.closest("button[data-celebration-index]");
   if(!button) return;
-  pendingCelebration=visibleCelebrationCandidates[Number(button.dataset.celebrationIndex)] || null;
-  renderCelebrationResults();
-  renderCelebrationPreview();
+  celebrationController.select(button.dataset.celebrationIndex);
   celebrationPreview.scrollIntoView({block:"nearest"});
 });
 celebrationPreview.addEventListener("change",event=>{
   const select=event.target.closest("select[data-celebration-reading]");
-  if(!select || !pendingCelebration || !isEditor) return;
-  pendingCelebration.readings[select.dataset.celebrationReading]=select.value;
+  if(!select) return;
+  celebrationController.setReading(select.dataset.celebrationReading,select.value);
 });
 function closeCelebrationDialog(){
-  celebrationDialog.close();
-  pendingCelebration=null;
+  celebrationController.close();
 }
 celebrationDialogClose.addEventListener("click",closeCelebrationDialog);
 celebrationCancel.addEventListener("click",closeCelebrationDialog);
 celebrationDialog.addEventListener("click",event=>{ if(event.target===celebrationDialog) closeCelebrationDialog(); });
 celebrationForm.addEventListener("submit",async event=>{
   event.preventDefault();
-  if(!pendingCelebration || !isEditor || !planStore || celebrationUse.disabled) return;
-  const selection=pendingCelebration;
-  const payload={
-    id:selection.id,
-    name:selection.name,
-    sourceDate:selection.sourceDate,
-    rank:selection.rank,
-    season:selection.season,
-    cycle:selection.cycle,
-    lectionary:selection.lectionary || "",
-    source:selection.source || "Standard lectionary",
-    readings:selection.readings,
-    checkedAgainstOrdo:true,
-  };
-  celebrationUse.disabled=true;
-  celebrationUse.textContent="Saving…";
-  setReadingStatus("Saving…","");
-  try{
-    await planStore.saveCelebrationOverride(current().d,payload);
-    celebrationOverride=payload;
-    readingOverrides={};
-    refresh();
-    setReadingStatus("Saved","saved");
-    closeCelebrationDialog();
-  }catch(error){
-    console.error(error);
-    setReadingStatus("Save failed","error");
-    celebrationUse.disabled=false;
-    celebrationUse.textContent="Use this celebration";
-  }
+  await celebrationController.save();
 });
 restoreCelebration.addEventListener("click",async ()=>{
-  if(!isEditor || !planStore) return;
-  if(!confirm("Restore the computed Sunday celebration and all of its readings?")) return;
-  setReadingStatus("Saving…","");
-  try{
-    await planStore.clearCelebrationOverride(current().d);
-    celebrationOverride=null;
-    readingOverrides={};
-    refresh();
-    setReadingStatus("Saved","saved");
-  }catch(error){
-    console.error(error);
-    setReadingStatus("Save failed","error");
-  }
+  await celebrationController.restore();
 });
 readingEditorList.addEventListener("click",event=>{
   const button=event.target.closest("button[data-reading-action]");

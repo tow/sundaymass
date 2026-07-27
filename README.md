@@ -91,6 +91,7 @@ behavior, and export changes in the appropriate source file:
 - `src/app/song-picker-view.js` — search/suggestion rows and duplicate-title disambiguation
 - `src/app/song-picker-controller.js` — picker queries, selection, and stale-response handling
 - `src/app/celebration-picker-view.js` — standard-lectionary search and reading preview
+- `src/app/celebration-controller.js` — celebration selection, resolved snapshots, and restore
 - `src/domain/lectionary.js` — lectionary selection and validation rules
 - `src/domain/reading-selection.js` — role-aware override validation and confirmation policy
 - `src/domain/music-parts.js` — canonical Mass slots, labels, and suggestion normalization

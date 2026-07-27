@@ -396,3 +396,9 @@ Acceptance:
   latest-search-wins behavior, and invalidation of both searches and suggestions when
   the picker closes. At 390×844 Chrome confirms Suggest and Search modes, duplicate
   records, selection state, action enablement, and no horizontal overflow or warnings.
+- 2026-07-27: Standard-lectionary celebration replacement now has a dedicated
+  controller for candidate state, alternative-reading changes, resolved snapshots,
+  saving, and restoration. Tests prove editor-only access, confirmation, immutable
+  catalogue data, complete payloads, individual-override clearing, and recoverable
+  errors. At 390×844 Chrome finds and saves Saint James with its second reading,
+  updates the live Mass, closes the picker, and reports no overflow or warnings.
