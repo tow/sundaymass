@@ -17,13 +17,10 @@ Developer documentation:
 - [Operations and deployment](docs/operations.md)
 - [Testing guide](docs/testing.md)
 - [Current hardening plan](docs/HARDENING_PLAN.md)
+- [Proprietary software notice](LICENSE.md)
 
 This is an independent planning aid, not an official parish or Diocese of Helsinki
 publication. Liturgical details must always be checked against the parish Ordo.
-
-**The build also produces `StJames_Mass_Planner.html`** as an alternate entry point
-identical to `index.html`. It is not a self-contained single-file distribution: deploy
-the same sibling service, vendor, data, configuration, and PWA assets as `index.html`.
 
 For deployment, serve `index.html`, `repertoire.html`, and `about.html` together with
 `supabase-config.js`, both files in `src/services/`, `data/generated/readings_text.json`,
@@ -79,8 +76,8 @@ installed to a phone's home screen.
 
 ## Files to edit
 
-`index.html` and `StJames_Mass_Planner.html` are generated files. Make planner UI,
-behavior, and export changes in the appropriate source file:
+`index.html` is generated. Make planner UI, behavior, and export changes in the
+appropriate source file:
 
 - `src/planner.html` — page structure
 - `src/styles/planner.css` — visual design and responsive layout

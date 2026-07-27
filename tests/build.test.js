@@ -7,8 +7,9 @@ const path = require("path");
 const ROOT = path.resolve(__dirname, "..");
 const read = relativePath => fs.readFileSync(path.join(ROOT, relativePath), "utf8");
 
-test("both generated planner entry points are identical", () => {
-  assert.equal(read("index.html"), read("StJames_Mass_Planner.html"));
+test("the build has one canonical planner entry point", () => {
+  assert.equal(fs.existsSync(path.join(ROOT, "index.html")), true);
+  assert.equal(fs.existsSync(path.join(ROOT, "StJames_Mass_Planner.html")), false);
 });
 
 test("the assembled inline application script parses", () => {

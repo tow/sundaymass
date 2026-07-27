@@ -28,7 +28,6 @@ test("the Pages artifact contains only the explicit deployable surface", () => {
   const { PAGES_FILES } = require("../scripts/stage-pages.js");
   assert.deepEqual(PAGES_FILES, [
     "index.html",
-    "StJames_Mass_Planner.html",
     "repertoire.html",
     "about.html",
     "manifest.webmanifest",

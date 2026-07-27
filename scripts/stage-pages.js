@@ -5,7 +5,6 @@ const ROOT = path.resolve(__dirname, "..");
 const OUTPUT = path.join(ROOT, ".pages-site");
 const PAGES_FILES = Object.freeze([
   "index.html",
-  "StJames_Mass_Planner.html",
   "repertoire.html",
   "about.html",
   "manifest.webmanifest",

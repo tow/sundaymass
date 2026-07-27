@@ -7,7 +7,6 @@ const test = require("node:test");
 const root = path.resolve(__dirname, "..");
 const generatedOutputs = [
   "index.html",
-  "StJames_Mass_Planner.html",
   "repertoire.html",
   "service-worker.js",
   "vendor/supabase.js",
@@ -38,12 +37,17 @@ test("deployable build outputs are generated and ignored rather than versioned",
   const ignore = fs.readFileSync(path.join(root, ".gitignore"), "utf8");
   [
     "/index.html",
-    "/StJames_Mass_Planner.html",
     "/repertoire.html",
     "/service-worker.js",
     "/vendor/",
     "/icons/",
   ].forEach(pattern => assert.match(ignore, new RegExp(`^${pattern.replaceAll("/", "\\/")}$`, "m")));
+});
+
+test("the retired planner alias is neither generated nor silently ignored", () => {
+  assert.equal(fs.existsSync(path.join(root, "StJames_Mass_Planner.html")), false);
+  const ignore = fs.readFileSync(path.join(root, ".gitignore"), "utf8");
+  assert.doesNotMatch(ignore, /^\/StJames_Mass_Planner\.html$/m);
 });
 
 test("reviewed generated lectionary data remains versioned build input", () => {

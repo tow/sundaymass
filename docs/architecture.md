@@ -32,8 +32,8 @@ server between the browser and Supabase.
 
 ## Deployable surfaces
 
-- `index.html` and `StJames_Mass_Planner.html` are identical generated planner entry
-  points. Neither is a self-contained file.
+- `index.html` is the single generated planner entry point. It is not a self-contained
+  file.
 - `repertoire.html` is the public repertoire browser and editor surface.
 - `about.html` contains help, provenance, and limitations.
 - `vendor/supabase.js` is built locally from the exact pinned npm dependency.

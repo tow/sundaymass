@@ -6,7 +6,6 @@ const { spawnSync } = require("child_process");
 const ROOT = path.resolve(__dirname, "..");
 const OUTPUTS = [
   "index.html",
-  "StJames_Mass_Planner.html",
   "repertoire.html",
   "service-worker.js",
   "icons/icon-192.png",

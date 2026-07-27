@@ -59,9 +59,8 @@ let html = read("src/planner.html").trimEnd();
 html = replaceOnce(html, "@@STYLES@@", read("src/styles/planner.css").trimEnd());
 html = replaceOnce(html, "@@APP_SCRIPT@@", appScript);
 
-["StJames_Mass_Planner.html", "index.html"].forEach(output => {
-  fs.writeFileSync(path.join(ROOT, output), html);
-});
+fs.writeFileSync(path.join(ROOT, "index.html"), html);
+fs.rmSync(path.join(ROOT, "StJames_Mass_Planner.html"), { force: true });
 
 let repertoireScript = read("src/app/repertoire.js").trimEnd();
 repertoireScript = replaceOnce(

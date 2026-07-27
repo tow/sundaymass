@@ -5,6 +5,7 @@ const test = require("node:test");
 
 const root = path.resolve(__dirname, "..");
 const requiredDocs = [
+  "LICENSE.md",
   "README.md",
   "docs/architecture.md",
   "docs/data-model.md",
@@ -18,6 +19,13 @@ const requiredDocs = [
   "docs/decisions/004-resolved-celebration-snapshots.md",
   "docs/decisions/005-offline-public-online-editing.md",
 ];
+
+test("the repository states its proprietary source-code status", () => {
+  const notice = fs.readFileSync(path.join(root, "LICENSE.md"), "utf8");
+  assert.match(notice, /Copyright © 2026 Datamediate Oy/);
+  assert.match(notice, /All rights reserved/);
+  assert.match(notice, /does not grant/i);
+});
 
 test("the developer documentation inventory is complete", () => {
   requiredDocs.forEach(relativePath => {

@@ -189,8 +189,8 @@ Work:
 - Disable shared mutations offline with an actionable message.
 - Generate the service-worker cache version from build content.
 - Cache every same-origin asset required for viewing and printing.
-- Decide whether `StJames_Mass_Planner.html` is a genuinely self-contained supported
-  artifact or remove that claim.
+- Remove the redundant `StJames_Mass_Planner.html` alias and keep `index.html` as the
+  sole planner entry point.
 
 Acceptance:
 
@@ -472,3 +472,8 @@ Acceptance:
   its artifact from source. npm test commands build their prerequisites, a second build
   proves byte-for-byte determinism, and a repository policy test keeps those outputs
   ignored while retaining reviewed generated lectionary catalogues.
+- 2026-07-27: Phase 9 completed locally. A fresh clone passed `npm ci` and the full
+  verification suite without committed deployment outputs. The redundant planner URL
+  alias was removed, `index.html` is now the sole planner entry point, no binary
+  artifacts remain tracked, and the repository explicitly records Datamediate Oy's
+  proprietary source-code status.
