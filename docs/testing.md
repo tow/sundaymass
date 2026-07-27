@@ -23,13 +23,15 @@ GitHub's Pages Actions deployment. A failed verification job cannot deploy.
 - `npm run test:e2e` serves the repository on an ephemeral localhost port and controls
   installed Chrome through pinned `playwright-core`. It does not download or bundle a
   second browser. The suite currently checks 320 px, 390 px, and desktop overflow plus
-  the public reading-anchor, Sunday-navigation, print, and lyric-privacy workflow. Its
-  editor flow also covers the mobile song picker's page-scroll lock and restoration,
-  bounded suggestions, explicit search mode, duplicate-title disambiguation, private
-  lyric exclusion, and keyboard activation of the selected song. Chrome also renders
-  both print modes to real PDF buffers; the suite verifies A4 media boxes, separate
-  reading pages, every music slot including both Communion songs, HTML escaping,
-  attribution warnings, and lyric exclusion.
+  the public reading-anchor, Sunday-navigation, print, and lyric-privacy workflow. At
+  320 px it also measures the linked reading target, confirms every visible verse
+  marker remains on the same rendered line as the following word, and checks visible
+  `[...]` elisions. Its editor flow covers the mobile song picker's page-scroll lock and
+  restoration, bounded suggestions, explicit search mode, duplicate-title
+  disambiguation, private lyric exclusion, and keyboard activation of the selected
+  song. Chrome also renders both print modes to real PDF buffers; the suite verifies A4
+  media boxes, separate reading pages, every music slot including both Communion songs,
+  HTML escaping, attribution warnings, and lyric exclusion.
 - `npm run test:integration` resets a local Supabase project and tests the migrated
   authorization, RLS, RPC, privacy, and semantic-suggestion contract. Run it separately
   because it requires Docker and the pinned Supabase CLI.

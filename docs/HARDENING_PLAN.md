@@ -486,3 +486,7 @@ Acceptance:
   music slots including both Communion songs, hostile-title escaping, incomplete
   copyright warnings, and absence of lyrics from both the print DOM and generated PDF
   workflow.
+- 2026-07-27: The 320 px browser gate now follows a reading-summary link, proves the
+  target is visible rather than hidden beyond the viewport, measures every superscript
+  verse marker with its following word on one rendered line, and confirms that omitted
+  verse ranges are visibly marked with `[...]`.

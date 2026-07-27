@@ -161,6 +161,55 @@ test("planner has no horizontal overflow at mobile and desktop widths", async ()
   }
 });
 
+test("mobile reading links reveal unobscured text without orphaning verse numbers", async () => {
+  const { context, page } = await plannerPage(
+    browser,
+    server,
+    { width: 320, height: 700 },
+  );
+  const gospelLink = page.locator('#readingSummary a[href="#reading-gospel"]');
+  await gospelLink.click();
+  const targetPosition = await page.locator("#reading-gospel").evaluate(element => ({
+    top: element.getBoundingClientRect().top,
+    viewportHeight: innerHeight,
+  }));
+  assert.ok(targetPosition.top >= 0);
+  assert.ok(targetPosition.top < targetPosition.viewportHeight);
+
+  const readingLayout = await page.evaluate(() => {
+    const superscriptDigits = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+    const markerPattern = new RegExp(`[${superscriptDigits}]+\\u202f\\S`, "gu");
+    let markers = 0;
+    const splitMarkers = [];
+    const texts = [...document.querySelectorAll(".rtext")];
+    texts.forEach((element, readingIndex) => {
+      const node = element.firstChild;
+      if (!node || node.nodeType !== Node.TEXT_NODE) return;
+      for (const match of node.data.matchAll(markerPattern)) {
+        markers += 1;
+        const range = document.createRange();
+        range.setStart(node, match.index);
+        range.setEnd(node, match.index + match[0].length);
+        const lines = new Set(
+          [...range.getClientRects()].map(rect => Math.round(rect.top)),
+        );
+        if (lines.size !== 1) {
+          splitMarkers.push({ readingIndex, marker: match[0], lines: [...lines] });
+        }
+      }
+    });
+    return {
+      markers,
+      splitMarkers,
+      includesElision: texts.some(element => element.textContent.includes("[...]")),
+    };
+  });
+  assert.ok(readingLayout.markers > 0);
+  assert.deepEqual(readingLayout.splitMarkers, []);
+  assert.equal(readingLayout.includesElision, true);
+  await context.close();
+});
+
 test("public reading, navigation, and print workflow excludes private lyrics", async () => {
   const { context, page } = await plannerPage(
     browser,
