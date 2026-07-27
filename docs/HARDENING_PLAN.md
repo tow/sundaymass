@@ -443,3 +443,8 @@ Acceptance:
   migration rules now have a dedicated data-model guide. The README retains the
   product-level Supabase summary and links to that guide instead of duplicating its
   implementation detail.
+- 2026-07-27: Calendar and lectionary documentation now records the generated-data
+  boundary, complete rebuild pipeline, Finland corrections, Proper/Common resolution,
+  Saint James titular solemnity, role-aware override checks, full-text formatting, and
+  extension rules. It also corrects the stale README text-entry count to the 974
+  currently generated entries and replaces the long duplicated README section.
