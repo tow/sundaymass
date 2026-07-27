@@ -4,8 +4,7 @@
 
   function defaultModuleUrl() {
     if (typeof document === "undefined") return "../../vendor/supabase.js";
-    const scriptUrl = document.currentScript?.src || document.baseURI;
-    return new URL("../../vendor/supabase.js", scriptUrl).href;
+    return new URL("./vendor/supabase.js", document.baseURI).href;
   }
 
   async function create(config, {

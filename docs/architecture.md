@@ -47,6 +47,11 @@ Run `npm run build` after changing source or generated-data inputs. Root planner
 the repertoire page, vendor bundle, icons, and service worker are ignored outputs built
 again by tests and deployment. Do not hand-edit them.
 
+Browser asset URLs must resolve from `document.baseURI`, not the origin root. Production
+is a GitHub Pages project site under `/sundaymass/`; a root-relative or over-traversed
+dynamic import can work on localhost while failing only after deployment. The shared
+Supabase bootstrap has an executable subdirectory-hosting regression test.
+
 ## Browser module boundaries
 
 The browser code follows a simple dependency direction:

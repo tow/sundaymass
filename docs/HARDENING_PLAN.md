@@ -521,3 +521,7 @@ Acceptance:
   187 Node tests, seven system-Chrome workflows, locked Edge type-checking, and
   deterministic artifact verification. The local migrated Supabase suite passed all
   eight authorization, lyric-privacy, RPC, override, and semantic-filtering tests.
+- 2026-07-27: The first live smoke test caught a production-only dynamic-import path
+  error in the newly shared Supabase bootstrap: localhost is hosted at `/`, while the
+  Pages project is hosted at `/sundaymass/`. A red-green regression now proves the
+  vendor bundle resolves from the document base on project-subdirectory deployments.

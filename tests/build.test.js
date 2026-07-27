@@ -135,7 +135,6 @@ test("the Supabase browser client is pinned, built locally, and cached for offli
   assert.doesNotMatch(repertoireStore, /vendor\/supabase\.js/);
   assert.match(sharedClient, /vendor\/supabase\.js/);
   assert.match(sharedClient, /document\.baseURI/);
-  assert.match(sharedClient, /document\.currentScript/);
   assert.doesNotMatch(planStore, /document\.baseURI|document\.currentScript/);
   assert.doesNotMatch(repertoireStore, /document\.baseURI|document\.currentScript/);
   assert.match(serviceWorker, /"\.\/vendor\/supabase\.js"/);
