@@ -22,6 +22,7 @@ function harness() {
   const controller = SongPickerController.create({
     getStore: () => store,
     isEditor: () => editor,
+    getPreviousDate: () => "2026-07-26",
     getReadingCitations: () => ["Isaiah 55:1-3", "John 6:24-35"],
     suggestionPartFor: part => part === "communion_2" ? "communion" : part,
     onChange: state => states.push(state),
@@ -65,6 +66,8 @@ test("opening resets picker state and requests three position-filtered suggestio
     open: true,
     partKey: "communion_2",
     selectedSong: null,
+    previousSong: null,
+    previousStatus: "empty",
     searchResults: [],
     searchStatus: "idle",
     suggestions: [
@@ -75,6 +78,28 @@ test("opening resets picker state and requests three position-filtered suggestio
     suggestionStatus: "ready",
   });
   assert.equal(state.states[0].suggestionStatus, "loading");
+});
+
+test("opening loads the matching part from the previous Sunday", async () => {
+  const state = harness();
+  const planCalls = [];
+  const previousSong = { id: "last-week", title: "Last week's Communion" };
+  state.setStore({
+    async getPlan(date) {
+      planCalls.push(date);
+      return { songs: { communion2: previousSong } };
+    },
+    async suggestSongs() {
+      return [];
+    },
+  });
+
+  await state.controller.open("communion2");
+
+  assert.deepEqual(planCalls, ["2026-07-26"]);
+  assert.equal(state.states[0].previousStatus, "loading");
+  assert.deepEqual(state.controller.state().previousSong, previousSong);
+  assert.equal(state.controller.state().previousStatus, "ready");
 });
 
 test("opening is unavailable without editor access or a connected store", async () => {
@@ -113,11 +138,13 @@ test("only the latest catalogue search can replace results", async () => {
   assert.equal(state.controller.state().searchStatus, "ready");
 });
 
-test("closing invalidates late searches and suggestions", async () => {
+test("closing invalidates late searches, suggestions, and previous plans", async () => {
   const state = harness();
   const suggestions = deferred();
   const search = deferred();
+  const previousPlan = deferred();
   state.setStore({
+    getPlan: () => previousPlan.promise,
     suggestSongs: () => suggestions.promise,
     searchSongs: () => search.promise,
   });
@@ -127,12 +154,17 @@ test("closing invalidates late searches and suggestions", async () => {
   state.controller.close();
   suggestions.resolve([{ id: "late-suggestion", title: "Late" }]);
   search.resolve([{ id: "late-search", title: "Late" }]);
+  previousPlan.resolve({
+    songs: { offertory: { id: "late-previous", title: "Late" } },
+  });
   await Promise.all([opening, searching]);
 
   assert.deepEqual(state.controller.state(), {
     open: false,
     partKey: "offertory",
     selectedSong: null,
+    previousSong: null,
+    previousStatus: "idle",
     searchResults: [],
     searchStatus: "idle",
     suggestions: [],

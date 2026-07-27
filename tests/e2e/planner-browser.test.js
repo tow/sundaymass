@@ -402,6 +402,81 @@ test("editor song picker preserves the page and supports keyboard selection of d
   await context.close();
 });
 
+test("editor can reuse the matching song from the previous Sunday in one tap", async () => {
+  const { context, page } = await plannerPage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+  await page.evaluate(() => {
+    window.massPlanApp.connect({
+      subscribeAuth(callback) {
+        callback({ user: { id: "editor" }, isEditor: true });
+        return () => {};
+      },
+      subscribePlan(date, onValue) {
+        onValue({ songs: {}, readingOverrides: {}, celebrationOverride: null });
+        return () => {};
+      },
+      getPlan(date) {
+        window.__previousPlanDate = date;
+        return Promise.resolve({
+          songs: {
+            entrance: {
+              id: "previous-entrance",
+              title: "Last Sunday Entrance",
+              authors: "Previous Composer",
+            },
+          },
+          readingOverrides: {},
+          celebrationOverride: null,
+        });
+      },
+      suggestSongs() {
+        return Promise.resolve([]);
+      },
+      assignSong(date, part, songId) {
+        window.__assignedPreviousSong = { date, part, songId };
+        return Promise.resolve();
+      },
+    });
+  });
+
+  const selectedDate = await page.locator("#date").inputValue();
+  const previousDate = new Date(`${selectedDate}T12:00:00Z`);
+  previousDate.setUTCDate(previousDate.getUTCDate() - 7);
+  await page.locator(
+    'button[data-song-action="choose"][data-part="entrance"]',
+  ).click();
+
+  const previous = page.locator("#previousSong");
+  await assert.doesNotReject(() => previous.waitFor({ state: "visible" }));
+  assert.match(await previous.innerText(), /LAST SUNDAY[\s\S]*Last Sunday Entrance/);
+  assert.match(await previous.innerText(), /Previous Composer/);
+  assert.equal(
+    await page.evaluate(() => window.__previousPlanDate),
+    previousDate.toISOString().slice(0, 10),
+  );
+
+  await page.locator("#usePreviousSong").click();
+  await assert.doesNotReject(() =>
+    page.locator("#songPickerDialog").waitFor({ state: "hidden" }),
+  );
+  assert.deepEqual(
+    await page.evaluate(() => window.__assignedPreviousSong),
+    {
+      date: selectedDate,
+      part: "entrance",
+      songId: "previous-entrance",
+    },
+  );
+  assert.match(
+    await page.locator('.music-edit-row:has([data-part="entrance"])').innerText(),
+    /Last Sunday Entrance/,
+  );
+  await context.close();
+});
+
 test("editor can create a private-lyric song with explicit suggestion positions", async () => {
   const { context, page } = await plannerPage(
     browser,

@@ -13,6 +13,7 @@
     isEditor,
     isOnline,
     getDate,
+    getPreviousDate,
     getReadingCitations,
     getSongs,
     onAssigned,
@@ -30,6 +31,8 @@
       open: false,
       partKey: null,
       selectedSong: null,
+      previousSong: null,
+      previousStatus: "idle",
       searchResults: [],
       searchStatus: "idle",
       suggestions: [],
@@ -39,10 +42,12 @@
     const pickerController = global.SongPickerController.create({
       getStore,
       isEditor,
+      getPreviousDate,
       getReadingCitations,
       suggestionPartFor,
       onChange: state => {
         pickerState = state;
+        renderPreviousSong();
         renderSearchResults();
         renderSuggestions();
       },
@@ -77,6 +82,14 @@
         ? "Could not load songs. Please try again."
         : "No matching songs.";
       elements.use.disabled = view.useDisabled;
+    }
+
+    function renderPreviousSong() {
+      const selection = pickerView.currentSelection(pickerState.previousSong);
+      elements.previous.hidden = pickerState.previousStatus !== "ready"
+        || selection.hidden;
+      elements.previousName.textContent = selection.name;
+      elements.previousAuthor.textContent = selection.author;
     }
 
     function renderSuggestions() {
@@ -123,6 +136,7 @@
       elements.currentActions.hidden = currentSelection.hidden;
       elements.currentName.textContent = currentSelection.name;
       elements.currentAuthor.textContent = currentSelection.author;
+      elements.previous.hidden = true;
       elements.search.value = "";
       elements.empty.textContent = "No matching songs.";
       setMode("suggested");
@@ -216,6 +230,20 @@
           await mutationController.clear(part);
           closePicker();
         } catch (error) {}
+      });
+      elements.usePrevious.addEventListener("click", async () => {
+        const song = pickerState.previousSong;
+        const part = pickerState.partKey;
+        if (!song || !part) return;
+        elements.usePrevious.disabled = true;
+        try {
+          await mutationController.assign(part, song);
+          closePicker();
+        } catch (error) {
+          // Mutation status is reported by the shared controller.
+        } finally {
+          elements.usePrevious.disabled = false;
+        }
       });
       elements.use.addEventListener("click", async () => {
         const selectedSong = pickerState.selectedSong;

@@ -169,6 +169,11 @@
   .song-current-actions small{ display:block; margin-top:2px; color:var(--muted); font-size:11px; line-height:1.3; }
   .song-current-buttons{ display:flex; gap:6px; }
   .song-current-buttons button{ min-height:34px; padding:5px 8px; font-size:10.5px; }
+  .previous-song{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; margin:0 0 12px; padding:11px 12px; border:1px solid #d7e1e4; background:#f7fbfc; }
+  .previous-song span{ display:block; color:var(--accent); font-size:9.5px; font-weight:750; letter-spacing:.35px; text-transform:uppercase; }
+  .previous-song strong{ display:block; margin-top:2px; font-size:14px; line-height:1.3; }
+  .previous-song small{ display:block; margin-top:2px; color:var(--muted); font-size:11px; line-height:1.3; }
+  .previous-song button{ min-height:38px; padding:7px 10px; font-size:11px; }
   .song-results-heading{ margin-bottom:7px; color:var(--muted); font-size:11px; font-weight:750; letter-spacing:.35px; text-transform:uppercase; }
   .song-results{ border:1px solid #e2daca; border-radius:5px; overflow:hidden; }
   .song-result{ display:block; width:100%; min-height:0; padding:11px 12px; border:0; border-bottom:1px solid #eee6d5; border-radius:0; color:var(--ink); background:#fff; text-align:left; }
@@ -310,6 +315,8 @@
     .song-picker-mode{ min-height:36px; padding:6px 5px; font-size:10.5px; }
     .song-current-actions{ grid-template-columns:1fr; gap:8px; }
     .song-current-buttons{ display:grid; grid-template-columns:1fr 1.5fr; }
+    .previous-song{ grid-template-columns:1fr; gap:8px; }
+    .previous-song button{ width:100%; }
     .song-picker-tools{ top:-14px; margin:-14px 0 16px; padding-top:14px; }
     .song-picker-actions{ padding:7px 16px calc(7px + env(safe-area-inset-bottom)); }
     .song-picker-actions button{ min-height:38px; }

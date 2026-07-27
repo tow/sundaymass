@@ -10,6 +10,7 @@ const source = fs.readFileSync(
 
 test("plan stores expose canonical song operations", () => {
   [
+    "getPlan",
     "searchSongs",
     "getSong",
     "assignSong",
@@ -34,4 +35,5 @@ test("Supabase plan loading joins current song metadata without lyric text", () 
   assert.match(source, /p_suggestion_parts/);
   assert.match(source, /async suggestSongs\(citations, part\)/);
   assert.match(source, /action: "suggest", citations, part/);
+  assert.match(source, /async getPlan\(date\)/);
 });

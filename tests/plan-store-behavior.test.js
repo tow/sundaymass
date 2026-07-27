@@ -111,6 +111,16 @@ test("local plan mutations enforce editor access and never publish lyrics", asyn
     suggestionParts: ["entrance"],
   });
   assert.equal(Object.hasOwn(plans.at(-1).songs.entrance, "lyrics"), false);
+  assert.deepEqual((await store.getPlan("2026-08-02")).songs.entrance, {
+    id: "song-1",
+    title: "Gather Us In",
+    youtubeUrl: "",
+    authors: "Marty Haugen",
+    copyrightOwner: "",
+    copyrightYear: "",
+    source: "",
+    suggestionParts: ["entrance"],
+  });
 
   await store.saveReadingOverride("2026-08-02", "first", {
     citation: "Isaiah 1:1",
@@ -126,6 +136,7 @@ test("local plan mutations enforce editor access and never publish lyrics", asyn
   assert.equal(plans.at(-1).celebrationOverride.key, "saint-example");
 
   await store.signOut();
+  await assert.rejects(store.getPlan("2026-08-02"), /Sign in before editing/);
   await assert.rejects(store.clearSong("2026-08-02", "entrance"), /Sign in before editing/);
   assert.deepEqual(authStates.map(state => state.isEditor), [false, true, false]);
 });
@@ -223,6 +234,27 @@ test("Supabase plan subscription drops a late network result after unsubscribe",
 
   assert.deepEqual(values, [{ plan: cachedPlan, status: { offline: true, cached: true } }]);
   assert.deepEqual(calls.removedChannels, [channel]);
+  assert.doesNotMatch(calls.selects[0].columns, /song_lyrics/);
+});
+
+test("Supabase can load a previous plan without subscribing to it", async () => {
+  const previousPlan = {
+    songs: { entrance: { id: "previous", title: "Previous entrance" } },
+    readingOverrides: {},
+    celebrationOverride: null,
+  };
+  const { calls, supabase } = supabaseFixture(Promise.resolve({
+    data: { mappedPlan: previousPlan },
+    error: null,
+  }));
+  const store = storeModule.createSupabaseStore(supabase, {
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+  });
+
+  assert.deepEqual(await store.getPlan("2026-07-26"), previousPlan);
+  assert.equal(calls.selects[0].table, "plans");
   assert.doesNotMatch(calls.selects[0].columns, /song_lyrics/);
 });
 

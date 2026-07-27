@@ -116,6 +116,10 @@ function localStore({
       notifyAuth();
       return () => {};
     },
+    async getPlan(date) {
+      requireEditor();
+      return read(date);
+    },
     async searchSongs(query) {
       requireEditor();
       return songCatalogApi.search(readSongs(), query);
@@ -233,6 +237,7 @@ function unavailableStore({
       onValue({ user: null, isEditor: false });
       return () => {};
     },
+    getPlan: unavailable,
     searchSongs: unavailable,
     suggestSongs: unavailable,
     syncSongEmbedding: unavailable,
@@ -402,6 +407,10 @@ function createSupabaseStore(
         active = false;
         authListener.subscription.unsubscribe();
       };
+    },
+    async getPlan(date) {
+      requireOnline();
+      return loadPlan(date);
     },
     async searchSongs(query) {
       requireOnline();

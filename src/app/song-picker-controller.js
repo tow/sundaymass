@@ -5,6 +5,7 @@
   function create({
     getStore,
     isEditor,
+    getPreviousDate,
     getReadingCitations,
     suggestionPartFor,
     onChange,
@@ -20,6 +21,8 @@
         open: false,
         partKey,
         selectedSong: null,
+        previousSong: null,
+        previousStatus: "idle",
         searchResults: [],
         searchStatus: "idle",
         suggestions: [],
@@ -48,28 +51,52 @@
       if (!isEditor() || !store) return false;
       const requestGeneration = ++generation;
       searchRequest += 1;
+      const previousDate = getPreviousDate?.();
+      const canLoadPrevious = typeof store.getPlan === "function"
+        && Boolean(previousDate);
       value = {
         ...initialState(partKey),
         open: true,
+        previousStatus: canLoadPrevious ? "loading" : "empty",
         suggestionStatus: "loading",
       };
       emit();
 
-      try {
-        const suggestions = await store.suggestSongs(
-          getReadingCitations(),
-          suggestionPartFor(partKey),
-        );
-        if (generation !== requestGeneration || !value.open) return true;
-        value.suggestions = suggestions.slice(0, maxSuggestions);
-        value.suggestionStatus = value.suggestions.length ? "ready" : "empty";
-      } catch (error) {
-        if (generation !== requestGeneration || !value.open) return true;
-        logger.warn("Could not load suggestions", error);
-        value.suggestions = [];
-        value.suggestionStatus = "error";
-      }
-      emit();
+      const loadPrevious = async () => {
+        if (!canLoadPrevious) return;
+        try {
+          const plan = await store.getPlan(previousDate);
+          if (generation !== requestGeneration || !value.open) return;
+          value.previousSong = plan?.songs?.[partKey] || null;
+          value.previousStatus = value.previousSong ? "ready" : "empty";
+        } catch (error) {
+          if (generation !== requestGeneration || !value.open) return;
+          logger.warn("Could not load last Sunday's song", error);
+          value.previousSong = null;
+          value.previousStatus = "error";
+        }
+        emit();
+      };
+
+      const loadSuggestions = async () => {
+        try {
+          const suggestions = await store.suggestSongs(
+            getReadingCitations(),
+            suggestionPartFor(partKey),
+          );
+          if (generation !== requestGeneration || !value.open) return;
+          value.suggestions = suggestions.slice(0, maxSuggestions);
+          value.suggestionStatus = value.suggestions.length ? "ready" : "empty";
+        } catch (error) {
+          if (generation !== requestGeneration || !value.open) return;
+          logger.warn("Could not load suggestions", error);
+          value.suggestions = [];
+          value.suggestionStatus = "error";
+        }
+        emit();
+      };
+
+      await Promise.all([loadPrevious(), loadSuggestions()]);
       return true;
     }
 

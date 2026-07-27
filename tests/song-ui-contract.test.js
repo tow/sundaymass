@@ -14,12 +14,15 @@ test("planner contains a song picker and optional-lyrics editor", () => {
   assert.match(html, /id="songModeSuggested"/);
   assert.match(html, /id="songModeSearch"/);
   assert.match(html, /id="songModeCreate"/);
+  assert.match(html, /id="previousSong" hidden/);
+  assert.match(html, /id="usePreviousSong">Use this song</);
   assert.match(html, /id="songEditorDialog"/);
   assert.match(html, /id="songLyrics"/);
   assert.match(html, /id="songSuggestionParts"/);
   assert.match(html, /Manual selection remains unrestricted/);
   assert.match(html, /Add lyrics now \(optional\)/);
   assert.match(workflow, /defaultSuggestionParts: \[suggestionPartFor\(pickerState\.partKey\)\]/);
+  assert.match(workflow, /mutationController\.assign\(part, song\)/);
 });
 
 test("suggest, search, and create are explicit picker modes", () => {
