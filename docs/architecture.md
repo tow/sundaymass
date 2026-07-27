@@ -43,8 +43,9 @@ server between the browser and Supabase.
 - `supabase/migrations/` and `supabase/functions/semantic-songs/` are the backend
   deployables.
 
-Run `npm run build` after changing source or generated-data inputs. Do not hand-edit a
-generated root planner file or the generated service worker.
+Run `npm run build` after changing source or generated-data inputs. Root planner files,
+the repertoire page, vendor bundle, icons, and service worker are ignored outputs built
+again by tests and deployment. Do not hand-edit them.
 
 ## Browser module boundaries
 

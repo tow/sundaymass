@@ -249,7 +249,8 @@ When adding a national or diocesan Proper:
 5. classify each citation by its actual reading role;
 6. update source/provenance notes;
 7. add a focused red test before the data or rule change; and
-8. run the complete unit and local-Supabase suites before committing generated outputs.
+8. run the complete unit and local-Supabase suites before committing generated
+   catalogue changes.
 
 See [`testing.md`](testing.md) for the lectionary invariant tests and
 [`data-model.md`](data-model.md) for persisted override shapes.

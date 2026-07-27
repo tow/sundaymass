@@ -1,5 +1,11 @@
 node_modules/
 .pages-site/
+/index.html
+/StJames_Mass_Planner.html
+/repertoire.html
+/service-worker.js
+/vendor/
+/icons/
 web.json
 kjva.json
 *.docx

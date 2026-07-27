@@ -28,8 +28,8 @@ GitHub's Pages Actions deployment. A failed verification job cannot deploy.
   authorization, RLS, RPC, privacy, and semantic-suggestion contract. Run it separately
   because it requires Docker and the pinned Supabase CLI.
 - `npm run test:coverage` runs the Node suite with Node's built-in coverage report.
-- `npm run verify:generated` rebuilds the deployable files and fails if tracked output
-  was stale before the rebuild.
+- `npm run verify:generated` rebuilds the ignored deployable files and fails if the same
+  source inputs produce different bytes on a second build.
 
 ## Browser requirements
 

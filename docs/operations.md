@@ -154,8 +154,8 @@ Use this order when a release includes backend and frontend changes:
 9. Check the GitHub Actions run and the live Pages site.
 
 `npm run build` writes the two generated planner entry points, repertoire page, local
-Supabase bundle, icons, and content-addressed service worker. Commit their generated
-changes together with the source. The workflow then runs `npm run stage:pages`, which
+Supabase bundle, icons, and content-addressed service worker. These are ignored build
+outputs, not versioned source. The workflow then runs `npm run stage:pages`, which
 copies only the explicit public surface into the Pages artifact.
 
 Frontend-only release:

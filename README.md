@@ -21,9 +21,9 @@ Developer documentation:
 This is an independent planning aid, not an official parish or Diocese of Helsinki
 publication. Liturgical details must always be checked against the parish Ordo.
 
-**The alternate planner entry point is `StJames_Mass_Planner.html`** (the same planner
-as `index.html`). It is not a self-contained single-file distribution: deploy the
-same sibling service, vendor, data, configuration, and PWA assets as `index.html`.
+**The build also produces `StJames_Mass_Planner.html`** as an alternate entry point
+identical to `index.html`. It is not a self-contained single-file distribution: deploy
+the same sibling service, vendor, data, configuration, and PWA assets as `index.html`.
 
 For deployment, serve `index.html`, `repertoire.html`, and `about.html` together with
 `supabase-config.js`, both files in `src/services/`, `data/generated/readings_text.json`,
@@ -122,8 +122,9 @@ Then run:
 npm run build
 ```
 
-Commit the generated HTML with its source change. Do not hand-edit only one generated
-HTML file: the next build will overwrite it and the standalone version will diverge.
+Generated planner HTML, repertoire HTML, service worker, vendor bundle, and icons are
+ignored build products. Do not hand-edit them: the next build overwrites them, tests
+rebuild them first, and the Pages workflow creates a fresh deployment artifact.
 
 `about.html` and the manifest are maintained directly. `service-worker.js` is generated
 from the source template and asset manifest; do not hand-edit it. The print/PDF layout
@@ -133,12 +134,13 @@ is the final `@media print` block in `src/styles/planner.css`.
 
 - `src/` contains browser application source grouped by responsibility.
 - `scripts/` contains build and data-generation programs.
-- `vendor/` contains checked-in browser bundles generated from pinned npm packages.
+- `vendor/` contains ignored browser bundles generated from pinned npm packages.
 - `data/generated/` contains checked-in derived catalogues embedded by the build.
 - `data/sources/` contains the ignored, downloadable public-domain Bible datasets.
 - `tests/` contains Node tests for domain and data invariants.
-- Root-level HTML, PWA files, Supabase configuration, and icons are deployable outputs
-  for GitHub Pages.
+- Root-level generated HTML, service worker, vendor bundle, and icons are local build
+  outputs. The tracked manifest, Supabase configuration, About page, services, and
+  generated catalogues join them in the explicit GitHub Pages artifact.
 
 ## Live plans
 

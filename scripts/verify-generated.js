@@ -22,20 +22,27 @@ function hashes() {
   }));
 }
 
-const before = hashes();
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
-const result = spawnSync(npm, ["run", "build"], { cwd: ROOT, stdio: "inherit" });
-if (result.status !== 0) process.exit(result.status || 1);
+function build() {
+  const result = spawnSync(npm, ["run", "build"], { cwd: ROOT, stdio: "inherit" });
+  if (result.status !== 0) process.exit(result.status || 1);
+}
 
+if (OUTPUTS.some(relativePath => !fs.existsSync(path.join(ROOT, relativePath)))) {
+  build();
+}
+
+const before = hashes();
+build();
 const after = hashes();
 const changed = OUTPUTS.filter(relativePath => before[relativePath] !== after[relativePath]);
 if (changed.length) {
   console.error(
-    "Generated outputs were stale and have been rebuilt:\n"
+    "Generated outputs are not deterministic:\n"
       + changed.map(relativePath => `- ${relativePath}`).join("\n")
-      + "\nReview the changes, then run npm run check again.",
+      + "\nThe same inputs must produce identical deployment files.",
   );
   process.exit(1);
 }
 
-console.log("Generated outputs are current and deterministic.");
+console.log("Generated deployment outputs are deterministic.");

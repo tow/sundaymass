@@ -86,7 +86,7 @@ Acceptance:
 - Replace runtime CDN dependencies with pinned, locally built assets.
 - Add `test:unit`, `test:integration`, `test:e2e`, `test:coverage`, `lint`, and
   `check` scripts.
-- Make `check` build the app, run tests, and reject dirty generated output.
+- Make `check` build the app, run tests, and reject non-deterministic generated output.
 - Add GitHub Actions verification before GitHub Pages deployment.
 - Type-check the Supabase Edge Function.
 
@@ -94,7 +94,7 @@ Acceptance:
 
 - `npm ci && npm run check` succeeds from a fresh clone.
 - A failing check prevents production deployment.
-- Rebuilding with the same inputs produces the same tracked outputs.
+- Rebuilding with the same inputs produces the same deployment outputs.
 
 ## Phase 3 — executable store and Edge tests
 
@@ -467,3 +467,8 @@ Acceptance:
   DOCX export had already been replaced by the tested A4 print/PDF path; the repository
   now ignores all DOCX files and an executable contract prevents a root DOCX from being
   reintroduced.
+- 2026-07-27: Generated planner/repertoire HTML, the service worker, browser vendor
+  bundle, and icons are no longer versioned now that the gated Pages workflow builds
+  its artifact from source. npm test commands build their prerequisites, a second build
+  proves byte-for-byte determinism, and a repository policy test keeps those outputs
+  ignored while retaining reviewed generated lectionary catalogues.
