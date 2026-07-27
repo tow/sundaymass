@@ -5,6 +5,7 @@
   "./repertoire.html",
   "./manifest.webmanifest",
   "./supabase-config.js",
+  "./src/services/supabase-client.js",
   "./src/services/plan-store.js",
   "./src/services/repertoire-store.js",
   "./vendor/supabase.js",

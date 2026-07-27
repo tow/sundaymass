@@ -10,6 +10,7 @@ const PAGES_FILES = Object.freeze([
   "manifest.webmanifest",
   "service-worker.js",
   "supabase-config.js",
+  "src/services/supabase-client.js",
   "src/services/plan-store.js",
   "src/services/repertoire-store.js",
   "vendor/supabase.js",

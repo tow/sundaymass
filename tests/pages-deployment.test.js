@@ -33,6 +33,7 @@ test("the Pages artifact contains only the explicit deployable surface", () => {
     "manifest.webmanifest",
     "service-worker.js",
     "supabase-config.js",
+    "src/services/supabase-client.js",
     "src/services/plan-store.js",
     "src/services/repertoire-store.js",
     "vendor/supabase.js",

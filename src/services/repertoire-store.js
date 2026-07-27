@@ -1,7 +1,3 @@
-const SUPABASE_MODULE_URL = typeof document === "undefined"
-  ? "../../vendor/supabase.js"
-  : new URL("./vendor/supabase.js", document.baseURI).href;
-
 const mapSong = row => ({
   id: row.id,
   title: row.title || "",
@@ -161,10 +157,9 @@ function createSupabaseStore(
 }
 
 async function supabaseStore(config) {
-  const { createClient } = await import(SUPABASE_MODULE_URL);
-  const supabase = createClient(config.url, config.publishableKey, {
-    auth: { persistSession: true, detectSessionInUrl: true },
-  });
+  const createClient = globalThis.MassPlannerSupabaseClient?.create;
+  if (!createClient) throw new Error("Shared Supabase client bootstrap is unavailable");
+  const supabase = await createClient(config);
   return createSupabaseStore(supabase);
 }
 

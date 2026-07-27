@@ -1,8 +1,4 @@
 // Persistence adapter: Supabase in production, local storage during local development.
-const SUPABASE_MODULE_URL = typeof document === "undefined"
-  ? "../../vendor/supabase.js"
-  : new URL("./vendor/supabase.js", document.baseURI).href;
-
 const planData = () => globalThis.window?.PlanMusicData;
 const songCatalog = () => globalThis.window?.SongCatalog;
 const sharedPlanCacheKey = date => "st-james-plan-cache-v2-" + date;
@@ -536,13 +532,9 @@ function createSupabaseStore(
 }
 
 async function supabaseStore(config) {
-  const { createClient } = await import(SUPABASE_MODULE_URL);
-  const supabase = createClient(config.url, config.publishableKey, {
-    auth: {
-      persistSession: true,
-      detectSessionInUrl: true,
-    },
-  });
+  const createClient = globalThis.MassPlannerSupabaseClient?.create;
+  if (!createClient) throw new Error("Shared Supabase client bootstrap is unavailable");
+  const supabase = await createClient(config);
   return createSupabaseStore(supabase);
 }
 

@@ -61,7 +61,11 @@ test("the generated planner contains no unresolved build tokens", () => {
 test("external application assets referenced by the planner exist", () => {
   const html = read("index.html");
   const localScripts = [...html.matchAll(/<script[^>]+src="\.\/([^"]+)"/g)].map(match => match[1]);
-  assert.deepEqual(localScripts, ["supabase-config.js", "src/services/plan-store.js"]);
+  assert.deepEqual(localScripts, [
+    "supabase-config.js",
+    "src/services/supabase-client.js",
+    "src/services/plan-store.js",
+  ]);
   localScripts.forEach(relativePath => {
     assert.ok(fs.existsSync(path.join(ROOT, relativePath)), `${relativePath} must exist`);
   });
@@ -91,7 +95,11 @@ test("the generated repertoire application parses and has no unresolved build to
 test("external application assets referenced by the repertoire exist", () => {
   const html = read("repertoire.html");
   const localScripts = [...html.matchAll(/<script[^>]+src="\.\/([^"]+)"/g)].map(match => match[1]);
-  assert.deepEqual(localScripts, ["supabase-config.js", "src/services/repertoire-store.js"]);
+  assert.deepEqual(localScripts, [
+    "supabase-config.js",
+    "src/services/supabase-client.js",
+    "src/services/repertoire-store.js",
+  ]);
   localScripts.forEach(relativePath => {
     assert.ok(fs.existsSync(path.join(ROOT, relativePath)), `${relativePath} must exist`);
   });
@@ -101,6 +109,7 @@ test("the Supabase browser client is pinned, built locally, and cached for offli
   const packageJson = JSON.parse(read("package.json"));
   const planStore = read("src/services/plan-store.js");
   const repertoireStore = read("src/services/repertoire-store.js");
+  const sharedClient = read("src/services/supabase-client.js");
   const serviceWorker = read("service-worker.js");
   const bundlePath = path.join(ROOT, "vendor/supabase.js");
 
@@ -120,11 +129,12 @@ test("the Supabase browser client is pinned, built locally, and cached for offli
   assert.equal(importCheck.status, 0, importCheck.stderr);
   assert.doesNotMatch(planStore, /https?:\/\/|cdn\.jsdelivr/);
   assert.doesNotMatch(repertoireStore, /https?:\/\/|cdn\.jsdelivr/);
-  assert.match(planStore, /vendor\/supabase\.js/);
-  assert.match(repertoireStore, /vendor\/supabase\.js/);
-  assert.match(planStore, /document\.baseURI/);
-  assert.match(repertoireStore, /document\.baseURI/);
-  assert.doesNotMatch(planStore, /document\.currentScript/);
-  assert.doesNotMatch(repertoireStore, /document\.currentScript/);
+  assert.doesNotMatch(planStore, /vendor\/supabase\.js/);
+  assert.doesNotMatch(repertoireStore, /vendor\/supabase\.js/);
+  assert.match(sharedClient, /vendor\/supabase\.js/);
+  assert.match(sharedClient, /document\.baseURI/);
+  assert.match(sharedClient, /document\.currentScript/);
+  assert.doesNotMatch(planStore, /document\.baseURI|document\.currentScript/);
+  assert.doesNotMatch(repertoireStore, /document\.baseURI|document\.currentScript/);
   assert.match(serviceWorker, /"\.\/vendor\/supabase\.js"/);
 });
