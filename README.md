@@ -94,6 +94,7 @@ behavior, and export changes in the appropriate source file:
 - `src/app/celebration-picker-view.js` — standard-lectionary search and reading preview
 - `src/app/celebration-controller.js` — celebration selection, resolved snapshots, and restore
 - `src/app/reading-override-controller.js` — individual reading save and restore persistence
+- `src/app/reading-dialog-controller.js` — reading slot, validation, and confirmation state
 - `src/domain/lectionary.js` — lectionary selection and validation rules
 - `src/domain/reading-selection.js` — role-aware override validation and confirmation policy
 - `src/domain/music-parts.js` — canonical Mass slots, labels, and suggestion normalization

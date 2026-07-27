@@ -415,3 +415,9 @@ Acceptance:
   indexing failures. At 390×844 Chrome confirms one explicit create produces exactly
   one assignment and one embedding sync while private lyrics remain absent from the
   rendered Mass plan.
+- 2026-07-27: The individual-reading dialog now delegates slot selection, suggestions,
+  allowed-citation options, canonicalization, preview state, and non-standard
+  confirmation gating to a controller. Tests cover existing overrides, invalid input,
+  editor-only access, suggested choices, confirmation reset, and lifecycle cleanup.
+  At 390×844 Chrome confirms the Acts 4:32–35 gate and structured save remain intact
+  with no overflow or warnings.

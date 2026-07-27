@@ -15,6 +15,7 @@
 @@CELEBRATION_PICKER_VIEW_JS@@
 @@CELEBRATION_CONTROLLER_JS@@
 @@READING_OVERRIDE_CONTROLLER_JS@@
+@@READING_DIALOG_CONTROLLER_JS@@
 @@SONG_CATALOG_JS@@
 @@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
@@ -94,8 +95,6 @@ let celebrationOverride = null;
 let planStore = null;
 let isEditor = false;
 let signedIn = false;
-let editingReadingSlot = null;
-let pendingReadingSelection = null;
 let editingSong = null;
 let songPickerState = {
   open:false,
@@ -113,6 +112,26 @@ let celebrationPickerState = {
   results:{heading:"",candidates:[],html:""},
   preview:{hidden:true,useDisabled:true,html:""},
   saving:false,
+};
+let readingDialogState = {
+  open:false,
+  slotKey:null,
+  slotLabel:"",
+  suggestions:[],
+  citationOptions:[],
+  input:"",
+  selectedSuggestion:"",
+  confirmed:false,
+  pendingSelection:null,
+  validation:{
+    message:"",
+    state:"",
+    previewText:"",
+    previewHidden:true,
+    confirmHidden:true,
+    buttonLabel:"Use reading",
+    useDisabled:true,
+  },
 };
 
 function current(){ return CALENDAR[curIdx]; }
@@ -144,7 +163,6 @@ function renderMusicPlan(){
   musicList.innerHTML=view.html;
   musicList.dataset.mode=view.mode;
 }
-function readingSlot(key){ return READING_SLOTS.find(slot=>slot.key===key); }
 function computedCitation(slot){ return baseCelebration().readings?.[slot.key] || ""; }
 function displayedCitation(slot){ return readingOverrides[slot.key]?.citation || computedCitation(slot); }
 function setReadingStatus(text,state){
@@ -218,6 +236,20 @@ const readingOverrideController=ReadingOverrideController.create({
   },
   logger:console,
 });
+const readingDialogController=ReadingDialogController.create({
+  readingSlots:READING_SLOTS,
+  roleCitations:ROLE_CITATIONS,
+  selectionPolicy:readingSelection,
+  normalizedCitation,
+  isEditor:()=>isEditor,
+  getComputedCitation:computedCitation,
+  getExistingCitation:slot=>readingOverrides[slot.key]?.citation || "",
+  onChange:state=>{
+    readingDialogState=state;
+    renderReadingDialog();
+    if(!state.open && readingDialog.open) readingDialog.close();
+  },
+});
 function renderCelebrationPreview(){
   const view=celebrationPickerState.preview;
   celebrationPreview.innerHTML=view.html;
@@ -239,61 +271,36 @@ function openCelebrationDialog(){
   openModal(celebrationDialog);
   setTimeout(()=>celebrationSearch.focus(),0);
 }
-function suggestedCitations(slot){
-  return readingSelection.suggestions(computedCitation(slot));
-}
-function fillReadingOptions(slot){
-  const suggestions=suggestedCitations(slot);
-  readingSuggested.innerHTML=suggestions.map((option,index)=>
+function renderReadingDialog(){
+  readingDialogTitle.textContent=readingDialogState.slotLabel;
+  readingSuggested.innerHTML=readingDialogState.suggestions.map(option=>
     '<label class="suggested-reading"><input type="radio" name="suggestedReading" value="'+esc(option.citation)+'" data-default="'+(option.isDefault?'true':'false')+'">'
     +'<span><strong>'+esc(option.label)+'</strong><small>'+esc(option.note)+'</small></span></label>'
   ).join("");
-  readingCitationOptions.innerHTML=Array.from(ROLE_CITATIONS[slot.key].values()).sort((a,b)=>a.localeCompare(b)).map(citation=>'<option value="'+esc(citation)+'"></option>').join("");
-  readingSearchHelp.textContent="Only "+slot.label.toLowerCase()+" passages contained in this app’s lectionary data can be selected.";
-}
-function showReadingValidation(message,state){
-  readingValidation.textContent=message || "";
-  readingValidation.className="reading-validation"+(state?" "+state:"");
-}
-function validateReadingSelection(){
-  pendingReadingSelection=null;
-  readingUse.disabled=true;
-  readingTextPreview.hidden=true;
-  ordoConfirmWrap.hidden=true;
-  const slot=readingSlot(editingReadingSlot);
-  if(!slot) return;
-  const raw=readingCitationInput.value.trim();
-  const result=readingSelection.validate({
-    slotKey:slot.key,
-    raw,
-    computed:computedCitation(slot),
+  readingCitationOptions.innerHTML=readingDialogState.citationOptions
+    .map(citation=>'<option value="'+esc(citation)+'"></option>')
+    .join("");
+  readingSearchHelp.textContent=readingDialogState.slotLabel
+    ? "Only "+readingDialogState.slotLabel.toLowerCase()+" passages contained in this app’s lectionary data can be selected."
+    : "";
+  readingCitationInput.value=readingDialogState.input;
+  readingSuggested.querySelectorAll('input[name="suggestedReading"]').forEach(input=>{
+    input.checked=normalizedCitation(input.value)===normalizedCitation(readingDialogState.selectedSuggestion);
   });
-  showReadingValidation(result.message,result.state);
-  if(!result.valid) return;
-  pendingReadingSelection=result.selection;
-  readingCitationInput.value=result.canonicalCitation;
-  readingTextPreview.innerHTML='<strong>Full text preview</strong>'+esc(result.previewText);
-  readingTextPreview.hidden=false;
-  ordoConfirmWrap.hidden=!result.requiresConfirmation;
-  readingUse.textContent=result.buttonLabel;
-  readingUse.disabled=result.requiresConfirmation && !ordoConfirm.checked;
+  ordoConfirm.checked=readingDialogState.confirmed;
+  readingValidation.textContent=readingDialogState.validation.message;
+  readingValidation.className="reading-validation"
+    +(readingDialogState.validation.state?" "+readingDialogState.validation.state:"");
+  readingTextPreview.innerHTML='<strong>Full text preview</strong>'
+    +esc(readingDialogState.validation.previewText);
+  readingTextPreview.hidden=readingDialogState.validation.previewHidden;
+  ordoConfirmWrap.hidden=readingDialogState.validation.confirmHidden;
+  readingUse.textContent=readingDialogState.validation.buttonLabel;
+  readingUse.disabled=readingDialogState.validation.useDisabled;
 }
 function openReadingDialog(key){
-  const slot=readingSlot(key);
-  if(!slot || !isEditor) return;
-  editingReadingSlot=key;
-  pendingReadingSelection=null;
-  readingDialogTitle.textContent=slot.label;
+  if(!readingDialogController.open(key)) return;
   readingDialogContext.textContent=baseCelebration().name+" · "+fmtLong(current().d);
-  fillReadingOptions(slot);
-  const suggestions=suggestedCitations(slot);
-  readingCitationInput.value=readingOverrides[key]?.citation || suggestions[0]?.citation || computedCitation(slot);
-  readingSuggested.querySelectorAll('input[name="suggestedReading"]').forEach(input=>{
-    input.checked=normalizedCitation(input.value)===normalizedCitation(readingCitationInput.value);
-  });
-  ordoConfirm.checked=false;
-  readingUse.textContent="Use reading";
-  validateReadingSelection();
   openModal(readingDialog);
   setTimeout(()=>readingCitationInput.focus(),0);
 }
@@ -654,37 +661,32 @@ restoreAllReadings.addEventListener("click",async ()=>{
 readingSuggested.addEventListener("change",event=>{
   const input=event.target.closest('input[name="suggestedReading"]');
   if(!input) return;
-  readingCitationInput.value=input.value;
-  ordoConfirm.checked=false;
-  validateReadingSelection();
+  readingDialogController.chooseSuggestion(input.value);
 });
 readingCitationInput.addEventListener("input",()=>{
-  readingSuggested.querySelectorAll('input[name="suggestedReading"]').forEach(input=>{
-    input.checked=normalizedCitation(input.value)===normalizedCitation(readingCitationInput.value);
-  });
-  ordoConfirm.checked=false;
-  validateReadingSelection();
+  readingDialogController.setInput(readingCitationInput.value);
 });
-ordoConfirm.addEventListener("change",validateReadingSelection);
+ordoConfirm.addEventListener("change",()=>{
+  readingDialogController.setConfirmed(ordoConfirm.checked);
+});
 function closeReadingDialog(){
-  readingDialog.close();
-  editingReadingSlot=null;
-  pendingReadingSelection=null;
+  readingDialogController.close();
 }
 readingDialogClose.addEventListener("click",closeReadingDialog);
 readingCancel.addEventListener("click",closeReadingDialog);
 readingDialog.addEventListener("click",event=>{ if(event.target===readingDialog) closeReadingDialog(); });
 readingForm.addEventListener("submit",async event=>{
   event.preventDefault();
-  const selection=pendingReadingSelection;
+  const selection=readingDialogState.pendingSelection;
   if(!selection || !isEditor || !planStore || readingUse.disabled) return;
   readingUse.disabled=true;
   readingUse.textContent="Saving…";
-  const saved=await readingOverrideController.save(selection,ordoConfirm.checked);
+  const saved=await readingOverrideController.save(selection,readingDialogState.confirmed);
   if(saved){
     closeReadingDialog();
   }else{
-    showReadingValidation("The reading could not be saved. Please try again.","error");
+    readingValidation.textContent="The reading could not be saved. Please try again.";
+    readingValidation.className="reading-validation error";
     readingUse.textContent=selection.isDefault ? "Use computed reading" : "Use reading";
     readingUse.disabled=false;
   }
