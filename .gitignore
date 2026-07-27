@@ -3,6 +3,7 @@ node_modules/
 /index.html
 /repertoire.html
 /service-worker.js
+/favicon.ico
 /vendor/
 /icons/
 web.json
