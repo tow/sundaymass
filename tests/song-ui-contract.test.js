@@ -57,22 +57,19 @@ test("the song picker removes the rubric and uses one compact footer action", ()
 });
 
 test("empty editor slots use one Choose song control without a second empty-state line", () => {
-  const app = read("src/app/planner.js");
+  const renderer = read("src/app/music-plan-view.js");
   assert.equal(
-    (app.match(/Not yet chosen/g) || []).length,
+    (renderer.match(/Not yet chosen/g) || []).length,
     1,
     "Not yet chosen should appear only in the public read-only view",
   );
-  assert.match(app, /music-editor-actions empty/);
+  assert.match(renderer, /music-editor-actions empty/);
 });
 
 test("selected rows show only Change and move secondary actions into the picker", () => {
   const app = read("src/app/planner.js");
   const html = read("src/planner.html");
-  const musicRenderer = app.slice(
-    app.indexOf("function renderMusicPlan"),
-    app.indexOf("function readingSlot"),
-  );
+  const musicRenderer = read("src/app/music-plan-view.js");
 
   assert.match(musicRenderer, />Change<\/button>/);
   assert.doesNotMatch(musicRenderer, /data-song-action="edit"/);
@@ -84,7 +81,7 @@ test("selected rows show only Change and move secondary actions into the picker"
   assert.match(html, />Edit song details<\/button>/);
   assert.match(html, />Remove from this Mass<\/button>/);
   assert.match(app, /songCurrentAuthor\.textContent=currentSong\?\.authors \|\| "Author not recorded"/);
-  assert.match(app, /const editorAttributionLine=SongPresentation\.editorPlanAttribution/);
+  assert.match(app, /editorAttribution:SongPresentation\.editorPlanAttribution/);
   assert.match(html, />Changes are live\.<\/div>/);
 });
 

@@ -28,6 +28,7 @@ const appValues = {
   "@@PRINT_CONTROLLER_JS@@": read("src/app/print-controller.js"),
   "@@MUSIC_PARTS_JS@@": read("src/domain/music-parts.js"),
   "@@SONG_PRESENTATION_JS@@": read("src/domain/song-presentation.js"),
+  "@@MUSIC_PLAN_VIEW_JS@@": read("src/app/music-plan-view.js"),
   "@@SONG_CATALOG_JS@@": read("src/domain/songs.js"),
   "@@PLAN_MUSIC_DATA_JS@@": read("src/domain/plan-music-data.js"),
   "@@LECTIONARY_CATALOG_JS@@": read("src/domain/lectionary.js"),

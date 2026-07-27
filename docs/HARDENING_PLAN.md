@@ -353,3 +353,9 @@ Acceptance:
   populated cached Sunday while fully offline, then clearly distinguishes an unvisited
   Sunday. The former single-file claim was removed because deployment requires sibling
   service, vendor, data, configuration, and PWA assets.
+- 2026-07-27: Phase 5 continued by extracting music-plan presentation from the planner
+  orchestrator. The renderer accepts the existing song-presentation rules as explicit
+  dependencies, projects assigned songs down to lyric-free public metadata, and has
+  direct tests for public/editor rows, escaping, copyright warnings, safe practice
+  links, and the one-action-per-row design. Chrome at 390×844 confirms all 14 public
+  rows, no horizontal overflow, no visible lyric data, and no console warnings.

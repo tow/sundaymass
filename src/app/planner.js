@@ -6,6 +6,7 @@
 @@PRINT_CONTROLLER_JS@@
 @@MUSIC_PARTS_JS@@
 @@SONG_PRESENTATION_JS@@
+@@MUSIC_PLAN_VIEW_JS@@
 @@SONG_CATALOG_JS@@
 @@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
@@ -30,10 +31,15 @@ const citationAlternatives=lectionary.citationAlternatives;
 const parseReadingCitation=lectionary.parseReadingCitation;
 const dayDistance=lectionary.dayDistance;
 const suggestionPartFor=MassMusicParts.suggestionPartFor;
-const safeYoutubeUrl=SongPresentation.safeYoutubeUrl;
 const copyrightComplete=SongPresentation.copyrightComplete;
 const attributionLine=SongPresentation.publicPlanAttribution;
-const editorAttributionLine=SongPresentation.editorPlanAttribution;
+const musicPlanView=MusicPlanView.create({
+  escapeHtml:esc,
+  safeYoutubeUrl:SongPresentation.safeYoutubeUrl,
+  copyrightComplete,
+  publicAttribution:attributionLine,
+  editorAttribution:SongPresentation.editorPlanAttribution,
+});
 const modalController=ModalController.create({window,document});
 const openModal=modalController.open;
 modalController.start();
@@ -92,57 +98,13 @@ function vals(){
   };
 }
 function textFor(citation){ return READINGS[citation] || ""; }
-function choiceFor(key){
-  const value=musicSongs[key] || {};
-  return {
-    song:value.title || "",
-    youtubeUrl:value.youtubeUrl || "",
-    authors:value.authors || "",
-    copyrightOwner:value.copyrightOwner || "",
-    copyrightYear:value.copyrightYear || "",
-    source:value.source || "",
-  };
-}
-function musicLabel(part){
-  return esc(part.label)+(part.note?'<span class="music-part-note">'+esc(part.note)+'</span>':'');
-}
+function choiceFor(key){ return musicPlanView.choiceFor(musicSongs,key); }
 function renderMusicPlan(){
-  editorHelp.hidden=!isEditor;
-  musicIntro.textContent=isEditor ? "Choose or add a song for each part." : "Selections for this Sunday appear here as they are chosen.";
-  if(isEditor){
-    musicList.innerHTML=MUSIC_PARTS.map(part=>{
-      const song=musicSongs[part.key];
-      const choice=choiceFor(part.key);
-      const link=safeYoutubeUrl(choice.youtubeUrl);
-      const attribution=editorAttributionLine(choice);
-      const incomplete=choice.song && !copyrightComplete(choice);
-      return '<div class="music-edit-row"><div class="music-part-label">'+musicLabel(part)+'</div>'
-        +(song
-          ? '<div class="music-editor-choice"><strong>'+esc(song.title)+'</strong>'
-            +(attribution?'<span class="music-attribution">'+esc(attribution)+'</span>':'')
-            +(incomplete?'<span class="music-attribution copyright-warning">Copyright information incomplete</span>':'')
-            +(link?'<a class="listen-link" href="'+esc(link)+'" target="_blank" rel="noopener">Listen / practise ↗</a>':'')
-            +'</div><div class="music-editor-actions assigned">'
-            +'<button type="button" data-song-action="choose" data-part="'+part.key+'">Change</button>'
-            +'</div>'
-          : '<div class="music-editor-actions empty"><button class="primary choose-song" type="button" data-song-action="choose" data-part="'+part.key+'">Choose song</button></div>')
-        +'</div>';
-    }).join("");
-    musicList.dataset.mode="edit";
-  }else{
-    musicList.innerHTML=MUSIC_PARTS.map(part=>{
-      const choice=choiceFor(part.key);
-      const link=safeYoutubeUrl(choice.youtubeUrl);
-      const attribution=attributionLine(choice);
-      const incomplete=choice.song && !copyrightComplete(choice);
-      return '<div class="music-view-row"><div class="music-part-label">'+musicLabel(part)+'</div><div class="music-choice">'
-        +(choice.song?esc(choice.song):'<span class="music-empty">Not yet chosen</span>')
-        +(attribution?'<span class="music-attribution">'+esc(attribution)+'</span>':'')
-        +(incomplete?'<span class="music-attribution copyright-warning">Copyright information incomplete</span>':'')
-        +(link?'<a class="listen-link" href="'+esc(link)+'" target="_blank" rel="noopener">Listen / practise ↗</a>':'')+'</div></div>';
-    }).join("");
-    musicList.dataset.mode="view";
-  }
+  const view=musicPlanView.render({parts:MUSIC_PARTS,songs:musicSongs,isEditor});
+  editorHelp.hidden=view.editorHelpHidden;
+  musicIntro.textContent=view.intro;
+  musicList.innerHTML=view.html;
+  musicList.dataset.mode=view.mode;
 }
 function readingSlot(key){ return READING_SLOTS.find(slot=>slot.key===key); }
 function computedCitation(slot){ return baseCelebration().readings?.[slot.key] || ""; }

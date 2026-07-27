@@ -85,6 +85,7 @@ behavior, and export changes in the appropriate source file:
 - `src/service-worker.js` — offline fetch/cache behavior template
 - `src/service-worker-assets.json` — complete same-origin app shell
 - `src/app/song-form.js` — canonical song editor form read/write mapping
+- `src/app/music-plan-view.js` — lyric-free public/editor music-row rendering
 - `src/domain/lectionary.js` — lectionary selection and validation rules
 - `src/domain/music-parts.js` — canonical Mass slots, labels, and suggestion normalization
 - `src/domain/song-presentation.js` — safe YouTube links and shared attribution formatting
