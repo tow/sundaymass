@@ -82,6 +82,7 @@ behavior, and export changes in the appropriate source file:
 - `src/app/calendar-navigation.js` — Sunday/date selection and calendar boundaries
 - `src/app/modal-controller.js` — native-dialog page scroll locking and restoration
 - `src/app/pwa-controller.js` — install prompt and service-worker registration behavior
+- `src/app/song-form.js` — canonical song editor form read/write mapping
 - `src/domain/lectionary.js` — lectionary selection and validation rules
 - `src/domain/music-parts.js` — canonical Mass slots, labels, DOCX tokens, and suggestion normalization
 - `src/domain/song-presentation.js` — safe YouTube links and shared attribution formatting

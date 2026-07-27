@@ -330,3 +330,6 @@ Acceptance:
   controller while their stores retain authorization responsibility. Tests cover
   sign-in, sign-out, focus, loading state, error display, unavailable stores, and
   listener cleanup.
+- 2026-07-27: Planner and repertoire song editors now share one tested form mapper for
+  canonical metadata, private lyrics, and suggestion positions. Context-specific new
+  song title and Mass-position defaults remain explicit caller options.

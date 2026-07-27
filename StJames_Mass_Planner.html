@@ -913,6 +913,58 @@
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window === "undefined" ? globalThis : window);
 
+// Canonical mapping between song editor controls and song draft values.
+(function (global) {
+  "use strict";
+
+  function create(elements) {
+    const suggestionInputs = () => [
+      ...elements.suggestionParts.querySelectorAll('input[type="checkbox"]'),
+    ];
+
+    function read() {
+      return {
+        title: elements.title.value,
+        youtubeUrl: elements.youtubeUrl.value,
+        authors: elements.authors.value,
+        copyrightOwner: elements.copyrightOwner.value,
+        copyrightYear: elements.copyrightYear.value,
+        source: elements.source.value,
+        lyrics: elements.lyrics.value,
+        suggestionParts: suggestionInputs()
+          .filter(input => input.checked)
+          .map(input => input.value),
+      };
+    }
+
+    function write(song, {
+      fallbackTitle = "",
+      defaultSuggestionParts = [],
+    } = {}) {
+      const value = song || {};
+      elements.title.value = song ? value.title || "" : fallbackTitle;
+      elements.youtubeUrl.value = value.youtubeUrl || "";
+      elements.authors.value = value.authors || "";
+      elements.copyrightOwner.value = value.copyrightOwner || "";
+      elements.copyrightYear.value = value.copyrightYear || "";
+      elements.source.value = value.source || "";
+      elements.lyrics.value = value.lyrics || "";
+      const selected = new Set(song
+        ? value.suggestionParts || []
+        : defaultSuggestionParts);
+      suggestionInputs().forEach(input => {
+        input.checked = selected.has(input.value);
+      });
+    }
+
+    return Object.freeze({ read, write });
+  }
+
+  const api = Object.freeze({ create });
+  global.SongForm = api;
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+})(typeof window === "undefined" ? globalThis : window);
+
 // Canonical ordered Mass music parts shared by the UI, suggestions and DOCX builders.
 (function (global) {
   "use strict";
@@ -1479,6 +1531,16 @@ const modalController=ModalController.create({window,document});
 const openModal=modalController.open;
 modalController.start();
 const calendarNavigation=CalendarNavigation.create(CALENDAR);
+const songForm=SongForm.create({
+  title:songTitle,
+  youtubeUrl:songYoutube,
+  authors:songAuthors,
+  copyrightOwner:songCopyrightOwner,
+  copyrightYear:songCopyrightYear,
+  source:songSource,
+  lyrics:songLyrics,
+  suggestionParts:songSuggestionParts,
+});
 const cycleName = c => "Year " + c;
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
 function fmtPicker(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}); }
@@ -1982,31 +2044,12 @@ function closeSongPicker(){
   selectedSong=null;
 }
 function songDraftFromForm(){
-  return {
-    title:songTitle.value,
-    youtubeUrl:songYoutube.value,
-    authors:songAuthors.value,
-    copyrightOwner:songCopyrightOwner.value,
-    copyrightYear:songCopyrightYear.value,
-    source:songSource.value,
-    lyrics:songLyrics.value,
-    suggestionParts:[...songSuggestionParts.querySelectorAll('input[type="checkbox"]:checked')]
-      .map(input=>input.value),
-  };
+  return songForm.read();
 }
 function fillSongForm(song){
-  songTitle.value=song?.title || songSearch.value.trim();
-  songYoutube.value=song?.youtubeUrl || "";
-  songAuthors.value=song?.authors || "";
-  songCopyrightOwner.value=song?.copyrightOwner || "";
-  songCopyrightYear.value=song?.copyrightYear || "";
-  songSource.value=song?.source || "";
-  songLyrics.value=song?.lyrics || "";
-  const selected=new Set(song
-    ? song.suggestionParts || []
-    : [suggestionPartFor(editingSongPart)]);
-  songSuggestionParts.querySelectorAll('input[type="checkbox"]').forEach(input=>{
-    input.checked=selected.has(input.value);
+  songForm.write(song,{
+    fallbackTitle:songSearch.value.trim(),
+    defaultSuggestionParts:[suggestionPartFor(editingSongPart)],
   });
 }
 function openSongEditor(song){

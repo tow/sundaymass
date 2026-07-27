@@ -46,6 +46,7 @@ const appValues = {
   "@@PWA_CONTROLLER_JS@@": read("src/app/pwa-controller.js"),
   "@@CALENDAR_NAVIGATION_JS@@": read("src/app/calendar-navigation.js"),
   "@@AUTH_CONTROLLER_JS@@": read("src/app/auth-controller.js"),
+  "@@SONG_FORM_JS@@": read("src/app/song-form.js"),
   "@@MUSIC_PARTS_JS@@": read("src/domain/music-parts.js"),
   "@@SONG_PRESENTATION_JS@@": read("src/domain/song-presentation.js"),
   "@@SONG_CATALOG_JS@@": read("src/domain/songs.js"),
@@ -89,6 +90,11 @@ repertoireScript = replaceOnce(
   repertoireScript,
   "@@AUTH_CONTROLLER_JS@@",
   read("src/app/auth-controller.js"),
+);
+repertoireScript = replaceOnce(
+  repertoireScript,
+  "@@SONG_FORM_JS@@",
+  read("src/app/song-form.js"),
 );
 repertoireScript = replaceOnce(
   repertoireScript,

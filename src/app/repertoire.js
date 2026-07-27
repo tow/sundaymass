@@ -1,6 +1,7 @@
 @@MUSIC_PARTS_JS@@
 @@PWA_CONTROLLER_JS@@
 @@AUTH_CONTROLLER_JS@@
+@@SONG_FORM_JS@@
 @@SONG_PRESENTATION_JS@@
 @@SONG_CATALOG_JS@@
 @@EMBEDDING_REPAIR_JS@@
@@ -14,6 +15,16 @@ let repairingIndex=false;
 const esc=value=>(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const safeYoutube=SongPresentation.safeYoutubeUrl;
 const details=SongPresentation.repertoireDetails;
+const songForm=SongForm.create({
+  title:songTitle,
+  youtubeUrl:songYoutube,
+  authors:songAuthors,
+  copyrightOwner:songCopyrightOwner,
+  copyrightYear:songCopyrightYear,
+  source:songSource,
+  lyrics:songLyrics,
+  suggestionParts:songSuggestionParts,
+});
 
 function render(){
   const query=repertoireSearch.value.trim().toLocaleLowerCase();
@@ -44,28 +55,12 @@ async function loadSongs(){
 }
 
 function draft(){
-  return {
-    title:songTitle.value, youtubeUrl:songYoutube.value, authors:songAuthors.value,
-    copyrightOwner:songCopyrightOwner.value, copyrightYear:songCopyrightYear.value,
-    source:songSource.value, lyrics:songLyrics.value,
-    suggestionParts:[...songSuggestionParts.querySelectorAll('input[type="checkbox"]:checked')]
-      .map(input=>input.value),
-  };
+  return songForm.read();
 }
 function openEditor(song){
   editingSong=song||null;
   editorTitle.textContent=song?"Edit song details":"Add a song";
-  songTitle.value=song?.title||"";
-  songYoutube.value=song?.youtubeUrl||"";
-  songAuthors.value=song?.authors||"";
-  songCopyrightOwner.value=song?.copyrightOwner||"";
-  songCopyrightYear.value=song?.copyrightYear||"";
-  songSource.value=song?.source||"";
-  songLyrics.value=song?.lyrics||"";
-  const selected=new Set(song?.suggestionParts||[]);
-  songSuggestionParts.querySelectorAll('input[type="checkbox"]').forEach(input=>{
-    input.checked=selected.has(input.value);
-  });
+  songForm.write(song);
   songEditorError.textContent="";
   songEditorDialog.showModal();
 }

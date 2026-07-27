@@ -2,6 +2,7 @@
 @@PWA_CONTROLLER_JS@@
 @@CALENDAR_NAVIGATION_JS@@
 @@AUTH_CONTROLLER_JS@@
+@@SONG_FORM_JS@@
 @@MUSIC_PARTS_JS@@
 @@SONG_PRESENTATION_JS@@
 @@SONG_CATALOG_JS@@
@@ -38,6 +39,16 @@ const modalController=ModalController.create({window,document});
 const openModal=modalController.open;
 modalController.start();
 const calendarNavigation=CalendarNavigation.create(CALENDAR);
+const songForm=SongForm.create({
+  title:songTitle,
+  youtubeUrl:songYoutube,
+  authors:songAuthors,
+  copyrightOwner:songCopyrightOwner,
+  copyrightYear:songCopyrightYear,
+  source:songSource,
+  lyrics:songLyrics,
+  suggestionParts:songSuggestionParts,
+});
 const cycleName = c => "Year " + c;
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
 function fmtPicker(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}); }
@@ -541,31 +552,12 @@ function closeSongPicker(){
   selectedSong=null;
 }
 function songDraftFromForm(){
-  return {
-    title:songTitle.value,
-    youtubeUrl:songYoutube.value,
-    authors:songAuthors.value,
-    copyrightOwner:songCopyrightOwner.value,
-    copyrightYear:songCopyrightYear.value,
-    source:songSource.value,
-    lyrics:songLyrics.value,
-    suggestionParts:[...songSuggestionParts.querySelectorAll('input[type="checkbox"]:checked')]
-      .map(input=>input.value),
-  };
+  return songForm.read();
 }
 function fillSongForm(song){
-  songTitle.value=song?.title || songSearch.value.trim();
-  songYoutube.value=song?.youtubeUrl || "";
-  songAuthors.value=song?.authors || "";
-  songCopyrightOwner.value=song?.copyrightOwner || "";
-  songCopyrightYear.value=song?.copyrightYear || "";
-  songSource.value=song?.source || "";
-  songLyrics.value=song?.lyrics || "";
-  const selected=new Set(song
-    ? song.suggestionParts || []
-    : [suggestionPartFor(editingSongPart)]);
-  songSuggestionParts.querySelectorAll('input[type="checkbox"]').forEach(input=>{
-    input.checked=selected.has(input.value);
+  songForm.write(song,{
+    fallbackTitle:songSearch.value.trim(),
+    defaultSuggestionParts:[suggestionPartFor(editingSongPart)],
   });
 }
 function openSongEditor(song){
