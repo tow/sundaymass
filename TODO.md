@@ -10,6 +10,9 @@ to be decided.
   breaks, punctuation, and line endings.
 - Evaluate the quality of automatic song suggestions with real Sundays and repertoire
   choices; define examples of good and bad recommendations before tuning the ranking.
+- do a separate semantic match against each reading, might give different results
+- automatically prepopulate psalm based on the OCP series
+- assign psalm settings based exactly on psalm number.
 
 ## Authentication
 
@@ -83,3 +86,4 @@ to be decided.
 - Document how another maintainer can export the data, obtain operational access, and
   continue running the service.
 - Periodically check for broken YouTube links and stale repertoire metadata.
+- GPL licence check for 3rd-party licenses
