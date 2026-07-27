@@ -1,19 +1,5 @@
-const CACHE_NAME = "st-james-mass-planner-6cc1e798f3e4";
-const APP_SHELL = [
-  "./",
-  "./index.html",
-  "./about.html",
-  "./repertoire.html",
-  "./manifest.webmanifest",
-  "./supabase-config.js",
-  "./src/services/plan-store.js",
-  "./src/services/repertoire-store.js",
-  "./vendor/supabase.js",
-  "./data/generated/readings_text.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png"
-];
+const CACHE_NAME = "st-james-mass-planner-@@CACHE_VERSION@@";
+const APP_SHELL = @@APP_SHELL@@;
 
 self.addEventListener("install", event => {
   event.waitUntil(

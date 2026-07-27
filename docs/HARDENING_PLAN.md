@@ -27,7 +27,7 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 | 3. Testable stores and Edge logic | Complete locally | Dependency-injected adapters and executable behavior tests |
 | 4. Supabase integration tests | Complete locally | Proven RLS, RPC, privacy, and suggestion behavior |
 | 5. Application modularization | In progress | Small feature controllers and shared definitions |
-| 6. Offline/PWA guarantees | In progress | Reliable cached public viewing and explicit online-only editing |
+| 6. Offline/PWA guarantees | Complete locally | Reliable cached public viewing and explicit online-only editing |
 | 7. Browser and print coverage | In progress | Automated primary-workflow and A4 print tests |
 | 8. Documentation | Pending | Accurate, split developer and operations documentation |
 | 9. Repository cleanup | Pending | Intentional artifacts and generated-output enforcement |
@@ -347,3 +347,9 @@ Acceptance:
   Supabase startup or loading fails. Offline editor reads and mutations are rejected
   before any request, cached and never-visited Sundays have distinct status text, and
   no successful offline-save message remains.
+- 2026-07-27: Phase 6 completed locally. The service worker is generated from a source
+  template and explicit app-shell manifest; its cache key hashes the worker logic and
+  every cached asset. Chrome verifies that an installed app reloads and prints a
+  populated cached Sunday while fully offline, then clearly distinguishes an unvisited
+  Sunday. The former single-file claim was removed because deployment requires sibling
+  service, vendor, data, configuration, and PWA assets.

@@ -1,0 +1,15 @@
+[
+  "./",
+  "./index.html",
+  "./about.html",
+  "./repertoire.html",
+  "./manifest.webmanifest",
+  "./supabase-config.js",
+  "./src/services/plan-store.js",
+  "./src/services/repertoire-store.js",
+  "./vendor/supabase.js",
+  "./data/generated/readings_text.json",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/apple-touch-icon.png"
+]

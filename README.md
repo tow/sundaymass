@@ -82,6 +82,8 @@ behavior, and export changes in the appropriate source file:
 - `src/app/calendar-navigation.js` — Sunday/date selection and calendar boundaries
 - `src/app/modal-controller.js` — native-dialog page scroll locking and restoration
 - `src/app/pwa-controller.js` — install prompt and service-worker registration behavior
+- `src/service-worker.js` — offline fetch/cache behavior template
+- `src/service-worker-assets.json` — complete same-origin app shell
 - `src/app/song-form.js` — canonical song editor form read/write mapping
 - `src/domain/lectionary.js` — lectionary selection and validation rules
 - `src/domain/music-parts.js` — canonical Mass slots, labels, and suggestion normalization
@@ -104,8 +106,9 @@ npm run build
 Commit the generated HTML with its source change. Do not hand-edit only one generated
 HTML file: the next build will overwrite it and the standalone version will diverge.
 
-`about.html`, `service-worker.js`, and the manifest are maintained directly. The
-print/PDF layout is the final `@media print` block in `src/styles/planner.css`.
+`about.html` and the manifest are maintained directly. `service-worker.js` is generated
+from the source template and asset manifest; do not hand-edit it. The print/PDF layout
+is the final `@media print` block in `src/styles/planner.css`.
 
 ### Repository layout
 
@@ -246,9 +249,9 @@ defaults.
 - Shared editing requires an internet connection. Editor reads and mutations stop
   before making a request while offline, and the interface never reports an offline
   edit as saved.
-- **Increment `CACHE_NAME` whenever a deployed app-shell file changes.** Without a new
-  cache name, an installed home-screen app can continue showing stale HTML. Users may
-  still need to close and reopen an already-running installed app once after deployment.
+- The build hashes the service-worker logic, asset manifest, and every app-shell file
+  into `CACHE_NAME`. Do not maintain cache versions by hand; run `npm run build` and
+  commit the regenerated worker with its source changes.
 - Keep `about.html` as its own navigation cache target. Caching every navigation as
   `index.html` previously allowed the About response to replace the cached planner.
 - The install button depends on `beforeinstallprompt` and therefore is normally an

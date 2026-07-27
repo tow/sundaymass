@@ -8,6 +8,7 @@ const OUTPUTS = [
   "index.html",
   "StJames_Mass_Planner.html",
   "repertoire.html",
+  "service-worker.js",
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/apple-touch-icon.png",
