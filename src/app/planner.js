@@ -1,3 +1,4 @@
+@@MUSIC_PARTS_JS@@
 @@SONG_CATALOG_JS@@
 @@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
@@ -8,22 +9,7 @@ const COMMONS = @@COMMONS@@;
 const PARTS = @@PARTS@@;
 const PARTS2 = @@PARTS2@@;
 const READINGS = @@READINGS@@;
-const MUSIC_PARTS = [
-  {key:"entrance",token:"ENTRANCE",label:"Entrance / Processional Hymn",note:""},
-  {key:"kyrie",token:"KYRIE",label:"Kyrie — Lord, Have Mercy",note:""},
-  {key:"gloria",token:"GLORIA",label:"Gloria — Glory to God",note:"(omitted in Advent & Lent)"},
-  {key:"psalm",token:"PSALM_MUSIC",label:"Responsorial Psalm",note:""},
-  {key:"acclamation",token:"ACCLAMATION",label:"Gospel Acclamation — Alleluia",note:"(Lenten acclamation in Lent)"},
-  {key:"offertory",token:"OFFERTORY",label:"Preparation of the Gifts / Offertory",note:""},
-  {key:"sanctus",token:"SANCTUS",label:"Sanctus — Holy, Holy, Holy",note:""},
-  {key:"memorial",token:"MEMORIAL",label:"Memorial Acclamation — Mystery of Faith",note:""},
-  {key:"amen",token:"AMEN",label:"Great Amen",note:""},
-  {key:"lordPrayer",token:"LORD_PRAYER",label:"The Lord's Prayer — Our Father",note:"(if sung)"},
-  {key:"agnus",token:"AGNUS",label:"Agnus Dei — Lamb of God",note:""},
-  {key:"communion",token:"COMMUNION",label:"Communion Hymn 1",note:""},
-  {key:"communion2",token:"COMMUNION_2",label:"Communion Hymn 2",note:""},
-  {key:"recessional",token:"RECESSIONAL",label:"Recessional / Closing Hymn",note:""},
-];
+const MUSIC_PARTS=MassMusicParts.parts;
 const lectionary=LectionaryCatalog.create({
   calendar:CALENDAR,
   sundayLectionary:SUNDAY_LECTIONARY,
@@ -38,7 +24,7 @@ const normalizedCitation=lectionary.normalizedCitation;
 const citationAlternatives=lectionary.citationAlternatives;
 const parseReadingCitation=lectionary.parseReadingCitation;
 const dayDistance=lectionary.dayDistance;
-const suggestionPartFor=SongCatalog.suggestionPartFor;
+const suggestionPartFor=MassMusicParts.suggestionPartFor;
 const byDate = {}; CALENDAR.forEach((s,i)=>byDate[s.d]=i);
 const cycleName = c => "Year " + c;
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }

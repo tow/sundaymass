@@ -42,6 +42,7 @@ function embeddedTemplateParts(relativeDirectory) {
 const appValues = {
   // Keep the source file's trailing newline: the historical single-file build
   // intentionally leaves a blank line between the domain module and embedded data.
+  "@@MUSIC_PARTS_JS@@": read("src/domain/music-parts.js"),
   "@@SONG_CATALOG_JS@@": read("src/domain/songs.js"),
   "@@PLAN_MUSIC_DATA_JS@@": read("src/domain/plan-music-data.js"),
   "@@LECTIONARY_CATALOG_JS@@": read("src/domain/lectionary.js"),
@@ -69,6 +70,11 @@ html = replaceOnce(html, "@@APP_SCRIPT@@", appScript);
 });
 
 let repertoireScript = read("src/app/repertoire.js").trimEnd();
+repertoireScript = replaceOnce(
+  repertoireScript,
+  "@@MUSIC_PARTS_JS@@",
+  read("src/domain/music-parts.js"),
+);
 repertoireScript = replaceOnce(repertoireScript, "@@SONG_CATALOG_JS@@", read("src/domain/songs.js"));
 repertoireScript = replaceOnce(
   repertoireScript,

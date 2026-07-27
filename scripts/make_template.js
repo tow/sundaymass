@@ -7,6 +7,8 @@ const path = require("path");
 const ROOT = path.resolve(__dirname, "..");
 const TEMPLATE_PATH = path.join(ROOT, "template.docx");
 const PARTS_DIR = path.join(ROOT, "tpl");
+const PARTS = require("../src/domain/music-parts.js").parts
+  .map(({ token, label, note }) => [token, label, note]);
 
 const ACCENT = "002F45", LABELBG = "F0E5C8", LINE = "AAA08D";
 const TABLE_W = 9360, LCOL = 3500, RCOL = 5860;
@@ -14,14 +16,6 @@ const cb = () => ({
   top: { style: BorderStyle.SINGLE, size: 4, color: LINE }, bottom: { style: BorderStyle.SINGLE, size: 4, color: LINE },
   left: { style: BorderStyle.SINGLE, size: 4, color: LINE }, right: { style: BorderStyle.SINGLE, size: 4, color: LINE },
 });
-const PARTS = [
-  ["ENTRANCE", "Entrance / Processional Hymn", ""], ["KYRIE", "Kyrie — Lord, Have Mercy", ""], ["GLORIA", "Gloria — Glory to God", "(omitted in Advent & Lent)"],
-  ["PSALM_MUSIC", "Responsorial Psalm", ""], ["ACCLAMATION", "Gospel Acclamation — Alleluia", "(Lenten acclamation in Lent)"],
-  ["OFFERTORY", "Preparation of the Gifts / Offertory", ""], ["SANCTUS", "Sanctus — Holy, Holy, Holy", ""], ["MEMORIAL", "Memorial Acclamation — Mystery of Faith", ""],
-  ["AMEN", "Great Amen", ""], ["LORD_PRAYER", "The Lord's Prayer — Our Father", "(if sung)"], ["AGNUS", "Agnus Dei — Lamb of God", ""],
-  ["COMMUNION", "Communion Hymn 1", ""], ["COMMUNION_2", "Communion Hymn 2", ""],
-  ["RECESSIONAL", "Recessional / Closing Hymn", ""],
-];
 function labelCell(text, note) {
   const runs = [new TextRun({ text, bold: true, size: 22, color: ACCENT })];
   if (note) runs.push(new TextRun({ text: "  " + note, italics: true, size: 15, color: "8A8A8A", break: 1 }));

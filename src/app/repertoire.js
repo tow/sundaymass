@@ -1,3 +1,4 @@
+@@MUSIC_PARTS_JS@@
 @@SONG_CATALOG_JS@@
 @@EMBEDDING_REPAIR_JS@@
 let store;

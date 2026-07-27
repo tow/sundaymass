@@ -2,6 +2,8 @@
 (function (global) {
   "use strict";
 
+  const massMusicParts = global.MassMusicParts
+    || (typeof require === "function" ? require("./music-parts.js") : null);
   const SUGGESTION_PARTS = [
     { key: "entrance", label: "Entrance" },
     { key: "kyrie", label: "Kyrie" },
@@ -29,8 +31,7 @@
   }
 
   function suggestionPartFor(part) {
-    if (part === "communion2") return "communion";
-    return SUGGESTION_PART_KEYS.has(part) ? part : "";
+    return massMusicParts.suggestionPartFor(part);
   }
 
   function normalizeDraft(value) {

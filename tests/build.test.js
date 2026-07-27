@@ -24,6 +24,7 @@ test("the generated planner contains no unresolved build tokens", () => {
   [
     "@@STYLES@@",
     "@@APP_SCRIPT@@",
+    "@@MUSIC_PARTS_JS@@",
     "@@SONG_CATALOG_JS@@",
     "@@PLAN_MUSIC_DATA_JS@@",
     "@@LECTIONARY_CATALOG_JS@@",
@@ -55,7 +56,7 @@ test("the generated repertoire application parses and has no unresolved build to
 
   assert.equal(scripts.length, 1);
   assert.doesNotThrow(() => new Function(scripts[0]));
-  ["@@STYLES@@", "@@APP_SCRIPT@@", "@@SONG_CATALOG_JS@@"]
+  ["@@STYLES@@", "@@APP_SCRIPT@@", "@@MUSIC_PARTS_JS@@", "@@SONG_CATALOG_JS@@"]
     .forEach(token => assert.ok(!html.includes(token), `${token} must be resolved by the build`));
 });
 

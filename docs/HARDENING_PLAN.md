@@ -26,7 +26,7 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 | 2. Reproducible build and CI | In progress | Pinned installs and deterministic, CI-verified builds |
 | 3. Testable stores and Edge logic | Complete locally | Dependency-injected adapters and executable behavior tests |
 | 4. Supabase integration tests | Complete locally | Proven RLS, RPC, privacy, and suggestion behavior |
-| 5. Application modularization | Pending | Small feature controllers and shared definitions |
+| 5. Application modularization | In progress | Small feature controllers and shared definitions |
 | 6. Offline/PWA guarantees | Pending | Reliable cached public viewing and explicit online-only editing |
 | 7. Browser and DOCX coverage | Pending | Automated primary-workflow and artifact tests |
 | 8. Documentation | Pending | Accurate, split developer and operations documentation |
@@ -308,3 +308,7 @@ Acceptance:
   no-op to non-editors; a forward migration now makes both reading-override RPCs check
   editor membership explicitly. The full migration chain resets cleanly and the
   eight-test database matrix passes.
+- 2026-07-27: Phase 5 started by extracting the ordered Mass music-part definition.
+  Planner rendering, DOCX export, both template builders, and semantic Communion
+  normalization now consume one tested module instead of maintaining three arrays and
+  two normalization implementations.
