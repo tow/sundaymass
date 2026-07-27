@@ -483,13 +483,33 @@ test("Chrome produces dedicated A4 music and readings PDFs without private lyric
       source: "",
       lyrics: `PRIVATE PRINT LYRIC ${index + 1}`,
     }]));
+    const celebrationOverride = {
+      name: "Saint James the Apostle — print override",
+      rank: "Solemnity",
+      sourceDate: "2026-07-25",
+      readings: {
+        first: "Acts 11:19-21; 12:1-2, 24",
+        psalm: "Psalm 67:2-3, 5, 7-8",
+        second: "2 Corinthians 4:7-15",
+        gospel: "Matthew 20:20-28",
+      },
+    };
     window.massPlanApp.connect({
       subscribeAuth(callback) {
         callback({ user: null, isEditor: false });
         return () => {};
       },
       subscribePlan(date, onValue) {
-        onValue({ songs, readingOverrides: {}, celebrationOverride: null });
+        onValue({
+          songs,
+          celebrationOverride,
+          readingOverrides: {
+            gospel: {
+              citation: "John 6:1-15",
+              confirmedAgainstOrdo: true,
+            },
+          },
+        });
         return () => {};
       },
     });
@@ -524,6 +544,11 @@ test("Chrome produces dedicated A4 music and readings PDFs without private lyric
   await page.locator("#printMusicReadings").click();
   await page.emulateMedia({ media: "print" });
   const readingText = await page.locator("#printSheet").innerText();
+  assert.match(readingText, /Saint James the Apostle — print override/);
+  assert.match(readingText, /Solemnity · normally Saturday, 25 July 2026/);
+  assert.match(readingText, /Second Reading[\s\S]*2 Corinthians 4:7-15/);
+  assert.match(readingText, /Gospel[\s\S]*John 6:1-15/);
+  assert.match(readingText, /After these things, Jesus went away/);
   assert.match(readingText, /Mass readings/);
   assert.match(readingText, /First Reading/);
   assert.match(readingText, /Gospel/);
@@ -535,6 +560,79 @@ test("Chrome produces dedicated A4 music and readings PDFs without private lyric
   });
   const readingPages = assertA4Pages(readingsPdf, 2);
   assert.ok(readingPages > musicPages);
+
+  await context.close();
+});
+
+test("a service-worker-controlled offline reload shows and prints the saved public plan", async () => {
+  const { context, page } = await plannerPage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.reload();
+  await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+
+  const selectedDate = await page.locator("#date").inputValue();
+  const productionConfig = fs.readFileSync(
+    path.join(ROOT, "supabase-config.js"),
+    "utf8",
+  );
+  await page.evaluate(({ date, config }) => {
+    localStorage.setItem(`st-james-plan-cache-v2-${date}`, JSON.stringify({
+      songs: {
+        entrance: {
+          id: "offline-song",
+          title: "Offline Processional",
+          authors: "Cached Composer",
+          copyrightYear: "2026",
+          copyrightOwner: "Cached Publisher",
+          source: "",
+          suggestionParts: ["entrance"],
+        },
+      },
+      readingOverrides: {},
+      celebrationOverride: null,
+    }));
+    return caches.keys().then(async names => {
+      const cache = await caches.open(names.find(name =>
+        name.startsWith("st-james-mass-planner-")));
+      await cache.put(
+        new Request(new URL("./supabase-config.js", location.href)),
+        new Response(config, {
+          headers: { "Content-Type": "text/javascript; charset=utf-8" },
+        }),
+      );
+    });
+  }, { date: selectedDate, config: productionConfig });
+
+  await page.unroute("**/supabase-config.js");
+  await context.setOffline(true);
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() =>
+    document.querySelector("#syncStatus")?.textContent.includes(
+      "Offline — showing saved copy",
+    ),
+  );
+  assert.match(await page.locator("#musicList").innerText(), /Offline Processional/);
+
+  await page.evaluate(() => {
+    window.print = () => {};
+  });
+  await page.locator("#printMusicReadings").click();
+  const printText = await page.locator("#printSheet").innerText();
+  assert.match(printText, /Offline Processional/);
+  assert.match(printText, /Mass readings/);
+  await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
+
+  await page.locator("#next").click();
+  await page.waitForFunction(() =>
+    document.querySelector("#syncStatus")?.textContent.includes(
+      "Offline — no saved plan",
+    ),
+  );
+  assert.doesNotMatch(await page.locator("#musicList").innerText(), /Offline Processional/);
 
   await context.close();
 });

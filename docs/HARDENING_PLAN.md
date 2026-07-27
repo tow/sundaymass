@@ -22,15 +22,15 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 
 | Phase | State | Outcome |
 |---|---|---|
-| 1. Correctness defects | Complete locally; deployment pending | Hash-based embedding staleness and truly empty suggestion positions |
+| 1. Correctness defects | Complete and deployed | Hash-based embedding staleness and truly empty suggestion positions |
 | 2. Reproducible build and CI | Complete locally | Pinned, deterministic, deployment-gating build |
 | 3. Testable stores and Edge logic | Complete locally | Dependency-injected adapters and executable behavior tests |
 | 4. Supabase integration tests | Complete locally | Proven RLS, RPC, privacy, and suggestion behavior |
-| 5. Application modularization | In progress | Small feature controllers and shared definitions |
+| 5. Application modularization | Complete locally | Small feature controllers and shared definitions |
 | 6. Offline/PWA guarantees | Complete locally | Reliable cached public viewing and explicit online-only editing |
-| 7. Browser and print coverage | In progress | Automated primary-workflow and A4 print tests |
+| 7. Browser and print coverage | Complete locally | Automated primary-workflow, offline-PWA, and A4 print tests |
 | 8. Documentation | Complete locally | Accurate, split developer and operations documentation |
-| 9. Repository cleanup | In progress | Intentional artifacts and generated-output enforcement |
+| 9. Repository cleanup | Complete locally | Intentional artifacts and generated-output enforcement |
 
 ## Phase 1 — correctness defects
 
@@ -512,3 +512,8 @@ Acceptance:
   type-checks the Supabase Edge Function with an npm-pinned Deno runtime and locked
   dependency graph. Enabling the check exposed and fixed loose request-union handling
   plus the platform AI runtime's missing ambient type declaration.
+- 2026-07-27: The two Phase 1 forward migrations were applied to the linked production
+  project and the current `semantic-songs` Edge Function was deployed. Browser
+  hardening now proves that celebration and individual-reading overrides reach the
+  real A4 PDF output, and that a service-worker-controlled offline reload can display
+  and print a cached public Sunday while clearly rejecting an uncached one.

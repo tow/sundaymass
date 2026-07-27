@@ -35,7 +35,10 @@ GitHub's Pages Actions deployment. A failed verification job cannot deploy.
   mutation, and confirms those lyrics never enter the plan DOM. Chrome also renders
   both print modes to real PDF buffers; the suite verifies A4 media boxes, separate
   reading pages, every music slot including both Communion songs, HTML escaping,
-  attribution warnings, and lyric exclusion.
+  attribution warnings, celebration and individual-reading overrides, and lyric
+  exclusion. A service-worker-controlled workflow then goes offline, reloads and
+  prints a cached Sunday, and distinguishes an uncached Sunday without contacting
+  production.
 - `npm run test:integration` resets a local Supabase project and tests the migrated
   authorization, RLS, RPC, privacy, and semantic-suggestion contract. Run it separately
   because it requires Docker and the pinned Supabase CLI.
@@ -57,10 +60,12 @@ elsewhere:
 CHROME_PATH=/path/to/chrome npm run test:e2e
 ```
 
-The browser test replaces `supabase-config.js` with an empty local configuration and
-injects controlled plan stores. Tests therefore do not read or mutate production data,
-and public lyric-exclusion checks can deliberately pass a hostile plan value containing
-lyrics without exposing a real lyric record.
+The browser tests normally replace `supabase-config.js` with an empty local
+configuration and inject controlled plan stores. The offline test primes an isolated
+browser cache with the public production configuration only after its context has been
+taken offline. Tests therefore do not read or mutate production data, and public
+lyric-exclusion checks can deliberately pass a hostile plan value containing lyrics
+without exposing a real lyric record.
 
 ## Exploratory mobile checks
 
