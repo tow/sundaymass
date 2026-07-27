@@ -54,7 +54,7 @@
   .reading-cite{ display:block; color:var(--ink); font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:13.5px; overflow-wrap:anywhere; }
   .warn{ color:#8a4b00; font-size:13px; margin-top:8px; }
   .actions{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:16px; }
-  .actions button{ width:100%; min-width:0; min-height:48px; padding:10px 12px; font-size:14px; line-height:1.2; }
+  .actions button{ width:100%; min-width:0; min-height:42px; padding:7px 10px; font-size:12.5px; line-height:1.15; }
   .reading-editor-card{ padding:0; overflow:hidden; }
   .reading-editor-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:20px 22px 15px; border-bottom:1px solid #eee6d5; }
   .reading-editor-head h2{ margin:0; font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-size:23px; font-weight:400; line-height:1.2; }
@@ -289,7 +289,7 @@
     .selected-day{ font-size:17px; line-height:1.2; }
     .selected-meta{ grid-column:1; grid-row:auto; text-align:left; margin-top:2px; font-size:11px; }
     .actions{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; margin-top:10px; }
-    .actions button{ min-height:50px; padding:8px 7px; font-size:12.5px; }
+    .actions button{ min-height:42px; padding:6px 7px; font-size:11.5px; }
     .reading-summary{ margin-top:11px; }
     .reading-summary-title{ padding:7px 9px; font-size:10px; }
     .reading-grid{ grid-template-columns:1fr; }

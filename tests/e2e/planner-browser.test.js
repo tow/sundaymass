@@ -233,9 +233,9 @@ test("public users can open an ordered temporary YouTube practice queue", async 
   assert.deepEqual(
     await page.locator("#practiceQueueList .practice-queue-item").allTextContents(),
     [
-      "Entrance / Processional HymnOpening Hymn",
-      "Communion Hymn 1Communion Hymn",
-      "Communion Hymn 2Opening Hymn reprise",
+      "EntranceOpening Hymn",
+      "Communion 1Communion Hymn",
+      "Communion 2Opening Hymn reprise",
     ],
   );
   const source = await page.locator("#practicePlayer").getAttribute("src");
@@ -713,8 +713,8 @@ test("Chrome produces dedicated A4 music and readings PDFs without private lyric
   assert.equal(printState.sheetDisplay, "block");
   assert.match(printState.html, /&lt;Unsafe &amp; hymn&gt;/);
   assert.doesNotMatch(printState.html, /<unsafe/i);
-  assert.match(printState.text, /Communion Hymn 1[\s\S]*Print song 12/i);
-  assert.match(printState.text, /Communion Hymn 2[\s\S]*Print song 13/i);
+  assert.match(printState.text, /Communion 1[\s\S]*Print song 12/i);
+  assert.match(printState.text, /Communion 2[\s\S]*Print song 13/i);
   assert.match(printState.text, /Copyright information incomplete/);
   assert.doesNotMatch(printState.text, /PRIVATE PRINT LYRIC/);
 

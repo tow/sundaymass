@@ -90,6 +90,7 @@
     }
 
     function close() {
+      stopPlayback();
       elements.dialog.close();
     }
 
