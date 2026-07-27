@@ -504,3 +504,7 @@ Acceptance:
   both stores and included explicitly in the Pages/PWA shell. Celebration and
   individual-reading editor orchestration moved into `reading-workflow.js`, reducing
   `planner.js` from 600 to 434 lines while all six Chrome workflows remained green.
+- 2026-07-27: Selected-Sunday and effective-plan state moved into a DOM-free,
+  directly-tested `planner-state.js`. It owns atomic celebration replacement, reading
+  precedence, duplicate canonical-song updates, and reset/apply transitions while the
+  planner entry point remains responsible for feature composition.

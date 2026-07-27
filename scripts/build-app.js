@@ -25,6 +25,7 @@ const appValues = {
   "@@CALENDAR_NAVIGATION_JS@@": read("src/app/calendar-navigation.js"),
   "@@AUTH_CONTROLLER_JS@@": read("src/app/auth-controller.js"),
   "@@PLAN_SESSION_CONTROLLER_JS@@": read("src/app/plan-session-controller.js"),
+  "@@PLANNER_STATE_JS@@": read("src/app/planner-state.js"),
   "@@SONG_FORM_JS@@": read("src/app/song-form.js"),
   "@@PRINT_CONTROLLER_JS@@": read("src/app/print-controller.js"),
   "@@MUSIC_PARTS_JS@@": read("src/domain/music-parts.js"),

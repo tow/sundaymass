@@ -3,6 +3,7 @@
 @@CALENDAR_NAVIGATION_JS@@
 @@AUTH_CONTROLLER_JS@@
 @@PLAN_SESSION_CONTROLLER_JS@@
+@@PLANNER_STATE_JS@@
 @@SONG_FORM_JS@@
 @@PRINT_CONTROLLER_JS@@
 @@MUSIC_PARTS_JS@@
@@ -96,45 +97,31 @@ function cycleName(c){ return "Year " + c; }
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
 function fmtPicker(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}); }
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-let curIdx = 0;  // index into CALENDAR
-let musicSongs = {};
-let readingOverrides = {};
-let celebrationOverride = null;
 let planStore = null;
 let isEditor = false;
 let signedIn = false;
 
-function current(){ return CALENDAR[curIdx]; }
-function baseCelebration(){
-  const sunday=current();
-  return celebrationOverride || lectionary.scheduledCelebration(sunday);
-}
-function vals(){
-  const s = current();
-  const celebration=baseCelebration();
-  const citationFor=slot=>readingOverrides[slot.key]?.citation || celebration.readings?.[slot.key] || "";
-  const baseMeta=celebrationOverride
-    ? (celebration.rank || "Celebration")+" · normally "+fmtLong(celebration.sourceDate)
-    : s.s+" · "+cycleName(s.c);
-  return {
-    day: celebration.name,
-    meta: fmtLong(s.d) + "  ·  " + baseMeta,
-    first: citationFor(READING_SLOTS[0]), psalm: citationFor(READING_SLOTS[1]),
-    second: citationFor(READING_SLOTS[2]), gospel: citationFor(READING_SLOTS[3]),
-    date: s.d,
-  };
-}
+const plannerState=PlannerState.create({
+  calendar:CALENDAR,
+  readingSlots:READING_SLOTS,
+  scheduledCelebration:sunday=>lectionary.scheduledCelebration(sunday),
+  formatLong:fmtLong,
+  cycleName,
+});
+function current(){ return plannerState.current(); }
+function baseCelebration(){ return plannerState.baseCelebration(); }
+function vals(){ return plannerState.values(); }
 function textFor(citation){ return READINGS[citation] || ""; }
-function choiceFor(key){ return musicPlanView.choiceFor(musicSongs,key); }
+function choiceFor(key){ return musicPlanView.choiceFor(plannerState.songs(),key); }
 function renderMusicPlan(){
-  const view=musicPlanView.render({parts:MUSIC_PARTS,songs:musicSongs,isEditor});
+  const view=musicPlanView.render({parts:MUSIC_PARTS,songs:plannerState.songs(),isEditor});
   editorHelp.hidden=view.editorHelpHidden;
   musicIntro.textContent=view.intro;
   musicList.innerHTML=view.html;
   musicList.dataset.mode=view.mode;
 }
-function computedCitation(slot){ return baseCelebration().readings?.[slot.key] || ""; }
-function displayedCitation(slot){ return readingOverrides[slot.key]?.citation || computedCitation(slot); }
+function computedCitation(slot){ return plannerState.computedCitation(slot); }
+function displayedCitation(slot){ return plannerState.displayedCitation(slot); }
 const readingWorkflow=ReadingWorkflow.create({
   elements:{
     launch:liturgicalEditLaunch,
@@ -185,28 +172,25 @@ const readingWorkflow=ReadingWorkflow.create({
   getDate:()=>current().d,
   getCurrentSunday:current,
   getBaseCelebration:baseCelebration,
-  getCelebrationOverride:()=>celebrationOverride,
-  getReadingOverrides:()=>readingOverrides,
+  getCelebrationOverride:plannerState.celebrationOverride,
+  getReadingOverrides:plannerState.readingOverrides,
   getComputedCitation:computedCitation,
   getDisplayedCitation:displayedCitation,
   getCandidates:()=>lectionary.availableCelebrations(current()),
   onCelebrationSaved:payload=>{
-    celebrationOverride=payload;
-    readingOverrides={};
+    plannerState.useCelebration(payload);
     refresh();
   },
   onCelebrationRestored:()=>{
-    celebrationOverride=null;
-    readingOverrides={};
+    plannerState.restoreCelebration();
     refresh();
   },
   onReadingOverrideChanged:(slot,value)=>{
-    if(value) readingOverrides[slot]=value;
-    else delete readingOverrides[slot];
+    plannerState.setReadingOverride(slot,value);
     refresh();
   },
   onAllReadingsRestored:()=>{
-    readingOverrides={};
+    plannerState.clearReadingOverrides();
     refresh();
   },
   openModal,
@@ -220,8 +204,8 @@ function renderReadingPlan(){
   const view=readingPlanView.render({
     sunday:current(),
     celebration:baseCelebration(),
-    celebrationOverride,
-    readingOverrides,
+    celebrationOverride:plannerState.celebrationOverride(),
+    readingOverrides:plannerState.readingOverrides(),
     readingSlots:READING_SLOTS,
     values:vals(),
     textFor,
@@ -237,8 +221,9 @@ function syncDateControl(){
 }
 function refresh(){
   syncDateControl(); renderReadingPlan(); readingWorkflow.renderEditor();
-  prev.disabled=curIdx===0; next.disabled=curIdx===CALENDAR.length-1;
-  today.hidden=curIdx===nextSundayIdx();
+  prev.disabled=plannerState.index()===0;
+  next.disabled=plannerState.index()===CALENDAR.length-1;
+  today.hidden=plannerState.index()===nextSundayIdx();
   const v = vals();
   if(!v.gospel && !v.first){ warn.style.display="block"; warn.textContent="This day has proper readings that are not in the dataset. Please confirm them against the parish Ordo."; }
   else if(warn.textContent.indexOf("outside the computed")<0){ warn.style.display="none"; }
@@ -252,16 +237,12 @@ const planSessionController=PlanSessionController.create({
   getDate:()=>current().d,
   isOnline:()=>navigator.onLine,
   onReset:()=>{
-    musicSongs={};
-    readingOverrides={};
-    celebrationOverride=null;
+    plannerState.reset();
     renderMusicPlan();
     refresh();
   },
   onPlan:(plan)=>{
-    musicSongs=plan?.songs || {};
-    readingOverrides=plan?.readingOverrides || {};
-    celebrationOverride=plan?.celebrationOverride || null;
+    plannerState.applyPlan(plan);
     renderMusicPlan();
     refresh();
   },
@@ -329,21 +310,19 @@ const songWorkflow=SongWorkflow.create({
   isOnline:()=>navigator.onLine,
   getDate:()=>current().d,
   getReadingCitations:()=>READING_SLOTS.map(slot=>displayedCitation(slot)).filter(Boolean),
-  getSongs:()=>musicSongs,
+  getSongs:plannerState.songs,
   openModal,
   onStatus:setSyncStatus,
   onAssigned:(part,song)=>{
-    musicSongs[part]=song;
+    plannerState.assignSong(part,song);
     renderMusicPlan();
   },
   onCleared:part=>{
-    delete musicSongs[part];
+    plannerState.clearSong(part);
     renderMusicPlan();
   },
   onUpdated:song=>{
-    Object.keys(musicSongs).forEach(part=>{
-      if(musicSongs[part]?.id===song.id) musicSongs[part]=song;
-    });
+    plannerState.updateSong(song);
     renderMusicPlan();
   },
   confirm:message=>confirm(message),
@@ -380,7 +359,9 @@ function goToDate(iso){
     warn.style.display="block";
     warn.textContent="That date is outside the computed range (2025–2075).";
   }
-  curIdx=selection.index; refresh(); subscribeToCurrentPlan();
+  plannerState.setIndex(selection.index);
+  refresh();
+  subscribeToCurrentPlan();
 }
 
 const printController=PrintController.create({
@@ -409,14 +390,34 @@ printController.start();
 
 // wire up
 function nextSundayIdx(){ return calendarNavigation.upcomingIndex(new Date().toISOString().slice(0,10)); }
-prev.addEventListener("click", ()=>{ const index=calendarNavigation.previousIndex(curIdx); if(index!==curIdx){curIdx=index; refresh(); subscribeToCurrentPlan();} });
-next.addEventListener("click", ()=>{ const index=calendarNavigation.nextIndex(curIdx); if(index!==curIdx){curIdx=index; refresh(); subscribeToCurrentPlan();} });
-document.getElementById("today").addEventListener("click", ()=>{ curIdx=nextSundayIdx(); refresh(); subscribeToCurrentPlan(); });
+prev.addEventListener("click", ()=>{
+  const index=calendarNavigation.previousIndex(plannerState.index());
+  if(index!==plannerState.index()){
+    plannerState.setIndex(index);
+    refresh();
+    subscribeToCurrentPlan();
+  }
+});
+next.addEventListener("click", ()=>{
+  const index=calendarNavigation.nextIndex(plannerState.index());
+  if(index!==plannerState.index()){
+    plannerState.setIndex(index);
+    refresh();
+    subscribeToCurrentPlan();
+  }
+});
+document.getElementById("today").addEventListener("click", ()=>{
+  plannerState.setIndex(nextSundayIdx());
+  refresh();
+  subscribeToCurrentPlan();
+});
 date.addEventListener("change", ()=>{ if(date.value) goToDate(date.value); else syncDateControl(); });
 printMusic.addEventListener("click", ()=>printController.print("music"));
 printMusicReadings.addEventListener("click", ()=>printController.print("music-readings"));
 
-curIdx=nextSundayIdx(); refresh(); renderMusicPlan();
+plannerState.setIndex(nextSundayIdx());
+refresh();
+renderMusicPlan();
 
 // iPhone/iPad uses Safari's Share → Add to Home Screen flow.
 PwaController.createInstallController({

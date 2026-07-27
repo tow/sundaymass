@@ -87,6 +87,7 @@ appropriate source file:
 - `src/app/modal-controller.js` — native-dialog page scroll locking and restoration
 - `src/app/pwa-controller.js` — install prompt and service-worker registration behavior
 - `src/app/plan-session-controller.js` — authentication and date-scoped live-plan subscriptions
+- `src/app/planner-state.js` — selected Sunday and effective live-plan state
 - `src/service-worker.js` — offline fetch/cache behavior template
 - `src/service-worker-assets.json` — complete same-origin app shell
 - `src/app/song-form.js` — canonical song editor form read/write mapping

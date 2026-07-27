@@ -71,6 +71,10 @@ domain modules --> no DOM, network, storage, or Supabase dependencies
 state, wire DOM events, and pass explicit dependencies to smaller modules. They should
 not accumulate validation, persistence mapping, or feature-specific state machines.
 
+The planner's mutable Sunday, song, celebration, and reading values are held by the
+DOM-free `planner-state.js`; the entry point coordinates its state transitions with the
+session and feature workflows.
+
 ### Feature controllers and views
 
 Controllers own one interaction or lifecycle, such as the song picker, plan
