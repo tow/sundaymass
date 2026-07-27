@@ -421,3 +421,9 @@ Acceptance:
   editor-only access, suggested choices, confirmation reset, and lifecycle cleanup.
   At 390×844 Chrome confirms the Acts 4:32–35 gate and structured save remain intact
   with no overflow or warnings.
+- 2026-07-27: The editor-only liturgical summary now uses a pure view for celebration
+  metadata, four reading rows, change/restore actions, and Computed, Selected Mass, or
+  Changed badges. Tests cover non-editor suppression, HTML escaping, computed Sundays,
+  celebration replacement, and individual overrides. At 390×844 Chrome confirms all
+  four rows and both override levels render with the correct restore controls and no
+  overflow or warnings.

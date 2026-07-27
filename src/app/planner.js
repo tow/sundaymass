@@ -9,6 +9,7 @@
 @@SONG_PRESENTATION_JS@@
 @@MUSIC_PLAN_VIEW_JS@@
 @@READING_PLAN_VIEW_JS@@
+@@READING_EDITOR_VIEW_JS@@
 @@SONG_PICKER_VIEW_JS@@
 @@SONG_PICKER_CONTROLLER_JS@@
 @@SONG_MUTATION_CONTROLLER_JS@@
@@ -50,6 +51,11 @@ const musicPlanView=MusicPlanView.create({
   editorAttribution:SongPresentation.editorPlanAttribution,
 });
 const readingPlanView=ReadingPlanView.create({
+  escapeHtml:esc,
+  formatLong:fmtLong,
+  cycleName,
+});
+const readingEditorView=ReadingEditorView.create({
   escapeHtml:esc,
   formatLong:fmtLong,
   cycleName,
@@ -170,27 +176,25 @@ function setReadingStatus(text,state){
   readingSaveStatus.dataset.state=state || "";
 }
 function renderReadingEditor(){
-  liturgicalEditLaunch.hidden=!isEditor;
-  if(!isEditor) return;
-  const celebration=baseCelebration();
-  celebrationCurrent.classList.toggle("changed",!!celebrationOverride);
-  celebrationCurrent.innerHTML='<div class="celebration-current-label">Celebration for this Mass'
-    +'<span class="reading-status-badge'+(celebrationOverride?' changed':'')+'">'+(celebrationOverride?'Changed':'Computed')+'</span></div>'
-    +'<div class="celebration-current-name">'+esc(celebration.name)+'</div>'
-    +'<div class="celebration-current-meta">'+(celebrationOverride
-      ? esc((celebration.rank||"Celebration")+" · normally "+fmtLong(celebration.sourceDate))
-      : esc(fmtLong(current().d)+" · "+current().s+" · "+cycleName(current().c)))+'</div>';
-  restoreCelebration.hidden=!celebrationOverride;
-  const changed=READING_SLOTS.filter(slot=>readingOverrides[slot.key]);
-  readingEditorList.innerHTML=READING_SLOTS.map(slot=>{
-    const adjusted=!!readingOverrides[slot.key];
-    return '<div class="reading-editor-row"><div><div class="reading-editor-label">'+esc(slot.label)
-      +'<span class="reading-status-badge'+(adjusted?' changed':'')+'">'+(adjusted?'Changed':(celebrationOverride?'Selected Mass':'Computed'))+'</span></div>'
-      +'<div class="reading-editor-cite">'+(esc(displayedCitation(slot))||"—")+'</div></div>'
-      +'<div class="reading-editor-actions"><button type="button" data-reading-action="change" data-reading-slot="'+slot.key+'">Change</button>'
-      +(adjusted?'<button type="button" data-reading-action="restore" data-reading-slot="'+slot.key+'">Restore</button>':'')+'</div></div>';
-  }).join("");
-  readingEditorFooter.hidden=changed.length===0;
+  const view=readingEditorView.render({
+    isEditor,
+    celebration:baseCelebration(),
+    celebrationOverride,
+    sunday:current(),
+    readingOverrides,
+    readingSlots:READING_SLOTS,
+    citations:Object.fromEntries(READING_SLOTS.map(slot=>[
+      slot.key,
+      displayedCitation(slot),
+    ])),
+  });
+  liturgicalEditLaunch.hidden=view.launchHidden;
+  if(!view.editorVisible) return;
+  celebrationCurrent.classList.toggle("changed",view.celebrationChanged);
+  celebrationCurrent.innerHTML=view.celebrationHtml;
+  restoreCelebration.hidden=view.restoreCelebrationHidden;
+  readingEditorList.innerHTML=view.readingsHtml;
+  readingEditorFooter.hidden=view.footerHidden;
 }
 const celebrationController=CelebrationController.create({
   getStore:()=>planStore,
