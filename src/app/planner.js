@@ -10,6 +10,7 @@
 @@MUSIC_PLAN_VIEW_JS@@
 @@READING_PLAN_VIEW_JS@@
 @@SONG_PICKER_VIEW_JS@@
+@@SONG_PICKER_CONTROLLER_JS@@
 @@CELEBRATION_PICKER_VIEW_JS@@
 @@SONG_CATALOG_JS@@
 @@PLAN_MUSIC_DATA_JS@@
@@ -93,11 +94,16 @@ let signedIn = false;
 let editingReadingSlot = null;
 let pendingReadingSelection = null;
 let pendingCelebration = null;
-let editingSongPart = null;
-let selectedSong = null;
-let visibleSongs = [];
 let editingSong = null;
-let suggestedSongs = [];
+let songPickerState = {
+  open:false,
+  partKey:null,
+  selectedSong:null,
+  searchResults:[],
+  searchStatus:"idle",
+  suggestions:[],
+  suggestionStatus:"idle",
+};
 
 function current(){ return CALENDAR[curIdx]; }
 function baseCelebration(){
@@ -334,54 +340,44 @@ function songPart(key){ return MUSIC_PARTS.find(part=>part.key===key); }
 function currentReadingCitations(){
   return READING_SLOTS.map(slot=>displayedCitation(slot)).filter(Boolean);
 }
+const songPickerController=SongPickerController.create({
+  getStore:()=>planStore,
+  isEditor:()=>isEditor,
+  getReadingCitations:currentReadingCitations,
+  suggestionPartFor,
+  onChange:state=>{
+    songPickerState=state;
+    renderSongResults();
+    renderSongSuggestions();
+  },
+  logger:console,
+});
 function renderSongResults(){
-  const view=songPickerView.renderSearchResults({songs:visibleSongs,selectedSong});
+  const view=songPickerView.renderSearchResults({
+    songs:songPickerState.searchResults,
+    selectedSong:songPickerState.selectedSong,
+  });
   songResults.innerHTML=view.html;
   songResults.hidden=!view.hasResults;
   songResultsHeading.hidden=!view.hasResults;
   songPickerEmpty.hidden=view.hasResults;
+  songPickerEmpty.textContent=songPickerState.searchStatus==="error"
+    ? "Could not load songs. Please try again."
+    : "No matching songs.";
   useSong.disabled=view.useDisabled;
 }
 function renderSongSuggestions(){
-  const view=songPickerView.renderSuggestions({songs:suggestedSongs,selectedSong});
+  const view=songPickerView.renderSuggestions({
+    songs:songPickerState.suggestions,
+    selectedSong:songPickerState.selectedSong,
+  });
   songSuggestionResults.innerHTML=view.html;
   songSuggestionStatus.hidden=view.hasSuggestions;
-}
-async function loadSongSuggestions(){
-  suggestedSongs=[];
-  songSuggestionStatus.hidden=false;
-  songSuggestionStatus.textContent="Finding related songs…";
-  renderSongSuggestions();
-  try{
-    suggestedSongs=(await planStore.suggestSongs(currentReadingCitations(),suggestionPartFor(editingSongPart))).slice(0,3);
-    songSuggestionStatus.textContent=suggestedSongs.length
-      ? ""
-      : "Suggestions are not indexed for these readings yet.";
-  }catch(error){
-    console.warn("Could not load suggestions",error);
-    songSuggestionStatus.textContent="Suggestions are not available yet.";
-  }
-  renderSongSuggestions();
-}
-let songSearchRequest=0;
-async function searchSongCatalog(){
-  if(!isEditor || !planStore) return;
-  const query=songSearch.value;
-  const request=++songSearchRequest;
-  try{
-    const matches=await planStore.searchSongs(query);
-    if(request!==songSearchRequest) return;
-    visibleSongs=matches;
-    selectedSong=null;
-    renderSongResults();
-  }catch(error){
-    if(request!==songSearchRequest) return;
-    console.error(error);
-    visibleSongs=[];
-    renderSongResults();
-    songPickerEmpty.hidden=false;
-    songPickerEmpty.textContent="Could not load songs. Please try again.";
-  }
+  songSuggestionStatus.textContent={
+    loading:"Finding related songs…",
+    empty:"Suggestions are not indexed for these readings yet.",
+    error:"Suggestions are not available yet.",
+  }[songPickerState.suggestionStatus] || "";
 }
 function setSongPickerMode(mode){
   if(mode==="create"){ openSongEditor(null); return; }
@@ -394,18 +390,14 @@ function setSongPickerMode(mode){
   });
   songPickerDialog.querySelector(".reading-dialog-body").scrollTop=0;
   if(mode==="search"){
-    searchSongCatalog();
+    songPickerController.search(songSearch.value);
     if(window.matchMedia("(min-width:701px)").matches){
       setTimeout(()=>songSearch.focus({preventScroll:true}),0);
     }
   }
 }
 async function openSongPicker(partKey){
-  if(!isEditor) return;
-  editingSongPart=partKey;
-  selectedSong=null;
-  visibleSongs=[];
-  suggestedSongs=[];
+  if(!isEditor || !planStore) return;
   const part=songPart(partKey);
   const currentSong=musicSongs[partKey];
   const currentSelection=songPickerView.currentSelection(currentSong);
@@ -415,15 +407,13 @@ async function openSongPicker(partKey){
   songCurrentAuthor.textContent=currentSelection.author;
   songSearch.value="";
   songPickerEmpty.textContent="No matching songs.";
-  renderSongResults();
   setSongPickerMode("suggested");
   openModal(songPickerDialog);
-  await loadSongSuggestions();
+  await songPickerController.open(partKey);
 }
 function closeSongPicker(){
-  songSearchRequest++;
+  songPickerController.close();
   songPickerDialog.close();
-  selectedSong=null;
 }
 function songDraftFromForm(){
   return songForm.read();
@@ -431,11 +421,11 @@ function songDraftFromForm(){
 function fillSongForm(song){
   songForm.write(song,{
     fallbackTitle:songSearch.value.trim(),
-    defaultSuggestionParts:[suggestionPartFor(editingSongPart)],
+    defaultSuggestionParts:[suggestionPartFor(songPickerState.partKey)],
   });
 }
 function openSongEditor(song){
-  if(!isEditor || !editingSongPart) return;
+  if(!isEditor || !songPickerState.partKey) return;
   editingSong=song || null;
   fillSongForm(editingSong);
   songEditorEyebrow.textContent=editingSong ? "Shared song" : "New song";
@@ -446,7 +436,10 @@ function openSongEditor(song){
   songSharedWarning.hidden=!editingSong;
   saveSong.textContent=editingSong ? "Save song" : "Create and use song";
   songEditorError.textContent="";
-  if(songPickerDialog.open) songPickerDialog.close();
+  if(songPickerDialog.open){
+    songPickerDialog.close();
+    songPickerController.close();
+  }
   openModal(songEditorDialog);
   setTimeout(()=>songTitle.focus(),0);
 }
@@ -480,7 +473,7 @@ musicList.addEventListener("click",async event=>{
 let songSearchTimer=null;
 songSearch.addEventListener("input",()=>{
   clearTimeout(songSearchTimer);
-  songSearchTimer=setTimeout(searchSongCatalog,180);
+  songSearchTimer=setTimeout(()=>songPickerController.search(songSearch.value),180);
 });
 songPickerModes.addEventListener("click",event=>{
   const button=event.target.closest("[data-song-picker-mode]");
@@ -489,18 +482,15 @@ songPickerModes.addEventListener("click",event=>{
 songResults.addEventListener("click",event=>{
   const button=event.target.closest("button[data-song-index]");
   if(!button) return;
-  selectedSong=visibleSongs[Number(button.dataset.songIndex)] || null;
-  renderSongResults();
+  songPickerController.selectSearchResult(button.dataset.songIndex);
 });
 songSuggestionResults.addEventListener("click",event=>{
   const button=event.target.closest("button[data-song-suggestion-index]");
   if(!button)return;
-  selectedSong=suggestedSongs[Number(button.dataset.songSuggestionIndex)]||null;
-  renderSongSuggestions();
-  renderSongResults();
+  songPickerController.selectSuggestion(button.dataset.songSuggestionIndex);
 });
 editCurrentSong.addEventListener("click",async ()=>{
-  const currentSong=musicSongs[editingSongPart];
+  const currentSong=musicSongs[songPickerState.partKey];
   if(!currentSong || !isEditor) return;
   setSyncStatus("Loading song…","");
   try{
@@ -513,7 +503,7 @@ editCurrentSong.addEventListener("click",async ()=>{
   }
 });
 removeCurrentSong.addEventListener("click",async ()=>{
-  const part=editingSongPart;
+  const part=songPickerState.partKey;
   const currentSong=musicSongs[part];
   if(!currentSong || !isEditor) return;
   if(!confirm("Remove “"+currentSong.title+"” from "+(songPart(part)?.label || "this part")+"? The shared song will remain available.")) return;
@@ -525,8 +515,9 @@ removeCurrentSong.addEventListener("click",async ()=>{
   }catch(error){}
 });
 useSong.addEventListener("click",async ()=>{
-  if(!selectedSong || !editingSongPart) return;
-  const part=editingSongPart;
+  const selectedSong=songPickerState.selectedSong;
+  if(!selectedSong || !songPickerState.partKey) return;
+  const part=songPickerState.partKey;
   try{
     await runSongMutation(()=>planStore.assignSong(current().d,part,selectedSong.id),"Saved");
     musicSongs[part]=selectedSong;
@@ -554,9 +545,10 @@ songEditorForm.addEventListener("submit",async event=>{
       });
       setSyncStatus("Saved","saved");
     }else{
-      const created=await planStore.createAndAssignSong(current().d,editingSongPart,validation.value);
+      const part=songPickerState.partKey;
+      const created=await planStore.createAndAssignSong(current().d,part,validation.value);
       planStore.syncSongEmbedding(created.id).catch(error=>console.warn("Song indexing failed",error));
-      musicSongs[editingSongPart]=created;
+      musicSongs[part]=created;
       setSyncStatus("Saved","saved");
     }
     closeSongEditor();

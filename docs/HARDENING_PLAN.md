@@ -390,3 +390,9 @@ Acceptance:
   offline errors, reconnect cleanup, and idempotent shutdown. At 390×844 Chrome
   confirms that changing Sunday stops the previous subscription exactly once, loads
   the new date, remains “Up to date,” has no horizontal overflow, and logs no warnings.
+- 2026-07-27: Song-picker query and selection state now belongs to a dedicated
+  controller. Direct tests cover editor/store availability, normalized position
+  filtering, the three-suggestion cap, duplicate-title record identity, query errors,
+  latest-search-wins behavior, and invalidation of both searches and suggestions when
+  the picker closes. At 390×844 Chrome confirms Suggest and Search modes, duplicate
+  records, selection state, action enablement, and no horizontal overflow or warnings.

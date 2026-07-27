@@ -19,7 +19,7 @@ test("planner contains a song picker and optional-lyrics editor", () => {
   assert.match(html, /id="songSuggestionParts"/);
   assert.match(html, /Manual selection remains unrestricted/);
   assert.match(html, /Add lyrics now \(optional\)/);
-  assert.match(app, /suggestionPartFor\(editingSongPart\)/);
+  assert.match(app, /defaultSuggestionParts:\[suggestionPartFor\(songPickerState\.partKey\)\]/);
 });
 
 test("suggest, search, and create are explicit picker modes", () => {

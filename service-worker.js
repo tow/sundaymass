@@ -1,4 +1,4 @@
-const CACHE_NAME = "st-james-mass-planner-966f5cd4ed31";
+const CACHE_NAME = "st-james-mass-planner-541e5d46c30f";
 const APP_SHELL = [
   "./",
   "./index.html",

@@ -63,21 +63,25 @@ test("Supabase Edge Function uses its native model and verifies editor access", 
 test("the planner requests suggestions only from effective reading citations", () => {
   const html = read("src/planner.html");
   const app = read("src/app/planner.js");
+  const picker = read("src/app/song-picker-controller.js");
   const store = read("src/services/plan-store.js");
 
   assert.match(html, /id="songSuggestions"/);
   assert.match(html, /Suggestions from this Mass’s readings/);
   assert.match(app, /function currentReadingCitations/);
-  assert.match(app, /planStore\.suggestSongs\(currentReadingCitations\(\),suggestionPartFor\(editingSongPart\)\)/);
+  assert.match(app, /getReadingCitations:currentReadingCitations/);
+  assert.match(picker, /store\.suggestSongs\(\s*getReadingCitations\(\),\s*suggestionPartFor\(partKey\)/);
   assert.match(store, /async suggestSongs\(/);
   assert.match(store, /\.functions\.invoke\("semantic-songs"/);
 });
 
 test("the song picker keeps a mobile-sized suggestion set visible before search", () => {
   const app = read("src/app/planner.js");
+  const picker = read("src/app/song-picker-controller.js");
   const edgeFunction = read("supabase/functions/semantic-songs/index.ts");
 
-  assert.match(app, /planStore\.suggestSongs\(currentReadingCitations\(\),suggestionPartFor\(editingSongPart\)\)\)\.slice\(0,3\)/);
+  assert.match(picker, /maxSuggestions = 3/);
+  assert.match(picker, /suggestions\.slice\(0, maxSuggestions\)/);
   assert.match(app, /songPickerDialog\.querySelector\("\.reading-dialog-body"\)\.scrollTop=0/);
   assert.match(app, /matchMedia\("\(min-width:701px\)"\)\.matches/);
   assert.match(app, /songSearch\.focus\(\{preventScroll:true\}\)/);
@@ -86,10 +90,12 @@ test("the song picker keeps a mobile-sized suggestion set visible before search"
 
 test("semantic suggestions are filtered by the requested Mass part before ranking", () => {
   const app = read("src/app/planner.js");
+  const picker = read("src/app/song-picker-controller.js");
   const edgeFunction = read("supabase/functions/semantic-songs/index.ts");
   const sql = read("supabase/migrations/20260727230000_song_suggestion_parts.sql");
 
-  assert.match(app, /planStore\.suggestSongs\(currentReadingCitations\(\),suggestionPartFor\(editingSongPart\)\)/);
+  assert.match(app, /suggestionPartFor,/);
+  assert.match(picker, /suggestionPartFor\(partKey\)/);
   assert.match(edgeFunction, /p_part: part/);
   assert.match(sql, /p_part text/);
   assert.match(sql, /p_part = any\(s\.suggestion_parts\)/);

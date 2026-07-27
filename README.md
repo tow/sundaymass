@@ -89,6 +89,7 @@ behavior, and export changes in the appropriate source file:
 - `src/app/music-plan-view.js` — lyric-free public/editor music-row rendering
 - `src/app/reading-plan-view.js` — selected celebration, linked citations, and full-text rendering
 - `src/app/song-picker-view.js` — search/suggestion rows and duplicate-title disambiguation
+- `src/app/song-picker-controller.js` — picker queries, selection, and stale-response handling
 - `src/app/celebration-picker-view.js` — standard-lectionary search and reading preview
 - `src/domain/lectionary.js` — lectionary selection and validation rules
 - `src/domain/reading-selection.js` — role-aware override validation and confirmation policy
