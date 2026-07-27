@@ -93,15 +93,19 @@
     return /\b(?:Sunday|Solemnity)\b/i.test(rank || "");
   }
 
-  function create({ calendar, sundayLectionary, celebrations, commons, readings }) {
+  function create({
+    liturgicalCalendar,
+    sundayLectionary,
+    celebrations,
+    commons,
+    readings,
+  }) {
+    if (!liturgicalCalendar?.sundaysBetween) {
+      throw new Error("A runtime liturgical calendar is required");
+    }
     const commonById = new Map(commons.map(common => [common.id, common]));
     const sundayLectionaryById = new Map(sundayLectionary.map(item => [item.id, item]));
-    const calendarByLectionaryId = new Map();
-    calendar.forEach(day => {
-      const dates = calendarByLectionaryId.get(day.l) || [];
-      dates.push(day);
-      calendarByLectionaryId.set(day.l, dates);
-    });
+    const occurrenceWindows = new Map();
 
     function usableCitation(citation) {
       return Boolean(citation && readings[citation] && parseReadingCitation(citation));
@@ -179,6 +183,20 @@
     }
 
     function nearestCalendarOccurrence(lectionaryId, anchor) {
+      const anchorYear = Number(anchor.slice(0, 4));
+      let calendarByLectionaryId = occurrenceWindows.get(anchorYear);
+      if (!calendarByLectionaryId) {
+        calendarByLectionaryId = new Map();
+        liturgicalCalendar.sundaysBetween(
+          `${anchorYear - 30}-01-01`,
+          `${anchorYear + 30}-12-31`,
+        ).forEach(day => {
+          const dates = calendarByLectionaryId.get(day.l) || [];
+          dates.push(day);
+          calendarByLectionaryId.set(day.l, dates);
+        });
+        occurrenceWindows.set(anchorYear, calendarByLectionaryId);
+      }
       const dates = calendarByLectionaryId.get(lectionaryId) || [];
       return dates.reduce((best, day) => {
         if (!best) return day;

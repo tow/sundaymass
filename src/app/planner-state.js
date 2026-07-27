@@ -3,30 +3,25 @@
   "use strict";
 
   function create({
-    calendar,
+    initialSunday,
     readingSlots,
     scheduledCelebration,
     formatLong,
     cycleName,
   }) {
-    let selectedIndex = 0;
+    if (!initialSunday?.d) throw new Error("An initial Sunday is required");
+    let selectedSunday = initialSunday;
     let selectedSongs = {};
     let selectedReadings = {};
     let selectedCelebration = null;
 
-    function index() {
-      return selectedIndex;
-    }
-
-    function setIndex(value) {
-      if (!Number.isInteger(value) || value < 0 || value >= calendar.length) {
-        throw new Error("Sunday index is outside the calendar");
-      }
-      selectedIndex = value;
+    function setSunday(value) {
+      if (!value?.d || !value?.l) throw new Error("A resolved Sunday is required");
+      selectedSunday = value;
     }
 
     function current() {
-      return calendar[selectedIndex];
+      return selectedSunday;
     }
 
     function songs() {
@@ -126,11 +121,10 @@
       computedCitation,
       current,
       displayedCitation,
-      index,
       readingOverrides,
       reset,
       restoreCelebration,
-      setIndex,
+      setSunday,
       setReadingOverride,
       songs,
       updateSong,

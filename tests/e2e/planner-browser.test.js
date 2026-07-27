@@ -260,6 +260,15 @@ test("public reading, navigation, and print workflow excludes private lyrics", a
   await page.locator("#prev").click();
   assert.equal(await page.locator("#dateDisplay").textContent(), beforeDate);
 
+  await page.locator("#date").fill("2126-07-27");
+  await page.locator("#date").dispatchEvent("change");
+  assert.equal(await page.locator("#date").inputValue(), "2126-07-28");
+  assert.match(await page.locator("#dateDisplay").textContent(), /28 Jul 2126/);
+  await page.locator("#prev").click();
+  assert.equal(await page.locator("#date").inputValue(), "2126-07-21");
+  await page.locator("#next").click();
+  assert.equal(await page.locator("#date").inputValue(), "2126-07-28");
+
   assert.equal(
     await page.getByText("PRIVATE LYRICS MUST NEVER RENDER").count(),
     0,

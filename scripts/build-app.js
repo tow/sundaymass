@@ -22,6 +22,7 @@ const appValues = {
   // intentionally leaves a blank line between the domain module and embedded data.
   "@@MODAL_CONTROLLER_JS@@": read("src/app/modal-controller.js"),
   "@@PWA_CONTROLLER_JS@@": read("src/app/pwa-controller.js"),
+  "@@LITURGICAL_CALENDAR_JS@@": read("src/domain/liturgical-calendar.js"),
   "@@CALENDAR_NAVIGATION_JS@@": read("src/app/calendar-navigation.js"),
   "@@AUTH_CONTROLLER_JS@@": read("src/app/auth-controller.js"),
   "@@PLAN_SESSION_CONTROLLER_JS@@": read("src/app/plan-session-controller.js"),
@@ -46,7 +47,6 @@ const appValues = {
   "@@PLAN_MUSIC_DATA_JS@@": read("src/domain/plan-music-data.js"),
   "@@LECTIONARY_CATALOG_JS@@": read("src/domain/lectionary.js"),
   "@@READING_SELECTION_JS@@": read("src/domain/reading-selection.js"),
-  "@@CALENDAR@@": read(path.join(GENERATED_DATA, "sunday-calendar.json")),
   "@@SUNDAY_LECTIONARY@@": read(path.join(GENERATED_DATA, "sunday-lectionary.json")),
   "@@CELEBRATIONS@@": read(path.join(GENERATED_DATA, "celebrations.json")),
   "@@COMMONS@@": read(path.join(GENERATED_DATA, "commons.json")),

@@ -1,5 +1,6 @@
 @@MODAL_CONTROLLER_JS@@
 @@PWA_CONTROLLER_JS@@
+@@LITURGICAL_CALENDAR_JS@@
 @@CALENDAR_NAVIGATION_JS@@
 @@AUTH_CONTROLLER_JS@@
 @@PLAN_SESSION_CONTROLLER_JS@@
@@ -24,14 +25,13 @@
 @@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
 @@READING_SELECTION_JS@@
-const CALENDAR = @@CALENDAR@@;
 const SUNDAY_LECTIONARY = @@SUNDAY_LECTIONARY@@;
 const CELEBRATIONS = @@CELEBRATIONS@@;
 const COMMONS = @@COMMONS@@;
 const READINGS = @@READINGS@@;
 const MUSIC_PARTS=MassMusicParts.parts;
 const lectionary=LectionaryCatalog.create({
-  calendar:CALENDAR,
+  liturgicalCalendar:LiturgicalCalendar,
   sundayLectionary:SUNDAY_LECTIONARY,
   celebrations:CELEBRATIONS,
   commons:COMMONS,
@@ -82,7 +82,7 @@ const readingSelection=ReadingSelection.create({
 const modalController=ModalController.create({window,document});
 const openModal=modalController.open;
 modalController.start();
-const calendarNavigation=CalendarNavigation.create(CALENDAR);
+const calendarNavigation=CalendarNavigation.create(LiturgicalCalendar);
 const songForm=SongForm.create({
   title:songTitle,
   youtubeUrl:songYoutube,
@@ -102,7 +102,7 @@ let isEditor = false;
 let signedIn = false;
 
 const plannerState=PlannerState.create({
-  calendar:CALENDAR,
+  initialSunday:calendarNavigation.upcomingSunday(new Date().toISOString().slice(0,10)),
   readingSlots:READING_SLOTS,
   scheduledCelebration:sunday=>lectionary.scheduledCelebration(sunday),
   formatLong:fmtLong,
@@ -221,12 +221,10 @@ function syncDateControl(){
 }
 function refresh(){
   syncDateControl(); renderReadingPlan(); readingWorkflow.renderEditor();
-  prev.disabled=plannerState.index()===0;
-  next.disabled=plannerState.index()===CALENDAR.length-1;
-  today.hidden=plannerState.index()===nextSundayIdx();
+  today.hidden=current().d===upcomingSunday().d;
   const v = vals();
   if(!v.gospel && !v.first){ warn.style.display="block"; warn.textContent="This day has proper readings that are not in the dataset. Please confirm them against the parish Ordo."; }
-  else if(warn.textContent.indexOf("outside the computed")<0){ warn.style.display="none"; }
+  else{ warn.style.display="none"; }
 }
 
 function setSyncStatus(text,state){
@@ -349,17 +347,13 @@ AuthController.create({
 // pick nearest Sunday to a chosen date
 function goToDate(iso){
   const selection=calendarNavigation.selectionFor(iso);
-  if(selection.index<0){
+  if(!selection){
     warn.style.display="block";
     warn.textContent="Choose a valid date.";
     return;
   }
-  if(selection.withinRange) warn.style.display="none";
-  else{
-    warn.style.display="block";
-    warn.textContent="That date is outside the computed range (2025–2075).";
-  }
-  plannerState.setIndex(selection.index);
+  warn.style.display="none";
+  plannerState.setSunday(selection.sunday);
   refresh();
   subscribeToCurrentPlan();
 }
@@ -389,25 +383,21 @@ const printController=PrintController.create({
 printController.start();
 
 // wire up
-function nextSundayIdx(){ return calendarNavigation.upcomingIndex(new Date().toISOString().slice(0,10)); }
+function upcomingSunday(){
+  return calendarNavigation.upcomingSunday(new Date().toISOString().slice(0,10));
+}
 prev.addEventListener("click", ()=>{
-  const index=calendarNavigation.previousIndex(plannerState.index());
-  if(index!==plannerState.index()){
-    plannerState.setIndex(index);
-    refresh();
-    subscribeToCurrentPlan();
-  }
+  plannerState.setSunday(calendarNavigation.previousSunday(current()));
+  refresh();
+  subscribeToCurrentPlan();
 });
 next.addEventListener("click", ()=>{
-  const index=calendarNavigation.nextIndex(plannerState.index());
-  if(index!==plannerState.index()){
-    plannerState.setIndex(index);
-    refresh();
-    subscribeToCurrentPlan();
-  }
+  plannerState.setSunday(calendarNavigation.nextSunday(current()));
+  refresh();
+  subscribeToCurrentPlan();
 });
 document.getElementById("today").addEventListener("click", ()=>{
-  plannerState.setIndex(nextSundayIdx());
+  plannerState.setSunday(upcomingSunday());
   refresh();
   subscribeToCurrentPlan();
 });
@@ -415,7 +405,6 @@ date.addEventListener("change", ()=>{ if(date.value) goToDate(date.value); else 
 printMusic.addEventListener("click", ()=>printController.print("music"));
 printMusicReadings.addEventListener("click", ()=>printController.print("music-readings"));
 
-plannerState.setIndex(nextSundayIdx());
 refresh();
 renderMusicPlan();
 

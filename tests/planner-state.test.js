@@ -4,12 +4,13 @@ const test = require("node:test");
 const PlannerState = require("../src/app/planner-state.js");
 
 function state() {
-  const calendar = [
-    { d: "2026-07-26", s: "Ordinary Time", c: "A", k: "ordinary" },
-    { d: "2026-08-02", s: "Ordinary Time", c: "A", k: "ordinary" },
-  ];
   return PlannerState.create({
-    calendar,
+    initialSunday: {
+      d: "2026-07-26",
+      s: "Ordinary Time",
+      c: "A",
+      l: "A|17th Sunday in Ordinary Time",
+    },
     readingSlots: [
       { key: "first" },
       { key: "psalm" },
@@ -32,7 +33,12 @@ function state() {
 
 test("planner state resolves the selected Sunday and effective readings", () => {
   const value = state();
-  value.setIndex(1);
+  value.setSunday({
+    d: "2026-08-02",
+    s: "Ordinary Time",
+    c: "A",
+    l: "A|18th Sunday in Ordinary Time",
+  });
   value.applyPlan({
     songs: { entrance: { id: "song-1", title: "Entrance" } },
     readingOverrides: {
@@ -41,7 +47,6 @@ test("planner state resolves the selected Sunday and effective readings", () => 
     celebrationOverride: null,
   });
 
-  assert.equal(value.index(), 1);
   assert.equal(value.current().d, "2026-08-02");
   assert.equal(value.displayedCitation({ key: "first" }), "First default");
   assert.equal(value.displayedCitation({ key: "gospel" }), "Gospel override");

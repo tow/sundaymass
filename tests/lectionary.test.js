@@ -8,7 +8,14 @@ const sundayLectionary = require("../data/generated/sunday-lectionary.json");
 const celebrations = require("../data/generated/celebrations.json");
 const commons = require("../data/generated/commons.json");
 const readings = require("../data/generated/readings_text.json");
-const catalog = global.LectionaryCatalog.create({ calendar, sundayLectionary, celebrations, commons, readings });
+const liturgicalCalendar = require("../src/domain/liturgical-calendar.js");
+const catalog = global.LectionaryCatalog.create({
+  liturgicalCalendar,
+  sundayLectionary,
+  celebrations,
+  commons,
+  readings,
+});
 const ordinarySunday = calendar.find(sunday => sunday.d === "2026-07-26");
 
 test("citation alternatives distinguish an implied chapter from a numbered book", () => {
@@ -58,6 +65,19 @@ test("a calendar date resolves its scheduled readings through one lectionary key
   assert.equal(scheduled.readings.first, "1 Kings 3:5, 7-12");
   assert.equal(scheduled.readings.gospel, "Matthew 13:44-52");
   assert.ok(!("f" in ordinarySunday), "calendar rows must not contain precomputed readings");
+});
+
+test("Sunday override candidates find real nearby occurrences at runtime", () => {
+  const futureSunday = liturgicalCalendar.resolveSunday("2126-07-28");
+  const candidates = catalog.availableCelebrations(futureSunday);
+  const ordinary = candidates.find(candidate =>
+    candidate.id === "sunday-template-A-17th Sunday in Ordinary Time");
+  assert.ok(ordinary);
+  assert.equal(
+    liturgicalCalendar.resolveSunday(ordinary.sourceDate).l,
+    "A|17th Sunday in Ordinary Time",
+  );
+  assert.ok(Math.abs(catalog.dayDistance(ordinary.sourceDate, futureSunday.d)) < 365 * 31);
 });
 
 test("the dated calendar contains only references to complete unique lectionary entries", () => {
