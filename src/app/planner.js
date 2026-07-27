@@ -520,7 +520,7 @@ async function loadSongSuggestions(){
   songSuggestionStatus.textContent="Finding related songs…";
   renderSongSuggestions();
   try{
-    suggestedSongs=await planStore.suggestSongs(currentReadingCitations());
+    suggestedSongs=(await planStore.suggestSongs(currentReadingCitations())).slice(0,3);
     songSuggestionStatus.textContent=suggestedSongs.length
       ? ""
       : "Suggestions are not indexed for these readings yet.";
@@ -567,9 +567,12 @@ async function openSongPicker(partKey){
   songSearch.value="";
   songPickerEmpty.textContent="No matching songs. You can still create a new one above.";
   renderSongResults();
+  songPickerDialog.querySelector(".reading-dialog-body").scrollTop=0;
   openModal(songPickerDialog);
   await Promise.all([searchSongCatalog(),loadSongSuggestions()]);
-  setTimeout(()=>songSearch.focus(),0);
+  if(window.matchMedia("(min-width:701px)").matches){
+    setTimeout(()=>songSearch.focus({preventScroll:true}),0);
+  }
 }
 function closeSongPicker(){
   songSearchRequest++;

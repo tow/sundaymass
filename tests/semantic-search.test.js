@@ -70,3 +70,14 @@ test("the planner requests suggestions only from effective reading citations", (
   assert.match(store, /async suggestSongs\(/);
   assert.match(store, /\.functions\.invoke\("semantic-songs"/);
 });
+
+test("the song picker keeps a mobile-sized suggestion set visible before search", () => {
+  const app = read("src/app/planner.js");
+  const edgeFunction = read("supabase/functions/semantic-songs/index.ts");
+
+  assert.match(app, /planStore\.suggestSongs\(currentReadingCitations\(\)\)\)\.slice\(0,3\)/);
+  assert.match(app, /songPickerDialog\.querySelector\("\.reading-dialog-body"\)\.scrollTop=0/);
+  assert.match(app, /matchMedia\("\(min-width:701px\)"\)\.matches/);
+  assert.match(app, /songSearch\.focus\(\{preventScroll:true\}\)/);
+  assert.match(edgeFunction, /p_limit: 3/);
+});

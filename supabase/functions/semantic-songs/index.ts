@@ -97,7 +97,7 @@ Deno.serve(async request => {
     if (!citations.length) return json({ songs: [] });
     const { data, error } = await userClient.rpc("suggest_songs_for_readings", {
       p_citations: citations,
-      p_limit: 8,
+      p_limit: 3,
     });
     if (error) return json({ error: error.message }, 500);
     return json({ songs: data || [] });
