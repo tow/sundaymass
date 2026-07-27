@@ -12,6 +12,7 @@ Developer documentation:
 
 - [Architecture and module boundaries](docs/architecture.md)
 - [Architecture decisions](docs/decisions/)
+- [Data model and authorization](docs/data-model.md)
 - [Testing guide](docs/testing.md)
 - [Current hardening plan](docs/HARDENING_PLAN.md)
 
@@ -139,83 +140,18 @@ is the final `@media print` block in `src/styles/planner.css`.
 
 ## Live plans
 
-Live data uses Supabase Auth, Postgres, Realtime, and Row Level Security:
+Live data uses Supabase Auth, Postgres, Realtime, Row Level Security, and an editor-only
+Edge Function using Supabase's built-in embedding model. Plans reference canonical song
+entities; public clients receive song metadata but never lyrics or vector data.
 
-- `plans` has one row per Sunday, a JSON `reading_overrides` object, and an optional
-  `celebration_override`.
-- `songs` owns the canonical title, YouTube link, attribution metadata, and audit
-  fields. Its metadata is public. `title` has a non-unique lowercase search index and
-  no uniqueness constraint.
-- `plan_songs` assigns one canonical song UUID to each `(sunday, part)`. Assignments and
-  current song metadata are public. `part` identifies the position in one Mass plan.
-  `songs.suggestion_parts` separately records the normal positions in which a song may
-  be recommended; it never imposes an assignment constraint.
-- `song_lyrics` is an optional one-to-one extension keyed by song UUID. Anonymous users
-  receive no table privileges at all. Authenticated access is further restricted by
-  Row Level Security to members of `public.editors`. Public plan queries deliberately
-  never join this table.
-- `song_embeddings` and `reading_embeddings` contain 384-dimensional pgvector values.
-  Both tables revoke all anonymous and authenticated access; only the service role used
-  inside the Edge Function can read or write them. Song embeddings may be derived from
-  private lyrics, so this boundary is as strict as the lyrics boundary.
-- `semantic-songs` is an editor-only Supabase Edge Function. It uses Supabase’s built-in
-  English `gte-small` model, so there is no external model API, model SDK, or API key.
-  Long texts are split below the model’s 512-token limit and their normalized vectors
-  are combined into one vector per canonical song or reading citation. The Supabase
-  service role can also run maintenance indexing; that secret remains server-side and
-  is never included in an app asset.
-- The repertoire’s “Update suggestion index” action is deliberately manual and
-  resumable for this very small installation. It batches the checked-in reading texts
-  and song IDs through the Edge Function; unchanged content is skipped by SHA-256 hash.
-  Creating or editing a song also refreshes that song’s vector immediately. On an
-  editor visit, the repertoire compares each song/lyrics `updated_at` value with its
-  vector timestamp and automatically repairs missing or stale song vectors. This gives
-  reliable eventual consistency without cron, queues, webhooks, or another service.
-- Song suggestions first keep only songs whose editable `suggestion_parts` contains
-  the requested Mass position, then compare the effective reading citations currently
-  displayed for the Mass with that compatible subset. The database combines each
-  song’s best reading match with its average match and returns public metadata only.
-  Search remains unrestricted, so this recommendation filter never controls what an
-  editor may assign.
-- Editors sign in with an administrator-created, manually confirmed email/password
-  account. Public signup is disabled, so phase 1 requires no outgoing email service.
-- A signed-in user can write only when their user ID is also in `public.editors`.
-  Celebration RPCs repeat that membership check explicitly and run as `security
-  invoker`; the `plans` insert/update Row Level Security policies are the final
-  database boundary. Hiding the edit button is only a usability measure, not the
-  authorization mechanism.
-- Song operations save only after an explicit choose/create/edit/remove action, so
-  ordinary typing in a form never triggers a Realtime rerender or steals mobile
-  keyboard focus.
-- `assign_plan_song` and `clear_plan_song` change one slot.
-  `create_and_assign_song` atomically creates a title-only-or-richer song and assigns
-  it. `update_song` updates canonical metadata plus the optional editor-only lyric row.
-  Each RPC repeats the editor-membership check and uses the tables' RLS policies as the
-  final boundary.
-- `save_reading_override` stores one structured override with its citation, parsed book
-  and verse segments, origin, translation/text version, and Ordo-check flag.
-  `clear_reading_override` restores one or all slots to their computed selections.
-- `save_celebration_override` stores the selected celebration, its normal calendar date,
-  rank, lectionary number, and complete reading set. Selecting or restoring a
-  celebration clears individual reading overrides atomically so stale fine-tuning
-  cannot leak between Masses.
-- The reading picker derives its allowed catalogue separately for first reading,
-  responsorial psalm, second reading, and Gospel from the generated Sunday lectionary,
-  Proper-celebration, and Commons catalogues. This is more accurate than a simple
-  Old/New Testament rule: the first-reading corpus includes Easter readings from Acts,
-  while the psalm slot includes a small number of biblical canticles.
-- Selection is atomic. Typing only validates and previews; nothing is published until
-  the editor presses “Use reading”. Known passages in the wrong slot, unknown
-  citations, invalid structures, and passages with no embedded full text are blocked.
-- HTTPS YouTube and `youtu.be` URLs are rendered as practice links; other hosts remain
-  stored but are not exposed as clickable links.
-- Migration `20260727020000_song_entities.sql` converts every non-empty legacy JSON
-  entry before dropping the old column and function. It merges only records whose
-  complete title/YouTube/attribution tuples match, never titles alone, and aborts if
-  the number of created assignments differs from the source count.
-- If no Supabase config is present, localhost and local-file builds fall back to
-  `localStorage` with the same canonical-song operations so the flow can be tested
-  without a project.
+Authenticated users can write only when their user ID is in `public.editors`. The
+database enforces this independently of the interface. Successful actions are
+immediately live—there is no draft or publish workflow.
+
+The schema, JSON snapshot shapes, access matrix, RPC contracts, public projection, and
+Realtime behavior are documented in
+[`docs/data-model.md`](docs/data-model.md). The underlying forward migrations and local
+Supabase integration suite remain the executable authority.
 
 To connect a Supabase project:
 

@@ -36,7 +36,7 @@ server between the browser and Supabase.
   points. Neither is a self-contained file.
 - `repertoire.html` is the public repertoire browser and editor surface.
 - `about.html` contains help, provenance, and limitations.
-- `vendor/supabase-client.js` is built locally from the exact pinned npm dependency.
+- `vendor/supabase.js` is built locally from the exact pinned npm dependency.
 - `data/generated/` contains deterministic lectionary catalogues used by the planner.
 - `service-worker.js` is generated from `src/service-worker.js` and the explicit shell
   in `src/service-worker-assets.json`.

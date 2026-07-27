@@ -438,3 +438,8 @@ Acceptance:
   suggestion positions, resolved celebration snapshots, and offline public/online
   editing behavior. The README now routes developers to architecture, decisions,
   testing, and the current hardening plan.
+- 2026-07-27: The live schema, entity relationships, snapshot shapes, field constraints,
+  access matrix, RPC contracts, public cache projection, Realtime behavior, and
+  migration rules now have a dedicated data-model guide. The README retains the
+  product-level Supabase summary and links to that guide instead of duplicating its
+  implementation detail.
