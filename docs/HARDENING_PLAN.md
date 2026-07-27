@@ -29,7 +29,7 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 | 5. Application modularization | In progress | Small feature controllers and shared definitions |
 | 6. Offline/PWA guarantees | Complete locally | Reliable cached public viewing and explicit online-only editing |
 | 7. Browser and print coverage | In progress | Automated primary-workflow and A4 print tests |
-| 8. Documentation | Pending | Accurate, split developer and operations documentation |
+| 8. Documentation | In progress | Accurate, split developer and operations documentation |
 | 9. Repository cleanup | Pending | Intentional artifacts and generated-output enforcement |
 
 ## Phase 1 — correctness defects
@@ -433,3 +433,8 @@ Acceptance:
   print output, and hostile public-plan lyric exclusion. `npm run check` runs it after
   the Node suite. `docs/testing.md` records the test layers and browser requirements,
   and the stale README claim that the song picker is full-screen is corrected.
+- 2026-07-27: Phase 8 started with a system-level architecture map and accepted decision
+  records for the hard-private lyrics boundary, live canonical song edits, soft
+  suggestion positions, resolved celebration snapshots, and offline public/online
+  editing behavior. The README now routes developers to architecture, decisions,
+  testing, and the current hardening plan.

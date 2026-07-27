@@ -8,8 +8,12 @@ changes live.
 
 Live site: <https://tow.github.io/sundaymass/>
 
-Current engineering work is tracked in
-[`docs/HARDENING_PLAN.md`](docs/HARDENING_PLAN.md).
+Developer documentation:
+
+- [Architecture and module boundaries](docs/architecture.md)
+- [Architecture decisions](docs/decisions/)
+- [Testing guide](docs/testing.md)
+- [Current hardening plan](docs/HARDENING_PLAN.md)
 
 This is an independent planning aid, not an official parish or Diocese of Helsinki
 publication. Liturgical details must always be checked against the parish Ordo.
