@@ -1,32 +1,40 @@
 // Persistence adapter: Supabase in production, local storage during local development.
 const SUPABASE_MODULE_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const planData = () => window.PlanMusicData;
-const songCatalog = () => window.SongCatalog;
+const planData = () => globalThis.window?.PlanMusicData;
+const songCatalog = () => globalThis.window?.SongCatalog;
 
 function emptyPlan() {
   return planData().emptyPlan();
 }
 
-function localStore() {
+function localStore({
+  storage = globalThis.localStorage,
+  planData: planDataApi = planData(),
+  songCatalog: songCatalogApi = songCatalog(),
+  randomUUID = () => globalThis.crypto?.randomUUID?.()
+    || "local-" + Date.now() + "-" + Math.random().toString(36).slice(2),
+  logger = console,
+} = {}) {
   const listeners = new Map();
   let editor = false;
+  let notifyAuth = () => {};
   const planKey = date => "st-james-plan-v2-" + date;
   const songsKey = "st-james-song-catalog-v1";
 
   const readSongs = () => {
     try {
-      const value = JSON.parse(localStorage.getItem(songsKey));
+      const value = JSON.parse(storage.getItem(songsKey));
       return Array.isArray(value) ? value : [];
     } catch (error) {
-      console.warn("Could not read local songs", error);
+      logger.warn("Could not read local songs", error);
       return [];
     }
   };
-  const writeSongs = songs => localStorage.setItem(songsKey, JSON.stringify(songs));
+  const writeSongs = songs => storage.setItem(songsKey, JSON.stringify(songs));
   const readPlanRecord = date => {
     try {
-      const value = JSON.parse(localStorage.getItem(planKey(date)));
+      const value = JSON.parse(storage.getItem(planKey(date)));
       return value && typeof value === "object" && !Array.isArray(value)
         ? {
             songs: value.songs && typeof value.songs === "object" ? value.songs : {},
@@ -38,13 +46,13 @@ function localStore() {
               ? value.celebrationOverride
               : null,
           }
-        : emptyPlan();
+        : planDataApi.emptyPlan();
     } catch (error) {
-      console.warn("Could not read local plan", error);
-      return emptyPlan();
+      logger.warn("Could not read local plan", error);
+      return planDataApi.emptyPlan();
     }
   };
-  const writePlanRecord = (date, plan) => localStorage.setItem(planKey(date), JSON.stringify(plan));
+  const writePlanRecord = (date, plan) => storage.setItem(planKey(date), JSON.stringify(plan));
   const read = date => {
     const record = readPlanRecord(date);
     const songsById = Object.fromEntries(readSongs().map(song => [song.id, song]));
@@ -75,9 +83,6 @@ function localStore() {
     const callback = listeners.get(date);
     if (callback) callback(read(date), { offline: true });
   };
-  const newId = () => globalThis.crypto?.randomUUID?.()
-    || "local-" + Date.now() + "-" + Math.random().toString(36).slice(2);
-
   return {
     subscribePlan(date, onValue) {
       listeners.set(date, onValue);
@@ -85,17 +90,16 @@ function localStore() {
       return () => listeners.delete(date);
     },
     subscribeAuth(onValue) {
-      const notify = () => onValue({
+      notifyAuth = () => onValue({
         user: editor ? { displayName: "Local editor" } : null,
         isEditor: editor,
       });
-      this._notifyAuth = notify;
-      notify();
+      notifyAuth();
       return () => {};
     },
     async searchSongs(query) {
       requireEditor();
-      return songCatalog().search(readSongs(), query);
+      return songCatalogApi.search(readSongs(), query);
     },
     async suggestSongs(citations, part) {
       requireEditor();
@@ -112,6 +116,7 @@ function localStore() {
     },
     async assignSong(date, part, songId) {
       requireEditor();
+      if (!readSongs().some(song => song.id === songId)) throw new Error("Song not found");
       const plan = readPlanRecord(date);
       plan.songs[part] = songId;
       writePlanRecord(date, plan);
@@ -119,9 +124,9 @@ function localStore() {
     },
     async createAndAssignSong(date, part, draft) {
       requireEditor();
-      const validation = songCatalog().validateDraft(draft);
+      const validation = songCatalogApi.validateDraft(draft);
       if (!validation.valid) throw new Error(validation.error);
-      const song = { id: newId(), ...validation.value };
+      const song = { id: randomUUID(), ...validation.value };
       writeSongs([...readSongs(), song]);
       const plan = readPlanRecord(date);
       plan.songs[part] = song.id;
@@ -131,7 +136,7 @@ function localStore() {
     },
     async updateSong(songId, draft) {
       requireEditor();
-      const validation = songCatalog().validateDraft(draft);
+      const validation = songCatalogApi.validateDraft(draft);
       if (!validation.valid) throw new Error(validation.error);
       const songs = readSongs();
       const index = songs.findIndex(song => song.id === songId);
@@ -181,11 +186,11 @@ function localStore() {
     },
     async signIn() {
       editor = true;
-      this._notifyAuth();
+      notifyAuth();
     },
     async signOut() {
       editor = false;
-      this._notifyAuth();
+      notifyAuth();
     },
   };
 }
@@ -505,4 +510,8 @@ async function start() {
   window.massPlanApp.connect(store);
 }
 
-start();
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { emptyPlan, localStore, unavailableStore };
+}
+
+if (typeof window !== "undefined" && window.massPlanApp) start();

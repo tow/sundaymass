@@ -280,3 +280,7 @@ Acceptance:
   separated from construction, storage/catalogue/UUID dependencies are injectable,
   malformed cached data is handled, and editor authorization plus mutation behavior
   is covered by executable Node tests.
+- 2026-07-27: The planner's local adapter now has the same construction boundary and
+  dependency injection. Executable tests cover offline subscription state, corrupt
+  cache recovery, editor authorization, missing-song assignment, reading/celebration
+  overrides, and the hard rule that public plan values never expose lyrics.
