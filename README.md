@@ -78,6 +78,12 @@ installed to a phone's home screen.
 - Song and reading embeddings are also private. Suggestions return only public song
   metadata to authorised editors; they may include one clearly labelled starter-library
   candidate alongside known repertoire songs.
+- The initial starter library was loaded on 2026-07-27 from a user-supplied, 244-page
+  historic hymn list. Of 575 usable full-lyric entries, 12 were exact matches to
+  existing canonical songs and 563 became candidates. Title-only placeholders were not
+  imported. This was a one-off production data import, not a schema migration: neither
+  the source lyrics nor temporary extraction/import scripts belong in Git. Preserve the
+  library through database backups and human-readable exports.
 
 ## Files to edit
 
