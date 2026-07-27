@@ -172,41 +172,47 @@
       <div>
         <div class="eyebrow">Choose a song</div>
         <h2 id="songPickerTitle">Select a song</h2>
-        <p id="songPickerContext"></p>
       </div>
       <button class="reading-dialog-close" id="songPickerClose" type="button" aria-label="Close">×</button>
     </div>
+    <nav class="song-picker-modes" id="songPickerModes" aria-label="Choose how to find a song">
+      <button class="song-picker-mode selected" id="songModeSuggested" type="button" data-song-picker-mode="suggested" aria-pressed="true">Suggested</button>
+      <button class="song-picker-mode" id="songModeSearch" type="button" data-song-picker-mode="search" aria-pressed="false">Search</button>
+      <button class="song-picker-mode" id="songModeCreate" type="button" data-song-picker-mode="create" aria-pressed="false">New song</button>
+    </nav>
     <div class="reading-dialog-body">
-      <div class="song-current-actions" id="songCurrentActions" hidden>
-        <div>
-          <span>Currently selected</span>
-          <strong id="songCurrentName"></strong>
-          <small id="songCurrentAuthor"></small>
+      <section class="song-picker-panel" id="songSuggestedPanel">
+        <div class="song-current-actions" id="songCurrentActions" hidden>
+          <div>
+            <span>Currently selected</span>
+            <strong id="songCurrentName"></strong>
+            <small id="songCurrentAuthor"></small>
+          </div>
+          <div class="song-current-buttons">
+            <button type="button" id="editCurrentSong">Edit song details</button>
+            <button class="remove-song" type="button" id="removeCurrentSong">Remove from this Mass</button>
+          </div>
         </div>
-        <div class="song-current-buttons">
-          <button type="button" id="editCurrentSong">Edit song details</button>
-          <button class="remove-song" type="button" id="removeCurrentSong">Remove from this Mass</button>
-        </div>
-      </div>
-      <section class="song-suggestions" id="songSuggestions">
-        <div class="song-results-heading">Suggestions from this Mass’s readings</div>
-        <div class="song-suggestion-results" id="songSuggestionResults"></div>
-        <p id="songSuggestionStatus">Finding related songs…</p>
+        <section class="song-suggestions" id="songSuggestions">
+          <div class="song-results-heading">Suggestions from this Mass’s readings</div>
+          <div class="song-suggestion-results" id="songSuggestionResults"></div>
+          <p id="songSuggestionStatus">Finding related songs…</p>
+        </section>
       </section>
-      <div class="song-picker-tools">
-        <div class="reading-search">
-          <label for="songSearch">Search by title</label>
-          <input id="songSearch" type="search" autocomplete="off" placeholder="Start typing a song title">
+      <section class="song-picker-panel" id="songSearchPanel" hidden>
+        <div class="song-picker-tools">
+          <div class="reading-search">
+            <label for="songSearch">Search by title</label>
+            <input id="songSearch" type="search" autocomplete="off" placeholder="Start typing a song title">
+          </div>
         </div>
-        <button class="song-create-action" id="createSongAction" type="button">Add a new song</button>
-      </div>
-      <div class="song-results-heading" id="songResultsHeading">Songs</div>
-      <div class="song-results" id="songResults"></div>
-      <p class="song-picker-empty" id="songPickerEmpty" hidden>No matching songs. You can still create a new one above.</p>
+        <div class="song-results-heading" id="songResultsHeading">Songs</div>
+        <div class="song-results" id="songResults"></div>
+        <p class="song-picker-empty" id="songPickerEmpty" hidden>No matching songs.</p>
+      </section>
     </div>
-    <div class="reading-dialog-actions">
-      <button type="button" id="songPickerCancel">Cancel</button>
-      <button class="primary" type="button" id="useSong" disabled>Use selected song</button>
+    <div class="song-picker-actions">
+      <button class="primary" type="button" id="useSong" disabled>Use song</button>
     </div>
   </div>
 </dialog>

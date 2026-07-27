@@ -495,7 +495,6 @@ function songResultDescription(song){
   return items.join(" · ") || "No additional details";
 }
 function renderSongResults(){
-  createSongAction.textContent=SongCatalog.creationActionLabel(songSearch.value);
   songResults.innerHTML=visibleSongs.map((song,index)=>{
     const selected=selectedSong?.id===song.id;
     return '<button class="song-result'+(selected?' selected':'')+'" type="button" data-song-index="'+index+'" aria-pressed="'+selected+'">'
@@ -535,7 +534,6 @@ async function searchSongCatalog(){
   if(!isEditor || !planStore) return;
   const query=songSearch.value;
   const request=++songSearchRequest;
-  createSongAction.textContent=SongCatalog.creationActionLabel(query);
   try{
     const matches=await planStore.searchSongs(query);
     if(request!==songSearchRequest) return;
@@ -551,6 +549,23 @@ async function searchSongCatalog(){
     songPickerEmpty.textContent="Could not load songs. Please try again.";
   }
 }
+function setSongPickerMode(mode){
+  if(mode==="create"){ openSongEditor(null); return; }
+  songSuggestedPanel.hidden=mode!=="suggested";
+  songSearchPanel.hidden=mode!=="search";
+  songPickerModes.querySelectorAll("[data-song-picker-mode]").forEach(button=>{
+    const selected=button.dataset.songPickerMode===mode;
+    button.classList.toggle("selected",selected);
+    button.setAttribute("aria-pressed",String(selected));
+  });
+  songPickerDialog.querySelector(".reading-dialog-body").scrollTop=0;
+  if(mode==="search"){
+    searchSongCatalog();
+    if(window.matchMedia("(min-width:701px)").matches){
+      setTimeout(()=>songSearch.focus({preventScroll:true}),0);
+    }
+  }
+}
 async function openSongPicker(partKey){
   if(!isEditor) return;
   editingSongPart=partKey;
@@ -560,19 +575,15 @@ async function openSongPicker(partKey){
   const part=songPart(partKey);
   const currentSong=musicSongs[partKey];
   songPickerTitle.textContent="Choose "+(part?.label || "song");
-  songPickerContext.textContent="Any song can be used in any part of the Mass. Search the whole repertoire, or create another song even when a title already exists.";
   songCurrentActions.hidden=!currentSong;
   songCurrentName.textContent=currentSong?.title || "";
   songCurrentAuthor.textContent=currentSong?.authors || "Author not recorded";
   songSearch.value="";
-  songPickerEmpty.textContent="No matching songs. You can still create a new one above.";
+  songPickerEmpty.textContent="No matching songs.";
   renderSongResults();
-  songPickerDialog.querySelector(".reading-dialog-body").scrollTop=0;
+  setSongPickerMode("suggested");
   openModal(songPickerDialog);
-  await Promise.all([searchSongCatalog(),loadSongSuggestions()]);
-  if(window.matchMedia("(min-width:701px)").matches){
-    setTimeout(()=>songSearch.focus({preventScroll:true}),0);
-  }
+  await loadSongSuggestions();
 }
 function closeSongPicker(){
   songSearchRequest++;
@@ -641,8 +652,11 @@ musicList.addEventListener("click",async event=>{
 let songSearchTimer=null;
 songSearch.addEventListener("input",()=>{
   clearTimeout(songSearchTimer);
-  createSongAction.textContent=SongCatalog.creationActionLabel(songSearch.value);
   songSearchTimer=setTimeout(searchSongCatalog,180);
+});
+songPickerModes.addEventListener("click",event=>{
+  const button=event.target.closest("[data-song-picker-mode]");
+  if(button) setSongPickerMode(button.dataset.songPickerMode);
 });
 songResults.addEventListener("click",event=>{
   const button=event.target.closest("button[data-song-index]");
@@ -657,7 +671,6 @@ songSuggestionResults.addEventListener("click",event=>{
   renderSongSuggestions();
   renderSongResults();
 });
-createSongAction.addEventListener("click",()=>openSongEditor(null));
 editCurrentSong.addEventListener("click",async ()=>{
   const currentSong=musicSongs[editingSongPart];
   if(!currentSong || !isEditor) return;
@@ -730,7 +743,6 @@ songEditorForm.addEventListener("submit",async event=>{
   }
 });
 songPickerClose.addEventListener("click",closeSongPicker);
-songPickerCancel.addEventListener("click",closeSongPicker);
 songPickerDialog.addEventListener("click",event=>{ if(event.target===songPickerDialog) closeSongPicker(); });
 songEditorClose.addEventListener("click",closeSongEditor);
 songEditorCancel.addEventListener("click",closeSongEditor);

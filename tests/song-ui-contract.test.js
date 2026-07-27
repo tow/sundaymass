@@ -10,27 +10,46 @@ test("planner contains a song picker and optional-lyrics editor", () => {
   const html = read("src/planner.html");
   assert.match(html, /id="songPickerDialog"/);
   assert.match(html, /id="songSearch"/);
-  assert.match(html, /id="createSongAction"/);
+  assert.match(html, /id="songModeSuggested"/);
+  assert.match(html, /id="songModeSearch"/);
+  assert.match(html, /id="songModeCreate"/);
   assert.match(html, /id="songEditorDialog"/);
   assert.match(html, /id="songLyrics"/);
   assert.match(html, /Add lyrics now \(optional\)/);
 });
 
-test("new-song action is rendered separately from matching results", () => {
+test("suggest, search, and create are explicit picker modes", () => {
   const html = read("src/planner.html");
-  const action = html.indexOf('id="createSongAction"');
-  const results = html.indexOf('id="songResults"');
-  assert.ok(action >= 0 && results >= 0);
-  assert.ok(action < results, "creation must remain visible before the potentially long result list");
+  const app = read("src/app/planner.js");
+
+  assert.match(html, /id="songSuggestedPanel"/);
+  assert.match(html, /id="songSearchPanel"[^>]*hidden/);
+  assert.match(app, /function setSongPickerMode\(mode\)/);
+  assert.match(app, /songSuggestedPanel\.hidden=mode!=="suggested"/);
+  assert.match(app, /songSearchPanel\.hidden=mode!=="search"/);
+  assert.match(app, /if\(mode==="create"\)\{ openSongEditor\(null\); return; \}/);
 });
 
 test("the mobile song picker is a sheet over the plan, not a full-screen page", () => {
   const css = read("src/styles/planner.css");
   assert.match(
     css,
-    /\.song-picker-dialog\{[^}]*height:min\(78dvh,650px\)[^}]*margin:auto 8px 8px/,
+    /\.song-picker-dialog\{[^}]*height:min\(90dvh,760px\)[^}]*margin:auto 8px 8px/,
   );
   assert.match(css, /\.song-picker-dialog \.reading-dialog-form\{ height:100%;/);
+  assert.match(css, /\.song-picker-dialog \.reading-dialog-body\{ flex:1; min-height:0;/);
+});
+
+test("the song picker removes the rubric and uses one compact footer action", () => {
+  const html = read("src/planner.html");
+  const css = read("src/styles/planner.css");
+
+  assert.doesNotMatch(html, /id="songPickerContext"/);
+  assert.doesNotMatch(html, /Any song can be used in any part/);
+  assert.doesNotMatch(html, /id="songPickerCancel"/);
+  assert.match(html, /class="song-picker-actions"/);
+  assert.match(html, /id="useSong" disabled>Use song</);
+  assert.match(css, /\.song-picker-actions\{ display:flex; justify-content:flex-end;/);
 });
 
 test("empty editor slots use one Choose song control without a second empty-state line", () => {
