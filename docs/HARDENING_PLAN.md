@@ -25,7 +25,7 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 | 1. Correctness defects | Complete locally; deployment pending | Hash-based embedding staleness and truly empty suggestion positions |
 | 2. Reproducible build and CI | In progress | Pinned installs and deterministic, CI-verified builds |
 | 3. Testable stores and Edge logic | Complete locally | Dependency-injected adapters and executable behavior tests |
-| 4. Supabase integration tests | Pending | Proven RLS, RPC, privacy, and suggestion behavior |
+| 4. Supabase integration tests | In progress | Proven RLS, RPC, privacy, and suggestion behavior |
 | 5. Application modularization | Pending | Small feature controllers and shared definitions |
 | 6. Offline/PWA guarantees | Pending | Reliable cached public viewing and explicit online-only editing |
 | 7. Browser and DOCX coverage | Pending | Automated primary-workflow and artifact tests |
@@ -296,3 +296,9 @@ Acceptance:
   embedding chunk selection. Node tests now cover input caps, malformed data,
   suggestion-position validation, reading sanitization, and bounded representative
   chunks without needing Deno or a deployed function.
+- 2026-07-27: Phase 4 started with a reset-based local Supabase security suite and a
+  separate CI job. Raw HTTP tests provision temporary users and prove public song/plan
+  metadata, anonymous and non-editor lyric denial, editor lyric access, private vector
+  tables, non-editor mutation denial, atomic create-and-assign, duplicate-title
+  identity, explicitly empty suggestion positions, unrestricted manual cross-position
+  assignment, and invalid-part rejection.

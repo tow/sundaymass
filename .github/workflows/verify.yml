@@ -27,3 +27,29 @@ jobs:
 
       - name: Test and verify generated files
         run: npm run check
+
+  supabase-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use supported Node version
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Install pinned Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+
+      - name: Start migrated local Supabase
+        run: supabase start
+
+      - name: Verify database permissions and RPCs
+        run: npm run test:integration

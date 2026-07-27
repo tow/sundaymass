@@ -8,6 +8,7 @@
     "icons": "node scripts/generate_icons.js",
     "build": "node scripts/generate_icons.js && node scripts/make_template.js && node scripts/make_template2.js && node scripts/build-app.js",
     "test": "node --test tests/*.test.js",
+    "test:integration": "node --test tests/integration/*.test.js",
     "verify:generated": "node scripts/verify-generated.js",
     "check": "npm test && npm run verify:generated"
   },
