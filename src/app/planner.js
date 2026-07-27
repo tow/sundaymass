@@ -8,6 +8,7 @@
 @@SONG_PRESENTATION_JS@@
 @@MUSIC_PLAN_VIEW_JS@@
 @@READING_PLAN_VIEW_JS@@
+@@SONG_PICKER_VIEW_JS@@
 @@SONG_CATALOG_JS@@
 @@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
@@ -46,6 +47,7 @@ const readingPlanView=ReadingPlanView.create({
   formatLong:fmtLong,
   cycleName,
 });
+const songPickerView=SongPickerView.create({escapeHtml:esc});
 const modalController=ModalController.create({window,document});
 const openModal=modalController.open;
 modalController.start();
@@ -410,31 +412,18 @@ function songPart(key){ return MUSIC_PARTS.find(part=>part.key===key); }
 function currentReadingCitations(){
   return READING_SLOTS.map(slot=>displayedCitation(slot)).filter(Boolean);
 }
-function songResultDescription(song){
-  const items=[song.authors,song.copyrightYear,song.copyrightOwner,song.source].filter(Boolean);
-  if(song.hasLyrics) items.push("Lyrics recorded");
-  const sameTitle=visibleSongs.filter(value=>value.title.trim().toLocaleLowerCase()===song.title.trim().toLocaleLowerCase());
-  if(sameTitle.length>1) items.push("Separate record "+song.id.slice(0,8));
-  return items.join(" · ") || "No additional details";
-}
 function renderSongResults(){
-  songResults.innerHTML=visibleSongs.map((song,index)=>{
-    const selected=selectedSong?.id===song.id;
-    return '<button class="song-result'+(selected?' selected':'')+'" type="button" data-song-index="'+index+'" aria-pressed="'+selected+'">'
-      +'<strong>'+esc(song.title)+'</strong><span>'+esc(songResultDescription(song))+'</span></button>';
-  }).join("");
-  songResults.hidden=!visibleSongs.length;
-  songResultsHeading.hidden=!visibleSongs.length;
-  songPickerEmpty.hidden=!!visibleSongs.length;
-  useSong.disabled=!selectedSong;
+  const view=songPickerView.renderSearchResults({songs:visibleSongs,selectedSong});
+  songResults.innerHTML=view.html;
+  songResults.hidden=!view.hasResults;
+  songResultsHeading.hidden=!view.hasResults;
+  songPickerEmpty.hidden=view.hasResults;
+  useSong.disabled=view.useDisabled;
 }
 function renderSongSuggestions(){
-  songSuggestionResults.innerHTML=suggestedSongs.map((song,index)=>{
-    const selected=selectedSong?.id===song.id;
-    return '<button class="song-suggestion'+(selected?' selected':'')+'" type="button" data-song-suggestion-index="'+index+'">'
-      +'<strong>'+esc(song.title)+'</strong><span>'+esc(song.authors || "Author not recorded")+'</span></button>';
-  }).join("");
-  songSuggestionStatus.hidden=!!suggestedSongs.length;
+  const view=songPickerView.renderSuggestions({songs:suggestedSongs,selectedSong});
+  songSuggestionResults.innerHTML=view.html;
+  songSuggestionStatus.hidden=view.hasSuggestions;
 }
 async function loadSongSuggestions(){
   suggestedSongs=[];
@@ -497,10 +486,11 @@ async function openSongPicker(partKey){
   suggestedSongs=[];
   const part=songPart(partKey);
   const currentSong=musicSongs[partKey];
+  const currentSelection=songPickerView.currentSelection(currentSong);
   songPickerTitle.textContent="Choose "+(part?.label || "song");
-  songCurrentActions.hidden=!currentSong;
-  songCurrentName.textContent=currentSong?.title || "";
-  songCurrentAuthor.textContent=currentSong?.authors || "Author not recorded";
+  songCurrentActions.hidden=currentSelection.hidden;
+  songCurrentName.textContent=currentSelection.name;
+  songCurrentAuthor.textContent=currentSelection.author;
   songSearch.value="";
   songPickerEmpty.textContent="No matching songs.";
   renderSongResults();

@@ -70,6 +70,7 @@ test("selected rows show only Change and move secondary actions into the picker"
   const app = read("src/app/planner.js");
   const html = read("src/planner.html");
   const musicRenderer = read("src/app/music-plan-view.js");
+  const pickerRenderer = read("src/app/song-picker-view.js");
 
   assert.match(musicRenderer, />Change<\/button>/);
   assert.doesNotMatch(musicRenderer, /data-song-action="edit"/);
@@ -80,7 +81,7 @@ test("selected rows show only Change and move secondary actions into the picker"
   assert.match(html, /id="removeCurrentSong"/);
   assert.match(html, />Edit song details<\/button>/);
   assert.match(html, />Remove from this Mass<\/button>/);
-  assert.match(app, /songCurrentAuthor\.textContent=currentSong\?\.authors \|\| "Author not recorded"/);
+  assert.match(pickerRenderer, /author: song\?\.authors \|\| "Author not recorded"/);
   assert.match(app, /editorAttribution:SongPresentation\.editorPlanAttribution/);
   assert.match(html, />Changes are live\.<\/div>/);
 });

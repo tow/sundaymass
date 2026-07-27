@@ -365,3 +365,9 @@ Acceptance:
   dependency initialization-order error that syntax checks could not detect; the
   corrected 390×844 build has four working anchors, complete texts, no horizontal
   overflow, and no console warnings.
+- 2026-07-27: Song-picker result presentation is now separate from picker orchestration.
+  Direct tests cover selection state, empty results, compact suggestions, author
+  fallback, duplicate-title record identifiers, escaping, and the rule that private
+  lyric text is never rendered. A 390×844 local-editor Chrome check confirms the
+  Suggested/Search transition, zero initial scroll offset, duplicate records, disabled
+  action before selection, one scrolling sheet, and no horizontal overflow.
