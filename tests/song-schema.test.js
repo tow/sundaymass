@@ -8,6 +8,10 @@ const migrationPath = path.resolve(
   "../supabase/migrations/20260727020000_song_entities.sql",
 );
 const sql = fs.readFileSync(migrationPath, "utf8");
+const suggestionSql = fs.readFileSync(
+  path.resolve(__dirname, "../supabase/migrations/20260727230000_song_suggestion_parts.sql"),
+  "utf8",
+);
 
 test("song schema keeps titles non-unique and lyrics behind a separate RLS boundary", () => {
   assert.match(sql, /create table public\.songs/i);
@@ -33,6 +37,17 @@ test("songs have no hard Mass-part classification or eligibility restriction", (
   );
   assert.match(assignmentDefinition, /song_id uuid not null references public\.songs/i);
   assert.doesNotMatch(assignmentDefinition, /foreign key\s*\([^)]*part[^)]*song_id/i);
+});
+
+test("songs have editable soft suggestion parts without restricting manual assignment", () => {
+  assert.match(suggestionSql, /add column suggestion_parts text\[\]/i);
+  assert.match(suggestionSql, /default array\[\]::text\[\]/i);
+  assert.match(suggestionSql, /suggestion_parts <@ array\[/i);
+  assert.match(suggestionSql, /from public\.plan_songs/i);
+  assert.match(suggestionSql, /'Memorial Acclamation \(unidentified setting\)'/i);
+  assert.match(suggestionSql, /p_part = any\(s\.suggestion_parts\)/i);
+  assert.match(suggestionSql, /unused songs remain unclassified/i);
+  assert.doesNotMatch(suggestionSql, /create or replace function public\.assign_plan_song/i);
 });
 
 test("migration converts every non-empty JSON choice before removing the legacy model", () => {

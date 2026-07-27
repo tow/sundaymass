@@ -8,6 +8,7 @@ const read = relativePath => fs.readFileSync(path.join(ROOT, relativePath), "utf
 
 test("planner contains a song picker and optional-lyrics editor", () => {
   const html = read("src/planner.html");
+  const app = read("src/app/planner.js");
   assert.match(html, /id="songPickerDialog"/);
   assert.match(html, /id="songSearch"/);
   assert.match(html, /id="songModeSuggested"/);
@@ -15,7 +16,10 @@ test("planner contains a song picker and optional-lyrics editor", () => {
   assert.match(html, /id="songModeCreate"/);
   assert.match(html, /id="songEditorDialog"/);
   assert.match(html, /id="songLyrics"/);
+  assert.match(html, /id="songSuggestionParts"/);
+  assert.match(html, /Manual selection remains unrestricted/);
   assert.match(html, /Add lyrics now \(optional\)/);
+  assert.match(app, /suggestionPartFor\(editingSongPart\)/);
 });
 
 test("suggest, search, and create are explicit picker modes", () => {

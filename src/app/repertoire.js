@@ -59,6 +59,8 @@ function draft(){
     title:songTitle.value, youtubeUrl:songYoutube.value, authors:songAuthors.value,
     copyrightOwner:songCopyrightOwner.value, copyrightYear:songCopyrightYear.value,
     source:songSource.value, lyrics:songLyrics.value,
+    suggestionParts:[...songSuggestionParts.querySelectorAll('input[type="checkbox"]:checked')]
+      .map(input=>input.value),
   };
 }
 function openEditor(song){
@@ -71,6 +73,10 @@ function openEditor(song){
   songCopyrightYear.value=song?.copyrightYear||"";
   songSource.value=song?.source||"";
   songLyrics.value=song?.lyrics||"";
+  const selected=new Set(song?.suggestionParts||[]);
+  songSuggestionParts.querySelectorAll('input[type="checkbox"]').forEach(input=>{
+    input.checked=selected.has(input.value);
+  });
   songEditorError.textContent="";
   songEditorDialog.showModal();
 }

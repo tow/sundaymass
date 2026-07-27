@@ -38,11 +38,14 @@ installed to a phone's home screen.
 - Songs are canonical entities referenced by weekly plan slots. Editors choose an
   existing song or can always create another one, including when its title exactly
   matches an existing title. Titles are intentionally non-unique; UUIDs are identity.
-- Songs have no fixed Mass-part classification or eligibility restriction. Any song
-  can be assigned to any music slot in extremis. Core settings may usually be reused
-  for Kyrie, Gloria, Sanctus, and similar parts, while historical use can later inform
-  soft ranking for entrance, offertory, and recessional, but neither convention may
-  become a hard picker filter. Communion 1 and 2 are fully general song assignments.
+- Songs have no hard Mass-part eligibility restriction. Any song can be found and
+  assigned to any music slot in extremis. Each song does have editable
+  `suggestion_parts`, however: these are a soft allow-list used only before semantic
+  ranking. Thus a Psalm is not suggested for Communion, and a Memorial Acclamation is
+  suggested only for that part, without preventing an editor from deliberately finding
+  and choosing either song elsewhere. `communion` and `communion2` share one suggestion
+  class. Unclassified songs are omitted from suggestions rather than guessed into
+  several positions.
 - Only a title is required when creating a song. YouTube, attribution, and lyrics can
   all be added later. Repertoire search is deliberately limited to alphabetical title
   and author matching. Semantic suggestions are shown separately in the song picker
@@ -114,8 +117,9 @@ Live data uses Supabase Auth, Postgres, Realtime, and Row Level Security:
   fields. Its metadata is public. `title` has a non-unique lowercase search index and
   no uniqueness constraint.
 - `plan_songs` assigns one canonical song UUID to each `(sunday, part)`. Assignments and
-  current song metadata are public. `part` identifies the position in one Mass plan;
-  it is not a property of the song and imposes no song/part compatibility rule.
+  current song metadata are public. `part` identifies the position in one Mass plan.
+  `songs.suggestion_parts` separately records the normal positions in which a song may
+  be recommended; it never imposes an assignment constraint.
 - `song_lyrics` is an optional one-to-one extension keyed by song UUID. Anonymous users
   receive no table privileges at all. Authenticated access is further restricted by
   Row Level Security to members of `public.editors`. Public plan queries deliberately
@@ -137,10 +141,12 @@ Live data uses Supabase Auth, Postgres, Realtime, and Row Level Security:
   editor visit, the repertoire compares each song/lyrics `updated_at` value with its
   vector timestamp and automatically repairs missing or stale song vectors. This gives
   reliable eventual consistency without cron, queues, webhooks, or another service.
-- Song suggestions compare the effective reading citations currently displayed for the
-  Mass with the known repertoire. The database combines each song’s best reading match
-  with its average match, then returns public song metadata only. Suggestions remain a
-  soft aid: every song is still available in every Mass slot.
+- Song suggestions first keep only songs whose editable `suggestion_parts` contains
+  the requested Mass position, then compare the effective reading citations currently
+  displayed for the Mass with that compatible subset. The database combines each
+  song’s best reading match with its average match and returns public metadata only.
+  Search remains unrestricted, so this recommendation filter never controls what an
+  editor may assign.
 - Editors sign in with an administrator-created, manually confirmed email/password
   account. Public signup is disabled, so phase 1 requires no outgoing email service.
 - A signed-in user can write only when their user ID is also in `public.editors`.
@@ -487,9 +493,9 @@ access accordingly.
 - Optional: hymnal / hymn-number column on the sung-parts grid.
 - Define a structured lyric format for verses, choruses, responses, and repeats before
   slide generation.
-- Add lyric embeddings and semantic search, preferably with Supabase `pgvector`.
 - Generate projector slides from each Sunday's ordered plan.
-- Add automatic song suggestions that rank suitable known-repertoire songs first.
+- Refine `suggestion_parts` as the choir uses the repertoire; intentionally
+  unclassified songs remain searchable but are not automatically suggested.
 - Replace password sign-in with email magic links and configure production email
   delivery and redirects.
 

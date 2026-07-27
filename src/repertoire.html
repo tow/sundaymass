@@ -42,6 +42,25 @@
         <div><label for="songCopyrightYear">Copyright year(s)</label><input id="songCopyrightYear" maxlength="200"></div>
         <div><label for="songSource">Source</label><input id="songSource" maxlength="1000"></div>
       </div>
+      <fieldset class="song-suggestion-parts" id="songSuggestionParts">
+        <legend>Suggest this song for</legend>
+        <p>Select its normal uses, or leave blank to exclude it from suggestions. Manual selection remains unrestricted.</p>
+        <div>
+          <label><input type="checkbox" value="entrance"> Entrance</label>
+          <label><input type="checkbox" value="kyrie"> Kyrie</label>
+          <label><input type="checkbox" value="gloria"> Gloria</label>
+          <label><input type="checkbox" value="psalm"> Responsorial Psalm</label>
+          <label><input type="checkbox" value="acclamation"> Gospel Acclamation</label>
+          <label><input type="checkbox" value="offertory"> Offertory</label>
+          <label><input type="checkbox" value="sanctus"> Sanctus</label>
+          <label><input type="checkbox" value="memorial"> Memorial Acclamation</label>
+          <label><input type="checkbox" value="amen"> Great Amen</label>
+          <label><input type="checkbox" value="lordPrayer"> Lord’s Prayer</label>
+          <label><input type="checkbox" value="agnus"> Lamb of God</label>
+          <label><input type="checkbox" value="communion"> Communion</label>
+          <label><input type="checkbox" value="recessional"> Recessional</label>
+        </div>
+      </fieldset>
       <details><summary>Lyrics (editors only)</summary><textarea id="songLyrics" rows="14"></textarea></details>
       <p class="error" id="songEditorError"></p>
     </div>

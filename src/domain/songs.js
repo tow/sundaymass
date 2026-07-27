@@ -2,8 +2,35 @@
 (function (global) {
   "use strict";
 
+  const SUGGESTION_PARTS = [
+    { key: "entrance", label: "Entrance" },
+    { key: "kyrie", label: "Kyrie" },
+    { key: "gloria", label: "Gloria" },
+    { key: "psalm", label: "Responsorial Psalm" },
+    { key: "acclamation", label: "Gospel Acclamation" },
+    { key: "offertory", label: "Offertory" },
+    { key: "sanctus", label: "Sanctus" },
+    { key: "memorial", label: "Memorial Acclamation" },
+    { key: "amen", label: "Great Amen" },
+    { key: "lordPrayer", label: "Lord’s Prayer" },
+    { key: "agnus", label: "Lamb of God" },
+    { key: "communion", label: "Communion" },
+    { key: "recessional", label: "Recessional" },
+  ];
+  const SUGGESTION_PART_KEYS = new Set(SUGGESTION_PARTS.map(part => part.key));
+
   function text(value) {
     return typeof value === "string" ? value.trim() : "";
+  }
+
+  function suggestionParts(value) {
+    return [...new Set(Array.isArray(value) ? value : [])]
+      .filter(part => typeof part === "string" && SUGGESTION_PART_KEYS.has(part));
+  }
+
+  function suggestionPartFor(part) {
+    if (part === "communion2") return "communion";
+    return SUGGESTION_PART_KEYS.has(part) ? part : "";
   }
 
   function normalizeDraft(value) {
@@ -16,6 +43,7 @@
       copyrightYear: text(draft.copyrightYear),
       source: text(draft.source),
       lyrics: text(draft.lyrics),
+      suggestionParts: suggestionParts(draft.suggestionParts),
     };
   }
 
@@ -49,6 +77,8 @@
   }
 
   global.SongCatalog = {
+    SUGGESTION_PARTS,
+    suggestionPartFor,
     normalizeDraft,
     validateDraft,
     hasLyrics,

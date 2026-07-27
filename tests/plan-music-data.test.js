@@ -14,6 +14,7 @@ test("Supabase song rows become canonical browser song values", () => {
     copyright_owner: "Publisher",
     copyright_year: "1975, 2016",
     source: "Hymnal 12",
+    suggestion_parts: ["communion"],
     song_lyrics: { lyrics: "[Verse 1]\nWords" },
   }), {
     id: "song-1",
@@ -25,6 +26,7 @@ test("Supabase song rows become canonical browser song values", () => {
     source: "Hymnal 12",
     lyrics: "[Verse 1]\nWords",
     hasLyrics: true,
+    suggestionParts: ["communion"],
   });
 });
 

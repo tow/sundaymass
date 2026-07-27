@@ -30,4 +30,8 @@ test("Supabase plan loading joins current song metadata without lyric text", () 
   assert.match(publicPlanQuery, /copyright_year/);
   assert.doesNotMatch(publicPlanQuery, /song_lyrics/);
   assert.match(source, /song_lyrics/);
+  assert.match(source, /suggestion_parts/);
+  assert.match(source, /p_suggestion_parts/);
+  assert.match(source, /async suggestSongs\(citations, part\)/);
+  assert.match(source, /action: "suggest", citations, part/);
 });

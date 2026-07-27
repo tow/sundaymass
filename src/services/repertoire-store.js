@@ -8,6 +8,7 @@ const mapSong = row => ({
   copyrightOwner: row.copyright_owner || "",
   copyrightYear: row.copyright_year || "",
   source: row.source || "",
+  suggestionParts: Array.isArray(row.suggestion_parts) ? row.suggestion_parts : [],
   lyrics: Array.isArray(row.song_lyrics)
     ? row.song_lyrics[0]?.lyrics || ""
     : row.song_lyrics?.lyrics || "",
@@ -25,6 +26,7 @@ const draftParams = draft => {
       p_copyright_year: result.value.copyrightYear,
       p_source: result.value.source,
       p_lyrics: result.value.lyrics || null,
+      p_suggestion_parts: result.value.suggestionParts,
     },
   };
 };
@@ -83,7 +85,7 @@ async function supabaseStore(config) {
     async browseSongs() {
       const { data, error } = await supabase
         .from("songs")
-        .select("id,title,youtube_url,authors,copyright_owner,copyright_year,source")
+        .select("id,title,youtube_url,authors,copyright_owner,copyright_year,source,suggestion_parts")
         .order("title");
       if (error) throw error;
       return (data || []).map(mapSong);
@@ -91,7 +93,7 @@ async function supabaseStore(config) {
     async getSong(songId) {
       const { data, error } = await supabase
         .from("songs")
-        .select("id,title,youtube_url,authors,copyright_owner,copyright_year,source,song_lyrics(lyrics)")
+        .select("id,title,youtube_url,authors,copyright_owner,copyright_year,source,suggestion_parts,song_lyrics(lyrics)")
         .eq("id", songId)
         .single();
       if (error) throw error;

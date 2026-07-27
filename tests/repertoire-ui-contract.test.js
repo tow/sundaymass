@@ -49,6 +49,10 @@ test("repertoire editors can create and update canonical songs without assigning
   assert.match(store, /\.rpc\("create_song"/);
   assert.match(store, /async updateSong\(/);
   assert.match(store, /\.rpc\("update_song"/);
+  assert.match(html, /id="songSuggestionParts"/);
+  assert.match(html, /leave blank to exclude it from suggestions/);
+  assert.match(app, /suggestionParts/);
+  assert.match(app, /new Set\(song\?\.suggestionParts\|\|\[\]\)/);
   assert.match(html, /Only authorised editors can change the shared repertoire/);
   assert.match(app, /status\.staleSongIds/);
   assert.match(app, /await store\.syncSongs\(staleIds\.slice/);

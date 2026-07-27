@@ -7,6 +7,10 @@ const corsHeaders = {
 };
 const model = new Supabase.ai.Session("gte-small");
 const encoder = new TextEncoder();
+const suggestionParts = new Set([
+  "entrance", "kyrie", "gloria", "psalm", "acclamation", "offertory",
+  "sanctus", "memorial", "amen", "lordPrayer", "agnus", "communion", "recessional",
+]);
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -94,9 +98,11 @@ Deno.serve(async request => {
     const citations = Array.isArray(body.citations)
       ? body.citations.filter((value: unknown) => typeof value === "string").slice(0, 8)
       : [];
-    if (!citations.length) return json({ songs: [] });
+    const part = typeof body.part === "string" ? body.part : "";
+    if (!citations.length || !suggestionParts.has(part)) return json({ songs: [] });
     const { data, error } = await userClient.rpc("suggest_songs_for_readings", {
       p_citations: citations,
+      p_part: part,
       p_limit: 3,
     });
     if (error) return json({ error: error.message }, 500);

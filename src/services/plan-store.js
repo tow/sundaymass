@@ -56,6 +56,7 @@ function localStore() {
       copyrightOwner: song.copyrightOwner,
       copyrightYear: song.copyrightYear,
       source: song.source,
+      suggestionParts: Array.isArray(song.suggestionParts) ? song.suggestionParts : [],
     });
     return {
       songs: Object.fromEntries(
@@ -96,7 +97,7 @@ function localStore() {
       requireEditor();
       return songCatalog().search(readSongs(), query);
     },
-    async suggestSongs() {
+    async suggestSongs(citations, part) {
       requireEditor();
       return [];
     },
@@ -253,7 +254,8 @@ async function supabaseStore(config) {
             authors,
             copyright_owner,
             copyright_year,
-            source
+            source,
+            suggestion_parts
           )
         )
       `)
@@ -275,6 +277,7 @@ async function supabaseStore(config) {
         p_copyright_year: value.value.copyrightYear,
         p_source: value.value.source,
         p_lyrics: value.value.lyrics || null,
+        p_suggestion_parts: value.value.suggestionParts,
       },
     };
   };
@@ -378,14 +381,15 @@ async function supabaseStore(config) {
           copyright_owner,
           copyright_year,
           source,
+          suggestion_parts,
           song_lyrics (lyrics)
         `)
         .order("title");
       if (error) throw error;
       return songCatalog().search((data || []).map(planData().songFromRow), query);
     },
-    async suggestSongs(citations) {
-      const result = await invokeSemantic({ action: "suggest", citations });
+    async suggestSongs(citations, part) {
+      const result = await invokeSemantic({ action: "suggest", citations, part });
       return (result.songs || []).map(planData().songFromRow);
     },
     async syncSongEmbedding(songId) {
@@ -402,6 +406,7 @@ async function supabaseStore(config) {
           copyright_owner,
           copyright_year,
           source,
+          suggestion_parts,
           song_lyrics (lyrics)
         `)
         .eq("id", songId)

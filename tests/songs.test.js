@@ -28,9 +28,21 @@ test("lyrics and all metadata except title are optional", () => {
     copyrightYear: "",
     source: "",
     lyrics: "",
+    suggestionParts: [],
   });
   assert.equal(catalog.hasLyrics(result.value), false);
   assert.equal(catalog.hasLyrics({ lyrics: "  [Verse 1]\nWords  " }), true);
+});
+
+test("suggestion parts are normalized but never constrain catalogue search", () => {
+  const value = catalog.validateDraft({
+    title: "Mass setting",
+    suggestionParts: ["memorial", "memorial", "not-a-part"],
+  }).value;
+  assert.deepEqual(value.suggestionParts, ["memorial"]);
+  assert.deepEqual(catalog.search([
+    { id: "setting", title: "Mass setting", suggestionParts: ["memorial"] },
+  ], "").map(song => song.id), ["setting"]);
 });
 
 test("simple phase-one search is title-only, stable, and alphabetical", () => {

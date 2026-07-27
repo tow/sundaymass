@@ -38,6 +38,7 @@ const normalizedCitation=lectionary.normalizedCitation;
 const citationAlternatives=lectionary.citationAlternatives;
 const parseReadingCitation=lectionary.parseReadingCitation;
 const dayDistance=lectionary.dayDistance;
+const suggestionPartFor=SongCatalog.suggestionPartFor;
 const byDate = {}; CALENDAR.forEach((s,i)=>byDate[s.d]=i);
 const cycleName = c => "Year " + c;
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
@@ -519,7 +520,7 @@ async function loadSongSuggestions(){
   songSuggestionStatus.textContent="Finding related songs…";
   renderSongSuggestions();
   try{
-    suggestedSongs=(await planStore.suggestSongs(currentReadingCitations())).slice(0,3);
+    suggestedSongs=(await planStore.suggestSongs(currentReadingCitations(),suggestionPartFor(editingSongPart))).slice(0,3);
     songSuggestionStatus.textContent=suggestedSongs.length
       ? ""
       : "Suggestions are not indexed for these readings yet.";
@@ -599,6 +600,8 @@ function songDraftFromForm(){
     copyrightYear:songCopyrightYear.value,
     source:songSource.value,
     lyrics:songLyrics.value,
+    suggestionParts:[...songSuggestionParts.querySelectorAll('input[type="checkbox"]:checked')]
+      .map(input=>input.value),
   };
 }
 function fillSongForm(song){
@@ -609,6 +612,12 @@ function fillSongForm(song){
   songCopyrightYear.value=song?.copyrightYear || "";
   songSource.value=song?.source || "";
   songLyrics.value=song?.lyrics || "";
+  const selected=new Set(song
+    ? song.suggestionParts || []
+    : [suggestionPartFor(editingSongPart)]);
+  songSuggestionParts.querySelectorAll('input[type="checkbox"]').forEach(input=>{
+    input.checked=selected.has(input.value);
+  });
 }
 function openSongEditor(song){
   if(!isEditor || !editingSongPart) return;

@@ -25,6 +25,9 @@
       source: string(source.source),
       lyrics,
       hasLyrics: Boolean(lyrics.trim()),
+      suggestionParts: Array.isArray(source.suggestion_parts)
+        ? source.suggestion_parts.filter(value => typeof value === "string")
+        : [],
     };
   }
 
