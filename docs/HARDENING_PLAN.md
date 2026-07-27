@@ -29,7 +29,7 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 | 5. Application modularization | In progress | Small feature controllers and shared definitions |
 | 6. Offline/PWA guarantees | Complete locally | Reliable cached public viewing and explicit online-only editing |
 | 7. Browser and print coverage | In progress | Automated primary-workflow and A4 print tests |
-| 8. Documentation | In progress | Accurate, split developer and operations documentation |
+| 8. Documentation | Complete locally | Accurate, split developer and operations documentation |
 | 9. Repository cleanup | Pending | Intentional artifacts and generated-output enforcement |
 
 ## Phase 1 — correctness defects
@@ -458,3 +458,8 @@ Acceptance:
   explicit artifact successfully. Its deprecation annotations then drove a red-green
   upgrade to the current Node-24 action majors for checkout, Node setup, Pages
   configuration, artifact upload, and deployment.
+- 2026-07-27: Phase 8 completed locally. Architecture, data model, lectionary, testing,
+  operations, and five accepted decision records are split into focused guides and
+  linked from a shorter README. An executable documentation contract now requires the
+  inventory, resolves every relative Markdown link, and preserves the decision-record
+  structure.
