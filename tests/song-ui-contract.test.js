@@ -85,7 +85,7 @@ test("selected rows show only Change and move secondary actions into the picker"
   assert.match(html, />Edit song details<\/button>/);
   assert.match(html, />Remove from this Mass<\/button>/);
   assert.match(pickerRenderer, /author: song\?\.authors \|\| "Author not recorded"/);
-  assert.match(app, /editorAttribution:SongPresentation\.editorPlanAttribution/);
+  assert.match(app, /editorAttribution:SongPresentation\.planAuthor/);
   assert.match(html, />Changes are live\.<\/div>/);
 });
 
