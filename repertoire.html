@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choir Repertoire — St James the Apostle</title>
+<meta name="theme-color" content="#002F45">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>:root{--accent:#002F45;--ink:#271A01;--muted:#675F52;--line:#D8CDB8;--canvas:#FBF6EF}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}[hidden]{display:none!important}
+body{margin:0;padding:0 18px 40px;color:var(--ink);background:var(--canvas);font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:var(--accent);text-underline-offset:3px}.parish-bar{margin:0 -18px;padding:11px 18px;background:var(--accent);color:#fff}
+.parish-bar-inner{min-height:26px;max-width:880px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px}
+.parish-home,.parish-bar nav a{color:#fff;font-weight:700;text-decoration:none;white-space:nowrap}.parish-bar nav{display:flex;align-items:center;gap:7px}
+.parish-bar nav a,.parish-bar button{padding:6px 8px;border:1px solid rgba(255,255,255,.7);color:#fff;background:transparent}
+.wrap{max-width:880px;margin:auto}header{padding:34px 2px 22px}.eyebrow{color:var(--accent);font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase}
+h1,h2{font-family:"Libre Caslon Text",Georgia,serif;font-weight:400}h1{margin:4px 0 6px;font-size:36px}header p{margin:0;color:var(--muted);font-size:14px}
+button{min-height:42px;padding:8px 12px;border:1px solid var(--accent);border-radius:3px;color:var(--accent);background:#fff;font-weight:700;cursor:pointer}
+button.primary{color:#fff;background:var(--accent)}input,textarea{width:100%;padding:10px;border:1px solid #c9c0b1;border-radius:6px;font:inherit;font-size:16px}
+.toolbar{padding:18px;border:1px solid var(--line);background:#fff}.toolbar>label,.dialog-body label,.login-dialog label{display:block;margin:0 0 6px;color:var(--accent);font-size:11px;font-weight:800;text-transform:uppercase}
+.toolbar-meta{display:flex;justify-content:space-between;gap:12px;margin-top:10px;color:var(--muted);font-size:12px}.toolbar-meta strong{color:var(--ink)}
+#repertoireEditorActions{margin-top:12px}.repertoire-list{margin-top:14px;border:1px solid var(--line);background:#fff}
+.song-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:15px 18px;border-bottom:1px solid #eee6d5}.song-card:last-child{border:0}
+.song-card h2{margin:0;font-size:19px}.song-card p{margin:4px 0 0;color:var(--muted);font-size:11.5px;line-height:1.35}.song-card a{display:inline-block;margin-top:6px;font-size:12px;font-weight:700}
+.song-card button{min-height:36px;padding:6px 9px;font-size:11px}.empty-state{padding:30px;text-align:center;color:var(--muted)}
+.semantic-panel{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:14px;padding:14px 18px;border:1px solid var(--line);background:#fff}
+.semantic-panel strong,.semantic-panel span{display:block}.semantic-panel span{margin-top:3px;color:var(--muted);font-size:11px}
+dialog{width:min(650px,calc(100% - 28px));max-height:calc(100dvh - 28px);padding:0;border:1px solid var(--line);color:var(--ink)}dialog::backdrop{background:rgba(0,31,45,.48)}
+dialog form{display:flex;flex-direction:column;max-height:inherit}.dialog-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #eee6d5}.dialog-head h2{margin:0}.dialog-head button{min-width:40px;padding:2px;font-size:24px}
+.dialog-body{padding:18px 20px;overflow:auto}.dialog-body label{margin-top:12px}.dialog-body label span{color:var(--muted);font-size:9px}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+details{margin-top:18px;padding:12px;border:1px solid var(--line)}summary{color:var(--accent);font-weight:700;cursor:pointer}textarea{margin-top:10px;line-height:1.45;resize:vertical}
+.dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 20px;border-top:1px solid #eee6d5}.error{min-height:18px;color:#9a3b22;font-size:12px}
+.login-dialog{width:min(420px,calc(100% - 28px))}.login-dialog form{padding:22px}.login-dialog h2{margin:0}.login-dialog p{color:var(--muted)}.login-dialog label{margin-top:12px}.login-dialog .dialog-actions{padding:14px 0 0;border:0}
+@media(max-width:700px){body{padding:0 10px 28px}.parish-bar{margin:0 -10px;padding:7px 10px}.parish-bar-inner{min-height:34px;font-size:11px}.parish-bar nav{gap:4px}.parish-bar nav a,.parish-bar button{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:5px 6px;font-size:10.5px;line-height:1}header{padding:18px 3px 14px}h1{font-size:29px}.toolbar{padding:14px}.song-card{grid-template-columns:1fr;padding:13px 14px}.song-card button{width:100%}.field-grid{grid-template-columns:1fr}.semantic-panel{align-items:stretch;flex-direction:column}.semantic-panel button{width:100%}dialog,.login-dialog{inset:0;width:100%;max-width:none;height:100dvh;max-height:none;margin:0;border:0}dialog form{height:100%}}</style>
+</head><body>
+<div class="parish-bar"><div class="parish-bar-inner">
+  <a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener">St James the Apostle ↗</a>
+  <nav><a href="./">Planner</a><a href="./about.html">Help</a><button id="authButton">Sign in</button></nav>
+</div></div>
+<main class="wrap">
+  <header>
+    <div class="eyebrow">St James 6pm Mass</div>
+    <h1>Choir repertoire</h1>
+    <p>Browse the songs known to the choir. Only authorised editors can change the shared repertoire.</p>
+  </header>
+  <section class="toolbar" aria-label="Repertoire tools">
+    <label for="repertoireSearch">Search title or author</label>
+    <input id="repertoireSearch" type="search" autocomplete="off" placeholder="Search the repertoire">
+    <div class="toolbar-meta"><strong id="repertoireCount">0 songs</strong><span id="repertoireStatus">Connecting…</span></div>
+    <div id="repertoireEditorActions" hidden><button class="primary" id="addRepertoireSong">Add a song</button></div>
+  </section>
+  <section class="repertoire-list" id="repertoireList" aria-live="polite"></section>
+  <section class="semantic-panel" id="semanticPanel" hidden>
+    <div><strong>Semantic suggestion index</strong><span id="indexStatus">Checking…</span></div>
+    <button id="indexButton">Update suggestion index</button>
+  </section>
+</main>
+
+<dialog id="songEditorDialog">
+  <form id="songEditorForm">
+    <div class="dialog-head"><h2 id="editorTitle">Add a song</h2><button id="songEditorClose" type="button" aria-label="Close">×</button></div>
+    <div class="dialog-body">
+      <label for="songTitle">Song title <span>Required</span></label><input id="songTitle" maxlength="200" required>
+      <label for="songYoutube">YouTube link <span>Optional</span></label><input id="songYoutube" type="url" maxlength="2000">
+      <div class="field-grid">
+        <div><label for="songAuthors">Author(s)</label><input id="songAuthors" maxlength="1000"></div>
+        <div><label for="songCopyrightOwner">Copyright owner / publisher</label><input id="songCopyrightOwner" maxlength="1000"></div>
+        <div><label for="songCopyrightYear">Copyright year(s)</label><input id="songCopyrightYear" maxlength="200"></div>
+        <div><label for="songSource">Source</label><input id="songSource" maxlength="1000"></div>
+      </div>
+      <details><summary>Lyrics (editors only)</summary><textarea id="songLyrics" rows="14"></textarea></details>
+      <p class="error" id="songEditorError"></p>
+    </div>
+    <div class="dialog-actions"><button id="songEditorCancel" type="button">Cancel</button><button class="primary" id="saveSong" type="submit">Save song</button></div>
+  </form>
+</dialog>
+<dialog class="login-dialog" id="loginDialog"><form id="loginForm">
+  <h2>Editor sign in</h2><p>Sign in to edit the repertoire.</p>
+  <label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" required>
+  <label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required>
+  <p class="error" id="loginError"></p>
+  <div class="dialog-actions"><button id="loginCancel" type="button">Cancel</button><button class="primary" type="submit">Sign in</button></div>
+</form></dialog>
+<script>// Pure song validation and phase-one title search shared by the app and tests.
+(function (global) {
+  "use strict";
+
+  function text(value) {
+    return typeof value === "string" ? value.trim() : "";
+  }
+
+  function normalizeDraft(value) {
+    const draft = value && typeof value === "object" ? value : {};
+    return {
+      title: text(draft.title),
+      youtubeUrl: text(draft.youtubeUrl),
+      authors: text(draft.authors),
+      copyrightOwner: text(draft.copyrightOwner),
+      copyrightYear: text(draft.copyrightYear),
+      source: text(draft.source),
+      lyrics: text(draft.lyrics),
+    };
+  }
+
+  function validateDraft(value) {
+    const normalized = normalizeDraft(value);
+    if (!normalized.title) {
+      return { valid: false, error: "Enter a song title.", value: normalized };
+    }
+    return { valid: true, error: "", value: normalized };
+  }
+
+  function hasLyrics(value) {
+    return Boolean(text(value && value.lyrics));
+  }
+
+  function search(songs, query) {
+    const needle = text(query).toLocaleLowerCase();
+    return (Array.isArray(songs) ? songs : [])
+      .filter(song => !needle || text(song && song.title).toLocaleLowerCase().includes(needle))
+      .slice()
+      .sort((a, b) => text(a && a.title).localeCompare(text(b && b.title))
+        || text(a && a.authors).localeCompare(text(b && b.authors))
+        || text(a && a.id).localeCompare(text(b && b.id)));
+  }
+
+  function creationActionLabel(query) {
+    const title = text(query);
+    return title
+      ? `Create a new song titled “${title}”`
+      : "Add a new song";
+  }
+
+  global.SongCatalog = {
+    normalizeDraft,
+    validateDraft,
+    hasLyrics,
+    search,
+    creationActionLabel,
+  };
+})(typeof window === "undefined" ? globalThis : window);
+
+let store;
+let songs=[];
+let isEditor=false;
+let signedIn=false;
+let editingSong=null;
+let repairingIndex=false;
+
+const esc=value=>(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const safeYoutube=value=>{
+  try{
+    const url=new URL(value);
+    const host=url.hostname.replace(/^www\./,"");
+    return url.protocol==="https:" && (host==="youtube.com" || host.endsWith(".youtube.com") || host==="youtu.be") ? url.href : "";
+  }catch{return "";}
+};
+const copyrightLine=song=>{
+  const copyright=[song.copyrightYear,song.copyrightOwner].filter(Boolean).join(" ");
+  return copyright&&song.copyrightOwner.trim().toLocaleLowerCase()!=="public domain"
+    ? `© ${copyright}`
+    : copyright;
+};
+const details=song=>[
+  song.authors,
+  copyrightLine(song),
+  song.source && `Source: ${song.source}`,
+].filter(Boolean);
+
+function render(){
+  const query=repertoireSearch.value.trim().toLocaleLowerCase();
+  const visible=songs.filter(song=>!query || `${song.title} ${song.authors}`.toLocaleLowerCase().includes(query));
+  repertoireCount.textContent=`${visible.length} ${visible.length===1?"song":"songs"}`;
+  repertoireList.innerHTML=visible.map(song=>{
+    const link=safeYoutube(song.youtubeUrl);
+    return `<article class="song-card"><div class="song-card-copy"><h2>${esc(song.title)}</h2>`
+      +details(song).map(line=>`<p>${esc(line)}</p>`).join("")
+      +(link?`<a href="${esc(link)}" target="_blank" rel="noopener">Listen / practise ↗</a>`:"")
+      +`</div>${isEditor?`<button type="button" data-edit-song="${song.id}">Edit details</button>`:""}</article>`;
+  }).join("") || `<p class="empty-state">No songs match that search.</p>`;
+  repertoireEditorActions.hidden=!isEditor;
+  semanticPanel.hidden=!isEditor;
+  authButton.textContent=signedIn?"Sign out":"Sign in";
+}
+
+async function loadSongs(){
+  repertoireStatus.textContent="Loading…";
+  try{
+    songs=await store.browseSongs();
+    repertoireStatus.textContent="Up to date";
+    render();
+  }catch(error){
+    console.error(error);
+    repertoireStatus.textContent="Could not load repertoire";
+  }
+}
+
+function draft(){
+  return {
+    title:songTitle.value, youtubeUrl:songYoutube.value, authors:songAuthors.value,
+    copyrightOwner:songCopyrightOwner.value, copyrightYear:songCopyrightYear.value,
+    source:songSource.value, lyrics:songLyrics.value,
+  };
+}
+function openEditor(song){
+  editingSong=song||null;
+  editorTitle.textContent=song?"Edit song details":"Add a song";
+  songTitle.value=song?.title||"";
+  songYoutube.value=song?.youtubeUrl||"";
+  songAuthors.value=song?.authors||"";
+  songCopyrightOwner.value=song?.copyrightOwner||"";
+  songCopyrightYear.value=song?.copyrightYear||"";
+  songSource.value=song?.source||"";
+  songLyrics.value=song?.lyrics||"";
+  songEditorError.textContent="";
+  songEditorDialog.showModal();
+}
+async function loadForEditing(id){
+  repertoireStatus.textContent="Loading song…";
+  try{ openEditor(await store.getSong(id)); repertoireStatus.textContent="Up to date"; }
+  catch(error){ console.error(error); repertoireStatus.textContent="Could not load song"; }
+}
+async function refreshIndex(){
+  indexButton.disabled=true;
+  try{
+    const readingResponse=await fetch("./data/generated/readings_text.json");
+    const readingMap=await readingResponse.json();
+    const songIds=songs.map(song=>song.id);
+    const readings=Object.entries(readingMap).map(([citation,text])=>({citation,text}));
+    const readingBatches=[];
+    let pending=[],weight=0;
+    readings.forEach(reading=>{
+      const readingWeight=Math.min(4,Math.max(1,Math.ceil(reading.text.length/1600)));
+      if(pending.length&&(pending.length>=10||weight+readingWeight>6)){
+        readingBatches.push(pending);pending=[];weight=0;
+      }
+      pending.push(reading);weight+=readingWeight;
+    });
+    if(pending.length)readingBatches.push(pending);
+    const total=Math.ceil(songIds.length/5)+readingBatches.length;
+    let done=0;
+    for(let index=0;index<songIds.length;index+=5){
+      indexStatus.textContent=`Indexing songs… ${++done}/${total}`;
+      await store.syncSongs(songIds.slice(index,index+5));
+    }
+    for(const batch of readingBatches){
+      indexStatus.textContent=`Indexing readings… ${++done}/${total}`;
+      await store.syncReadings(batch);
+    }
+    await loadIndexStatus();
+  }catch(error){
+    console.error(error);
+    indexStatus.textContent="Indexing failed. You can safely try again.";
+  }finally{ indexButton.disabled=false; }
+}
+async function loadIndexStatus(){
+  if(!isEditor)return;
+  try{
+    const status=await store.semanticStatus();
+    const staleIds=status.staleSongIds||[];
+    indexStatus.textContent=staleIds.length
+      ? `${status.embeddedSongs}/${status.songs} songs · updating ${staleIds.length} changed ${staleIds.length===1?"song":"songs"}…`
+      : `${status.embeddedSongs}/${status.songs} songs · ${status.embeddedReadings} readings indexed · up to date`;
+    if(staleIds.length&&!repairingIndex){
+      repairingIndex=true;
+      try{
+        for(let index=0;index<staleIds.length;index+=5){
+          await store.syncSongs(staleIds.slice(index,index+5));
+        }
+      }finally{repairingIndex=false;}
+      await loadIndexStatus();
+    }
+  }catch{ indexStatus.textContent="Suggestion index not available yet."; }
+}
+
+window.repertoireApp={
+  connect(value){
+    store=value;
+    store.subscribeAuth(auth=>{
+      signedIn=Boolean(auth.user); isEditor=Boolean(auth.isEditor);
+      render(); if(isEditor)loadIndexStatus();
+    });
+    loadSongs();
+  },
+  fail(error){ console.error(error); repertoireStatus.textContent="Could not connect"; },
+};
+
+repertoireSearch.addEventListener("input",render);
+repertoireList.addEventListener("click",event=>{
+  const button=event.target.closest("[data-edit-song]");
+  if(button&&isEditor)loadForEditing(button.dataset.editSong);
+});
+addRepertoireSong.addEventListener("click",()=>openEditor(null));
+songEditorClose.addEventListener("click",()=>songEditorDialog.close());
+songEditorCancel.addEventListener("click",()=>songEditorDialog.close());
+songEditorDialog.addEventListener("click",event=>{if(event.target===songEditorDialog)songEditorDialog.close();});
+songEditorForm.addEventListener("submit",async event=>{
+  event.preventDefault();
+  const validation=SongCatalog.validateDraft(draft());
+  if(!validation.valid){songEditorError.textContent=validation.error;return;}
+  saveSong.disabled=true;
+  try{
+    const saved=editingSong
+      ? await store.updateSong(editingSong.id,validation.value)
+      : await store.createSong(validation.value);
+    await store.syncSongs([saved.id]).catch(()=>{});
+    songEditorDialog.close();
+    await loadSongs();
+  }catch(error){songEditorError.textContent=error.message||"Could not save song.";}
+  finally{saveSong.disabled=false;}
+});
+authButton.addEventListener("click",async()=>{
+  if(signedIn){await store.signOut();return;}
+  loginError.textContent="";loginDialog.showModal();
+});
+loginCancel.addEventListener("click",()=>loginDialog.close());
+loginForm.addEventListener("submit",async event=>{
+  event.preventDefault();loginError.textContent="";
+  try{await store.signIn(loginEmail.value.trim(),loginPassword.value);loginPassword.value="";loginDialog.close();}
+  catch{loginError.textContent="Sign-in failed. Check the email and password.";}
+});
+indexButton.addEventListener("click",refreshIndex);
+
+if("serviceWorker" in navigator&&location.protocol!=="file:"){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js"));
+}</script>
+<script src="./supabase-config.js"></script>
+<script type="module" src="./src/services/repertoire-store.js"></script>
+</body></html>

@@ -59,6 +59,7 @@ let editingSongPart = null;
 let selectedSong = null;
 let visibleSongs = [];
 let editingSong = null;
+let suggestedSongs = [];
 
 function current(){ return CALENDAR[curIdx]; }
 function baseCelebration(){
@@ -465,6 +466,9 @@ function connectPlanStore(store){
 window.massPlanApp={connect:connectPlanStore};
 
 function songPart(key){ return MUSIC_PARTS.find(part=>part.key===key); }
+function currentReadingCitations(){
+  return READING_SLOTS.map(slot=>displayedCitation(slot)).filter(Boolean);
+}
 function songResultDescription(song){
   const items=[song.authors,song.copyrightYear,song.copyrightOwner,song.source].filter(Boolean);
   if(song.hasLyrics) items.push("Lyrics recorded");
@@ -483,6 +487,30 @@ function renderSongResults(){
   songResultsHeading.hidden=!visibleSongs.length;
   songPickerEmpty.hidden=!!visibleSongs.length;
   useSong.disabled=!selectedSong;
+}
+function renderSongSuggestions(){
+  songSuggestionResults.innerHTML=suggestedSongs.map((song,index)=>{
+    const selected=selectedSong?.id===song.id;
+    return '<button class="song-suggestion'+(selected?' selected':'')+'" type="button" data-song-suggestion-index="'+index+'">'
+      +'<strong>'+esc(song.title)+'</strong><span>'+esc(song.authors || "Author not recorded")+'</span></button>';
+  }).join("");
+  songSuggestionStatus.hidden=!!suggestedSongs.length;
+}
+async function loadSongSuggestions(){
+  suggestedSongs=[];
+  songSuggestionStatus.hidden=false;
+  songSuggestionStatus.textContent="Finding related songs…";
+  renderSongSuggestions();
+  try{
+    suggestedSongs=await planStore.suggestSongs(currentReadingCitations());
+    songSuggestionStatus.textContent=suggestedSongs.length
+      ? ""
+      : "Suggestions are not indexed for these readings yet.";
+  }catch(error){
+    console.warn("Could not load suggestions",error);
+    songSuggestionStatus.textContent="Suggestions are not available yet.";
+  }
+  renderSongSuggestions();
 }
 let songSearchRequest=0;
 async function searchSongCatalog(){
@@ -510,6 +538,7 @@ async function openSongPicker(partKey){
   editingSongPart=partKey;
   selectedSong=null;
   visibleSongs=[];
+  suggestedSongs=[];
   const part=songPart(partKey);
   const currentSong=musicSongs[partKey];
   songPickerTitle.textContent="Choose "+(part?.label || "song");
@@ -521,7 +550,7 @@ async function openSongPicker(partKey){
   songPickerEmpty.textContent="No matching songs. You can still create a new one above.";
   renderSongResults();
   songPickerDialog.showModal();
-  await searchSongCatalog();
+  await Promise.all([searchSongCatalog(),loadSongSuggestions()]);
   setTimeout(()=>songSearch.focus(),0);
 }
 function closeSongPicker(){
@@ -600,6 +629,13 @@ songResults.addEventListener("click",event=>{
   selectedSong=visibleSongs[Number(button.dataset.songIndex)] || null;
   renderSongResults();
 });
+songSuggestionResults.addEventListener("click",event=>{
+  const button=event.target.closest("button[data-song-suggestion-index]");
+  if(!button)return;
+  selectedSong=suggestedSongs[Number(button.dataset.songSuggestionIndex)]||null;
+  renderSongSuggestions();
+  renderSongResults();
+});
 createSongAction.addEventListener("click",()=>openSongEditor(null));
 editCurrentSong.addEventListener("click",async ()=>{
   const currentSong=musicSongs[editingSongPart];
@@ -650,12 +686,14 @@ songEditorForm.addEventListener("submit",async event=>{
   try{
     if(editingSong){
       const updated=await planStore.updateSong(editingSong.id,validation.value);
+      planStore.syncSongEmbedding(updated.id).catch(error=>console.warn("Song indexing failed",error));
       Object.keys(musicSongs).forEach(part=>{
         if(musicSongs[part]?.id===updated.id) musicSongs[part]=updated;
       });
       setSyncStatus("Saved","saved");
     }else{
       const created=await planStore.createAndAssignSong(current().d,editingSongPart,validation.value);
+      planStore.syncSongEmbedding(created.id).catch(error=>console.warn("Song indexing failed",error));
       musicSongs[editingSongPart]=created;
       setSyncStatus("Saved","saved");
     }

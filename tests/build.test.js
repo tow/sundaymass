@@ -46,3 +46,24 @@ test("external application assets referenced by the planner exist", () => {
     assert.ok(fs.existsSync(path.join(ROOT, relativePath)), `${relativePath} must exist`);
   });
 });
+
+test("the generated repertoire application parses and has no unresolved build tokens", () => {
+  const html = read("repertoire.html");
+  const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
+    .map(match => match[1])
+    .filter(script => script.trim());
+
+  assert.equal(scripts.length, 1);
+  assert.doesNotThrow(() => new Function(scripts[0]));
+  ["@@STYLES@@", "@@APP_SCRIPT@@", "@@SONG_CATALOG_JS@@"]
+    .forEach(token => assert.ok(!html.includes(token), `${token} must be resolved by the build`));
+});
+
+test("external application assets referenced by the repertoire exist", () => {
+  const html = read("repertoire.html");
+  const localScripts = [...html.matchAll(/<script[^>]+src="\.\/([^"]+)"/g)].map(match => match[1]);
+  assert.deepEqual(localScripts, ["supabase-config.js", "src/services/repertoire-store.js"]);
+  localScripts.forEach(relativePath => {
+    assert.ok(fs.existsSync(path.join(ROOT, relativePath)), `${relativePath} must exist`);
+  });
+});

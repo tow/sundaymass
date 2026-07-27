@@ -1,11 +1,14 @@
-const CACHE_NAME = "st-james-mass-planner-v23";
+const CACHE_NAME = "st-james-mass-planner-v27";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./about.html",
+  "./repertoire.html",
   "./manifest.webmanifest",
   "./supabase-config.js",
   "./src/services/plan-store.js",
+  "./src/services/repertoire-store.js",
+  "./data/generated/readings_text.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png",
@@ -31,9 +34,12 @@ self.addEventListener("fetch", event => {
   if (event.request.method !== "GET" || new URL(event.request.url).origin !== self.location.origin) return;
 
   if (event.request.mode === "navigate") {
-    const cacheTarget = new URL(event.request.url).pathname.endsWith("/about.html")
+    const pathname = new URL(event.request.url).pathname;
+    const cacheTarget = pathname.endsWith("/about.html")
       ? "./about.html"
-      : "./index.html";
+      : pathname.endsWith("/repertoire.html")
+        ? "./repertoire.html"
+        : "./index.html";
     event.respondWith(
       fetch(event.request)
         .then(response => {

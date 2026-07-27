@@ -96,6 +96,13 @@ function localStore() {
       requireEditor();
       return songCatalog().search(readSongs(), query);
     },
+    async suggestSongs() {
+      requireEditor();
+      return [];
+    },
+    async syncSongEmbedding() {
+      requireEditor();
+    },
     async getSong(songId) {
       requireEditor();
       const song = readSongs().find(value => value.id === songId);
@@ -197,6 +204,8 @@ function unavailableStore() {
       return () => {};
     },
     searchSongs: unavailable,
+    suggestSongs: unavailable,
+    syncSongEmbedding: unavailable,
     getSong: unavailable,
     assignSong: unavailable,
     createAndAssignSong: unavailable,
@@ -268,6 +277,12 @@ async function supabaseStore(config) {
         p_lyrics: value.value.lyrics || null,
       },
     };
+  };
+  const invokeSemantic = async body => {
+    const { data, error } = await supabase.functions.invoke("semantic-songs", { body });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    return data;
   };
 
   return {
@@ -368,6 +383,13 @@ async function supabaseStore(config) {
         .order("title");
       if (error) throw error;
       return songCatalog().search((data || []).map(planData().songFromRow), query);
+    },
+    async suggestSongs(citations) {
+      const result = await invokeSemantic({ action: "suggest", citations });
+      return (result.songs || []).map(planData().songFromRow);
+    },
+    async syncSongEmbedding(songId) {
+      return invokeSemantic({ action: "sync-songs", songIds: [songId] });
     },
     async getSong(songId) {
       const { data, error } = await supabase

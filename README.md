@@ -10,13 +10,15 @@ Live site: <https://tow.github.io/sundaymass/>
 This is an independent planning aid, not an official parish or Diocese of Helsinki
 publication. Liturgical details must always be checked against the parish Ordo.
 
-**The standalone deliverable is `StJames_Mass_Planner.html`** (same planner as
+**The standalone planner deliverable is `StJames_Mass_Planner.html`** (same planner as
 `index.html`). The planner itself is self-contained and works offline — all data and
-both Word templates are embedded. Deploy `about.html` alongside it for the help page.
+both Word templates are embedded. Deploy `repertoire.html` and `about.html` alongside
+it for repertoire browsing and help.
 
-For deployment, serve `index.html` and `about.html` together with `supabase-config.js`,
-`src/services/plan-store.js`, `manifest.webmanifest`, `service-worker.js`, and `icons/`.
-On HTTPS, the planner can be installed to a phone's home screen.
+For deployment, serve `index.html`, `repertoire.html`, and `about.html` together with
+`supabase-config.js`, both files in `src/services/`, `data/generated/readings_text.json`,
+`manifest.webmanifest`, `service-worker.js`, and `icons/`. On HTTPS, the planner can be
+installed to a phone's home screen.
 
 ## Product decisions to preserve
 
@@ -42,8 +44,9 @@ On HTTPS, the planner can be installed to a phone's home screen.
   soft ranking for entrance, offertory, and recessional, but neither convention may
   become a hard picker filter. Communion 1 and 2 are fully general song assignments.
 - Only a title is required when creating a song. YouTube, attribution, and lyrics can
-  all be added later. Phase-one search is deliberately limited to alphabetical title
-  matching; recent/frequent ranking and semantic search are deferred.
+  all be added later. Repertoire search is deliberately limited to alphabetical title
+  and author matching. Semantic suggestions are shown separately in the song picker
+  and never restrict which song can be chosen.
 - Editing a canonical song immediately changes every Sunday which references it. This
   is an explicit product decision: the current small data set does not require weekly
   snapshots or immutable history.
@@ -58,7 +61,8 @@ On HTTPS, the planner can be installed to a phone's home screen.
   able to retrieve them. `song_lyrics` is physically separate from public song metadata
   solely to enforce that database permission boundary; it is not a separate domain
   concept. Without this requirement, the extra table would not be justified.
-- Future automatic suggestions should preferentially draw from the known repertoire.
+- Song and reading embeddings are also private. Suggestions return only public song
+  metadata to authorised editors and always draw from the known repertoire.
 
 ## Files to edit
 
@@ -73,6 +77,10 @@ behavior, and export changes in the appropriate source file:
 - `src/domain/plan-music-data.js` — database-row to browser-plan conversion
 - `src/export/docx.js` — browser-side Word generation
 - `src/services/plan-store.js` — Supabase/local persistence adapter
+- `src/repertoire.html` — repertoire page structure
+- `src/styles/repertoire.css` — repertoire layout
+- `src/app/repertoire.js` — repertoire browsing, editing, and index management
+- `src/services/repertoire-store.js` — Supabase/local repertoire adapter
 
 Then run:
 
@@ -112,6 +120,27 @@ Live data uses Supabase Auth, Postgres, Realtime, and Row Level Security:
   receive no table privileges at all. Authenticated access is further restricted by
   Row Level Security to members of `public.editors`. Public plan queries deliberately
   never join this table.
+- `song_embeddings` and `reading_embeddings` contain 384-dimensional pgvector values.
+  Both tables revoke all anonymous and authenticated access; only the service role used
+  inside the Edge Function can read or write them. Song embeddings may be derived from
+  private lyrics, so this boundary is as strict as the lyrics boundary.
+- `semantic-songs` is an editor-only Supabase Edge Function. It uses Supabase’s built-in
+  English `gte-small` model, so there is no external model API, model SDK, or API key.
+  Long texts are split below the model’s 512-token limit and their normalized vectors
+  are combined into one vector per canonical song or reading citation. The Supabase
+  service role can also run maintenance indexing; that secret remains server-side and
+  is never included in an app asset.
+- The repertoire’s “Update suggestion index” action is deliberately manual and
+  resumable for this very small installation. It batches the checked-in reading texts
+  and song IDs through the Edge Function; unchanged content is skipped by SHA-256 hash.
+  Creating or editing a song also refreshes that song’s vector immediately. On an
+  editor visit, the repertoire compares each song/lyrics `updated_at` value with its
+  vector timestamp and automatically repairs missing or stale song vectors. This gives
+  reliable eventual consistency without cron, queues, webhooks, or another service.
+- Song suggestions compare the effective reading citations currently displayed for the
+  Mass with the known repertoire. The database combines each song’s best reading match
+  with its average match, then returns public song metadata only. Suggestions remain a
+  soft aid: every song is still available in every Mass slot.
 - Editors sign in with an administrator-created, manually confirmed email/password
   account. Public signup is disabled, so phase 1 requires no outgoing email service.
 - A signed-in user can write only when their user ID is also in `public.editors`.
@@ -154,16 +183,20 @@ Live data uses Supabase Auth, Postgres, Realtime, and Row Level Security:
 
 To connect a Supabase project:
 
-1. Link the project and run `supabase db push` to apply the tracked migration in
+1. Link the project and run `supabase db push` to apply the tracked migrations in
    `supabase/migrations/`.
-2. Put the project URL and publishable key in `supabase-config.js`.
-3. Under Authentication → General Configuration, turn off **Allow new users to sign
+2. Deploy the native embedding function with
+   `supabase functions deploy semantic-songs`.
+3. Put the project URL and publishable key in `supabase-config.js`.
+4. Under Authentication → General Configuration, turn off **Allow new users to sign
    up**. Leave the Email/password provider enabled so administrator-created users can
    still sign in. Supabase calls this setting "signup"; disabling signup does **not**
    disable password sign-in for existing users. Email confirmation can remain enabled.
-4. Under Authentication → Users, create each editor with an initial password and mark
+5. Under Authentication → Users, create each editor with an initial password and mark
    the account confirmed.
-5. Add each editor's Auth user ID to `public.editors`.
+6. Add each editor's Auth user ID to `public.editors`.
+7. Sign in on the repertoire page and press “Update suggestion index” once after the
+   first deployment. The operation can safely be repeated or resumed after interruption.
 
 The publishable browser key in `supabase-config.js` is public by design. Security comes
 from RLS and editor membership, never from hiding that key. Never put a service-role key
@@ -251,8 +284,9 @@ Everything is generated by Node scripts. Run order and purpose:
    second reading and never offer that empty option.
 8. **`scripts/build-app.js`** — assembles `src/planner.html`,
    `src/styles/planner.css`, `src/app/planner.js`, the domain and DOCX modules, generated
-   JSON catalogues, and both template part-sets into the final planner HTML. It embeds
-   the data but does not decide which lectionary options are valid.
+   JSON catalogues, and both template part-sets into the final planner HTML. It also
+   assembles the repertoire source into `repertoire.html`. It embeds the planner data
+   but does not decide which lectionary options are valid.
 
 ### Calendar/lectionary data boundary
 

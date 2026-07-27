@@ -61,4 +61,22 @@ html = replaceOnce(html, "@@APP_SCRIPT@@", appScript);
 ["StJames_Mass_Planner.html", "index.html"].forEach(output => {
   fs.writeFileSync(path.join(ROOT, output), html);
 });
-console.log("written", Math.round(html.length / 1024), "KB");
+
+let repertoireScript = read("src/app/repertoire.js").trimEnd();
+repertoireScript = replaceOnce(repertoireScript, "@@SONG_CATALOG_JS@@", read("src/domain/songs.js"));
+let repertoireHtml = read("src/repertoire.html").trimEnd();
+repertoireHtml = replaceOnce(
+  repertoireHtml,
+  "@@STYLES@@",
+  read("src/styles/repertoire.css").trimEnd(),
+);
+repertoireHtml = replaceOnce(repertoireHtml, "@@APP_SCRIPT@@", repertoireScript);
+fs.writeFileSync(path.join(ROOT, "repertoire.html"), repertoireHtml);
+
+console.log(
+  "written",
+  Math.round(html.length / 1024),
+  "KB planner and",
+  Math.round(repertoireHtml.length / 1024),
+  "KB repertoire",
+);

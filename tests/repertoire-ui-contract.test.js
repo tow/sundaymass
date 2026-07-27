@@ -1,0 +1,69 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const fs = require("fs");
+const path = require("path");
+
+const ROOT = path.resolve(__dirname, "..");
+const read = relativePath => fs.readFileSync(path.join(ROOT, relativePath), "utf8");
+
+test("the public repertoire is a first-class mobile page linked from the app", () => {
+  const planner = read("src/planner.html");
+  const about = read("about.html");
+  const repertoire = read("src/repertoire.html");
+
+  assert.match(planner, /href="\.\/repertoire\.html"[^>]*>Repertoire</);
+  assert.match(about, /href="\.\/repertoire\.html"[^>]*>Repertoire</);
+  assert.match(repertoire, /id="repertoireSearch"/);
+  assert.match(repertoire, /id="repertoireList"/);
+  assert.match(repertoire, /id="repertoireCount"/);
+  assert.match(repertoire, /id="repertoireEditorActions"/);
+  assert.match(repertoire, /id="addRepertoireSong"/);
+});
+
+test("public repertoire loading never requests private lyrics", () => {
+  const store = read("src/services/repertoire-store.js");
+  const supabaseStore = store.slice(store.indexOf("async function supabaseStore"));
+  const publicQuery = supabaseStore.slice(
+    supabaseStore.indexOf("async browseSongs"),
+    supabaseStore.indexOf("async getSong"),
+  );
+  const editorQuery = supabaseStore.slice(
+    supabaseStore.indexOf("async getSong"),
+    supabaseStore.indexOf("async createSong"),
+  );
+
+  assert.match(publicQuery, /\.from\("songs"\)/);
+  assert.match(publicQuery, /copyright_owner/);
+  assert.doesNotMatch(publicQuery, /song_lyrics/);
+  assert.match(editorQuery, /song_lyrics/);
+});
+
+test("repertoire editors can create and update canonical songs without assigning a Mass", () => {
+  const store = read("src/services/repertoire-store.js");
+  const app = read("src/app/repertoire.js");
+  const html = read("src/repertoire.html");
+
+  assert.match(store, /async createSong\(/);
+  assert.match(store, /\.rpc\("create_song"/);
+  assert.match(store, /async updateSong\(/);
+  assert.match(store, /\.rpc\("update_song"/);
+  assert.match(html, /Only authorised editors can change the shared repertoire/);
+  assert.match(app, /status\.staleSongIds/);
+  assert.match(app, /await store\.syncSongs\(staleIds\.slice/);
+});
+
+test("the PWA caches and routes the repertoire independently", () => {
+  const worker = read("service-worker.js");
+  assert.match(worker, /"\.\/repertoire\.html"/);
+  assert.match(worker, /endsWith\("\/repertoire\.html"\)/);
+  assert.match(worker, /src\/services\/repertoire-store\.js/);
+});
+
+test("public repertoire attribution is compact and includes the copyright mark", () => {
+  const app = read("src/app/repertoire.js");
+  const details = app.slice(app.indexOf("const copyrightLine"), app.indexOf("function render"));
+
+  assert.doesNotMatch(details, /Authors:/);
+  assert.match(details, /`© \$\{copyright\}`/);
+  assert.match(details, /public domain/);
+});

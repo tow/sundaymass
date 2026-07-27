@@ -60,7 +60,7 @@
   <div class="parish-bar">
     <div class="parish-bar-inner">
       <a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener">St James the Apostle ↗</a>
-      <a class="back-link" href="./">← Music planner</a>
+      <nav><a class="back-link" href="./">Music planner</a> · <a class="back-link" href="./repertoire.html">Repertoire</a></nav>
     </div>
   </div>
 
@@ -82,7 +82,7 @@
       <ol class="steps">
         <li><strong>Choose the Sunday.</strong> Use the arrows, date control or “Jump to upcoming Sunday”.</li>
         <li><strong>Review the readings.</strong> Tap a reading citation to jump to its full text.</li>
-        <li><strong>Choose the music.</strong> Editors sign in, enter each song and may add a YouTube practice link.</li>
+        <li><strong>Choose the music.</strong> Editors sign in, choose from the shared repertoire or add a new song, and may add a YouTube practice link.</li>
         <li><strong>Record copyright details.</strong> For songs whose lyrics will be projected, fill in the authors, copyright owner or publisher and year. Add a source when it is useful.</li>
         <li><strong>Print the plan.</strong> Choose either the music sheet alone or music together with the full readings.</li>
       </ol>
@@ -98,12 +98,19 @@
       <h2 id="editing-title">Editing and saving</h2>
       <ul class="help-list">
         <li>Only authorised editors can change a plan; everyone else can view it.</li>
-        <li>Music changes save automatically after a short pause. Celebration and reading changes save only after their “Use” button is pressed.</li>
+        <li>Music changes are live as soon as an editor explicitly chooses, creates, edits or removes a song. Celebration and reading changes save only after their “Use” button is pressed.</li>
         <li>The rarely needed liturgical controls are behind “Edit celebration or readings” at the bottom of the planner. Prefer “Use another celebration” when the priest celebrates a different standard Mass: it changes the title and complete reading set together while retaining the actual Sunday date. Where the Proper or an applicable Common provides choices, select the actual first reading, psalm, optional second reading and Gospel before saving.</li>
         <li>Individual reading changes are a secondary fine-tuning option. The planner validates the reading role and previews its full text before saving.</li>
         <li>A non-standard but valid passage requires confirmation that it has been checked against the parish Ordo or with the celebrant. Use “Restore” to return a slot to its computed reading.</li>
         <li>There is no separate draft or publish step.</li>
       </ul>
+    </section>
+
+    <section class="card" aria-labelledby="repertoire-title">
+      <h2 id="repertoire-title">Repertoire and suggestions</h2>
+      <p><a href="./repertoire.html">Browse the choir repertoire</a> to find songs by title or author and open their recorded YouTube practice links. Browsing is public; song details and private lyrics can be changed only by authorised editors.</p>
+      <p>When an editor chooses music for a Mass, the picker suggests songs whose recorded lyrics are semantically related to that Mass’s readings. The suggestion index uses Supabase’s built-in English embedding model and private database vectors; lyrics and vectors are never returned to public visitors.</p>
+      <div class="note">Suggestions are an aid to human judgement, not a liturgical recommendation or a replacement for choosing music appropriate to the part of the Mass.</div>
     </section>
 
     <section class="card" aria-labelledby="calendar-title">
