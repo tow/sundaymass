@@ -55,7 +55,7 @@ test("repertoire editors can create and update canonical songs without assigning
   assert.match(app, /new Set\(song\?\.suggestionParts\|\|\[\]\)/);
   assert.match(html, /Only authorised editors can change the shared repertoire/);
   assert.match(app, /status\.staleSongIds/);
-  assert.match(app, /await store\.syncSongs\(staleIds\.slice/);
+  assert.match(app, /EmbeddingRepair\.repairStaleSongsOnce/);
 });
 
 test("the PWA caches and routes the repertoire independently", () => {

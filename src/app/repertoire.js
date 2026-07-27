@@ -1,4 +1,5 @@
 @@SONG_CATALOG_JS@@
+@@EMBEDDING_REPAIR_JS@@
 let store;
 let songs=[];
 let isEditor=false;
@@ -121,7 +122,7 @@ async function refreshIndex(){
 async function loadIndexStatus(){
   if(!isEditor)return;
   try{
-    const status=await store.semanticStatus();
+    let status=await store.semanticStatus();
     const staleIds=status.staleSongIds||[];
     indexStatus.textContent=staleIds.length
       ? `${status.embeddedSongs}/${status.songs} songs · updating ${staleIds.length} changed ${staleIds.length===1?"song":"songs"}…`
@@ -129,11 +130,16 @@ async function loadIndexStatus(){
     if(staleIds.length&&!repairingIndex){
       repairingIndex=true;
       try{
-        for(let index=0;index<staleIds.length;index+=5){
-          await store.syncSongs(staleIds.slice(index,index+5));
-        }
+        status=await EmbeddingRepair.repairStaleSongsOnce(
+          status,
+          ids=>store.syncSongs(ids),
+          ()=>store.semanticStatus(),
+        );
       }finally{repairingIndex=false;}
-      await loadIndexStatus();
+      const remaining=status.staleSongIds||[];
+      indexStatus.textContent=remaining.length
+        ? `${status.embeddedSongs}/${status.songs} songs · ${remaining.length} still need updating; try Update suggestion index`
+        : `${status.embeddedSongs}/${status.songs} songs · ${status.embeddedReadings} readings indexed · up to date`;
     }
   }catch{ indexStatus.textContent="Suggestion index not available yet."; }
 }

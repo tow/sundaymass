@@ -64,6 +64,11 @@ html = replaceOnce(html, "@@APP_SCRIPT@@", appScript);
 
 let repertoireScript = read("src/app/repertoire.js").trimEnd();
 repertoireScript = replaceOnce(repertoireScript, "@@SONG_CATALOG_JS@@", read("src/domain/songs.js"));
+repertoireScript = replaceOnce(
+  repertoireScript,
+  "@@EMBEDDING_REPAIR_JS@@",
+  read("src/domain/embedding-repair.js"),
+);
 let repertoireHtml = read("src/repertoire.html").trimEnd();
 repertoireHtml = replaceOnce(
   repertoireHtml,

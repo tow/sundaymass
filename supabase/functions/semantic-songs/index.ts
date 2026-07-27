@@ -1,5 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import {
+  songEmbeddingContent,
+  staleSongIds,
+  storedSongEmbeddingHash,
+} from "./song-content.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -112,7 +117,7 @@ Deno.serve(async request => {
   if (action === "status") {
     const [songs, readingVectors] = await Promise.all([
       admin.from("songs").select(
-        "id,updated_at,song_lyrics(updated_at),song_embeddings(updated_at)",
+        "id,title,authors,source,song_lyrics(lyrics),song_embeddings(content_hash)",
       ),
       admin.from("reading_embeddings").select("citation", { count: "exact", head: true }),
     ]);
@@ -120,25 +125,12 @@ Deno.serve(async request => {
       return json({ error: songs.error?.message || readingVectors.error?.message }, 500);
     }
     const rows = songs.data || [];
-    const relationValue = (
-      relation: { updated_at?: string } | { updated_at?: string }[] | null,
-    ) => Array.isArray(relation) ? relation[0]?.updated_at : relation?.updated_at;
-    const staleSongIds = rows.filter(song => {
-      const lyricsUpdatedAt = relationValue(song.song_lyrics);
-      const embeddingUpdatedAt = relationValue(song.song_embeddings);
-      const contentUpdatedAt = Math.max(
-        Date.parse(song.updated_at),
-        lyricsUpdatedAt ? Date.parse(lyricsUpdatedAt) : 0,
-      );
-      return !embeddingUpdatedAt || Date.parse(embeddingUpdatedAt) < contentUpdatedAt;
-    }).map(song => song.id);
+    const staleIds = await staleSongIds(rows, digest);
     return json({
       songs: rows.length,
-      embeddedSongs: rows.length - rows.filter(
-        song => !relationValue(song.song_embeddings),
-      ).length,
+      embeddedSongs: rows.filter(song => storedSongEmbeddingHash(song)).length,
       embeddedReadings: readingVectors.count || 0,
-      staleSongIds,
+      staleSongIds: staleIds,
     });
   }
 
@@ -156,14 +148,7 @@ Deno.serve(async request => {
     let processed = 0;
     let skipped = 0;
     for (const song of songs || []) {
-      const relation = song.song_lyrics as { lyrics?: string } | { lyrics?: string }[] | null;
-      const lyrics = Array.isArray(relation) ? relation[0]?.lyrics || "" : relation?.lyrics || "";
-      const content = [
-        `Title: ${song.title}`,
-        song.authors ? `Authors: ${song.authors}` : "",
-        song.source ? `Source: ${song.source}` : "",
-        lyrics ? `Lyrics:\n${lyrics}` : "",
-      ].filter(Boolean).join("\n");
+      const content = songEmbeddingContent(song);
       const contentHash = await digest(content);
       const { data: existing } = await admin
         .from("song_embeddings")

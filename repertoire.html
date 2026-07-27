@@ -189,6 +189,24 @@ details{margin-top:18px;padding:12px;border:1px solid var(--line)}summary{color:
   };
 })(typeof window === "undefined" ? globalThis : window);
 
+(function (global) {
+  "use strict";
+
+  async function repairStaleSongsOnce(status, syncSongs, readStatus, batchSize = 5) {
+    const staleIds = Array.isArray(status?.staleSongIds) ? status.staleSongIds : [];
+    if (!staleIds.length) return status;
+    const size = Math.max(1, batchSize);
+    for (let index = 0; index < staleIds.length; index += size) {
+      await syncSongs(staleIds.slice(index, index + size));
+    }
+    return readStatus();
+  }
+
+  const api = { repairStaleSongsOnce };
+  global.EmbeddingRepair = api;
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+})(typeof window === "undefined" ? globalThis : window);
+
 let store;
 let songs=[];
 let isEditor=false;
@@ -311,7 +329,7 @@ async function refreshIndex(){
 async function loadIndexStatus(){
   if(!isEditor)return;
   try{
-    const status=await store.semanticStatus();
+    let status=await store.semanticStatus();
     const staleIds=status.staleSongIds||[];
     indexStatus.textContent=staleIds.length
       ? `${status.embeddedSongs}/${status.songs} songs · updating ${staleIds.length} changed ${staleIds.length===1?"song":"songs"}…`
@@ -319,11 +337,16 @@ async function loadIndexStatus(){
     if(staleIds.length&&!repairingIndex){
       repairingIndex=true;
       try{
-        for(let index=0;index<staleIds.length;index+=5){
-          await store.syncSongs(staleIds.slice(index,index+5));
-        }
+        status=await EmbeddingRepair.repairStaleSongsOnce(
+          status,
+          ids=>store.syncSongs(ids),
+          ()=>store.semanticStatus(),
+        );
       }finally{repairingIndex=false;}
-      await loadIndexStatus();
+      const remaining=status.staleSongIds||[];
+      indexStatus.textContent=remaining.length
+        ? `${status.embeddedSongs}/${status.songs} songs · ${remaining.length} still need updating; try Update suggestion index`
+        : `${status.embeddedSongs}/${status.songs} songs · ${status.embeddedReadings} readings indexed · up to date`;
     }
   }catch{ indexStatus.textContent="Suggestion index not available yet."; }
 }
