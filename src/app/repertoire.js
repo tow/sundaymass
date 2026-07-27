@@ -1,5 +1,6 @@
 @@MUSIC_PARTS_JS@@
 @@PWA_CONTROLLER_JS@@
+@@AUTH_CONTROLLER_JS@@
 @@SONG_PRESENTATION_JS@@
 @@SONG_CATALOG_JS@@
 @@EMBEDDING_REPAIR_JS@@
@@ -167,16 +168,22 @@ songEditorForm.addEventListener("submit",async event=>{
   }catch(error){songEditorError.textContent=error.message||"Could not save song.";}
   finally{saveSong.disabled=false;}
 });
-authButton.addEventListener("click",async()=>{
-  if(signedIn){await store.signOut();return;}
-  loginError.textContent="";loginDialog.showModal();
-});
-loginCancel.addEventListener("click",()=>loginDialog.close());
-loginForm.addEventListener("submit",async event=>{
-  event.preventDefault();loginError.textContent="";
-  try{await store.signIn(loginEmail.value.trim(),loginPassword.value);loginPassword.value="";loginDialog.close();}
-  catch{loginError.textContent="Sign-in failed. Check the email and password.";}
-});
+AuthController.create({
+  button:authButton,
+  dialog:loginDialog,
+  form:loginForm,
+  cancelButton:loginCancel,
+  emailInput:loginEmail,
+  passwordInput:loginPassword,
+  submitButton:loginSubmit,
+  errorElement:loginError,
+  getStore:()=>store,
+  isSignedIn:()=>signedIn,
+  openDialog:dialog=>dialog.showModal(),
+  scheduleFocus:callback=>setTimeout(callback,0),
+  onUnavailable:()=>{repertoireStatus.textContent="Editor sign-in unavailable";},
+  onActionFailure:()=>{repertoireStatus.textContent="Sign-in failed";},
+}).start();
 indexButton.addEventListener("click",refreshIndex);
 
 PwaController.registerServiceWorker({window,navigator,location});

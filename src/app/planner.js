@@ -1,6 +1,7 @@
 @@MODAL_CONTROLLER_JS@@
 @@PWA_CONTROLLER_JS@@
 @@CALENDAR_NAVIGATION_JS@@
+@@AUTH_CONTROLLER_JS@@
 @@MUSIC_PARTS_JS@@
 @@SONG_PRESENTATION_JS@@
 @@SONG_CATALOG_JS@@
@@ -704,41 +705,22 @@ songPickerDialog.addEventListener("click",event=>{ if(event.target===songPickerD
 songEditorClose.addEventListener("click",closeSongEditor);
 songEditorCancel.addEventListener("click",closeSongEditor);
 songEditorDialog.addEventListener("click",event=>{ if(event.target===songEditorDialog) closeSongEditor(); });
-authButton.addEventListener("click",async ()=>{
-  if(!planStore){ setSyncStatus("Editor sign-in unavailable","error"); return; }
-  try{
-    if(signedIn) await planStore.signOut();
-    else{
-      loginError.textContent="";
-      openModal(loginDialog);
-      setTimeout(()=>loginEmail.focus(),0);
-    }
-  }catch(error){
-    console.error(error);
-    setSyncStatus("Sign-in failed","error");
-  }
-});
-loginCancel.addEventListener("click",()=>loginDialog.close());
-loginDialog.addEventListener("click",event=>{
-  if(event.target===loginDialog) loginDialog.close();
-});
-loginForm.addEventListener("submit",async event=>{
-  event.preventDefault();
-  loginError.textContent="";
-  loginSubmit.disabled=true;
-  loginSubmit.textContent="Signing in…";
-  try{
-    await planStore.signIn(loginEmail.value.trim(),loginPassword.value);
-    loginPassword.value="";
-    loginDialog.close();
-  }catch(error){
-    console.error(error);
-    loginError.textContent="Sign-in failed. Check the email and password.";
-  }finally{
-    loginSubmit.disabled=false;
-    loginSubmit.textContent="Sign in";
-  }
-});
+AuthController.create({
+  button:authButton,
+  dialog:loginDialog,
+  form:loginForm,
+  cancelButton:loginCancel,
+  emailInput:loginEmail,
+  passwordInput:loginPassword,
+  submitButton:loginSubmit,
+  errorElement:loginError,
+  getStore:()=>planStore,
+  isSignedIn:()=>signedIn,
+  openDialog:openModal,
+  scheduleFocus:callback=>setTimeout(callback,0),
+  onUnavailable:()=>setSyncStatus("Editor sign-in unavailable","error"),
+  onActionFailure:()=>setSyncStatus("Sign-in failed","error"),
+}).start();
 openLiturgicalEditor.addEventListener("click",()=>{
   if(!isEditor) return;
   renderReadingEditor();

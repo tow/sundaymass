@@ -812,6 +812,107 @@
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window === "undefined" ? globalThis : window);
 
+// Shared email/password dialog behavior; stores remain responsible for authentication.
+(function (global) {
+  "use strict";
+
+  function create({
+    button,
+    dialog,
+    form,
+    cancelButton,
+    emailInput,
+    passwordInput,
+    submitButton,
+    errorElement,
+    getStore,
+    isSignedIn,
+    openDialog,
+    scheduleFocus,
+    onUnavailable = () => {},
+    onActionFailure = () => {},
+    logger = console,
+  }) {
+    let started = false;
+
+    async function onAuthAction() {
+      const store = getStore();
+      if (!store) {
+        onUnavailable();
+        return;
+      }
+      try {
+        if (isSignedIn()) {
+          await store.signOut();
+        } else {
+          errorElement.textContent = "";
+          openDialog(dialog);
+          scheduleFocus(() => emailInput.focus());
+        }
+      } catch (error) {
+        logger.error(error);
+        onActionFailure(error);
+      }
+    }
+
+    function closeDialog() {
+      dialog.close();
+    }
+
+    function onDialogClick(event) {
+      if (event.target === dialog) closeDialog();
+    }
+
+    async function onSubmit(event) {
+      event.preventDefault();
+      errorElement.textContent = "";
+      const previousLabel = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = "Signing in…";
+      try {
+        const store = getStore();
+        if (!store) {
+          onUnavailable();
+          return;
+        }
+        await store.signIn(emailInput.value.trim(), passwordInput.value);
+        passwordInput.value = "";
+        closeDialog();
+      } catch (error) {
+        logger.error(error);
+        errorElement.textContent = "Sign-in failed. Check the email and password.";
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = previousLabel;
+      }
+    }
+
+    function start() {
+      if (started) return;
+      button.addEventListener("click", onAuthAction);
+      cancelButton.addEventListener("click", closeDialog);
+      dialog.addEventListener("click", onDialogClick);
+      form.addEventListener("submit", onSubmit);
+      started = true;
+    }
+
+    function stop() {
+      if (!started) return;
+      button.removeEventListener("click", onAuthAction);
+      cancelButton.removeEventListener("click", closeDialog);
+      dialog.removeEventListener("click", onDialogClick);
+      form.removeEventListener("submit", onSubmit);
+      started = false;
+    }
+
+    return Object.freeze({ start, stop });
+  }
+
+  const api = Object.freeze({ create });
+  global.AuthController = api;
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+})(typeof window === "undefined" ? globalThis : window);
+
 // Canonical ordered Mass music parts shared by the UI, suggestions and DOCX builders.
 (function (global) {
   "use strict";
@@ -2045,41 +2146,22 @@ songPickerDialog.addEventListener("click",event=>{ if(event.target===songPickerD
 songEditorClose.addEventListener("click",closeSongEditor);
 songEditorCancel.addEventListener("click",closeSongEditor);
 songEditorDialog.addEventListener("click",event=>{ if(event.target===songEditorDialog) closeSongEditor(); });
-authButton.addEventListener("click",async ()=>{
-  if(!planStore){ setSyncStatus("Editor sign-in unavailable","error"); return; }
-  try{
-    if(signedIn) await planStore.signOut();
-    else{
-      loginError.textContent="";
-      openModal(loginDialog);
-      setTimeout(()=>loginEmail.focus(),0);
-    }
-  }catch(error){
-    console.error(error);
-    setSyncStatus("Sign-in failed","error");
-  }
-});
-loginCancel.addEventListener("click",()=>loginDialog.close());
-loginDialog.addEventListener("click",event=>{
-  if(event.target===loginDialog) loginDialog.close();
-});
-loginForm.addEventListener("submit",async event=>{
-  event.preventDefault();
-  loginError.textContent="";
-  loginSubmit.disabled=true;
-  loginSubmit.textContent="Signing in…";
-  try{
-    await planStore.signIn(loginEmail.value.trim(),loginPassword.value);
-    loginPassword.value="";
-    loginDialog.close();
-  }catch(error){
-    console.error(error);
-    loginError.textContent="Sign-in failed. Check the email and password.";
-  }finally{
-    loginSubmit.disabled=false;
-    loginSubmit.textContent="Sign in";
-  }
-});
+AuthController.create({
+  button:authButton,
+  dialog:loginDialog,
+  form:loginForm,
+  cancelButton:loginCancel,
+  emailInput:loginEmail,
+  passwordInput:loginPassword,
+  submitButton:loginSubmit,
+  errorElement:loginError,
+  getStore:()=>planStore,
+  isSignedIn:()=>signedIn,
+  openDialog:openModal,
+  scheduleFocus:callback=>setTimeout(callback,0),
+  onUnavailable:()=>setSyncStatus("Editor sign-in unavailable","error"),
+  onActionFailure:()=>setSyncStatus("Sign-in failed","error"),
+}).start();
 openLiturgicalEditor.addEventListener("click",()=>{
   if(!isEditor) return;
   renderReadingEditor();

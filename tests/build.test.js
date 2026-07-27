@@ -27,6 +27,7 @@ test("the generated planner contains no unresolved build tokens", () => {
     "@@MODAL_CONTROLLER_JS@@",
     "@@PWA_CONTROLLER_JS@@",
     "@@CALENDAR_NAVIGATION_JS@@",
+    "@@AUTH_CONTROLLER_JS@@",
     "@@MUSIC_PARTS_JS@@",
     "@@SONG_PRESENTATION_JS@@",
     "@@SONG_CATALOG_JS@@",
@@ -65,6 +66,7 @@ test("the generated repertoire application parses and has no unresolved build to
     "@@APP_SCRIPT@@",
     "@@MUSIC_PARTS_JS@@",
     "@@PWA_CONTROLLER_JS@@",
+    "@@AUTH_CONTROLLER_JS@@",
     "@@SONG_PRESENTATION_JS@@",
     "@@SONG_CATALOG_JS@@",
   ]

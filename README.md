@@ -78,6 +78,7 @@ behavior, and export changes in the appropriate source file:
 - `src/planner.html` — page structure
 - `src/styles/planner.css` — visual design and responsive layout
 - `src/app/planner.js` — UI state, rendering, and event handling
+- `src/app/auth-controller.js` — shared sign-in dialog and sign-out interactions
 - `src/app/calendar-navigation.js` — Sunday/date selection and calendar boundaries
 - `src/app/modal-controller.js` — native-dialog page scroll locking and restoration
 - `src/app/pwa-controller.js` — install prompt and service-worker registration behavior

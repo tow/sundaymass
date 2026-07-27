@@ -326,3 +326,7 @@ Acceptance:
 - 2026-07-27: Sunday navigation now uses a pure calendar-navigation module. Tests cover
   exact dates, nearest Sundays, range warnings, invalid input, initial upcoming-Sunday
   selection, and previous/next boundary clamping.
+- 2026-07-27: Planner and repertoire sign-in dialogs now share an authentication UI
+  controller while their stores retain authorization responsibility. Tests cover
+  sign-in, sign-out, focus, loading state, error display, unavailable stores, and
+  listener cleanup.
