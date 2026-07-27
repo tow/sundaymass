@@ -43,6 +43,8 @@ test("suggestion parts are normalized but never constrain catalogue search", () 
   assert.deepEqual(catalog.search([
     { id: "setting", title: "Mass setting", suggestionParts: ["memorial"] },
   ], "").map(song => song.id), ["setting"]);
+  assert.equal(catalog.suggestionPartFor("communion"), "communion");
+  assert.equal(catalog.suggestionPartFor("communion2"), "communion");
 });
 
 test("simple phase-one search is title-only, stable, and alphabetical", () => {

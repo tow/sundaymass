@@ -54,6 +54,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
   const sunday = "2049-01-03";
   const userIds = [];
   const songIds = [];
+  const readingCitations = [];
 
   async function createUser(label) {
     const data = await expectOk(await service("/auth/v1/admin/users", {
@@ -205,10 +206,173 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       assert.ok(!invalid.response.ok);
       assert.match(JSON.stringify(invalid.data), /Invalid music part/i);
     });
+
+    await t.test("celebration replacement atomically clears individual reading overrides", async () => {
+      const denied = await nonEditor.request("/rest/v1/rpc/save_celebration_override", {
+        method: "POST",
+        body: {
+          p_sunday: sunday,
+          p_override: { key: "forbidden", title: "Forbidden" },
+        },
+      });
+      assert.ok(!denied.response.ok);
+      assert.match(JSON.stringify(denied.data), /Editor access required/i);
+
+      await expectOk(await editor.request("/rest/v1/rpc/save_reading_override", {
+        method: "POST",
+        body: {
+          p_sunday: sunday,
+          p_slot: "first",
+          p_override: {
+            citation: "Isaiah 1:1",
+            book: "Isaiah",
+            segments: [{ chapter: 1, verses: [1] }],
+          },
+        },
+      }));
+      await expectOk(await editor.request("/rest/v1/rpc/save_celebration_override", {
+        method: "POST",
+        body: {
+          p_sunday: sunday,
+          p_override: {
+            id: "test-solemnity",
+            name: "Test solemnity",
+            sourceDate: "2049-01-02",
+            readings: {
+              first: "Isaiah 1:1",
+              psalm: "Psalm 1:1",
+              gospel: "John 1:1",
+            },
+          },
+        },
+      }));
+
+      const [plan] = await expectOk(await service(
+        `/rest/v1/plans?sunday=eq.${sunday}&select=reading_overrides,celebration_override`,
+      ));
+      assert.deepEqual(plan.reading_overrides, {});
+      assert.equal(plan.celebration_override.id, "test-solemnity");
+    });
+
+    await t.test("every application mutation rejects a non-editor", async () => {
+      const validReading = {
+        citation: "Isaiah 1:1",
+        book: "Isaiah",
+        segments: [{ chapter: 1, verses: [1] }],
+      };
+      const validCelebration = {
+        id: "forbidden-solemnity",
+        name: "Forbidden solemnity",
+        sourceDate: "2049-01-02",
+        readings: {
+          first: "Isaiah 1:1",
+          psalm: "Psalm 1:1",
+          gospel: "John 1:1",
+        },
+      };
+      const attempts = [
+        ["assign_plan_song", { p_sunday: sunday, p_part: "offertory", p_song_id: fixtureSong.id }],
+        ["clear_plan_song", { p_sunday: sunday, p_part: "entrance" }],
+        ["create_song", { p_title: "Forbidden song" }],
+        ["create_and_assign_song", {
+          p_sunday: sunday,
+          p_part: "offertory",
+          p_title: "Forbidden assigned song",
+        }],
+        ["update_song", { p_song_id: fixtureSong.id, p_title: "Forbidden title" }],
+        ["save_reading_override", {
+          p_sunday: sunday,
+          p_slot: "first",
+          p_override: validReading,
+        }],
+        ["clear_reading_override", { p_sunday: sunday, p_slot: "first" }],
+        ["save_celebration_override", {
+          p_sunday: sunday,
+          p_override: validCelebration,
+        }],
+        ["clear_celebration_override", { p_sunday: sunday }],
+      ];
+
+      for (const [name, body] of attempts) {
+        const result = await nonEditor.request(`/rest/v1/rpc/${name}`, {
+          method: "POST",
+          body,
+        });
+        assert.equal(result.response.ok, false, `${name} unexpectedly accepted a non-editor`);
+      }
+    });
+
+    await t.test("position filtering happens before semantic ranking", async () => {
+      const entranceId = await expectOk(await editor.request("/rest/v1/rpc/create_song", {
+        method: "POST",
+        body: {
+          p_title: `Entrance candidate ${suffix}`,
+          p_suggestion_parts: ["entrance"],
+        },
+      }));
+      const communionId = await expectOk(await editor.request("/rest/v1/rpc/create_song", {
+        method: "POST",
+        body: {
+          p_title: `Communion candidate ${suffix}`,
+          p_suggestion_parts: ["communion"],
+        },
+      }));
+      songIds.push(entranceId, communionId);
+
+      const citation = `Test Reading ${suffix}`;
+      readingCitations.push(citation);
+      const embedding = new Array(384).fill(0);
+      embedding[0] = 1;
+      await expectOk(await service("/rest/v1/reading_embeddings", {
+        method: "POST",
+        body: {
+          citation,
+          content_hash: `reading-${suffix}`,
+          embedding,
+        },
+      }));
+      await expectOk(await service("/rest/v1/song_embeddings", {
+        method: "POST",
+        body: [
+          {
+            song_id: entranceId,
+            content_hash: `entrance-${suffix}`,
+            embedding,
+          },
+          {
+            song_id: communionId,
+            content_hash: `communion-${suffix}`,
+            embedding,
+          },
+        ],
+      }));
+
+      const suggestions = await expectOk(await editor.request(
+        "/rest/v1/rpc/suggest_songs_for_readings",
+        {
+          method: "POST",
+          body: {
+            p_citations: [citation],
+            p_part: "entrance",
+            p_limit: 3,
+          },
+        },
+      ));
+      assert.deepEqual(suggestions.map(song => song.id), [entranceId]);
+      assert.equal(Object.hasOwn(suggestions[0], "lyrics"), false);
+      assert.equal(Object.hasOwn(suggestions[0], "embedding"), false);
+    });
   } finally {
     await service(`/rest/v1/plan_songs?sunday=eq.${sunday}`, { method: "DELETE" });
     await service(`/rest/v1/plans?sunday=eq.${sunday}`, { method: "DELETE" });
+    for (const citation of readingCitations) {
+      await service(
+        `/rest/v1/reading_embeddings?citation=eq.${encodeURIComponent(citation)}`,
+        { method: "DELETE" },
+      );
+    }
     for (const songId of songIds) {
+      await service(`/rest/v1/song_embeddings?song_id=eq.${songId}`, { method: "DELETE" });
       await service(`/rest/v1/song_lyrics?song_id=eq.${songId}`, { method: "DELETE" });
       await service(`/rest/v1/songs?id=eq.${songId}`, { method: "DELETE" });
     }
