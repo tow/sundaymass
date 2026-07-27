@@ -43,6 +43,28 @@ test("empty editor slots use one Choose song control without a second empty-stat
   assert.match(app, /music-editor-actions empty/);
 });
 
+test("selected rows show only Change and move secondary actions into the picker", () => {
+  const app = read("src/app/planner.js");
+  const html = read("src/planner.html");
+  const musicRenderer = app.slice(
+    app.indexOf("function renderMusicPlan"),
+    app.indexOf("function readingSlot"),
+  );
+
+  assert.match(musicRenderer, />Change<\/button>/);
+  assert.doesNotMatch(musicRenderer, /data-song-action="edit"/);
+  assert.doesNotMatch(musicRenderer, /data-song-action="remove"/);
+  assert.match(html, /id="songCurrentActions"/);
+  assert.match(html, /id="songCurrentAuthor"/);
+  assert.match(html, /id="editCurrentSong"/);
+  assert.match(html, /id="removeCurrentSong"/);
+  assert.match(html, />Edit song details<\/button>/);
+  assert.match(html, />Remove from this Mass<\/button>/);
+  assert.match(app, /songCurrentAuthor\.textContent=currentSong\?\.authors \|\| "Author not recorded"/);
+  assert.match(app, /function editorAttributionLine/);
+  assert.match(html, />Changes are live\.<\/div>/);
+});
+
 test("legacy free-text music editing and autosave are removed", () => {
   const app = read("src/app/planner.js");
   const store = read("src/services/plan-store.js");

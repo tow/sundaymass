@@ -56,7 +56,7 @@
       </div>
       <span class="sync-status" id="syncStatus" role="status">Connecting…</span>
     </div>
-    <div class="editor-help" id="editorHelp" hidden>Song selections are live immediately. Editing a song changes it everywhere it is used.</div>
+    <div class="editor-help" id="editorHelp" hidden>Changes are live.</div>
     <div class="music-list" id="musicList"></div>
   </section>
 
@@ -177,6 +177,17 @@
       <button class="reading-dialog-close" id="songPickerClose" type="button" aria-label="Close">×</button>
     </div>
     <div class="reading-dialog-body">
+      <div class="song-current-actions" id="songCurrentActions" hidden>
+        <div>
+          <span>Currently selected</span>
+          <strong id="songCurrentName"></strong>
+          <small id="songCurrentAuthor"></small>
+        </div>
+        <div class="song-current-buttons">
+          <button type="button" id="editCurrentSong">Edit song details</button>
+          <button class="remove-song" type="button" id="removeCurrentSong">Remove from this Mass</button>
+        </div>
+      </div>
       <div class="song-picker-tools">
         <div class="reading-search">
           <label for="songSearch">Search by title</label>

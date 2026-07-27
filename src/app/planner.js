@@ -117,15 +117,24 @@ function attributionLine(choice){
   if(choice.source.trim()) items.push("Source: "+choice.source.trim());
   return items.join(" · ");
 }
+function editorAttributionLine(choice){
+  const items=[];
+  if(choice.authors.trim()) items.push(choice.authors.trim());
+  const publicDomain=/\bpublic domain\b/i.test(choice.copyrightOwner);
+  const copyright=[choice.copyrightYear.trim(),choice.copyrightOwner.trim()].filter(Boolean).join(" ");
+  if(copyright) items.push(publicDomain ? copyright : "© "+copyright);
+  if(choice.source.trim()) items.push(choice.source.trim());
+  return items.join(" · ");
+}
 function renderMusicPlan(){
   editorHelp.hidden=!isEditor;
-  musicIntro.textContent=isEditor ? "Choose an existing song or add a new one for each part of the Mass." : "Selections for this Sunday appear here as they are chosen.";
+  musicIntro.textContent=isEditor ? "Choose or add a song for each part." : "Selections for this Sunday appear here as they are chosen.";
   if(isEditor){
     musicList.innerHTML=MUSIC_PARTS.map(part=>{
       const song=musicSongs[part.key];
       const choice=choiceFor(part.key);
       const link=safeYoutubeUrl(choice.youtubeUrl);
-      const attribution=attributionLine(choice);
+      const attribution=editorAttributionLine(choice);
       const incomplete=choice.song && !copyrightComplete(choice);
       return '<div class="music-edit-row"><div class="music-part-label">'+musicLabel(part)+'</div>'
         +(song
@@ -133,10 +142,8 @@ function renderMusicPlan(){
             +(attribution?'<span class="music-attribution">'+esc(attribution)+'</span>':'')
             +(incomplete?'<span class="music-attribution copyright-warning">Copyright information incomplete</span>':'')
             +(link?'<a class="listen-link" href="'+esc(link)+'" target="_blank" rel="noopener">Listen / practise ↗</a>':'')
-            +'</div><div class="music-editor-actions">'
+            +'</div><div class="music-editor-actions assigned">'
             +'<button type="button" data-song-action="choose" data-part="'+part.key+'">Change</button>'
-            +'<button type="button" data-song-action="edit" data-part="'+part.key+'">Edit song</button>'
-            +'<button class="remove-song" type="button" data-song-action="remove" data-part="'+part.key+'">Remove</button>'
             +'</div>'
           : '<div class="music-editor-actions empty"><button class="primary choose-song" type="button" data-song-action="choose" data-part="'+part.key+'">Choose song</button></div>')
         +'</div>';
@@ -504,8 +511,12 @@ async function openSongPicker(partKey){
   selectedSong=null;
   visibleSongs=[];
   const part=songPart(partKey);
+  const currentSong=musicSongs[partKey];
   songPickerTitle.textContent="Choose "+(part?.label || "song");
   songPickerContext.textContent="Any song can be used in any part of the Mass. Search the whole repertoire, or create another song even when a title already exists.";
+  songCurrentActions.hidden=!currentSong;
+  songCurrentName.textContent=currentSong?.title || "";
+  songCurrentAuthor.textContent=currentSong?.authors || "Author not recorded";
   songSearch.value="";
   songPickerEmpty.textContent="No matching songs. You can still create a new one above.";
   renderSongResults();
@@ -575,28 +586,6 @@ musicList.addEventListener("click",async event=>{
   const part=button.dataset.part;
   if(button.dataset.songAction==="choose"){
     openSongPicker(part);
-    return;
-  }
-  if(button.dataset.songAction==="edit"){
-    editingSongPart=part;
-    setSyncStatus("Loading song…","");
-    try{
-      const song=await planStore.getSong(musicSongs[part].id);
-      setSyncStatus("Up to date","saved");
-      openSongEditor(song);
-    }catch(error){
-      console.error(error);
-      setSyncStatus("Could not load song","error");
-    }
-    return;
-  }
-  if(button.dataset.songAction==="remove"){
-    if(!confirm("Remove this song from "+(songPart(part)?.label || "this part")+"? The song itself will remain available.")) return;
-    try{
-      await runSongMutation(()=>planStore.clearSong(current().d,part),"Saved");
-      delete musicSongs[part];
-      renderMusicPlan();
-    }catch(error){}
   }
 });
 let songSearchTimer=null;
@@ -612,6 +601,31 @@ songResults.addEventListener("click",event=>{
   renderSongResults();
 });
 createSongAction.addEventListener("click",()=>openSongEditor(null));
+editCurrentSong.addEventListener("click",async ()=>{
+  const currentSong=musicSongs[editingSongPart];
+  if(!currentSong || !isEditor) return;
+  setSyncStatus("Loading song…","");
+  try{
+    const song=await planStore.getSong(currentSong.id);
+    setSyncStatus("Up to date","saved");
+    openSongEditor(song);
+  }catch(error){
+    console.error(error);
+    setSyncStatus("Could not load song","error");
+  }
+});
+removeCurrentSong.addEventListener("click",async ()=>{
+  const part=editingSongPart;
+  const currentSong=musicSongs[part];
+  if(!currentSong || !isEditor) return;
+  if(!confirm("Remove “"+currentSong.title+"” from "+(songPart(part)?.label || "this part")+"? The shared song will remain available.")) return;
+  try{
+    await runSongMutation(()=>planStore.clearSong(current().d,part),"Saved");
+    delete musicSongs[part];
+    closeSongPicker();
+    renderMusicPlan();
+  }catch(error){}
+});
 useSong.addEventListener("click",async ()=>{
   if(!selectedSong || !editingSongPart) return;
   const part=editingSongPart;
