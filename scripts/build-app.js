@@ -35,6 +35,7 @@ const appValues = {
   "@@SONG_PICKER_CONTROLLER_JS@@": read("src/app/song-picker-controller.js"),
   "@@CELEBRATION_PICKER_VIEW_JS@@": read("src/app/celebration-picker-view.js"),
   "@@CELEBRATION_CONTROLLER_JS@@": read("src/app/celebration-controller.js"),
+  "@@READING_OVERRIDE_CONTROLLER_JS@@": read("src/app/reading-override-controller.js"),
   "@@SONG_CATALOG_JS@@": read("src/domain/songs.js"),
   "@@PLAN_MUSIC_DATA_JS@@": read("src/domain/plan-music-data.js"),
   "@@LECTIONARY_CATALOG_JS@@": read("src/domain/lectionary.js"),

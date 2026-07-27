@@ -13,6 +13,7 @@
 @@SONG_PICKER_CONTROLLER_JS@@
 @@CELEBRATION_PICKER_VIEW_JS@@
 @@CELEBRATION_CONTROLLER_JS@@
+@@READING_OVERRIDE_CONTROLLER_JS@@
 @@SONG_CATALOG_JS@@
 @@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
@@ -199,6 +200,23 @@ const celebrationController=CelebrationController.create({
   },
   logger:console,
 });
+const readingOverrideController=ReadingOverrideController.create({
+  getStore:()=>planStore,
+  isEditor:()=>isEditor,
+  getDate:()=>current().d,
+  confirmAll:message=>confirm(message),
+  onStatus:setReadingStatus,
+  onOverrideChanged:(slot,value)=>{
+    if(value) readingOverrides[slot]=value;
+    else delete readingOverrides[slot];
+    refresh();
+  },
+  onAllRestored:()=>{
+    readingOverrides={};
+    refresh();
+  },
+  logger:console,
+});
 function renderCelebrationPreview(){
   const view=celebrationPickerState.preview;
   celebrationPreview.innerHTML=view.html;
@@ -279,17 +297,7 @@ function openReadingDialog(key){
   setTimeout(()=>readingCitationInput.focus(),0);
 }
 async function restoreReadingOverride(slotKey){
-  if(!planStore || !isEditor) return;
-  setReadingStatus("Saving…","");
-  try{
-    await planStore.clearReadingOverride(current().d,slotKey);
-    delete readingOverrides[slotKey];
-    refresh();
-    setReadingStatus("Saved","saved");
-  }catch(error){
-    console.error(error);
-    setReadingStatus("Save failed","error");
-  }
+  await readingOverrideController.restore(slotKey);
 }
 function renderReadingPlan(){
   const view=readingPlanView.render({
@@ -654,18 +662,7 @@ readingEditorList.addEventListener("click",event=>{
   if(button.dataset.readingAction==="restore") restoreReadingOverride(button.dataset.readingSlot);
 });
 restoreAllReadings.addEventListener("click",async ()=>{
-  if(!isEditor || !planStore) return;
-  if(!confirm("Restore all individual readings to the selected celebration?")) return;
-  setReadingStatus("Saving…","");
-  try{
-    await planStore.clearReadingOverride(current().d,null);
-    readingOverrides={};
-    refresh();
-    setReadingStatus("Saved","saved");
-  }catch(error){
-    console.error(error);
-    setReadingStatus("Save failed","error");
-  }
+  await readingOverrideController.restoreAll();
 });
 readingSuggested.addEventListener("change",event=>{
   const input=event.target.closest('input[name="suggestedReading"]');
@@ -696,31 +693,11 @@ readingForm.addEventListener("submit",async event=>{
   if(!selection || !isEditor || !planStore || readingUse.disabled) return;
   readingUse.disabled=true;
   readingUse.textContent="Saving…";
-  setReadingStatus("Saving…","");
-  try{
-    if(selection.isDefault){
-      await planStore.clearReadingOverride(current().d,selection.slot);
-      delete readingOverrides[selection.slot];
-    }else{
-      const readingOverride={
-        citation:selection.citation,
-        book:selection.book,
-        segments:selection.segments,
-        origin:selection.origin,
-        translation:selection.translation,
-        textVersion:selection.textVersion,
-        checkedAgainstOrdo:selection.requiresConfirmation ? ordoConfirm.checked : true,
-      };
-      await planStore.saveReadingOverride(current().d,selection.slot,readingOverride);
-      readingOverrides[selection.slot]=readingOverride;
-    }
-    refresh();
-    setReadingStatus("Saved","saved");
+  const saved=await readingOverrideController.save(selection,ordoConfirm.checked);
+  if(saved){
     closeReadingDialog();
-  }catch(error){
-    console.error(error);
+  }else{
     showReadingValidation("The reading could not be saved. Please try again.","error");
-    setReadingStatus("Save failed","error");
     readingUse.textContent=selection.isDefault ? "Use computed reading" : "Use reading";
     readingUse.disabled=false;
   }

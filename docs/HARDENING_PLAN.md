@@ -402,3 +402,9 @@ Acceptance:
   catalogue data, complete payloads, individual-override clearing, and recoverable
   errors. At 390×844 Chrome finds and saves Saint James with its second reading,
   updates the live Mass, closes the picker, and reports no overflow or warnings.
+- 2026-07-27: Individual reading persistence moved behind a controller shared by save,
+  single-restore, and restore-all actions. Tests cover computed-reading restoration,
+  canonical snapshot fields, explicit confirmation for non-standard passages,
+  editor-only access, confirmation before bulk restoration, and failed writes. At
+  390×844 Chrome keeps Acts 4:32–35 disabled as a First Reading until confirmation,
+  then saves and displays the override without overflow or warnings.
