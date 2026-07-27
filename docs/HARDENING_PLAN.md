@@ -23,14 +23,14 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 | Phase | State | Outcome |
 |---|---|---|
 | 1. Correctness defects | Complete and deployed | Hash-based embedding staleness and truly empty suggestion positions |
-| 2. Reproducible build and CI | Complete locally | Pinned, deterministic, deployment-gating build |
-| 3. Testable stores and Edge logic | Complete locally | Dependency-injected adapters and executable behavior tests |
-| 4. Supabase integration tests | Complete locally | Proven RLS, RPC, privacy, and suggestion behavior |
-| 5. Application modularization | Complete locally | Small feature controllers and shared definitions |
-| 6. Offline/PWA guarantees | Complete locally | Reliable cached public viewing and explicit online-only editing |
-| 7. Browser and print coverage | Complete locally | Automated primary-workflow, offline-PWA, and A4 print tests |
-| 8. Documentation | Complete locally | Accurate, split developer and operations documentation |
-| 9. Repository cleanup | Complete locally | Intentional artifacts and generated-output enforcement |
+| 2. Reproducible build and CI | Complete | Pinned, deterministic, deployment-gating build |
+| 3. Testable stores and Edge logic | Complete | Dependency-injected adapters and executable behavior tests |
+| 4. Supabase integration tests | Complete | Proven RLS, RPC, privacy, and suggestion behavior |
+| 5. Application modularization | Complete | Small feature controllers and shared definitions |
+| 6. Offline/PWA guarantees | Complete | Reliable cached public viewing and explicit online-only editing |
+| 7. Browser and print coverage | Complete | Automated primary-workflow, offline-PWA, and A4 print tests |
+| 8. Documentation | Complete | Accurate, split developer and operations documentation |
+| 9. Repository cleanup | Complete | Intentional artifacts and generated-output enforcement |
 
 ## Phase 1 — correctness defects
 
@@ -517,3 +517,7 @@ Acceptance:
   hardening now proves that celebration and individual-reading overrides reach the
   real A4 PDF output, and that a service-worker-controlled offline reload can display
   and print a cached public Sunday while clearly rejecting an uncached one.
+- 2026-07-27: All nine hardening phases completed. The final local release gate passed
+  187 Node tests, seven system-Chrome workflows, locked Edge type-checking, and
+  deterministic artifact verification. The local migrated Supabase suite passed all
+  eight authorization, lyric-privacy, RPC, override, and semantic-filtering tests.
