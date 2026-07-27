@@ -359,3 +359,9 @@ Acceptance:
   direct tests for public/editor rows, escaping, copyright warnings, safe practice
   links, and the one-action-per-row design. Chrome at 390×844 confirms all 14 public
   rows, no horizontal overflow, no visible lyric data, and no console warnings.
+- 2026-07-27: Public reading presentation is now a separate tested module covering the
+  selected celebration, linked four-reading summary, full texts, Psalm fallback, and
+  celebration/reading adjustment markers. Chrome found and drove the fix for a
+  dependency initialization-order error that syntax checks could not detect; the
+  corrected 390×844 build has four working anchors, complete texts, no horizontal
+  overflow, and no console warnings.

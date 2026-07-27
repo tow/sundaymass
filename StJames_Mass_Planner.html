@@ -1357,6 +1357,106 @@
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window === "undefined" ? globalThis : window);
 
+// Renders the selected celebration, linked reading summary, and public full texts.
+(function (global) {
+  "use strict";
+
+  function create({ escapeHtml, formatLong, cycleName }) {
+    function readingCitation(values, slot) {
+      return values?.[slot.key] || "";
+    }
+
+    function renderResolved({ sunday, celebration, celebrationOverride }) {
+      const meta = celebrationOverride
+        ? escapeHtml(
+          `${celebration.rank || "Celebration"} · normally ${formatLong(celebration.sourceDate)}`,
+        )
+        : `${escapeHtml(sunday.s)} · ${escapeHtml(cycleName(sunday.c))}`;
+
+      return `<span class="selected-date">${escapeHtml(formatLong(sunday.d))}</span>`
+        + `<span class="selected-day">${escapeHtml(celebration.name)}`
+        + (celebrationOverride
+          ? '<span class="reading-adjusted-note">Changed celebration</span>'
+          : "")
+        + "</span>"
+        + `<span class="selected-meta">${meta}</span>`;
+    }
+
+    function renderSummary({
+      celebrationOverride,
+      readingOverrides,
+      readingSlots,
+      values,
+    }) {
+      const anyAdjusted = Boolean(celebrationOverride)
+        || readingSlots.some(slot => readingOverrides?.[slot.key]);
+      const rows = readingSlots.map(slot => {
+        const adjusted = Boolean(readingOverrides?.[slot.key]);
+        const changed = Boolean(celebrationOverride) || adjusted;
+        return `<a class="reading-item${changed ? " changed" : ""}" href="#reading-${escapeHtml(slot.key)}">`
+          + `<span class="reading-label">${escapeHtml(slot.label)}`
+          + (adjusted
+            ? '<span class="reading-adjusted-note">Adjusted</span>'
+            : "")
+          + "</span>"
+          + `<span class="reading-cite">${escapeHtml(readingCitation(values, slot)) || "—"}</span>`
+          + "</a>";
+      }).join("");
+
+      return '<div class="reading-summary-title">Readings for this Mass'
+        + (anyAdjusted
+          ? '<span class="reading-adjusted-note">Adjusted</span>'
+          : "")
+        + '</div><div class="reading-grid">'
+        + rows
+        + "</div>";
+    }
+
+    function renderFullReadings({
+      celebrationOverride,
+      readingOverrides,
+      readingSlots,
+      values,
+      textFor,
+    }) {
+      const blocks = readingSlots.map(slot => {
+        const citation = readingCitation(values, slot);
+        const fallback = slot.key === "psalm" ? "(sung — see citation)" : "";
+        const text = textFor(citation) || fallback;
+        const adjusted = Boolean(celebrationOverride) || Boolean(readingOverrides?.[slot.key]);
+        return `<article class="rblock reading-anchor" id="reading-${escapeHtml(slot.key)}">`
+          + `<div class="rhead">${escapeHtml(slot.label)}`
+          + `<span class="rcite">${escapeHtml(citation)}</span>`
+          + (adjusted
+            ? '<span class="reading-adjusted-note">Adjusted</span>'
+            : "")
+          + "</div>"
+          + `<div class="rtext">${escapeHtml(text) || "<em>(see citation)</em>"}</div>`
+          + "</article>";
+      }).join("");
+
+      return blocks
+        + '<div class="rpcaveat">Scripture: World English Bible (public domain). '
+        + "Verse numbering — especially in the Psalms — can differ slightly from the lectionary.</div>";
+    }
+
+    function render(options) {
+      return Object.freeze({
+        readingsIntro: `${options.values.day} · ${options.values.meta}`,
+        resolvedHtml: renderResolved(options),
+        summaryHtml: renderSummary(options),
+        fullReadingsHtml: renderFullReadings(options),
+      });
+    }
+
+    return Object.freeze({ render });
+  }
+
+  const api = Object.freeze({ create });
+  global.ReadingPlanView = api;
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+})(typeof window === "undefined" ? globalThis : window);
+
 // Pure song validation and phase-one title search shared by the app and tests.
 (function (global) {
   "use strict";
@@ -1803,6 +1903,11 @@ const musicPlanView=MusicPlanView.create({
   publicAttribution:attributionLine,
   editorAttribution:SongPresentation.editorPlanAttribution,
 });
+const readingPlanView=ReadingPlanView.create({
+  escapeHtml:esc,
+  formatLong:fmtLong,
+  cycleName,
+});
 const modalController=ModalController.create({window,document});
 const openModal=modalController.open;
 modalController.start();
@@ -1817,7 +1922,7 @@ const songForm=SongForm.create({
   lyrics:songLyrics,
   suggestionParts:songSuggestionParts,
 });
-const cycleName = c => "Year " + c;
+function cycleName(c){ return "Year " + c; }
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
 function fmtPicker(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}); }
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
@@ -2076,46 +2181,27 @@ async function restoreReadingOverride(slotKey){
     setReadingStatus("Save failed","error");
   }
 }
-function renderFullReadings(){
-  const v = vals();
-  readingsIntro.textContent=v.day+" · "+v.meta;
-  const blk = (slot,id,label,cite,text) => '<article class="rblock reading-anchor" id="'+id+'"><div class="rhead">'+esc(label)+'<span class="rcite">'+esc(cite)+'</span>'
-    +(celebrationOverride || readingOverrides[slot]?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</div><div class="rtext">'+(esc(text)||'<em>(see citation)</em>')+'</div></article>';
-  readingTexts.innerHTML =
-    blk("first","reading-first","First Reading",v.first,textFor(v.first))
-    + blk("psalm","reading-psalm","Responsorial Psalm",v.psalm,textFor(v.psalm)||"(sung — see citation)")
-    + blk("second","reading-second","Second Reading",v.second,textFor(v.second))
-    + blk("gospel","reading-gospel","Gospel",v.gospel,textFor(v.gospel))
-    + '<div class="rpcaveat">Scripture: World English Bible (public domain). Verse numbering — especially in the Psalms — can differ slightly from the lectionary.</div>';
-}
-function renderResolved(){
-  const s=current();
-  const celebration=baseCelebration();
-  resolved.innerHTML = '<span class="selected-date">'+fmtLong(s.d)+'</span>'
-    + '<span class="selected-day">'+esc(celebration.name)+(celebrationOverride?'<span class="reading-adjusted-note">Changed celebration</span>':'')+'</span>'
-    + '<span class="selected-meta">'+(celebrationOverride
-      ? esc((celebration.rank||"Celebration")+" · normally "+fmtLong(celebration.sourceDate))
-      : esc(s.s)+' · '+cycleName(s.c))+'</span>';
-}
-function renderReadingSummary(){
-  const v=vals();
-  const readings=[
-    ["first","First Reading",v.first,"reading-first"],
-    ["psalm","Responsorial Psalm",v.psalm,"reading-psalm"],
-    ["second","Second Reading",v.second,"reading-second"],
-    ["gospel","Gospel",v.gospel,"reading-gospel"],
-  ];
-  const anyAdjusted=!!celebrationOverride || READING_SLOTS.some(slot=>readingOverrides[slot.key]);
-  readingSummary.innerHTML='<div class="reading-summary-title">Readings for this Mass'+(anyAdjusted?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</div><div class="reading-grid">'
-    + readings.map(r=>'<a class="reading-item'+(celebrationOverride || readingOverrides[r[0]]?' changed':'')+'" href="#'+r[3]+'"><span class="reading-label">'+esc(r[1])+(readingOverrides[r[0]]?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</span><span class="reading-cite">'+(esc(r[2])||"—")+'</span></a>').join('')
-    + '</div>';
+function renderReadingPlan(){
+  const view=readingPlanView.render({
+    sunday:current(),
+    celebration:baseCelebration(),
+    celebrationOverride,
+    readingOverrides,
+    readingSlots:READING_SLOTS,
+    values:vals(),
+    textFor,
+  });
+  readingsIntro.textContent=view.readingsIntro;
+  resolved.innerHTML=view.resolvedHtml;
+  readingSummary.innerHTML=view.summaryHtml;
+  readingTexts.innerHTML=view.fullReadingsHtml;
 }
 function syncDateControl(){
   date.value=current().d;
   dateDisplay.textContent=fmtPicker(current().d);
 }
 function refresh(){
-  syncDateControl(); renderResolved(); renderReadingSummary(); renderFullReadings(); renderReadingEditor();
+  syncDateControl(); renderReadingPlan(); renderReadingEditor();
   prev.disabled=curIdx===0; next.disabled=curIdx===CALENDAR.length-1;
   today.hidden=curIdx===nextSundayIdx();
   const v = vals();

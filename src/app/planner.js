@@ -7,6 +7,7 @@
 @@MUSIC_PARTS_JS@@
 @@SONG_PRESENTATION_JS@@
 @@MUSIC_PLAN_VIEW_JS@@
+@@READING_PLAN_VIEW_JS@@
 @@SONG_CATALOG_JS@@
 @@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
@@ -40,6 +41,11 @@ const musicPlanView=MusicPlanView.create({
   publicAttribution:attributionLine,
   editorAttribution:SongPresentation.editorPlanAttribution,
 });
+const readingPlanView=ReadingPlanView.create({
+  escapeHtml:esc,
+  formatLong:fmtLong,
+  cycleName,
+});
 const modalController=ModalController.create({window,document});
 const openModal=modalController.open;
 modalController.start();
@@ -54,7 +60,7 @@ const songForm=SongForm.create({
   lyrics:songLyrics,
   suggestionParts:songSuggestionParts,
 });
-const cycleName = c => "Year " + c;
+function cycleName(c){ return "Year " + c; }
 function fmtLong(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}); }
 function fmtPicker(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}); }
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
@@ -313,46 +319,27 @@ async function restoreReadingOverride(slotKey){
     setReadingStatus("Save failed","error");
   }
 }
-function renderFullReadings(){
-  const v = vals();
-  readingsIntro.textContent=v.day+" · "+v.meta;
-  const blk = (slot,id,label,cite,text) => '<article class="rblock reading-anchor" id="'+id+'"><div class="rhead">'+esc(label)+'<span class="rcite">'+esc(cite)+'</span>'
-    +(celebrationOverride || readingOverrides[slot]?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</div><div class="rtext">'+(esc(text)||'<em>(see citation)</em>')+'</div></article>';
-  readingTexts.innerHTML =
-    blk("first","reading-first","First Reading",v.first,textFor(v.first))
-    + blk("psalm","reading-psalm","Responsorial Psalm",v.psalm,textFor(v.psalm)||"(sung — see citation)")
-    + blk("second","reading-second","Second Reading",v.second,textFor(v.second))
-    + blk("gospel","reading-gospel","Gospel",v.gospel,textFor(v.gospel))
-    + '<div class="rpcaveat">Scripture: World English Bible (public domain). Verse numbering — especially in the Psalms — can differ slightly from the lectionary.</div>';
-}
-function renderResolved(){
-  const s=current();
-  const celebration=baseCelebration();
-  resolved.innerHTML = '<span class="selected-date">'+fmtLong(s.d)+'</span>'
-    + '<span class="selected-day">'+esc(celebration.name)+(celebrationOverride?'<span class="reading-adjusted-note">Changed celebration</span>':'')+'</span>'
-    + '<span class="selected-meta">'+(celebrationOverride
-      ? esc((celebration.rank||"Celebration")+" · normally "+fmtLong(celebration.sourceDate))
-      : esc(s.s)+' · '+cycleName(s.c))+'</span>';
-}
-function renderReadingSummary(){
-  const v=vals();
-  const readings=[
-    ["first","First Reading",v.first,"reading-first"],
-    ["psalm","Responsorial Psalm",v.psalm,"reading-psalm"],
-    ["second","Second Reading",v.second,"reading-second"],
-    ["gospel","Gospel",v.gospel,"reading-gospel"],
-  ];
-  const anyAdjusted=!!celebrationOverride || READING_SLOTS.some(slot=>readingOverrides[slot.key]);
-  readingSummary.innerHTML='<div class="reading-summary-title">Readings for this Mass'+(anyAdjusted?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</div><div class="reading-grid">'
-    + readings.map(r=>'<a class="reading-item'+(celebrationOverride || readingOverrides[r[0]]?' changed':'')+'" href="#'+r[3]+'"><span class="reading-label">'+esc(r[1])+(readingOverrides[r[0]]?'<span class="reading-adjusted-note">Adjusted</span>':'')+'</span><span class="reading-cite">'+(esc(r[2])||"—")+'</span></a>').join('')
-    + '</div>';
+function renderReadingPlan(){
+  const view=readingPlanView.render({
+    sunday:current(),
+    celebration:baseCelebration(),
+    celebrationOverride,
+    readingOverrides,
+    readingSlots:READING_SLOTS,
+    values:vals(),
+    textFor,
+  });
+  readingsIntro.textContent=view.readingsIntro;
+  resolved.innerHTML=view.resolvedHtml;
+  readingSummary.innerHTML=view.summaryHtml;
+  readingTexts.innerHTML=view.fullReadingsHtml;
 }
 function syncDateControl(){
   date.value=current().d;
   dateDisplay.textContent=fmtPicker(current().d);
 }
 function refresh(){
-  syncDateControl(); renderResolved(); renderReadingSummary(); renderFullReadings(); renderReadingEditor();
+  syncDateControl(); renderReadingPlan(); renderReadingEditor();
   prev.disabled=curIdx===0; next.disabled=curIdx===CALENDAR.length-1;
   today.hidden=curIdx===nextSundayIdx();
   const v = vals();
