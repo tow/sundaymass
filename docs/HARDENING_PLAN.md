@@ -378,3 +378,9 @@ Acceptance:
   citations, and escaping. At 390×844 Chrome confirms 30 nearby results, a one-result
   Saint James search, four previewed readings, an enabled selection action, and no
   horizontal overflow.
+- 2026-07-27: Reading-override policy is now independent of its dialog. Direct tests
+  cover computed restoration, explicit long/short Ordo options, empty and unknown
+  citations, wrong-role rejection, missing full text, structured override snapshots,
+  and mandatory confirmation for another valid passage in the same slot. Mobile
+  Chrome confirms Gospel-in-First-Reading rejection and the Acts 4:32–35 preview,
+  confirmation gate, and enabled action at 390 px with no horizontal overflow.

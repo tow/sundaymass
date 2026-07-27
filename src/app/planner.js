@@ -13,6 +13,7 @@
 @@SONG_CATALOG_JS@@
 @@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
+@@READING_SELECTION_JS@@
 const CALENDAR = @@CALENDAR@@;
 const SUNDAY_LECTIONARY = @@SUNDAY_LECTIONARY@@;
 const CELEBRATIONS = @@CELEBRATIONS@@;
@@ -53,6 +54,15 @@ const celebrationPickerView=CelebrationPickerView.create({
   formatLong:fmtLong,
   cycleName,
   dayDistance:lectionary.dayDistance,
+});
+const readingSelection=ReadingSelection.create({
+  readingSlots:READING_SLOTS,
+  roleCitations:ROLE_CITATIONS,
+  citationRoles:CITATION_ROLES,
+  readings:READINGS,
+  normalizedCitation,
+  citationAlternatives,
+  parseReadingCitation,
 });
 const modalController=ModalController.create({window,document});
 const openModal=modalController.open;
@@ -179,15 +189,7 @@ function openCelebrationDialog(){
   setTimeout(()=>celebrationSearch.focus(),0);
 }
 function suggestedCitations(slot){
-  const computed=computedCitation(slot);
-  const alternatives=citationAlternatives(computed);
-  if(alternatives.length===1) return [{citation:computed,label:computed,note:"Computed for this celebration",isDefault:true}];
-  return alternatives.map((citation,index)=>({
-    citation,
-    label:citation,
-    note:index===0 ? "Longer form" : "Shorter or alternative form",
-    isDefault:false,
-  }));
+  return readingSelection.suggestions(computedCitation(slot));
 }
 function fillReadingOptions(slot){
   const suggestions=suggestedCitations(slot);
@@ -210,58 +212,20 @@ function validateReadingSelection(){
   const slot=readingSlot(editingReadingSlot);
   if(!slot) return;
   const raw=readingCitationInput.value.trim();
-  if(!raw){
-    showReadingValidation("Choose one of the options above or enter a citation.","");
-    return;
-  }
-  const computed=computedCitation(slot);
-  const suggestions=suggestedCitations(slot);
-  const defaultOption=suggestions.find(option=>option.isDefault && normalizedCitation(option.citation)===normalizedCitation(raw));
-  if(defaultOption){
-    pendingReadingSelection={slot:slot.key,citation:computed,isDefault:true,requiresConfirmation:false};
-    readingTextPreview.innerHTML='<strong>Full text preview</strong>'+esc(READINGS[computed] || "The text is not available in this app.");
-    readingTextPreview.hidden=false;
-    showReadingValidation("This restores the computed reading.","valid");
-    readingUse.textContent="Use computed reading";
-    readingUse.disabled=false;
-    return;
-  }
-  const canonical=ROLE_CITATIONS[slot.key].get(normalizedCitation(raw));
-  if(!canonical){
-    const otherRoles=CITATION_ROLES[normalizedCitation(raw)] || [];
-    if(otherRoles.length){
-      const labels=otherRoles.map(key=>readingSlot(key).label.toLowerCase()).join(" or ");
-      showReadingValidation("That passage is known as a "+labels+", not a "+slot.label.toLowerCase()+".","error");
-    }else{
-      showReadingValidation("That citation is not in the available "+slot.label.toLowerCase()+" lectionary passages.","error");
-    }
-    return;
-  }
-  const parsed=parseReadingCitation(canonical);
-  const text=READINGS[canonical];
-  if(!parsed || !text){
-    showReadingValidation("This passage is missing a valid citation or full text and cannot be selected.","error");
-    return;
-  }
-  const approved=suggestions.some(option=>normalizedCitation(option.citation)===normalizedCitation(canonical));
-  const requiresConfirmation=!approved;
-  pendingReadingSelection={
-    slot:slot.key,
-    citation:canonical,
-    book:parsed.book,
-    segments:parsed.segments,
-    origin:approved ? "ordo-option" : "lectionary-catalog",
-    translation:"World English Bible",
-    textVersion:"embedded-2026-07",
-    requiresConfirmation,
-  };
-  readingCitationInput.value=canonical;
-  readingTextPreview.innerHTML='<strong>Full text preview</strong>'+esc(text);
+  const result=readingSelection.validate({
+    slotKey:slot.key,
+    raw,
+    computed:computedCitation(slot),
+  });
+  showReadingValidation(result.message,result.state);
+  if(!result.valid) return;
+  pendingReadingSelection=result.selection;
+  readingCitationInput.value=result.canonicalCitation;
+  readingTextPreview.innerHTML='<strong>Full text preview</strong>'+esc(result.previewText);
   readingTextPreview.hidden=false;
-  ordoConfirmWrap.hidden=!requiresConfirmation;
-  showReadingValidation(requiresConfirmation ? "Valid for this reading slot. Confirm the non-standard selection below." : "Valid option for this celebration.","valid");
-  readingUse.textContent="Use reading";
-  readingUse.disabled=requiresConfirmation && !ordoConfirm.checked;
+  ordoConfirmWrap.hidden=!result.requiresConfirmation;
+  readingUse.textContent=result.buttonLabel;
+  readingUse.disabled=result.requiresConfirmation && !ordoConfirm.checked;
 }
 function openReadingDialog(key){
   const slot=readingSlot(key);

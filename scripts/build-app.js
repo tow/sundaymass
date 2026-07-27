@@ -35,6 +35,7 @@ const appValues = {
   "@@SONG_CATALOG_JS@@": read("src/domain/songs.js"),
   "@@PLAN_MUSIC_DATA_JS@@": read("src/domain/plan-music-data.js"),
   "@@LECTIONARY_CATALOG_JS@@": read("src/domain/lectionary.js"),
+  "@@READING_SELECTION_JS@@": read("src/domain/reading-selection.js"),
   "@@CALENDAR@@": read(path.join(GENERATED_DATA, "sunday-calendar.json")),
   "@@SUNDAY_LECTIONARY@@": read(path.join(GENERATED_DATA, "sunday-lectionary.json")),
   "@@CELEBRATIONS@@": read(path.join(GENERATED_DATA, "celebrations.json")),

@@ -90,6 +90,7 @@ behavior, and export changes in the appropriate source file:
 - `src/app/song-picker-view.js` — search/suggestion rows and duplicate-title disambiguation
 - `src/app/celebration-picker-view.js` — standard-lectionary search and reading preview
 - `src/domain/lectionary.js` — lectionary selection and validation rules
+- `src/domain/reading-selection.js` — role-aware override validation and confirmation policy
 - `src/domain/music-parts.js` — canonical Mass slots, labels, and suggestion normalization
 - `src/domain/song-presentation.js` — safe YouTube links and shared attribution formatting
 - `src/domain/songs.js` — song validation and phase-one title search
