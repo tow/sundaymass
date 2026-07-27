@@ -24,7 +24,7 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 |---|---|---|
 | 1. Correctness defects | Complete locally; deployment pending | Hash-based embedding staleness and truly empty suggestion positions |
 | 2. Reproducible build and CI | In progress | Pinned installs and deterministic, CI-verified builds |
-| 3. Testable stores and Edge logic | Pending | Dependency-injected adapters and executable behavior tests |
+| 3. Testable stores and Edge logic | In progress | Dependency-injected adapters and executable behavior tests |
 | 4. Supabase integration tests | Pending | Proven RLS, RPC, privacy, and suggestion behavior |
 | 5. Application modularization | Pending | Small feature controllers and shared definitions |
 | 6. Offline/PWA guarantees | Pending | Reliable cached public viewing and explicit online-only editing |
@@ -276,3 +276,7 @@ Acceptance:
   inputs produce identical HTML, `npm run check` rejects stale generated output, and
   GitHub Actions runs that check. Making the check required before GitHub Pages
   deployment remains a repository-settings task.
+- 2026-07-27: Phase 3 started with the repertoire's local adapter. Browser startup is
+  separated from construction, storage/catalogue/UUID dependencies are injectable,
+  malformed cached data is handled, and editor authorization plus mutation behavior
+  is covered by executable Node tests.

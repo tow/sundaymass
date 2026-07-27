@@ -13,8 +13,8 @@ const mapSong = row => ({
     ? row.song_lyrics[0]?.lyrics || ""
     : row.song_lyrics?.lyrics || "",
 });
-const draftParams = draft => {
-  const result = window.SongCatalog.validateDraft(draft);
+const draftParams = (draft, songCatalog = globalThis.window?.SongCatalog) => {
+  const result = songCatalog.validateDraft(draft);
   if (!result.valid) throw new Error(result.error);
   return {
     value: result.value,
@@ -31,11 +31,23 @@ const draftParams = draft => {
   };
 };
 
-function localStore() {
+function localStore({
+  storage = globalThis.localStorage,
+  songCatalog = globalThis.window?.SongCatalog,
+  randomUUID = () => globalThis.crypto.randomUUID(),
+} = {}) {
   const key = "st-james-song-catalog-v1";
   let editor = false;
-  const read = () => JSON.parse(localStorage.getItem(key) || "[]");
-  const write = songs => localStorage.setItem(key, JSON.stringify(songs));
+  let notifyAuth = () => {};
+  const read = () => {
+    try {
+      const songs = JSON.parse(storage.getItem(key) || "[]");
+      return Array.isArray(songs) ? songs : [];
+    } catch {
+      return [];
+    }
+  };
+  const write = songs => storage.setItem(key, JSON.stringify(songs));
   return {
     async browseSongs() { return read(); },
     async getSong(songId) {
@@ -44,24 +56,29 @@ function localStore() {
     },
     async createSong(draft) {
       if (!editor) throw new Error("Editor access required");
-      const value = draftParams(draft).value;
-      const song = { id: crypto.randomUUID(), ...value };
+      const value = draftParams(draft, songCatalog).value;
+      const song = { id: randomUUID(), ...value };
       write([...read(), song]);
       return song;
     },
     async updateSong(songId, draft) {
       if (!editor) throw new Error("Editor access required");
-      const value = draftParams(draft).value;
-      write(read().map(song => song.id === songId ? { id: songId, ...value } : song));
+      const value = draftParams(draft, songCatalog).value;
+      const songs = read();
+      if (!songs.some(song => song.id === songId)) throw new Error("Song not found");
+      write(songs.map(song => song.id === songId ? { id: songId, ...value } : song));
       return { id: songId, ...value };
     },
     subscribeAuth(callback) {
-      this._auth = callback;
-      callback({ user: editor ? { email: "Local editor" } : null, isEditor: editor });
+      notifyAuth = () => callback({
+        user: editor ? { email: "Local editor" } : null,
+        isEditor: editor,
+      });
+      notifyAuth();
       return () => {};
     },
-    async signIn() { editor = true; this._auth({ user: { email: "Local editor" }, isEditor: true }); },
-    async signOut() { editor = false; this._auth({ user: null, isEditor: false }); },
+    async signIn() { editor = true; notifyAuth(); },
+    async signOut() { editor = false; notifyAuth(); },
     async semanticStatus() {
       return { songs: read().length, embeddedSongs: 0, embeddedReadings: 0, staleSongIds: [] };
     },
@@ -150,4 +167,10 @@ async function start() {
   window.repertoireApp.connect(store);
 }
 
-start().catch(error => window.repertoireApp.fail(error));
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { mapSong, draftParams, localStore };
+}
+
+if (typeof window !== "undefined" && window.repertoireApp) {
+  start().catch(error => window.repertoireApp.fail(error));
+}
