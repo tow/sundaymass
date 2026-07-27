@@ -1,4 +1,5 @@
 @@MUSIC_PARTS_JS@@
+@@PWA_CONTROLLER_JS@@
 @@SONG_PRESENTATION_JS@@
 @@SONG_CATALOG_JS@@
 @@EMBEDDING_REPAIR_JS@@
@@ -178,6 +179,4 @@ loginForm.addEventListener("submit",async event=>{
 });
 indexButton.addEventListener("click",refreshIndex);
 
-if("serviceWorker" in navigator&&location.protocol!=="file:"){
-  window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js"));
-}
+PwaController.registerServiceWorker({window,navigator,location});

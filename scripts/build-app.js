@@ -43,6 +43,7 @@ const appValues = {
   // Keep the source file's trailing newline: the historical single-file build
   // intentionally leaves a blank line between the domain module and embedded data.
   "@@MODAL_CONTROLLER_JS@@": read("src/app/modal-controller.js"),
+  "@@PWA_CONTROLLER_JS@@": read("src/app/pwa-controller.js"),
   "@@MUSIC_PARTS_JS@@": read("src/domain/music-parts.js"),
   "@@SONG_PRESENTATION_JS@@": read("src/domain/song-presentation.js"),
   "@@SONG_CATALOG_JS@@": read("src/domain/songs.js"),
@@ -76,6 +77,11 @@ repertoireScript = replaceOnce(
   repertoireScript,
   "@@MUSIC_PARTS_JS@@",
   read("src/domain/music-parts.js"),
+);
+repertoireScript = replaceOnce(
+  repertoireScript,
+  "@@PWA_CONTROLLER_JS@@",
+  read("src/app/pwa-controller.js"),
 );
 repertoireScript = replaceOnce(
   repertoireScript,

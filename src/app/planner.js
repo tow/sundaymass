@@ -1,4 +1,5 @@
 @@MODAL_CONTROLLER_JS@@
+@@PWA_CONTROLLER_JS@@
 @@MUSIC_PARTS_JS@@
 @@SONG_PRESENTATION_JS@@
 @@SONG_CATALOG_JS@@
@@ -934,27 +935,17 @@ printMusicReadings.addEventListener("click", ()=>downloadWord(true));
 
 curIdx=nextSundayIdx(); refresh(); renderMusicPlan();
 
-// Installable app support. iPhone/iPad uses Safari's Share → Add to Home Screen flow.
-let deferredInstallPrompt = null;
-const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
-if(ios && !standalone) installApp.hidden=false;
-window.addEventListener("beforeinstallprompt", event=>{
-  event.preventDefault();
-  deferredInstallPrompt=event;
-  if(!standalone) installApp.hidden=false;
-});
-installApp.addEventListener("click", async ()=>{
-  if(deferredInstallPrompt){
-    deferredInstallPrompt.prompt();
-    await deferredInstallPrompt.userChoice;
-    deferredInstallPrompt=null;
-    installApp.hidden=true;
-  }else if(ios){
+// iPhone/iPad uses Safari's Share → Add to Home Screen flow.
+PwaController.createInstallController({
+  window,
+  navigator,
+  button:installApp,
+  showIosInstructions(){
     alert("In Safari, tap the Share button, then choose “Add to Home Screen”.");
-  }
+  },
+}).start();
+PwaController.registerServiceWorker({
+  window,
+  navigator,
+  location,
 });
-window.addEventListener("appinstalled", ()=>{ installApp.hidden=true; deferredInstallPrompt=null; });
-if("serviceWorker" in navigator && location.protocol!=="file:"){
-  window.addEventListener("load", ()=>navigator.serviceWorker.register("./service-worker.js"));
-}

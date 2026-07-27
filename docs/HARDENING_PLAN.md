@@ -319,3 +319,7 @@ Acceptance:
 - 2026-07-27: Native-dialog page locking and scroll restoration moved into a small
   controller. Unit tests now cover nested dialogs, deferred restoration after the last
   dialog closes, exact scroll-position recovery, and listener lifecycle.
+- 2026-07-27: Install-prompt and service-worker registration behavior now share a
+  dependency-injected PWA controller. Tests cover Android prompt retention, iOS manual
+  instructions, standalone suppression, load-time registration, and local-file
+  exclusion.
