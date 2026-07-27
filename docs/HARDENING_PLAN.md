@@ -23,7 +23,7 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 | Phase | State | Outcome |
 |---|---|---|
 | 1. Correctness defects | Complete locally; deployment pending | Hash-based embedding staleness and truly empty suggestion positions |
-| 2. Reproducible build and CI | In progress | Pinned installs and deterministic, CI-verified builds |
+| 2. Reproducible build and CI | Complete locally | Pinned, deterministic, deployment-gating build |
 | 3. Testable stores and Edge logic | Complete locally | Dependency-injected adapters and executable behavior tests |
 | 4. Supabase integration tests | Complete locally | Proven RLS, RPC, privacy, and suggestion behavior |
 | 5. Application modularization | In progress | Small feature controllers and shared definitions |
@@ -448,3 +448,9 @@ Acceptance:
   Saint James titular solemnity, role-aware override checks, full-text formatting, and
   extension rules. It also corrects the stale README text-entry count to the 974
   currently generated entries and replaces the long duplicated README section.
+- 2026-07-27: The operations runbook now covers first deployment, release ordering,
+  editor lifecycle, logical backup and portable repertoire export, restore, embedding
+  repair/rebuild, migration recovery, frontend rollback, PWA cache diagnosis, and
+  incident priorities. A read-only GitHub audit found legacy Pages publishing
+  unprotected `main`; the replacement Actions deployment waits for both application and
+  migrated-Supabase checks and uploads only an explicit public artifact.

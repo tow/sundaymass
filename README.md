@@ -14,6 +14,7 @@ Developer documentation:
 - [Architecture decisions](docs/decisions/)
 - [Data model and authorization](docs/data-model.md)
 - [Calendar and lectionary](docs/lectionary.md)
+- [Operations and deployment](docs/operations.md)
 - [Testing guide](docs/testing.md)
 - [Current hardening plan](docs/HARDENING_PLAN.md)
 
@@ -190,26 +191,15 @@ defaults.
 
 ## PWA and deployment notes
 
-- GitHub Pages publishes the repository's `main` branch at the live URL above.
-- `service-worker.js` caches the app shell and provides offline access. Navigations are
-  network-first; other same-origin assets use the cached response while refreshing it.
-- The Supabase browser client is built locally from the exact npm version into
-  `vendor/supabase.js`; production startup does not depend on a third-party CDN.
-- After a Sunday has loaded successfully, its public plan is retained locally. An
-  offline reload shows that saved copy together with the embedded readings and keeps
-  both print modes available. A Sunday that has never been visited shows an explicit
-  “Offline — no saved plan” state.
-- Shared editing requires an internet connection. Editor reads and mutations stop
-  before making a request while offline, and the interface never reports an offline
-  edit as saved.
-- The build hashes the service-worker logic, asset manifest, and every app-shell file
-  into `CACHE_NAME`. Do not maintain cache versions by hand; run `npm run build` and
-  commit the regenerated worker with its source changes.
-- Keep `about.html` as its own navigation cache target. Caching every navigation as
-  `index.html` previously allowed the About response to replace the cached planner.
-- The install button depends on `beforeinstallprompt` and therefore is normally an
-  Android/Chromium affordance. On iPhone/iPad, installation is Safari Share → Add to
-  Home Screen.
+GitHub Pages publishes an explicit artifact from the verified `main` workflow. A
+content-addressed service worker caches the complete shell and previously visited
+public plans remain viewable and printable offline. Shared editing is always
+online-only.
+
+The first deployment, normal release order, editor lifecycle, backup/export, restore,
+semantic-index maintenance, migration recovery, frontend rollback, PWA cache diagnosis,
+and incident priorities are documented in
+[`docs/operations.md`](docs/operations.md).
 
 ## Calendar and lectionary
 

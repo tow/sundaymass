@@ -12,6 +12,7 @@
     "test:e2e": "node --test tests/e2e/*.test.js",
     "test:coverage": "node --test --experimental-test-coverage tests/*.test.js",
     "test:integration": "node --test tests/integration/*.test.js",
+    "stage:pages": "node scripts/stage-pages.js",
     "verify:generated": "node scripts/verify-generated.js",
     "check": "npm run test:unit && npm run test:e2e && npm run verify:generated"
   },

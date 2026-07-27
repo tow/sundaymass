@@ -8,7 +8,12 @@ npm run check
 ```
 
 `check` runs the Node behavior suite, the headless system-Chrome suite, and a clean
-deterministic rebuild. It is the deployment gate in `.github/workflows/verify.yml`.
+deterministic rebuild. `.github/workflows/verify.yml` runs it for pull requests and
+pushes to `main`.
+
+For a `main` push, the Pages build waits for both `check` and the migrated-Supabase
+integration job. Only then does it stage the explicit public files and publish through
+GitHub's Pages Actions deployment. A failed verification job cannot deploy.
 
 ## Test layers
 
