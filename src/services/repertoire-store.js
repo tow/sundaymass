@@ -1,4 +1,6 @@
-const SUPABASE_MODULE_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const SUPABASE_MODULE_URL = typeof document === "undefined"
+  ? "../../vendor/supabase.js"
+  : new URL("./vendor/supabase.js", document.baseURI).href;
 
 const mapSong = row => ({
   id: row.id,

@@ -14,10 +14,9 @@ Current engineering work is tracked in
 This is an independent planning aid, not an official parish or Diocese of Helsinki
 publication. Liturgical details must always be checked against the parish Ordo.
 
-**The standalone planner deliverable is `StJames_Mass_Planner.html`** (same planner as
-`index.html`). The planner itself is self-contained and works offline — its data and
-print layout are embedded. Deploy `repertoire.html` and `about.html` alongside it for
-repertoire browsing and help.
+**The alternate planner entry point is `StJames_Mass_Planner.html`** (the same planner
+as `index.html`). It is not a self-contained single-file distribution: deploy the
+same sibling service, vendor, data, configuration, and PWA assets as `index.html`.
 
 For deployment, serve `index.html`, `repertoire.html`, and `about.html` together with
 `supabase-config.js`, both files in `src/services/`, `data/generated/readings_text.json`,
@@ -112,6 +111,7 @@ print/PDF layout is the final `@media print` block in `src/styles/planner.css`.
 
 - `src/` contains browser application source grouped by responsibility.
 - `scripts/` contains build and data-generation programs.
+- `vendor/` contains checked-in browser bundles generated from pinned npm packages.
 - `data/generated/` contains checked-in derived catalogues embedded by the build.
 - `data/sources/` contains the ignored, downloadable public-domain Bible datasets.
 - `tests/` contains Node tests for domain and data invariants.
@@ -237,6 +237,8 @@ defaults.
 - GitHub Pages publishes the repository's `main` branch at the live URL above.
 - `service-worker.js` caches the app shell and provides offline access. Navigations are
   network-first; other same-origin assets use the cached response while refreshing it.
+- The Supabase browser client is built locally from the exact npm version into
+  `vendor/supabase.js`; production startup does not depend on a third-party CDN.
 - **Increment `CACHE_NAME` whenever a deployed app-shell file changes.** Without a new
   cache name, an installed home-screen app can continue showing stale HTML. Users may
   still need to close and reopen an already-running installed app once after deployment.
@@ -375,7 +377,7 @@ Ordo; do not describe this catalogue as an authoritative Finnish lectionary.
 
 ```bash
 npm ci
-npm run build             # regenerates icons and both planner HTML files
+npm run build             # regenerates icons, vendor code and both planner HTML files
 npm test                  # lectionary alternatives, Commons and picker invariants
 npm run check             # tests, rebuilds, and rejects stale generated output
 ```
@@ -390,7 +392,7 @@ node scripts/build_readings.js
 node scripts/build_sunday_schedule.js
 node scripts/build_celebrations.js            # network: Proper of Saints + Commons citations
 node scripts/extract_readings.js
-node scripts/build-app.js
+npm run build
 ```
 
 ## Finland calendar corrections (in `scripts/build_sunday_schedule.js`)
@@ -510,4 +512,6 @@ access accordingly.
 ## Dependencies
 
 Node 22.20.x and npm 10.9.3; use the committed `.node-version` and
-`package-lock.json`. The only runtime build dependency is `romcal`.
+`package-lock.json`. Browser/runtime packages are pinned exactly (`romcal` and the
+Supabase JavaScript client); `esbuild` is a pinned build-only dependency used to
+produce the local Supabase module.

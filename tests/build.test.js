@@ -1,5 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const { spawnSync } = require("node:child_process");
 const fs = require("fs");
 const path = require("path");
 
@@ -80,4 +81,36 @@ test("external application assets referenced by the repertoire exist", () => {
   localScripts.forEach(relativePath => {
     assert.ok(fs.existsSync(path.join(ROOT, relativePath)), `${relativePath} must exist`);
   });
+});
+
+test("the Supabase browser client is pinned, built locally, and cached for offline startup", () => {
+  const packageJson = JSON.parse(read("package.json"));
+  const planStore = read("src/services/plan-store.js");
+  const repertoireStore = read("src/services/repertoire-store.js");
+  const serviceWorker = read("service-worker.js");
+  const bundlePath = path.join(ROOT, "vendor/supabase.js");
+
+  assert.match(packageJson.dependencies["@supabase/supabase-js"], /^\d+\.\d+\.\d+$/);
+  assert.ok(fs.existsSync(bundlePath));
+  const importCheck = spawnSync(
+    process.execPath,
+    [
+      "--no-warnings",
+      "--eval",
+      `import(${JSON.stringify(bundlePath)}).then(module => {`
+        + `if (typeof module.createClient !== "function") process.exit(1);`
+        + `});`,
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(importCheck.status, 0, importCheck.stderr);
+  assert.doesNotMatch(planStore, /https?:\/\/|cdn\.jsdelivr/);
+  assert.doesNotMatch(repertoireStore, /https?:\/\/|cdn\.jsdelivr/);
+  assert.match(planStore, /vendor\/supabase\.js/);
+  assert.match(repertoireStore, /vendor\/supabase\.js/);
+  assert.match(planStore, /document\.baseURI/);
+  assert.match(repertoireStore, /document\.baseURI/);
+  assert.doesNotMatch(planStore, /document\.currentScript/);
+  assert.doesNotMatch(repertoireStore, /document\.currentScript/);
+  assert.match(serviceWorker, /"\.\/vendor\/supabase\.js"/);
 });

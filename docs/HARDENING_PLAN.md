@@ -339,3 +339,7 @@ Acceptance:
   Music-only and full-reading modes share tested markup; private lyrics are excluded,
   music rows cannot split, reading headings stay with their text, and browser print
   lifecycle behavior is covered.
+- 2026-07-27: The browser no longer imports an unpinned Supabase client from jsDelivr.
+  The exact npm client is bundled locally with a pinned build-only esbuild version,
+  included in deterministic-output checks, and cached in the PWA shell. An executable
+  smoke test verifies that the generated module exports `createClient`.
