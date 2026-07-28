@@ -11,6 +11,35 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      database: ${{ steps.database.outputs.changed }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect database changes
+        id: database
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            changed=true
+          elif [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            changed=true
+          elif ! git cat-file -e "$BASE_SHA^{commit}"; then
+            changed=true
+          elif git diff --quiet "$BASE_SHA" "$GITHUB_SHA" -- supabase/ tests/integration/; then
+            changed=false
+          else
+            changed=true
+          fi
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+
   check:
     runs-on: ubuntu-latest
     steps:
@@ -37,6 +66,8 @@ jobs:
         run: npm run check
 
   supabase-integration:
+    needs: changes
+    if: needs.changes.outputs.database == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -63,7 +94,13 @@ jobs:
         run: npm run test:integration
 
   production-backend-contract:
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    if: >-
+      always() &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      needs.check.result == 'success' &&
+      (needs.supabase-integration.result == 'success' ||
+      needs.supabase-integration.result == 'skipped')
     needs: [check, supabase-integration]
     runs-on: ubuntu-latest
     steps:
@@ -84,7 +121,7 @@ jobs:
 
   build-pages:
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    needs: production-backend-contract
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -114,7 +151,7 @@ jobs:
           path: .pages-site
 
   deploy-pages:
-    needs: build-pages
+    needs: [build-pages, production-backend-contract]
     permissions:
       contents: read
       pages: write

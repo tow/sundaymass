@@ -11,10 +11,13 @@ npm run check
 Function with the npm-pinned Deno runtime. It then runs the Node behavior suite, the
 headless system-Chrome suite, and a clean deterministic rebuild.
 `.github/workflows/verify.yml` runs it for pull requests and pushes to `main`.
+The Docker-backed Supabase integration suite runs only when `supabase/` or
+`tests/integration/` changes; a manual workflow run deliberately includes it.
 
-For a `main` push, the Pages build also waits for a read-only public production
-Supabase contract smoke. The deployed Pages artifact is then tested in a fresh browser.
-A failed verification or incompatible backend contract cannot deploy the frontend.
+For a `main` push, the Pages artifact builds in parallel with a read-only public
+production Supabase contract smoke, and deployment waits for both. The deployed Pages
+artifact is then tested in a fresh browser. A failed verification, applicable database
+integration test, or incompatible backend contract cannot deploy the frontend.
 
 ## Test layers
 

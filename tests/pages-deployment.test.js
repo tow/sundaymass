@@ -9,7 +9,15 @@ const workflow = fs.readFileSync(
   "utf8",
 );
 
-test("Pages deployment waits for verification and the production backend contract", () => {
+test("Pages deployment skips database integration when database files are unchanged", () => {
+  assert.match(
+    workflow,
+    /changes:[\s\S]*git diff --quiet "\$BASE_SHA" "\$GITHUB_SHA" -- supabase\/ tests\/integration\//,
+  );
+  assert.match(
+    workflow,
+    /supabase-integration:\s*\n\s+needs: changes\s*\n\s+if: needs\.changes\.outputs\.database == 'true'/,
+  );
   assert.match(
     workflow,
     /build-pages:\s*\n\s+if: github\.ref == 'refs\/heads\/main'.*push/s,
@@ -22,9 +30,16 @@ test("Pages deployment waits for verification and the production backend contrac
     workflow,
     /production-backend-contract:[\s\S]*run: npm run smoke:backend/,
   );
+  assert.match(
+    workflow,
+    /needs\.supabase-integration\.result == 'skipped'/,
+  );
   assert.doesNotMatch(workflow, /secrets\.SUPABASE|supabase db push --linked/);
-  assert.match(workflow, /build-pages:[\s\S]*needs: production-backend-contract/);
-  assert.match(workflow, /deploy-pages:[\s\S]*needs: build-pages/);
+  assert.match(workflow, /build-pages:[\s\S]*needs: check/);
+  assert.match(
+    workflow,
+    /deploy-pages:[\s\S]*needs: \[build-pages, production-backend-contract\]/,
+  );
   assert.match(workflow, /production-smoke:[\s\S]*needs: deploy-pages/);
   assert.doesNotMatch(workflow, /actions\/(?:checkout|setup-node)@v4/);
   assert.match(workflow, /uses: actions\/checkout@v7/);

@@ -15,13 +15,14 @@ service-role key, lyric export, or backup in the repository.
 - GitHub Pages uses the custom GitHub Actions publishing source.
 - HTTPS is enforced.
 - `main` is currently not branch-protected.
-- `.github/workflows/verify.yml` runs unit/browser/generated checks and a local Supabase
-  integration job on pushes to `main`. It then verifies the existing production
-  backend's public contract, deploys Pages, and exercises the result in a fresh browser.
-- The Pages build waits for the production backend contract smoke. It stages an
-  explicit public artifact and deploys that artifact through the protected
-  `github-pages` environment. A failed check or incompatible production schema cannot
-  deploy the frontend even though `main` itself is not branch-protected.
+- `.github/workflows/verify.yml` runs unit/browser/generated checks on every push and
+  pull request. The slower local Supabase integration job runs only when `supabase/` or
+  `tests/integration/` changes, and always for an explicit manual workflow run.
+- On `main`, the Pages build runs in parallel with the read-only production backend
+  contract smoke. Deployment waits for both, stages an explicit public artifact, and
+  publishes through the protected `github-pages` environment. A failed check,
+  database integration failure when applicable, or incompatible production schema
+  cannot deploy the frontend even though `main` itself is not branch-protected.
 - The production smoke runs once after each Pages deployment. There is no scheduled
   synthetic monitor; this installation does not need continuous availability checks.
 - Both push and manual deployment paths require `refs/heads/main`; a workflow manually
