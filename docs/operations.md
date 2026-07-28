@@ -46,6 +46,63 @@ The examples use the pinned CLI without installing it globally:
 npx --yes supabase@2.109.1 --version
 ```
 
+## Song maintenance CLI
+
+Repository song and plan maintenance uses `scripts/sundaymass-cli.js`. The command
+submits parameter-safe SQL through the already-authenticated, linked Supabase CLI.
+It does not require a browser editor session or a service-role key. It also avoids data
+migrations for operational content: lyrics are written from a temporary `0600` SQL
+file and that file is deleted after the query.
+
+Run it through npm:
+
+```bash
+npm run sundaymass -- list_songs --query "Table" --json
+npm run sundaymass -- show_song SONG_UUID --lyrics
+```
+
+Or run `npm link` once to install the package's `sundaymass` executable locally.
+
+Every mutation is a dry-run unless `--apply` is present:
+
+```bash
+sundaymass create_song \
+  --title "Psalm response" \
+  --authors "Composer" \
+  --suggestion-part psalm \
+  --non-repertoire
+
+sundaymass create_song \
+  --title "Psalm response" \
+  --authors "Composer" \
+  --suggestion-part psalm \
+  --non-repertoire \
+  --apply
+
+sundaymass add_lyrics SONG_UUID --file lyrics.txt --apply
+sundaymass update_song SONG_UUID --source "Licensed source" --apply
+sundaymass assign_song 2026-08-02 psalm SONG_UUID --apply
+```
+
+The supported commands are:
+
+- `list_songs` and `show_song` for discovery and inspection
+- `create_song` and `update_song` for song metadata
+- `add_lyrics` and `clear_lyrics` for the private lyric record
+- `assign_song` and `clear_song` for one Mass-plan slot
+
+Use `--file -` to pipe lyrics through standard input. Never pass lyric text as a
+command-line argument. Mutation commands accept song UUIDs only; `list_songs` is the
+explicit discovery step, and titles are never treated as identifiers because duplicate
+titles are valid domain data.
+
+Linked maintenance queries run as the database administrator rather than impersonating
+an application editor, so they leave `created_by` or `updated_by` null. The row IDs and
+timestamps still record what changed and when.
+
+The default target is the linked production project. Pass `--local` only when the local
+Supabase stack is running and the command is intended for that local database.
+
 ## Local verification
 
 From a clean clone:

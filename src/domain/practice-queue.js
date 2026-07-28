@@ -33,19 +33,17 @@
     });
   }
 
-  function embedUrl(items, startIndex = 0) {
-    const remaining = (items || []).slice(startIndex);
-    if (!remaining.length || !VIDEO_ID.test(remaining[0]?.videoId || "")) return "";
+  function embedUrl(items, startIndex = 0, { origin = "" } = {}) {
+    const item = (items || [])[startIndex];
+    if (!item || !VIDEO_ID.test(item.videoId || "")) return "";
     const url = new URL(
-      `https://www.youtube-nocookie.com/embed/${remaining[0].videoId}`,
+      `https://www.youtube-nocookie.com/embed/${item.videoId}`,
     );
     url.searchParams.set("autoplay", "1");
     url.searchParams.set("playsinline", "1");
     url.searchParams.set("rel", "0");
-    const following = remaining.slice(1)
-      .map(item => item.videoId)
-      .filter(videoId => VIDEO_ID.test(videoId));
-    if (following.length) url.searchParams.set("playlist", following.join(","));
+    url.searchParams.set("enablejsapi", "1");
+    if (/^https?:\/\//.test(origin)) url.searchParams.set("origin", origin);
     return url.href;
   }
 

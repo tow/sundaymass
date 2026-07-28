@@ -85,6 +85,7 @@ test("selected rows show only Change and move secondary actions into the picker"
   assert.match(app, /editorAttribution:SongPresentation\.planAuthor/);
   assert.match(html, />Changes are live\.<\/span>/);
   assert.match(html, /id="downloadLyricsPptx">Download lyrics PowerPoint</);
+  assert.match(html, /id="printLyricsBooklet">Print folded lyrics booklet</);
 });
 
 test("legacy free-text music editing and autosave are removed", () => {

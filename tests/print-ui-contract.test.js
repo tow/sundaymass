@@ -22,6 +22,19 @@ test("the planner has a dedicated A4 print document with reliable break rules", 
   assert.match(app, /printController\.print\("music-readings"\)/);
 });
 
+test("the editor can print an imposed folded lyrics booklet", () => {
+  const html = read("src/planner.html");
+  const styles = read("src/styles/planner.css");
+  const app = read("src/app/planner.js");
+
+  assert.match(html, /id="printLyricsBooklet">Print folded lyrics booklet/);
+  assert.match(html, /flip on short edge/);
+  assert.match(styles, /@page booklet\{ size:A4 landscape; margin:0;/);
+  assert.match(styles, /\.booklet-sheet\{[^}]*grid-template-columns:148\.5mm 148\.5mm/);
+  assert.match(app, /LyricsBookletController\.create/);
+  assert.match(app, /printController,/);
+});
+
 test("DOCX generation and its build dependency are removed", () => {
   const packageJson = JSON.parse(read("package.json"));
   const build = read("scripts/build-app.js");

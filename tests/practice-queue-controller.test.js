@@ -31,7 +31,7 @@ function element() {
   };
 }
 
-function fixture(queue) {
+function fixture(queue, overrides = {}) {
   const elements = {
     launch: element(),
     availability: element(),
@@ -51,9 +51,29 @@ function fixture(queue) {
     getSongs: () => ({ entrance: { title: "Opening" } }),
     queueBuilder: { build: () => queue, embedUrl: () => "https://embed.test/queue" },
     openModal: dialog => opened.push(dialog),
+    loadPlayerApi: () => new Promise(() => {}),
     createQueueButton(item, index, select) {
-      return { item, index, select };
+      const current = new Set();
+      return {
+        item,
+        index,
+        select,
+        classList: {
+          toggle(name, enabled) {
+            if (enabled) current.add(name);
+            else current.delete(name);
+          },
+          contains: name => current.has(name),
+        },
+        setAttribute(name, value) {
+          this[name] = value;
+        },
+        removeAttribute(name) {
+          delete this[name];
+        },
+      };
     },
+    ...overrides,
   });
   controller.start();
   return { controller, elements, opened };
@@ -118,4 +138,52 @@ test("closing the player removes its source so playback stops", () => {
   assert.notEqual(elements.player.src, "");
   elements.close.dispatch("click");
   assert.equal(elements.player.src, "");
+});
+
+test("loads the full ordered playlist at index zero and follows player advances", async () => {
+  let events;
+  let playlistIndex = 0;
+  const loads = [];
+  const player = {
+    getPlaylistIndex: () => playlistIndex,
+    loadPlaylist(options) {
+      loads.push(options);
+      playlistIndex = options.index;
+    },
+    stopVideo() {},
+  };
+  class Player {
+    constructor(element, options) {
+      events = options.events;
+      queueMicrotask(() => events.onReady({ target: player }));
+    }
+  }
+  const queue = {
+    items: [
+      { title: "Opening", videoId: "AAAAAAAAAAA" },
+      { title: "Kyrie", videoId: "BBBBBBBBBBB" },
+      { title: "Gloria", videoId: "CCCCCCCCCCC" },
+    ],
+    assignedCount: 3,
+    playableCount: 3,
+    missingCount: 0,
+  };
+  const { elements } = fixture(queue, {
+    loadPlayerApi: () => Promise.resolve({ Player }),
+  });
+
+  elements.launch.dispatch("click");
+  await new Promise(resolve => setImmediate(resolve));
+
+  assert.deepEqual(loads, [{
+    playlist: ["AAAAAAAAAAA", "BBBBBBBBBBB", "CCCCCCCCCCC"],
+    index: 0,
+    startSeconds: 0,
+  }]);
+  assert.equal(elements.list.children[0].classList.contains("current"), true);
+
+  playlistIndex = 1;
+  events.onStateChange({ target: player });
+  assert.equal(elements.list.children[0].classList.contains("current"), false);
+  assert.equal(elements.list.children[1].classList.contains("current"), true);
 });

@@ -78,6 +78,7 @@
   function create({ window, root, render }) {
     let started = false;
     let preparedMode = null;
+    let customMode = null;
 
     function prepare(mode) {
       if (!MODES.has(mode)) throw new Error(`Unknown print mode: ${mode}`);
@@ -85,20 +86,35 @@
         root.innerHTML = render(mode);
         preparedMode = mode;
       }
+      customMode = null;
+      root.removeAttribute?.("data-print-mode");
       root.setAttribute("aria-hidden", "false");
     }
 
     function onBeforePrint() {
+      if (customMode) return;
       prepare(preparedMode || "music");
     }
 
     function onAfterPrint() {
       root.setAttribute("aria-hidden", "true");
       preparedMode = null;
+      customMode = null;
+      root.removeAttribute?.("data-print-mode");
     }
 
     function print(mode) {
       prepare(mode);
+      window.print();
+    }
+
+    function printCustom(markup, mode) {
+      if (!String(mode || "").trim()) throw new Error("Custom print mode is required");
+      root.innerHTML = String(markup || "");
+      preparedMode = null;
+      customMode = mode;
+      root.setAttribute("data-print-mode", mode);
+      root.setAttribute("aria-hidden", "false");
       window.print();
     }
 
@@ -116,7 +132,7 @@
       started = false;
     }
 
-    return Object.freeze({ print, start, stop });
+    return Object.freeze({ print, printCustom, start, stop });
   }
 
   const api = Object.freeze({ create, renderSheet });

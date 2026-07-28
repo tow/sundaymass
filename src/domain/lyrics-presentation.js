@@ -9,8 +9,8 @@
     text: "FFFFFF",
     muted: "B9CDD6",
   });
-  const MAX_LINES = 8;
-  const MAX_LINE_LENGTH = 48;
+  const MAX_LINES = 4;
+  const MAX_LINE_LENGTH = 45;
 
   function normalizeLyrics(value) {
     return String(value || "")
@@ -26,52 +26,183 @@
     const line = String(value || "").trim();
     if (!line || line.length <= maxLength) return [line];
     const words = line.split(/\s+/);
-    const lines = [];
-    let current = "";
-    words.forEach(word => {
-      if (!current) {
-        current = word;
-      } else if (`${current} ${word}`.length <= maxLength) {
-        current += ` ${word}`;
-      } else {
-        lines.push(current);
-        current = word;
+    const prefixLengths = [0];
+    words.forEach(word => prefixLengths.push(prefixLengths.at(-1) + word.length));
+    const segmentLength = (start, end) =>
+      prefixLengths[end] - prefixLengths[start] + Math.max(0, end - start - 1);
+    const totalLength = segmentLength(0, words.length);
+
+    function bestForCount(lineCount) {
+      const targetLength = totalLength / lineCount;
+      const memo = new Map();
+
+      function bestFrom(start, remaining) {
+        const key = `${start}:${remaining}`;
+        if (memo.has(key)) return memo.get(key);
+        if (remaining === 1) {
+          const length = segmentLength(start, words.length);
+          if (start >= words.length || (length > maxLength && words.length - start > 1)) {
+            memo.set(key, null);
+            return null;
+          }
+          const result = {
+            lines: [words.slice(start).join(" ")],
+            score: ((length - targetLength) ** 2)
+              + (words.length - start === 1 && words.length > lineCount ? 1000 : 0),
+          };
+          memo.set(key, result);
+          return result;
+        }
+
+        let best = null;
+        const latestEnd = words.length - remaining + 1;
+        for (let end = start + 1; end <= latestEnd; end += 1) {
+          const length = segmentLength(start, end);
+          if (length > maxLength && end - start > 1) break;
+          const rest = bestFrom(end, remaining - 1);
+          if (!rest) continue;
+          const lastWord = words[end - 1];
+          const firstWord = words[start];
+          const score = rest.score
+            + ((length - targetLength) ** 2)
+            + (end - start === 1 && words.length > lineCount ? 1000 : 0)
+            + (start > 0 && /^(?:a|an|and|at|for|in|of|on|or|the|to|with)$/i.test(firstWord) ? 4 : 0)
+            - (/[,:;.!?]$/.test(lastWord) ? 3 : 0);
+          const candidate = {
+            lines: [words.slice(start, end).join(" "), ...rest.lines],
+            score,
+          };
+          if (!best || candidate.score < best.score) best = candidate;
+        }
+        memo.set(key, best);
+        return best;
       }
-    });
-    if (current) lines.push(current);
-    return lines;
+
+      return bestFrom(0, lineCount);
+    }
+
+    for (let lineCount = 2; lineCount <= words.length; lineCount += 1) {
+      const result = bestForCount(lineCount);
+      if (result) return result.lines;
+    }
+    return [line];
+  }
+
+  function isProjectionLabel(value) {
+    return /^(?:(?:refrain|response|chorus|bridge|verse(?:\s+\d+)?):|2x|x2|\(repeat\)|repeat)$/i
+      .test(String(value || "").trim());
+  }
+
+  function boundaryPenalty(left, right, boundaryIndex, unitCount) {
+    let penalty = 0;
+    if (/[,;:]$/.test(left.raw) || /^[a-z]/.test(right.raw)) penalty += 100;
+    if (!/[.!?]$/.test(left.raw)) penalty += 5;
+    if (unitCount >= 6 && unitCount % 2 === 0 && boundaryIndex % 2 === 1) penalty += 30;
+    return penalty;
+  }
+
+  function paginateUnits(units, maxLines) {
+    const totalVisible = units.reduce((sum, unit) => sum + unit.lines.length, 0);
+    const memo = new Map();
+
+    function better(candidate, current) {
+      if (!current || candidate.score !== current.score) {
+        return !current || candidate.score < current.score;
+      }
+      const candidateSizes = candidate.pages.map(page => page.length);
+      const currentSizes = current.pages.map(page => page.length);
+      for (let index = 0; index < candidateSizes.length; index += 1) {
+        if (candidateSizes[index] !== currentSizes[index]) {
+          return candidateSizes[index] > currentSizes[index];
+        }
+      }
+      return false;
+    }
+
+    function bestFrom(start) {
+      if (start === units.length) return { pages: [], score: 0 };
+      if (memo.has(start)) return memo.get(start);
+      let best = null;
+      let visible = 0;
+      const lines = [];
+      for (let end = start; end < units.length; end += 1) {
+        visible += units[end].lines.length;
+        if (visible > maxLines) break;
+        lines.push(...units[end].lines);
+        const rest = bestFrom(end + 1);
+        if (!rest) continue;
+        const pagePenalty = 10000
+          + ((maxLines - visible) ** 2)
+          + (visible === 1 && totalVisible > 1 ? 1000 : 0);
+        const splitPenalty = end < units.length - 1
+          ? boundaryPenalty(units[end], units[end + 1], end + 1, units.length)
+          : 0;
+        const candidate = {
+          pages: [lines.slice(), ...rest.pages],
+          score: pagePenalty + splitPenalty + rest.score,
+        };
+        if (better(candidate, best)) best = candidate;
+      }
+      memo.set(start, best);
+      return best;
+    }
+
+    return bestFrom(0)?.pages || [];
   }
 
   function lyricSlides(value, { maxLines = MAX_LINES, maxLineLength = MAX_LINE_LENGTH } = {}) {
     const lyrics = normalizeLyrics(value);
     if (!lyrics) return [];
-    const stanzas = lyrics.split(/\n{2,}/).map(stanza =>
-      stanza.split("\n").flatMap(line => wrapLine(line, maxLineLength)),
-    );
+    const stanzas = lyrics.split(/\n{2,}/)
+      .map(stanza => stanza.split("\n")
+        .filter(line => !isProjectionLabel(line))
+        .map(line => ({
+          raw: line.trim(),
+          lines: wrapLine(line, maxLineLength),
+        }))
+        .flatMap(unit => {
+          if (unit.lines.length <= maxLines) return [unit];
+          const chunks = [];
+          for (let offset = 0; offset < unit.lines.length; offset += maxLines) {
+            chunks.push({ raw: unit.raw, lines: unit.lines.slice(offset, offset + maxLines) });
+          }
+          return chunks;
+        }))
+      .filter(units => units.length);
     const slides = [];
-    let lines = [];
+    let pendingSlide = [];
     const flush = () => {
-      while (lines[lines.length - 1] === "") lines.pop();
-      if (lines.length) slides.push(lines.join("\n"));
-      lines = [];
+      if (pendingSlide.length) slides.push(pendingSlide.join("\n"));
+      pendingSlide = [];
     };
 
-    stanzas.forEach(stanza => {
-      const pending = stanza.slice();
-      while (pending.length) {
-        const separator = lines.length ? 1 : 0;
-        const capacity = maxLines - lines.length - separator;
-        if (capacity <= 0) {
-          flush();
-          continue;
-        }
-        if (separator) lines.push("");
-        lines.push(...pending.splice(0, capacity));
-        if (pending.length) flush();
+    stanzas.forEach(units => {
+      const pages = paginateUnits(units, maxLines);
+      if (pages.length > 1) {
+        flush();
+        pages.forEach(page => slides.push(page.join("\n")));
+        return;
       }
+
+      const stanza = pages[0] || [];
+      const visibleCount = pendingSlide.filter(Boolean).length;
+      if (visibleCount + stanza.length > maxLines) flush();
+      if (pendingSlide.length) pendingSlide.push("");
+      pendingSlide.push(...stanza);
     });
     flush();
     return slides;
+  }
+
+  function congregationLyrics(partKey, value) {
+    const lyrics = normalizeLyrics(value);
+    if (partKey !== "psalm" || !lyrics) return lyrics;
+    const firstStanza = lyrics.split(/\n{2,}/)[0];
+    const lines = firstStanza.split("\n");
+    const firstVerse = lines.findIndex((line, index) =>
+      index > 0 && /^\s*(?:verse\s*)?1(?:[.):]|\s)/i.test(line),
+    );
+    return (firstVerse > 0 ? lines.slice(0, firstVerse) : lines).join("\n").trim();
   }
 
   function selectedAssignments(parts, songs, detailsById) {
@@ -84,7 +215,10 @@
         partLabel: part.label,
         songId: selected.id,
         title: detail.title || selected.title || selected.song || "Untitled song",
-        lyrics: normalizeLyrics(detail.lyrics),
+        authors: detail.authors || selected.authors || "",
+        copyrightOwner: detail.copyrightOwner || selected.copyrightOwner || "",
+        copyrightYear: detail.copyrightYear || selected.copyrightYear || "",
+        lyrics: congregationLyrics(part.key, detail.lyrics),
       }];
     });
   }
@@ -93,14 +227,27 @@
     return assignments.filter(assignment => !assignment.lyrics);
   }
 
+  function attributionLine(assignment) {
+    const authors = String(assignment?.authors || "").trim();
+    const owner = String(assignment?.copyrightOwner || "").trim();
+    const year = String(assignment?.copyrightYear || "").trim();
+    let copyright = "";
+    if (/^public domain$/i.test(owner)) {
+      copyright = "Public domain";
+    } else if (owner || year) {
+      copyright = `©${year ? ` ${year}` : ""}${owner ? ` ${owner.replace(/^©\s*/, "")}` : ""}`;
+    }
+    return [authors, copyright].filter(Boolean).join(" · ");
+  }
+
   function lyricFontSize(text) {
     const lines = String(text || "").split("\n");
     const visibleLines = lines.filter(Boolean);
     const longest = visibleLines.reduce((max, line) => Math.max(max, line.length), 0);
-    if (visibleLines.length >= 8 || longest > 46) return 27;
-    if (visibleLines.length >= 7 || longest > 40) return 30;
-    if (visibleLines.length >= 5) return 33;
-    return 37;
+    if (visibleLines.length >= 4 || longest > 38) return 40;
+    if (visibleLines.length === 3 || longest > 34) return 44;
+    if (visibleLines.length === 2 || longest > 30) return 48;
+    return 52;
   }
 
   function addBackground(slide) {
@@ -161,6 +308,7 @@
 
     assignments.forEach(assignment => {
       const chunks = lyricSlides(assignment.lyrics);
+      const attribution = attributionLine(assignment);
       chunks.forEach((chunk, index) => {
         const slide = pptx.addSlide();
         addBackground(slide);
@@ -176,12 +324,20 @@
           fit: "shrink",
         });
         slide.addText(chunk, {
-          x: 0.7, y: 1.55, w: 11.85, h: 4.95,
+          x: 0.7, y: 1.45, w: 11.85, h: 5.2,
           fontFace: "Aptos", fontSize: lyricFontSize(chunk), bold: true,
           color: COLOURS.text, margin: 0,
-          breakLine: false, valign: "mid", fit: "shrink",
-          paraSpaceAfterPt: 8, lineSpacingMultiple: 1.05,
+          breakLine: false, align: "center", valign: "mid", fit: "shrink",
+          paraSpaceAfterPt: 0, lineSpacingMultiple: 1.08,
         });
+        if (attribution) {
+          slide.addText(attribution, {
+            x: 0.7, y: 6.88, w: 10.35, h: 0.22,
+            fontFace: "Aptos", fontSize: 9,
+            color: COLOURS.muted, margin: 0,
+            breakLine: false, fit: "shrink",
+          });
+        }
         slide.addText(`${index + 1} / ${chunks.length}`, {
           x: 11.45, y: 6.88, w: 1.1, h: 0.22,
           fontFace: "Aptos", fontSize: 9,
@@ -198,7 +354,9 @@
   }
 
   const api = Object.freeze({
+    attributionLine,
     buildDeck,
+    congregationLyrics,
     fileName,
     lyricSlides,
     missingLyrics,

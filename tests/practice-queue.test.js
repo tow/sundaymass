@@ -78,7 +78,7 @@ test("builds a queue in Mass order and reports unavailable assigned songs", () =
   );
 });
 
-test("creates a privacy-enhanced queue URL from any selected starting point", () => {
+test("creates an API-enabled privacy-enhanced URL for the selected starting item", () => {
   const items = [
     { videoId: "AAAAAAAAAAA" },
     { videoId: "BBBBBBBBBBB" },
@@ -86,16 +86,19 @@ test("creates a privacy-enhanced queue URL from any selected starting point", ()
   ];
 
   assert.equal(
-    PracticeQueue.embedUrl(items, 0),
-    "https://www.youtube-nocookie.com/embed/AAAAAAAAAAA?autoplay=1&playsinline=1&rel=0&playlist=BBBBBBBBBBB%2CCCCCCCCCCCC",
+    PracticeQueue.embedUrl(items, 0, { origin: "https://mass.example" }),
+    "https://www.youtube-nocookie.com/embed/AAAAAAAAAAA"
+      + "?autoplay=1&playsinline=1&rel=0&enablejsapi=1&origin=https%3A%2F%2Fmass.example",
   );
   assert.equal(
     PracticeQueue.embedUrl(items, 1),
-    "https://www.youtube-nocookie.com/embed/BBBBBBBBBBB?autoplay=1&playsinline=1&rel=0&playlist=CCCCCCCCCCC",
+    "https://www.youtube-nocookie.com/embed/BBBBBBBBBBB"
+      + "?autoplay=1&playsinline=1&rel=0&enablejsapi=1",
   );
   assert.equal(
     PracticeQueue.embedUrl(items, 2),
-    "https://www.youtube-nocookie.com/embed/CCCCCCCCCCC?autoplay=1&playsinline=1&rel=0",
+    "https://www.youtube-nocookie.com/embed/CCCCCCCCCCC"
+      + "?autoplay=1&playsinline=1&rel=0&enablejsapi=1",
   );
   assert.equal(PracticeQueue.embedUrl([], 0), "");
 });

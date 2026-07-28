@@ -80,10 +80,14 @@ planner can be installed to a phone's home screen.
   able to retrieve them. `song_lyrics` is physically separate from public song metadata
   solely to enforce that database permission boundary; it is not a separate domain
   concept. Without this requirement, the extra table would not be justified.
-- The lyrics PowerPoint action is editor-only and online-only. It fetches each selected
-  song through the existing private-song read, refuses to create an incomplete deck,
-  and generates the `.pptx` entirely in the browser. The deck follows canonical Mass
-  order, repeats a song when it is assigned twice, and is not uploaded or cached.
+- The lyrics PowerPoint and folded-booklet actions are editor-only and online-only.
+  They fetch each selected song through the existing private-song read and refuse to
+  create incomplete output. The `.pptx` is generated entirely in the browser. The
+  booklet imposes A5 pages on landscape A4 sheets; print double-sided, flip on the
+  short edge, at actual size, with the printer's own booklet mode off, then fold the
+  two sheets in half. The booklet is fixed at eight A5 pages. Both congregation-facing
+  exports omit Responsorial Psalm verses because only the response is needed. Neither
+  output is uploaded or cached.
 - Song and reading embeddings are also private. Logged-out users may view suggestions
   for an empty Mass slot, but the bounded database function returns only public song
   metadata. It may include one clearly labelled extended-library candidate alongside
@@ -184,6 +188,18 @@ The schema, JSON snapshot shapes, access matrix, RPC contracts, public projectio
 Realtime behavior are documented in
 [`docs/data-model.md`](docs/data-model.md). The underlying forward migrations and local
 Supabase integration suite remain the executable authority.
+
+Operational song, lyric, and plan maintenance can be performed without a browser
+session through the repository CLI:
+
+```bash
+npm run sundaymass -- list_songs --query "Psalm"
+npm run sundaymass -- show_song SONG_UUID --lyrics
+```
+
+Mutation commands use song UUIDs and are dry-runs unless `--apply` is supplied. See the
+[operations runbook](docs/operations.md#song-maintenance-cli) for the complete command
+surface and safety rules.
 
 To connect a Supabase project:
 

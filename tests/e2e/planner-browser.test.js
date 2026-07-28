@@ -158,6 +158,16 @@ function assertA4Pages(pdf, minimumPages) {
   return geometry.pageCount;
 }
 
+function assertA4LandscapePages(pdf, expectedPages) {
+  const geometry = pdfPageGeometry(pdf);
+  assert.equal(geometry.pageCount, expectedPages);
+  assert.equal(geometry.boxes.length, expectedPages);
+  geometry.boxes.forEach(({ width, height }) => {
+    assert.ok(Math.abs(width - 841.89) < 2, `unexpected PDF width ${width}`);
+    assert.ok(Math.abs(height - 595.28) < 2, `unexpected PDF height ${height}`);
+  });
+}
+
 let server;
 let browser;
 
@@ -301,6 +311,30 @@ test("public users can open an ordered YouTube listening queue", async () => {
     { width: 390, height: 844 },
   );
   await page.route("https://www.youtube-nocookie.com/**", route => route.abort());
+  await page.route("https://www.youtube.com/iframe_api", route =>
+    route.fulfill({
+      contentType: "text/javascript",
+      body: `
+        window.YT = {
+          Player: class {
+            constructor(element, options) {
+              this.events = options.events;
+              this.index = 0;
+              window.__practicePlayerApi = this;
+              queueMicrotask(() => this.events.onReady({ target: this }));
+            }
+            getPlaylistIndex() { return this.index; }
+            loadPlaylist(options) {
+              this.index = options.index;
+              window.__practicePlaylistLoad = options;
+            }
+            stopVideo() {}
+          }
+        };
+        queueMicrotask(() => window.onYouTubeIframeAPIReady());
+      `,
+    }),
+  );
   await page.evaluate(() => {
     window.massPlanApp.connect({
       subscribeAuth(callback) {
@@ -345,6 +379,7 @@ test("public users can open an ordered YouTube listening queue", async () => {
     "3/4",
   );
   await page.locator("#practiceAll").click();
+  await page.waitForFunction(() => Boolean(window.__practicePlaylistLoad));
 
   const dialog = page.locator("#practiceDialog");
   await assert.doesNotReject(() => dialog.waitFor({ state: "visible" }));
@@ -366,9 +401,24 @@ test("public users can open an ordered YouTube listening queue", async () => {
   const playerUrl = new URL(source);
   assert.equal(playerUrl.hostname, "www.youtube-nocookie.com");
   assert.equal(playerUrl.pathname, "/embed/AAAAAAAAAAA");
-  assert.equal(
-    playerUrl.searchParams.get("playlist"),
-    "BBBBBBBBBBB,AAAAAAAAAAA",
+  assert.equal(playerUrl.searchParams.get("playlist"), null);
+  assert.deepEqual(
+    await page.evaluate(() => window.__practicePlaylistLoad),
+    {
+      playlist: ["AAAAAAAAAAA", "BBBBBBBBBBB", "AAAAAAAAAAA"],
+      index: 0,
+      startSeconds: 0,
+    },
+  );
+  await page.evaluate(() => {
+    window.__practicePlayerApi.index = 1;
+    window.__practicePlayerApi.events.onStateChange({
+      target: window.__practicePlayerApi,
+    });
+  });
+  assert.match(
+    await page.locator("#practiceQueueList .practice-queue-item.current").innerText(),
+    /Communion Hymn/,
   );
 
   const layout = await dialog.evaluate(element => ({
@@ -909,6 +959,112 @@ test("editor downloads a complete private-lyrics PowerPoint in Mass order", asyn
   assert.match(slideText[2], /COMMUNION PRIVATE LINE ONE/);
   assert.match(slideText[3], /ENTRANCE PRIVATE LINE ONE/);
 
+  await context.close();
+});
+
+test("editor prints private lyrics as an imposed landscape A4 booklet", async () => {
+  const { context, page } = await plannerPage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+  await page.evaluate(() => {
+    const songs = {
+      entrance: { id: "booklet-entrance", title: "Gathered & Sent", authors: "Test Author" },
+      psalm: { id: "booklet-psalm", title: "The Lord Feeds Us" },
+      communion: { id: "booklet-communion", title: "Bread for the Journey" },
+      communion2: { id: "booklet-entrance", title: "Gathered & Sent", authors: "Test Author" },
+    };
+    const privateSongs = {
+      "booklet-entrance": {
+        ...songs.entrance,
+        copyrightOwner: "Test Publisher",
+        copyrightYear: "2026",
+        lyrics: "Refrain:\nENTRANCE PRIVATE LINE ONE\nENTRANCE PRIVATE LINE TWO",
+      },
+      "booklet-communion": {
+        ...songs.communion,
+        lyrics: "COMMUNION PRIVATE LINE ONE\n\nCOMMUNION PRIVATE LINE TWO",
+      },
+      "booklet-psalm": {
+        ...songs.psalm,
+        lyrics: "Response:\nPSALM RESPONSE FOR EVERYONE\n\n"
+          + "Verse 1\nPSALM VERSE FOR THE CANTOR ONLY",
+      },
+    };
+    window.__bookletPrivateFetches = [];
+    window.__bookletPrintCalls = 0;
+    window.print = () => { window.__bookletPrintCalls += 1; };
+    window.massPlanApp.connect({
+      subscribeAuth(callback) {
+        callback({ user: { id: "editor" }, isEditor: true });
+        return () => {};
+      },
+      subscribePlan(date, onValue) {
+        onValue({ songs, readingOverrides: {}, celebrationOverride: null });
+        return () => {};
+      },
+      getSong(id) {
+        window.__bookletPrivateFetches.push(id);
+        return Promise.resolve(privateSongs[id]);
+      },
+    });
+  });
+
+  const button = page.locator("#printLyricsBooklet");
+  await assert.doesNotReject(() => button.waitFor({ state: "visible" }));
+  const mobileLayout = await page.evaluate(() => {
+    const action = document.querySelector("#printLyricsBooklet").getBoundingClientRect();
+    return {
+      innerWidth,
+      documentWidth: document.documentElement.scrollWidth,
+      actionLeft: action.left,
+      actionRight: action.right,
+      hintVisible: Boolean(document.querySelector(".booklet-print-hint")?.offsetParent),
+    };
+  });
+  assert.equal(mobileLayout.documentWidth, mobileLayout.innerWidth);
+  assert.ok(mobileLayout.actionLeft >= 0);
+  assert.ok(mobileLayout.actionRight <= mobileLayout.innerWidth);
+  assert.equal(mobileLayout.hintVisible, true);
+  assert.equal(await page.getByText("ENTRANCE PRIVATE LINE ONE").count(), 0);
+  await button.click();
+  await page.waitForFunction(() =>
+    document.querySelector("#lyricsPptxStatus")?.textContent === "Booklet sent to print.",
+  );
+
+  const state = await page.evaluate(() => ({
+    fetches: window.__bookletPrivateFetches,
+    printCalls: window.__bookletPrintCalls,
+    mode: document.querySelector("#printSheet")?.dataset.printMode,
+    logicalPages: Number(document.querySelector(".print-booklet")?.dataset.logicalPages),
+    physicalSides: document.querySelectorAll(".booklet-sheet").length,
+    sides: [...document.querySelectorAll(".booklet-sheet")].map(sheet => sheet.dataset.side),
+    text: document.querySelector("#printSheet")?.innerText,
+  }));
+  assert.deepEqual(
+    state.fetches,
+    ["booklet-entrance", "booklet-psalm", "booklet-communion"],
+  );
+  assert.equal(state.printCalls, 1);
+  assert.equal(state.mode, "lyrics-booklet");
+  assert.equal(state.logicalPages, 8);
+  assert.equal(state.physicalSides, state.logicalPages / 2);
+  assert.deepEqual(state.sides, ["front", "back", "front", "back"]);
+  assert.match(state.text, /Gathered & Sent/);
+  assert.match(state.text, /ENTRANCE PRIVATE LINE ONE/);
+  assert.match(state.text, /PSALM RESPONSE FOR EVERYONE/);
+  assert.doesNotMatch(state.text, /PSALM VERSE FOR THE CANTOR ONLY/);
+  assert.match(state.text, /COMMUNION PRIVATE LINE TWO/);
+
+  await page.emulateMedia({ media: "print" });
+  const pdf = await page.pdf({
+    preferCSSPageSize: true,
+    printBackground: true,
+  });
+  assertA4LandscapePages(pdf, state.physicalSides);
+  await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
+  assert.equal(await page.locator("#printSheet").getAttribute("aria-hidden"), "true");
   await context.close();
 });
 

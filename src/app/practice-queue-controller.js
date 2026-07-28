@@ -2,6 +2,28 @@
 (function (global) {
   "use strict";
 
+  function defaultPlayerApiLoader(document) {
+    const window = document.defaultView || global;
+    if (window.YT?.Player) return Promise.resolve(window.YT);
+    if (window.__massPlannerYouTubeApi) return window.__massPlannerYouTubeApi;
+    window.__massPlannerYouTubeApi = new Promise((resolve, reject) => {
+      const previousReady = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        previousReady?.();
+        if (window.YT?.Player) resolve(window.YT);
+        else reject(new Error("YouTube player API unavailable"));
+      };
+      const existing = document.querySelector('script[src="https://www.youtube.com/iframe_api"]');
+      if (existing) return;
+      const script = document.createElement("script");
+      script.src = "https://www.youtube.com/iframe_api";
+      script.async = true;
+      script.addEventListener("error", () => reject(new Error("Could not load YouTube player")));
+      document.head.append(script);
+    });
+    return window.__massPlannerYouTubeApi;
+  }
+
   function create({
     elements,
     parts,
@@ -9,8 +31,13 @@
     queueBuilder,
     openModal,
     createQueueButton,
+    loadPlayerApi = defaultPlayerApiLoader,
   }) {
     let latest = null;
+    let player = null;
+    let playerReady = false;
+    let requestedIndex = 0;
+    let playerGeneration = 0;
 
     function currentQueue() {
       latest = queueBuilder.build({ parts, songs: getSongs() });
@@ -57,11 +84,7 @@
       return button;
     }
 
-    function select(index) {
-      const queue = latest || currentQueue();
-      const source = queueBuilder.embedUrl(queue.items, index);
-      if (!source) return;
-      elements.player.src = source;
+    function markCurrent(index) {
       elements.list.children && Array.from(elements.list.children).forEach(
         (button, buttonIndex) => {
           if (button.classList) button.classList.toggle("current", buttonIndex === index);
@@ -71,6 +94,64 @@
           }
         },
       );
+    }
+
+    function syncPlayerIndex(event) {
+      const index = Number(event?.target?.getPlaylistIndex?.());
+      if (Number.isInteger(index) && index >= 0 && index < (latest?.items.length || 0)) {
+        requestedIndex = index;
+        markCurrent(index);
+      }
+    }
+
+    function orderedVideoIds() {
+      return (latest?.items || []).map(item => item.videoId);
+    }
+
+    function loadOrderedPlaylist(index) {
+      player.loadPlaylist({
+        playlist: orderedVideoIds(),
+        index,
+        startSeconds: 0,
+      });
+    }
+
+    function attachPlayer() {
+      const generation = ++playerGeneration;
+      const document = elements.list.ownerDocument || global.document;
+      loadPlayerApi(document).then(YT => {
+        if (generation !== playerGeneration || !latest?.items.length) return;
+        player = new YT.Player(elements.player, {
+          events: {
+            onReady(event) {
+              if (generation !== playerGeneration) return;
+              player = event.target;
+              playerReady = true;
+              loadOrderedPlaylist(requestedIndex);
+            },
+            onStateChange: syncPlayerIndex,
+          },
+        });
+      }).catch(() => {
+        player = null;
+        playerReady = false;
+      });
+    }
+
+    function select(index) {
+      const queue = latest || currentQueue();
+      if (!queue.items[index]) return;
+      requestedIndex = index;
+      markCurrent(index);
+      if (playerReady) {
+        loadOrderedPlaylist(index);
+        return;
+      }
+      const origin = elements.list.ownerDocument?.defaultView?.location?.origin || "";
+      const source = queueBuilder.embedUrl(queue.items, index, { origin });
+      if (!source) return;
+      elements.player.src = source;
+      attachPlayer();
     }
 
     function open() {
@@ -86,6 +167,10 @@
     }
 
     function stopPlayback() {
+      playerGeneration += 1;
+      player?.stopVideo?.();
+      player = null;
+      playerReady = false;
       elements.player.removeAttribute("src");
     }
 

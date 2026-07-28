@@ -4,6 +4,9 @@
   "private": true,
   "packageManager": "npm@10.9.3",
   "description": "St James the Apostle 6pm Mass music planner — offline HTML tool + build pipeline",
+  "bin": {
+    "sundaymass": "scripts/sundaymass-cli.js"
+  },
   "scripts": {
     "icons": "node scripts/generate_icons.js",
     "build": "node scripts/generate_icons.js && node scripts/build-vendor.js && node scripts/build-app.js && node scripts/build-service-worker.js",
@@ -18,6 +21,7 @@
     "smoke:backend": "node scripts/production-backend-smoke.js",
     "smoke:browser": "node scripts/production-browser-smoke.js",
     "smoke:production": "npm run smoke:backend && npm run smoke:browser",
+    "sundaymass": "node scripts/sundaymass-cli.js",
     "stage:pages": "node scripts/stage-pages.js",
     "verify:generated": "node scripts/verify-generated.js",
     "check": "npm run lint && npm run check:migrations && npm run check:edge && npm run test:unit && npm run test:e2e && npm run verify:generated"
