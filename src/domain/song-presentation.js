@@ -2,24 +2,59 @@
 (function (global) {
   "use strict";
 
+  const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
   const text = value => typeof value === "string" ? value.trim() : "";
 
   function isPublicDomain(song) {
     return /\bpublic domain\b/i.test(text(song?.copyrightOwner));
   }
 
-  function safeYoutubeUrl(value) {
-    if (!text(value)) return "";
+  function youtubeVideoId(value) {
+    const input = text(value);
+    if (!input) return "";
+    if (VIDEO_ID.test(input)) return input;
     try {
-      const url = new URL(value);
+      const url = new URL(input);
+      if (url.protocol !== "https:") return "";
       const host = url.hostname.toLowerCase().replace(/^www\./, "");
-      return url.protocol === "https:"
-        && (host === "youtube.com" || host.endsWith(".youtube.com") || host === "youtu.be")
-        ? url.href
-        : "";
+      let candidate = "";
+
+      if (host === "youtu.be") {
+        const segments = url.pathname.split("/").filter(Boolean);
+        if (segments.length !== 1) return "";
+        candidate = segments[0];
+      } else if (
+        host === "youtube.com"
+        || host.endsWith(".youtube.com")
+        || host === "youtube-nocookie.com"
+        || host.endsWith(".youtube-nocookie.com")
+      ) {
+        if (url.pathname === "/watch") {
+          candidate = url.searchParams.get("v") || "";
+        } else {
+          const segments = url.pathname.split("/").filter(Boolean);
+          if (
+            segments.length === 2
+            && ["embed", "shorts", "live"].includes(segments[0])
+          ) {
+            candidate = segments[1];
+          }
+        }
+      }
+
+      return VIDEO_ID.test(candidate) ? candidate : "";
     } catch {
       return "";
     }
+  }
+
+  function youtubeWatchUrl(value) {
+    const videoId = youtubeVideoId(value);
+    return videoId ? `https://www.youtube.com/watch?v=${videoId}` : "";
+  }
+
+  function safeYoutubeUrl(value) {
+    return youtubeWatchUrl(value);
   }
 
   function copyrightComplete(song) {
@@ -70,6 +105,8 @@
   }
 
   const api = Object.freeze({
+    youtubeVideoId,
+    youtubeWatchUrl,
     safeYoutubeUrl,
     copyrightComplete,
     copyrightLine,

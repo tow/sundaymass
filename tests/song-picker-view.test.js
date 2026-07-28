@@ -100,7 +100,7 @@ test("read-only suggestions cannot be selected or assigned", () => {
   assert.match(result.html, /Composer/);
   assert.match(
     result.html,
-    /href="https:\/\/youtu\.be\/AAAAAAAAAAA"[^>]*>Listen ↗<\/a>/,
+    /href="https:\/\/www\.youtube\.com\/watch\?v=AAAAAAAAAAA"[^>]*>Listen ↗<\/a>/,
   );
   assert.doesNotMatch(result.html, /<button|data-song-suggestion-index|private lyrics/);
 });

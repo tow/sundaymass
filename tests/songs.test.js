@@ -23,6 +23,7 @@ test("lyrics and all metadata except title are optional", () => {
   assert.deepEqual(result.value, {
     title: "Song without lyrics",
     youtubeUrl: "",
+    youtubeVideoId: "",
     authors: "",
     copyrightOwner: "",
     copyrightYear: "",
@@ -33,6 +34,24 @@ test("lyrics and all metadata except title are optional", () => {
   });
   assert.equal(catalog.hasLyrics(result.value), false);
   assert.equal(catalog.hasLyrics({ lyrics: "  [Verse 1]\nWords  " }), true);
+});
+
+test("YouTube links are validated and normalized to a video ID", () => {
+  const result = catalog.validateDraft({
+    title: "Practice song",
+    youtubeUrl: " https://youtu.be/D6_KModMCtg?si=tracking ",
+  });
+
+  assert.equal(result.valid, true);
+  assert.equal(result.value.youtubeVideoId, "D6_KModMCtg");
+  assert.equal(
+    result.value.youtubeUrl,
+    "https://www.youtube.com/watch?v=D6_KModMCtg",
+  );
+  assert.equal(catalog.validateDraft({
+    title: "Not a video",
+    youtubeUrl: "https://youtube.com/results?search_query=hymn",
+  }).valid, false);
 });
 
 test("suggestion parts are normalized but never constrain catalogue search", () => {

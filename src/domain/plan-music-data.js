@@ -6,6 +6,13 @@
     return typeof value === "string" ? value : "";
   }
 
+  function youtubeWatchUrl(value) {
+    const videoId = string(value);
+    return /^[A-Za-z0-9_-]{11}$/.test(videoId)
+      ? `https://www.youtube.com/watch?v=${videoId}`
+      : "";
+  }
+
   function lyricValue(row) {
     const relation = row && row.song_lyrics;
     if (Array.isArray(relation)) return string(relation[0] && relation[0].lyrics);
@@ -15,10 +22,12 @@
   function songFromRow(row) {
     const source = row && typeof row === "object" ? row : {};
     const lyrics = lyricValue(source);
+    const youtubeVideoId = string(source.youtube_video_id);
     return {
       id: string(source.id),
       title: string(source.title),
-      youtubeUrl: string(source.youtube_url),
+      youtubeVideoId,
+      youtubeUrl: youtubeWatchUrl(youtubeVideoId),
       authors: string(source.authors),
       copyrightOwner: string(source.copyright_owner),
       copyrightYear: string(source.copyright_year),

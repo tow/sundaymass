@@ -1,17 +1,25 @@
-const mapSong = row => ({
-  id: row.id,
-  title: row.title || "",
-  youtubeUrl: row.youtube_url || "",
-  authors: row.authors || "",
-  copyrightOwner: row.copyright_owner || "",
-  copyrightYear: row.copyright_year || "",
-  source: row.source || "",
-  inRepertoire: row.in_repertoire !== false,
-  suggestionParts: Array.isArray(row.suggestion_parts) ? row.suggestion_parts : [],
-  lyrics: Array.isArray(row.song_lyrics)
-    ? row.song_lyrics[0]?.lyrics || ""
-    : row.song_lyrics?.lyrics || "",
-});
+const mapSong = row => {
+  const youtubeVideoId = /^[A-Za-z0-9_-]{11}$/.test(row.youtube_video_id || "")
+    ? row.youtube_video_id
+    : "";
+  return {
+    id: row.id,
+    title: row.title || "",
+    youtubeVideoId,
+    youtubeUrl: youtubeVideoId
+      ? "https:" + "//www.youtube.com/watch?v=" + youtubeVideoId
+      : "",
+    authors: row.authors || "",
+    copyrightOwner: row.copyright_owner || "",
+    copyrightYear: row.copyright_year || "",
+    source: row.source || "",
+    inRepertoire: row.in_repertoire !== false,
+    suggestionParts: Array.isArray(row.suggestion_parts) ? row.suggestion_parts : [],
+    lyrics: Array.isArray(row.song_lyrics)
+      ? row.song_lyrics[0]?.lyrics || ""
+      : row.song_lyrics?.lyrics || "",
+  };
+};
 const draftParams = (draft, songCatalog = globalThis.window?.SongCatalog) => {
   const result = songCatalog.validateDraft(draft);
   if (!result.valid) throw new Error(result.error);
@@ -19,7 +27,7 @@ const draftParams = (draft, songCatalog = globalThis.window?.SongCatalog) => {
     value: result.value,
     params: {
       p_title: result.value.title,
-      p_youtube_url: result.value.youtubeUrl,
+      p_youtube_video_id: result.value.youtubeVideoId,
       p_authors: result.value.authors,
       p_copyright_owner: result.value.copyrightOwner,
       p_copyright_year: result.value.copyrightYear,
@@ -101,7 +109,7 @@ function createSupabaseStore(
     async browseSongs() {
       const { data, error } = await supabase
         .from("songs")
-        .select("id,title,youtube_url,authors,copyright_owner,copyright_year,source,in_repertoire,suggestion_parts")
+        .select("id,title,youtube_video_id,authors,copyright_owner,copyright_year,source,in_repertoire,suggestion_parts")
         .order("title");
       if (error) throw error;
       return (data || []).map(mapSong);
@@ -109,7 +117,7 @@ function createSupabaseStore(
     async getSong(songId) {
       const { data, error } = await supabase
         .from("songs")
-        .select("id,title,youtube_url,authors,copyright_owner,copyright_year,source,in_repertoire,suggestion_parts,song_lyrics(lyrics)")
+        .select("id,title,youtube_video_id,authors,copyright_owner,copyright_year,source,in_repertoire,suggestion_parts,song_lyrics(lyrics)")
         .eq("id", songId)
         .single();
       if (error) throw error;

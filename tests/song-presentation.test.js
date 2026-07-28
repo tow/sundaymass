@@ -11,26 +11,29 @@ const completeSong = {
   source: "Breaking Bread",
 };
 
-test("safe YouTube links accept only HTTPS YouTube hosts", () => {
+test("YouTube video links and IDs normalize to canonical watch URLs", () => {
   assert.equal(
-    presentation.safeYoutubeUrl("https://www.youtube.com/watch?v=abc"),
-    "https://www.youtube.com/watch?v=abc",
+    presentation.safeYoutubeUrl("https://www.youtube.com/watch?v=D6_KModMCtg"),
+    "https://www.youtube.com/watch?v=D6_KModMCtg",
   );
   assert.equal(
-    presentation.safeYoutubeUrl("https://music.youtube.com/watch?v=abc"),
-    "https://music.youtube.com/watch?v=abc",
+    presentation.safeYoutubeUrl("https://music.youtube.com/watch?v=D6_KModMCtg"),
+    "https://www.youtube.com/watch?v=D6_KModMCtg",
   );
   assert.equal(
-    presentation.safeYoutubeUrl("https://youtu.be/abc"),
-    "https://youtu.be/abc",
+    presentation.safeYoutubeUrl("https://youtu.be/D6_KModMCtg?si=tracking"),
+    "https://www.youtube.com/watch?v=D6_KModMCtg",
   );
+  assert.equal(presentation.safeYoutubeUrl("D6_KModMCtg"), "https://www.youtube.com/watch?v=D6_KModMCtg");
+  assert.equal(presentation.youtubeVideoId("https://youtube.com/shorts/D6_KModMCtg"), "D6_KModMCtg");
 
   [
     "",
     "not a URL",
-    "http://youtube.com/watch?v=abc",
-    "https://youtube.com.example.org/watch?v=abc",
-    "https://example.org/watch?v=abc",
+    "http://youtube.com/watch?v=D6_KModMCtg",
+    "https://youtube.com.example.org/watch?v=D6_KModMCtg",
+    "https://example.org/watch?v=D6_KModMCtg",
+    "https://youtube.com/results?search_query=hymn",
   ].forEach(value => assert.equal(presentation.safeYoutubeUrl(value), ""));
 });
 

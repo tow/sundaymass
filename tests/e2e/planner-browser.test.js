@@ -268,7 +268,10 @@ test("logged-out users can browse suggestions for an empty slot without editing"
   );
   const listen = page.locator("#songSuggestionResults .song-suggestion-listen");
   assert.equal(await listen.count(), 1);
-  assert.equal(await listen.getAttribute("href"), "https://youtu.be/AAAAAAAAAAA");
+  assert.equal(
+    await listen.getAttribute("href"),
+    "https://www.youtube.com/watch?v=AAAAAAAAAAA",
+  );
   assert.equal(await listen.getAttribute("target"), "_blank");
   assert.equal(
     await page.locator("#songSuggestionResults button").count(),

@@ -14,7 +14,7 @@ test("embedding input includes only fields which affect semantic meaning", async
     title: "One Bread, One Body",
     authors: "John Foley",
     source: "Gather",
-    youtube_url: "https://youtube.example/old",
+    youtube_video_id: "AAAAAAAAAAA",
     copyright_owner: "Old publisher",
     copyright_year: "1978",
     suggestion_parts: ["communion"],
@@ -22,7 +22,7 @@ test("embedding input includes only fields which affect semantic meaning", async
   };
   const metadataOnlyEdit = {
     ...original,
-    youtube_url: "https://youtube.example/new",
+    youtube_video_id: "BBBBBBBBBBB",
     copyright_owner: "New publisher",
     copyright_year: "1978, 2026",
     suggestion_parts: [],

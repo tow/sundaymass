@@ -9,7 +9,7 @@ test("Supabase song rows become canonical browser song values", () => {
   assert.deepEqual(data.songFromRow({
     id: "song-1",
     title: "Same Title",
-    youtube_url: "https://youtu.be/example",
+    youtube_video_id: "AAAAAAAAAAA",
     authors: "Composer",
     copyright_owner: "Publisher",
     copyright_year: "1975, 2016",
@@ -20,7 +20,8 @@ test("Supabase song rows become canonical browser song values", () => {
   }), {
     id: "song-1",
     title: "Same Title",
-    youtubeUrl: "https://youtu.be/example",
+    youtubeVideoId: "AAAAAAAAAAA",
+    youtubeUrl: "https://www.youtube.com/watch?v=AAAAAAAAAAA",
     authors: "Composer",
     copyrightOwner: "Publisher",
     copyrightYear: "1975, 2016",
@@ -41,7 +42,7 @@ test("public plan rows omit lyrics while retaining current canonical metadata", 
       song: {
         id: "song-1",
         title: "Entrance Song",
-        youtube_url: "",
+        youtube_video_id: "",
         authors: "",
         copyright_owner: "",
         copyright_year: "",

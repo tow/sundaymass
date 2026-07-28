@@ -27,7 +27,7 @@ const songs = {
   entrance: {
     id: "song-1",
     title: "All <Are> Welcome",
-    youtubeUrl: "https://youtu.be/example",
+    youtubeUrl: "https://youtu.be/AAAAAAAAAAA",
     authors: "Marty Haugen",
     copyrightOwner: "GIA",
     copyrightYear: "1994",
@@ -39,7 +39,7 @@ const songs = {
 test("choiceFor projects a selected song down to public plan metadata", () => {
   assert.deepEqual(view.choiceFor(songs, "entrance"), {
     song: "All <Are> Welcome",
-    youtubeUrl: "https://youtu.be/example",
+    youtubeUrl: "https://youtu.be/AAAAAAAAAAA",
     authors: "Marty Haugen",
     copyrightOwner: "GIA",
     copyrightYear: "1994",
@@ -58,7 +58,7 @@ test("public rendering includes safe metadata but never private lyrics", () => {
   assert.match(result.html, /Marty Haugen/);
   assert.doesNotMatch(result.html, /Authors:/);
   assert.doesNotMatch(result.html, /© 1994 GIA/);
-  assert.match(result.html, /href="https:\/\/youtu\.be\/example"/);
+  assert.match(result.html, /href="https:\/\/www\.youtube\.com\/watch\?v=AAAAAAAAAAA"/);
   assert.match(
     result.html,
     /<span class="music-song-title">All &lt;Are&gt; Welcome <a class="listen-link"[^>]*>Listen ↗<\/a><\/span>/,

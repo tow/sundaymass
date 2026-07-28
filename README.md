@@ -126,7 +126,7 @@ appropriate source file:
 - `src/domain/lectionary.js` — lectionary selection and validation rules
 - `src/domain/reading-selection.js` — role-aware override validation and confirmation policy
 - `src/domain/music-parts.js` — canonical Mass slots, labels, and suggestion normalization
-- `src/domain/song-presentation.js` — safe YouTube links and shared attribution formatting
+- `src/domain/song-presentation.js` — YouTube ID parsing, canonical links, and shared attribution formatting
 - `src/domain/practice-queue.js` — validated YouTube IDs and ordered ephemeral queue URLs
 - `src/domain/songs.js` — song validation and phase-one title search
 - `src/domain/plan-music-data.js` — database-row to browser-plan conversion

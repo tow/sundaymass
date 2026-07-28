@@ -247,7 +247,7 @@ the result as CSV:
 select
   s.id,
   s.title,
-  s.youtube_url,
+  s.youtube_video_id,
   s.authors,
   s.copyright_owner,
   s.copyright_year,

@@ -4,43 +4,9 @@
 
   const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
   const text = value => typeof value === "string" ? value.trim() : "";
-
-  function youtubeVideoId(value) {
-    if (!text(value)) return "";
-    try {
-      const url = new URL(value);
-      if (url.protocol !== "https:") return "";
-      const host = url.hostname.toLowerCase().replace(/^www\./, "");
-      let candidate = "";
-
-      if (host === "youtu.be") {
-        const segments = url.pathname.split("/").filter(Boolean);
-        if (segments.length !== 1) return "";
-        candidate = segments[0];
-      } else if (
-        host === "youtube.com"
-        || host.endsWith(".youtube.com")
-        || host === "youtube-nocookie.com"
-        || host.endsWith(".youtube-nocookie.com")
-      ) {
-        if (url.pathname === "/watch") {
-          candidate = url.searchParams.get("v") || "";
-        } else {
-          const segments = url.pathname.split("/").filter(Boolean);
-          if (
-            segments.length === 2
-            && ["embed", "shorts", "live"].includes(segments[0])
-          ) {
-            candidate = segments[1];
-          }
-        }
-      }
-
-      return VIDEO_ID.test(candidate) ? candidate : "";
-    } catch {
-      return "";
-    }
-  }
+  const songPresentation = global.SongPresentation
+    || (typeof require === "function" ? require("./song-presentation.js") : null);
+  const youtubeVideoId = value => songPresentation.youtubeVideoId(value);
 
   function build({ parts, songs }) {
     let assignedCount = 0;
@@ -50,7 +16,7 @@
       const title = text(song?.title) || text(song?.song);
       if (!title) return;
       assignedCount += 1;
-      const videoId = youtubeVideoId(song.youtubeUrl);
+      const videoId = youtubeVideoId(song.youtubeVideoId || song.youtubeUrl);
       if (!videoId) return;
       items.push(Object.freeze({
         part: part.key,

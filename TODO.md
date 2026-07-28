@@ -5,7 +5,6 @@ to be decided.
 
 ## Repertoire and planning
 
-- Normalize YouTube URLs when songs are created or edited.
 - Normalize lyrics formatting so pasted lyrics have consistent whitespace, stanza
   breaks, punctuation, and line endings.
 - Evaluate the quality of automatic song suggestions with real Sundays and repertoire

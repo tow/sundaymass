@@ -4,6 +4,8 @@
 
   const massMusicParts = global.MassMusicParts
     || (typeof require === "function" ? require("./music-parts.js") : null);
+  const songPresentation = global.SongPresentation
+    || (typeof require === "function" ? require("./song-presentation.js") : null);
   const SUGGESTION_PARTS = [
     { key: "entrance", label: "Entrance" },
     { key: "kyrie", label: "Kyrie" },
@@ -36,9 +38,12 @@
 
   function normalizeDraft(value) {
     const draft = value && typeof value === "object" ? value : {};
+    const youtubeInput = text(draft.youtubeUrl) || text(draft.youtubeVideoId);
+    const youtubeVideoId = songPresentation.youtubeVideoId(youtubeInput);
     return {
       title: text(draft.title),
-      youtubeUrl: text(draft.youtubeUrl),
+      youtubeUrl: youtubeInput,
+      youtubeVideoId,
       authors: text(draft.authors),
       copyrightOwner: text(draft.copyrightOwner),
       copyrightYear: text(draft.copyrightYear),
@@ -54,7 +59,21 @@
     if (!normalized.title) {
       return { valid: false, error: "Enter a song title.", value: normalized };
     }
-    return { valid: true, error: "", value: normalized };
+    if (normalized.youtubeUrl && !normalized.youtubeVideoId) {
+      return {
+        valid: false,
+        error: "Enter a valid YouTube video link.",
+        value: normalized,
+      };
+    }
+    return {
+      valid: true,
+      error: "",
+      value: {
+        ...normalized,
+        youtubeUrl: songPresentation.youtubeWatchUrl(normalized.youtubeVideoId),
+      },
+    };
   }
 
   function hasLyrics(value) {

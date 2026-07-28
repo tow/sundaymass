@@ -26,7 +26,8 @@ test("Supabase plan loading joins current song metadata without lyric text", () 
     source.indexOf("const rpcDraft"),
   );
   assert.match(publicPlanQuery, /plan_songs/);
-  assert.match(publicPlanQuery, /youtube_url/);
+  assert.match(publicPlanQuery, /youtube_video_id/);
+  assert.doesNotMatch(publicPlanQuery, /\byoutube_url\b/);
   assert.match(publicPlanQuery, /copyright_owner/);
   assert.match(publicPlanQuery, /copyright_year/);
   assert.doesNotMatch(publicPlanQuery, /song_lyrics/);

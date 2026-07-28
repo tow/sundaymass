@@ -23,6 +23,7 @@ const songCatalog = {
       value: {
         title: draft.title.trim(),
         youtubeUrl: draft.youtubeUrl || "",
+        youtubeVideoId: draft.youtubeVideoId || "",
         authors: draft.authors || "",
         copyrightOwner: draft.copyrightOwner || "",
         copyrightYear: draft.copyrightYear || "",
@@ -73,6 +74,7 @@ test("local repertoire mutations require an editor and retain canonical songs", 
     id: "song-1",
     title: "Creator Alme Poderoso",
     youtubeUrl: "",
+    youtubeVideoId: "",
     authors: "Frank Andersen",
     copyrightOwner: "",
     copyrightYear: "",
@@ -93,7 +95,7 @@ function supabaseFixture() {
   const publicRow = {
     id: "song-1",
     title: "Table of Plenty",
-    youtube_url: "https://youtu.be/example",
+    youtube_video_id: "AAAAAAAAAAA",
     authors: "Dan Schutte",
     copyright_owner: "OCP",
     copyright_year: "1992",
@@ -168,7 +170,7 @@ test("Supabase repertoire mutations send validated canonical RPC parameters", as
     name: "create_song",
     params: {
       p_title: "New Song",
-      p_youtube_url: "",
+      p_youtube_video_id: "",
       p_authors: "Composer",
       p_copyright_owner: "",
       p_copyright_year: "",

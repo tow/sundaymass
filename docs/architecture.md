@@ -195,11 +195,12 @@ The output includes public song attribution but never private lyrics.
 ### YouTube practice queue
 
 The public planner derives an ephemeral practice queue from the selected plan in
-canonical Mass-slot order. The pure `practice-queue` domain module accepts only
-recognised HTTPS YouTube video URL forms and passes validated 11-character video IDs
-to a privacy-enhanced `youtube-nocookie.com` embed. Invalid or missing links are
-reported and omitted. Repeated assignments remain repeated in the queue because they
-represent distinct points in the Mass.
+canonical Mass-slot order. Editors may paste recognised HTTPS YouTube video URL
+forms, but song validation reduces them to 11-character video IDs before persistence.
+The public watch link and privacy-enhanced `youtube-nocookie.com` embed are derived
+from those IDs. Invalid or missing links are reported and omitted. Repeated
+assignments remain repeated in the queue because they represent distinct points in
+the Mass.
 
 The queue is created only when the user opens “Listen to all”. It has no database row,
 YouTube account, API key, or persistent playlist. Closing the dialog removes the

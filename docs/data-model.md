@@ -87,7 +87,7 @@ their own membership row.
 |---|---|
 | `id` | UUID identity |
 | `title` | Required display title; deliberately non-unique |
-| `youtube_url` | Optional practice-link value |
+| `youtube_video_id` | Optional validated 11-character YouTube video identifier |
 | `authors` | Optional author/composer attribution |
 | `copyright_owner` | Optional owner or publisher |
 | `copyright_year` | Optional text, not a number; values such as `1975, 2016` are valid |
@@ -98,6 +98,10 @@ their own membership row.
 
 Only `title` is required. Duplicate titles represent distinct UUID records and are
 disambiguated in editing interfaces with author information.
+
+Editors paste a recognised HTTPS YouTube video link, but only its video ID is stored.
+Public watch links and privacy-enhanced embed URLs are derived from that ID, so share
+and tracking parameters are not persisted.
 
 Songs with `in_repertoire = false` are complete canonical song records in the extended
 library, not drafts or a second entity type. They can be searched and assigned normally,

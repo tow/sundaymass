@@ -78,6 +78,7 @@ function localStore({
     const publicSong = song => ({
       id: song.id,
       title: song.title,
+      youtubeVideoId: song.youtubeVideoId || "",
       youtubeUrl: song.youtubeUrl,
       authors: song.authors,
       copyrightOwner: song.copyrightOwner,
@@ -280,7 +281,7 @@ function createSupabaseStore(
           song:songs (
             id,
             title,
-            youtube_url,
+            youtube_video_id,
             authors,
             copyright_owner,
             copyright_year,
@@ -302,7 +303,7 @@ function createSupabaseStore(
       value: value.value,
       params: {
         p_title: value.value.title,
-        p_youtube_url: value.value.youtubeUrl,
+        p_youtube_video_id: value.value.youtubeVideoId,
         p_authors: value.value.authors,
         p_copyright_owner: value.value.copyrightOwner,
         p_copyright_year: value.value.copyrightYear,
@@ -418,7 +419,7 @@ function createSupabaseStore(
         .select(`
           id,
           title,
-          youtube_url,
+          youtube_video_id,
           authors,
           copyright_owner,
           copyright_year,
@@ -452,7 +453,7 @@ function createSupabaseStore(
         .select(`
           id,
           title,
-          youtube_url,
+          youtube_video_id,
           authors,
           copyright_owner,
           copyright_year,

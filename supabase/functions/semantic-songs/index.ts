@@ -125,7 +125,7 @@ Deno.serve(async request => {
     if (!songIds.length) return json({ processed: 0, skipped: 0 });
     const { data: songs, error } = await admin
       .from("songs")
-      .select("id,title,youtube_url,authors,copyright_owner,copyright_year,source,song_lyrics(lyrics)")
+      .select("id,title,authors,copyright_owner,copyright_year,source,song_lyrics(lyrics)")
       .in("id", songIds);
     if (error) return json({ error: error.message }, 500);
 

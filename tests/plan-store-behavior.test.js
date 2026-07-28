@@ -39,6 +39,7 @@ const songCatalog = {
       value: {
         title: draft.title.trim(),
         youtubeUrl: draft.youtubeUrl || "",
+        youtubeVideoId: draft.youtubeVideoId || "",
         authors: draft.authors || "",
         copyrightOwner: draft.copyrightOwner || "",
         copyrightYear: draft.copyrightYear || "",
@@ -103,6 +104,7 @@ test("local plan mutations enforce editor access and never publish lyrics", asyn
   assert.deepEqual(plans.at(-1).songs.entrance, {
     id: "song-1",
     title: "Gather Us In",
+    youtubeVideoId: "",
     youtubeUrl: "",
     authors: "Marty Haugen",
     copyrightOwner: "",
@@ -114,6 +116,7 @@ test("local plan mutations enforce editor access and never publish lyrics", asyn
   assert.deepEqual((await store.getPlan("2026-08-02")).songs.entrance, {
     id: "song-1",
     title: "Gather Us In",
+    youtubeVideoId: "",
     youtubeUrl: "",
     authors: "Marty Haugen",
     copyrightOwner: "",
@@ -307,7 +310,7 @@ test("Supabase plan song creation maps validated drafts to the atomic RPC", asyn
       p_sunday: "2026-08-02",
       p_part: "entrance",
       p_title: "New Song",
-      p_youtube_url: "",
+      p_youtube_video_id: "",
       p_authors: "Composer",
       p_copyright_owner: "",
       p_copyright_year: "",
