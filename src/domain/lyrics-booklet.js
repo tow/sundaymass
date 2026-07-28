@@ -7,11 +7,17 @@
   const LINE_LENGTH = 68;
   const LABEL_PATTERN = /^(?:refrain|response|chorus|bridge|verse(?:\s+\d+)?|coda|repeat)(?::|\b)/i;
 
-  const escapeHtml = value => String(value || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  function fallbackEscapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function escapeHtml(value) {
+    return (global.LyricsPresentation?.escapeHtml || fallbackEscapeHtml)(value);
+  }
 
   function fallbackWrap(value, maxLength = LINE_LENGTH) {
     const words = String(value || "").trim().split(/\s+/).filter(Boolean);

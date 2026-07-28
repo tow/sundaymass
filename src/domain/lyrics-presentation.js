@@ -401,6 +401,7 @@
     attributionLine,
     buildDeck,
     congregationLyrics,
+    escapeHtml,
     fileName,
     lyricSlides,
     missingLyrics,
