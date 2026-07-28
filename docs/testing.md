@@ -54,7 +54,7 @@ the frontend.
   RPC, checking their current schema and lyric privacy.
 - `npm run smoke:browser` loads the production planner and repertoire in a new
   service-worker-free browser context. `npm run smoke:production` runs both production
-  checks. CI runs it after each deployment and every five minutes thereafter.
+  checks. CI runs it once after each deployment.
 - `npm run verify:generated` rebuilds the ignored deployable files and fails if the same
   source inputs produce different bytes on a second build.
 

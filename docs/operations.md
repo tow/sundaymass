@@ -23,9 +23,8 @@ service-role key, lyric export, or backup in the repository.
   `github-pages` environment. A failed check, migration, backend contract, or missing
   production credential cannot deploy the frontend even though `main` itself is not
   branch-protected.
-- `.github/workflows/production-monitor.yml` repeats the public backend and fresh-browser
-  checks every five minutes. It opens one GitHub incident issue while production is
-  failing and closes that issue after recovery.
+- The production smoke runs once after each Pages deployment. There is no scheduled
+  synthetic monitor; this installation does not need continuous availability checks.
 - Both push and manual deployment paths require `refs/heads/main`; a workflow manually
   run from another branch cannot publish.
 - The browser's Supabase URL and publishable key are intentionally public. Security

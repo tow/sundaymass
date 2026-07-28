@@ -8,10 +8,6 @@ const workflow = fs.readFileSync(
   path.join(root, ".github", "workflows", "verify.yml"),
   "utf8",
 );
-const monitor = fs.readFileSync(
-  path.join(root, ".github", "workflows", "production-monitor.yml"),
-  "utf8",
-);
 
 test("Pages deployment waits for verification and the production backend", () => {
   assert.match(
@@ -33,13 +29,6 @@ test("Pages deployment waits for verification and the production backend", () =>
   assert.match(workflow, /uses: actions\/configure-pages@v6/);
   assert.match(workflow, /uses: actions\/upload-pages-artifact@v5/);
   assert.match(workflow, /uses: actions\/deploy-pages@v5/);
-});
-
-test("production is checked every five minutes and failures create one incident", () => {
-  assert.match(monitor, /cron: "\*\/5 \* \* \* \*"/);
-  assert.match(monitor, /run: npm run smoke:production/);
-  assert.match(monitor, /Public smoke test failed/);
-  assert.match(monitor, /issues: write/);
 });
 
 test("the Pages artifact contains only the explicit deployable surface", () => {
