@@ -12,9 +12,10 @@ Function with the npm-pinned Deno runtime. It then runs the Node behavior suite,
 headless system-Chrome suite, and a clean deterministic rebuild.
 `.github/workflows/verify.yml` runs it for pull requests and pushes to `main`.
 
-For a `main` push, the Pages build waits for both `check` and the migrated-Supabase
-integration job. Only then does it stage the explicit public files and publish through
-GitHub's Pages Actions deployment. A failed verification job cannot deploy.
+For a `main` push, the Pages build also waits for the coordinated production Supabase
+rollout and its public contract smoke. The deployed Pages artifact is then tested in a
+fresh browser. A failed verification, backend release, or contract check cannot deploy
+the frontend.
 
 ## Test layers
 
@@ -47,6 +48,13 @@ GitHub's Pages Actions deployment. A failed verification job cannot deploy.
   are syntax-checked after assembly by the build-contract tests.
 - `npm run check:edge` type-checks the deployed Edge Function and resolves its locked
   Deno/JSR dependency graph without invoking the function.
+- `npm run check:migrations` requires each newly changed migration to declare an
+  expand or contract rollout phase and rejects destructive SQL labelled as expand.
+- `npm run smoke:backend` calls the production public song projection and suggestion
+  RPC, checking their current schema and lyric privacy.
+- `npm run smoke:browser` loads the production planner and repertoire in a new
+  service-worker-free browser context. `npm run smoke:production` runs both production
+  checks. CI runs it after each deployment and every five minutes thereafter.
 - `npm run verify:generated` rebuilds the ignored deployable files and fails if the same
   source inputs produce different bytes on a second build.
 

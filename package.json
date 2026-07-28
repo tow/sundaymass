@@ -13,10 +13,14 @@
     "test:coverage": "npm run build && node --test --experimental-test-coverage tests/*.test.js",
     "test:integration": "node --test tests/integration/*.test.js",
     "lint": "node scripts/lint.js",
+    "check:migrations": "node scripts/check-migration-rollout.js --working-tree",
     "check:edge": "deno check supabase/functions/semantic-songs/index.ts",
+    "smoke:backend": "node scripts/production-backend-smoke.js",
+    "smoke:browser": "node scripts/production-browser-smoke.js",
+    "smoke:production": "npm run smoke:backend && npm run smoke:browser",
     "stage:pages": "node scripts/stage-pages.js",
     "verify:generated": "node scripts/verify-generated.js",
-    "check": "npm run lint && npm run check:edge && npm run test:unit && npm run test:e2e && npm run verify:generated"
+    "check": "npm run lint && npm run check:migrations && npm run check:edge && npm run test:unit && npm run test:e2e && npm run verify:generated"
   },
   "engines": {
     "node": ">=22.20 <23"

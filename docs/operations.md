@@ -16,10 +16,16 @@ service-role key, lyric export, or backup in the repository.
 - HTTPS is enforced.
 - `main` is currently not branch-protected.
 - `.github/workflows/verify.yml` runs unit/browser/generated checks and a local Supabase
-  integration job on pushes to `main`.
-- Its Pages build waits for both jobs, stages an explicit public artifact, and deploys
-  that artifact through the protected `github-pages` environment. A failed check does
-  not reach production even though `main` itself is not branch-protected.
+  integration job on pushes to `main`. It then updates the production backend, verifies
+  its public contract, deploys Pages, and exercises the result in a fresh browser.
+- The Pages build waits for the backend release and contract smoke. It stages an
+  explicit public artifact and deploys that artifact through the protected
+  `github-pages` environment. A failed check, migration, backend contract, or missing
+  production credential cannot deploy the frontend even though `main` itself is not
+  branch-protected.
+- `.github/workflows/production-monitor.yml` repeats the public backend and fresh-browser
+  checks every five minutes. It opens one GitHub incident issue while production is
+  failing and closes that issue after recovery.
 - Both push and manual deployment paths require `refs/heads/main`; a workflow manually
   run from another branch cannot publish.
 - The browser's Supabase URL and publishable key are intentionally public. Security
@@ -142,17 +148,51 @@ key in this file.
 
 ## Normal release
 
-Use this order when a release includes backend and frontend changes:
+Add a Supabase personal access token to the GitHub `production` environment before the
+first coordinated release:
 
-1. Make or confirm a current backup before risky data/schema work.
-2. Add a forward migration; do not edit a migration already applied remotely.
-3. Run `npm run check` and, for database changes, `npm run test:integration`.
-4. Run `db push --linked --dry-run` and inspect the exact pending migration list.
-5. Apply migrations with `db push --linked`.
-6. Deploy `semantic-songs` when its code or contract changed.
-7. Smoke-test the backend with an editor account.
-8. Push the tested frontend commit to `main`.
-9. Check the GitHub Actions run and the live Pages site.
+```bash
+gh secret set SUPABASE_ACCESS_TOKEN --env production
+```
+
+If the project requires its database password during CLI linking, add it to the same
+environment as `SUPABASE_DB_PASSWORD`. Never put either value in repository variables.
+
+Every new migration begins with one of these exact headers:
+
+```sql
+-- rollout: expand
+```
+
+```sql
+-- rollout: contract
+```
+
+An ordinary release must be backward-compatible and use `expand`: add nullable
+columns, tables, functions, overloads, indexes, or permissive policies without removing
+the contract used by the already-deployed site. Populate or dual-write new data in the
+same or a later expand migration. Deploy frontend code that can coexist with both old
+and new data before removing anything.
+
+A `contract` migration may remove or rename a table, column, function, view, or type;
+tighten access; truncate data; or otherwise break an older client. The rollout checker
+recognises these operations and refuses to label them as expand. Because installed PWA
+clients can remain cached, wait at least one full service-worker compatibility window
+after the compatible frontend release, verify current usage, and take a fresh backup.
+Then run the workflow manually from `main`, tick
+`allow_contract_migrations`, and inspect the migration preview in the job log.
+
+Normal release order is enforced by the workflow:
+
+1. Run all local and migrated-database checks.
+2. Refuse unlabelled migrations and automatic contract migrations.
+3. Preview and apply compatible production migrations.
+4. Deploy the compatible `semantic-songs` Edge Function.
+5. Call the public REST and suggestion RPC contracts and check lyric privacy.
+6. Build and deploy the static Pages artifact.
+7. Open the deployed site in a new mobile-sized browser context and verify the planner,
+   repertoire, Supabase responses, listening links, anonymous controls, and lyric
+   privacy.
 
 `npm run build` writes the generated planner entry point, repertoire page, local
 Supabase bundle, icons, and content-addressed service worker. These are ignored build
@@ -167,8 +207,15 @@ npm run check
 git push origin main
 ```
 
-The push starts the production workflow. Deployment occurs only after the Node/browser
-gate and migrated-Supabase integration suite both pass.
+The push starts the production workflow. The frontend deploy occurs only after the
+Node/browser gate, migrated-Supabase integration suite, backend rollout, and public
+backend contract all pass.
+
+To run the same read-only production checks from a workstation:
+
+```bash
+npm run smoke:production
+```
 
 ### Post-release smoke test
 

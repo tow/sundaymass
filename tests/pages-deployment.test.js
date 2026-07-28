@@ -8,20 +8,38 @@ const workflow = fs.readFileSync(
   path.join(root, ".github", "workflows", "verify.yml"),
   "utf8",
 );
+const monitor = fs.readFileSync(
+  path.join(root, ".github", "workflows", "production-monitor.yml"),
+  "utf8",
+);
 
-test("Pages deployment waits for both verification jobs", () => {
+test("Pages deployment waits for verification and the production backend", () => {
   assert.match(
     workflow,
     /build-pages:\s*\n\s+if: github\.ref == 'refs\/heads\/main'.*push/s,
   );
-  assert.match(workflow, /build-pages:[\s\S]*needs: \[check, supabase-integration\]/);
+  assert.match(
+    workflow,
+    /release-backend:[\s\S]*needs: \[check, supabase-integration\]/,
+  );
+  assert.match(workflow, /release-backend:[\s\S]*supabase db push --linked --dry-run/);
+  assert.match(workflow, /release-backend:[\s\S]*production-backend-smoke\.js/);
+  assert.match(workflow, /build-pages:[\s\S]*needs: release-backend/);
   assert.match(workflow, /deploy-pages:[\s\S]*needs: build-pages/);
+  assert.match(workflow, /production-smoke:[\s\S]*needs: deploy-pages/);
   assert.doesNotMatch(workflow, /actions\/(?:checkout|setup-node)@v4/);
   assert.match(workflow, /uses: actions\/checkout@v7/);
   assert.match(workflow, /uses: actions\/setup-node@v7/);
   assert.match(workflow, /uses: actions\/configure-pages@v6/);
   assert.match(workflow, /uses: actions\/upload-pages-artifact@v5/);
   assert.match(workflow, /uses: actions\/deploy-pages@v5/);
+});
+
+test("production is checked every five minutes and failures create one incident", () => {
+  assert.match(monitor, /cron: "\*\/5 \* \* \* \*"/);
+  assert.match(monitor, /run: npm run smoke:production/);
+  assert.match(monitor, /Public smoke test failed/);
+  assert.match(monitor, /issues: write/);
 });
 
 test("the Pages artifact contains only the explicit deployable surface", () => {
