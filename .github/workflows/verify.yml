@@ -152,6 +152,10 @@ jobs:
 
   deploy-pages:
     needs: [build-pages, production-backend-contract]
+    if: >-
+      always() &&
+      needs.build-pages.result == 'success' &&
+      needs.production-backend-contract.result == 'success'
     permissions:
       contents: read
       pages: write

@@ -40,6 +40,10 @@ test("Pages deployment skips database integration when database files are unchan
     workflow,
     /deploy-pages:[\s\S]*needs: \[build-pages, production-backend-contract\]/,
   );
+  assert.match(
+    workflow,
+    /deploy-pages:[\s\S]*always\(\)[\s\S]*needs\.build-pages\.result == 'success'[\s\S]*needs\.production-backend-contract\.result == 'success'/,
+  );
   assert.match(workflow, /production-smoke:[\s\S]*needs: deploy-pages/);
   assert.doesNotMatch(workflow, /actions\/(?:checkout|setup-node)@v4/);
   assert.match(workflow, /uses: actions\/checkout@v7/);
