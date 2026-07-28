@@ -432,17 +432,20 @@
     @page lyrics-slides{ size:13.333in 7.5in; margin:0; }
     #printSheet[data-print-mode="lyrics-slides"]{ width:13.333in; }
     .pdf-slides{ width:13.333in; margin:0; padding:0; }
-    .pdf-slide{ position:relative; box-sizing:border-box; width:13.333in; height:7.5in; overflow:hidden; page:lyrics-slides; background:#001e2b; color:#fff; font-family:Arial,Helvetica,sans-serif; break-after:page; page-break-after:always; }
+    /* Geometry (left/top/width/height) and color come from lyrics-presentation.js's
+       SLIDE_LAYOUT/COLOURS as inline styles, shared with the PowerPoint deck's
+       addText calls, so only structural and typographic rules live here. */
+    .pdf-slide{ position:relative; box-sizing:border-box; width:13.333in; height:7.5in; overflow:hidden; page:lyrics-slides; font-family:Arial,Helvetica,sans-serif; break-after:page; page-break-after:always; }
     .pdf-slide:last-child{ break-after:auto; page-break-after:auto; }
-    .pdf-slide-bar{ position:absolute; top:0; left:0; width:.16in; height:7.5in; background:#e0b96a; }
-    .pdf-slide-kicker{ position:absolute; left:.7in; top:.7in; width:11.9in; height:.35in; color:#e0b96a; font-size:12pt; font-weight:700; letter-spacing:1.5pt; text-transform:uppercase; }
-    .pdf-slide-cover-title{ position:absolute; left:.7in; top:2.05in; width:11.4in; height:1.5in; display:flex; align-items:center; margin:0; color:#fff; font-family:Georgia,"Times New Roman",serif; font-size:38pt; font-weight:700; line-height:1.1; }
-    .pdf-slide-rule{ position:absolute; left:.7in; top:3.85in; width:1.25in; border-top:2pt solid #e0b96a; }
-    .pdf-slide-cover-meta{ position:absolute; left:.7in; top:4.15in; width:11.4in; height:.9in; margin:0; color:#b9cdd6; font-size:18pt; }
-    .pdf-slide-label{ position:absolute; left:.7in; top:.42in; width:9.8in; height:.28in; color:#e0b96a; font-size:10pt; font-weight:700; letter-spacing:1.4pt; text-transform:uppercase; }
-    .pdf-slide-song-title{ position:absolute; left:.7in; top:.8in; width:11.2in; height:.55in; color:#b9cdd6; font-family:Georgia,"Times New Roman",serif; font-size:20pt; font-weight:700; }
-    .pdf-slide-lyric{ position:absolute; left:.7in; top:1.45in; width:11.85in; height:5.2in; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-weight:700; line-height:1.08; text-align:center; }
+    .pdf-slide-bar{ position:absolute; }
+    .pdf-slide-kicker{ position:absolute; font-size:12pt; font-weight:700; letter-spacing:1.5pt; text-transform:uppercase; }
+    .pdf-slide-cover-title{ position:absolute; display:flex; align-items:center; margin:0; font-family:Georgia,"Times New Roman",serif; font-weight:700; line-height:1.1; }
+    .pdf-slide-rule{ position:absolute; border-top:2pt solid; }
+    .pdf-slide-cover-meta{ position:absolute; margin:0; font-size:18pt; }
+    .pdf-slide-label{ position:absolute; font-size:10pt; font-weight:700; letter-spacing:1.4pt; text-transform:uppercase; }
+    .pdf-slide-song-title{ position:absolute; font-family:Georgia,"Times New Roman",serif; font-size:20pt; font-weight:700; }
+    .pdf-slide-lyric{ position:absolute; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:700; line-height:1.08; text-align:center; }
     .pdf-slide-lyric div{ min-height:1.08em; }
-    .pdf-slide-attribution{ position:absolute; left:.7in; top:6.88in; width:10.35in; height:.22in; color:#b9cdd6; font-size:9pt; }
-    .pdf-slide-counter{ position:absolute; left:11.45in; top:6.88in; width:1.1in; height:.22in; color:#b9cdd6; font-size:9pt; text-align:right; }
+    .pdf-slide-attribution{ position:absolute; font-size:9pt; }
+    .pdf-slide-counter{ position:absolute; font-size:9pt; text-align:right; }
   }

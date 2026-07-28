@@ -340,7 +340,7 @@ test("the print slideshow numbers each lyric slide's position within its song", 
     assignments: [assignment],
   });
   const chunkCount = LyricsPresentation.lyricSlides(assignment.lyrics).length;
-  const counters = [...markup.matchAll(/pdf-slide-counter">([^<]+)</g)].map(match => match[1]);
+  const counters = [...markup.matchAll(/pdf-slide-counter"[^>]*>([^<]+)</g)].map(match => match[1]);
   assert.deepEqual(counters, Array.from({ length: chunkCount }, (_, index) => `${index + 1} / ${chunkCount}`));
 });
 
@@ -351,7 +351,7 @@ test("the cover title shrinks for long celebration names instead of overflowing"
     meta: "",
     assignments: [],
   });
-  assert.match(short, /pdf-slide-cover-title" style="font-size:38pt"/);
+  assert.match(short, /pdf-slide-cover-title"[^>]*font-size:38pt/);
 
   const long = LyricsPresentation.renderSlides({
     date: "2026-08-02",
@@ -360,5 +360,36 @@ test("the cover title shrinks for long celebration names instead of overflowing"
     meta: "",
     assignments: [],
   });
-  assert.match(long, /pdf-slide-cover-title" style="font-size:20pt"/);
+  assert.match(long, /pdf-slide-cover-title"[^>]*font-size:20pt/);
+});
+
+test("the PowerPoint deck and the print slideshow position the label box from the same geometry", async () => {
+  const assignments = [{ partLabel: "Entrance", title: "Gathered in Hope", lyrics: "A line" }];
+  const options = { date: "2026-08-02", celebration: "Test", meta: "", assignments };
+  const markup = LyricsPresentation.renderSlides(options);
+  const deck = LyricsPresentation.buildDeck(PptxGenJS, options);
+  const buffer = await deck.write({ outputType: "nodebuffer" });
+  const zip = await JSZip.loadAsync(buffer);
+  const slideXml = await zip.file("ppt/slides/slide2.xml").async("string");
+
+  const EMU_PER_INCH = 914400;
+  const [, offX, offY, extCx, extCy] = slideXml.match(
+    /name="Text 1"[\s\S]*?<a:off x="(\d+)" y="(\d+)"\/><a:ext cx="(\d+)" cy="(\d+)"\/>/,
+  );
+  const { x, y, w, h } = LyricsPresentation.SLIDE_LAYOUT.label;
+  const expectedBox = { x, y, w, h };
+  const pptxBox = {
+    x: Number(offX) / EMU_PER_INCH,
+    y: Number(offY) / EMU_PER_INCH,
+    w: Number(extCx) / EMU_PER_INCH,
+    h: Number(extCy) / EMU_PER_INCH,
+  };
+  assert.deepEqual(pptxBox, expectedBox);
+
+  const [, style] = markup.match(/class="pdf-slide-label" style="([^"]+)"/);
+  const cssBox = Object.fromEntries(
+    [...style.matchAll(/(left|top|width|height):([\d.]+)in/g)]
+      .map(([, prop, value]) => [{ left: "x", top: "y", width: "w", height: "h" }[prop], Number(value)]),
+  );
+  assert.deepEqual(cssBox, expectedBox);
 });
