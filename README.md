@@ -4,7 +4,8 @@ A mobile-first tool for planning the sung parts of the 6pm Sunday Mass at St Jam
 Apostle. Pick any Sunday, review the liturgical day and full text of all four readings,
 choose the music, and print or save an A4 PDF planning sheet with or
 without the readings. Music choices are publicly viewable and authorized editors save
-changes live.
+changes live. Editors can also download the selected songs' lyrics as a 16:9
+PowerPoint deck for projection.
 
 Live site: <https://tow.github.io/sundaymass/>
 
@@ -24,8 +25,8 @@ publication. Liturgical details must always be checked against the parish Ordo.
 
 For deployment, serve `index.html`, `repertoire.html`, and `about.html` together with
 `supabase-config.js`, both files in `src/services/`, `data/generated/readings_text.json`,
-`manifest.webmanifest`, `service-worker.js`, and `icons/`. On HTTPS, the planner can be
-installed to a phone's home screen.
+`manifest.webmanifest`, `service-worker.js`, `vendor/`, and `icons/`. On HTTPS, the
+planner can be installed to a phone's home screen.
 
 ## Product decisions to preserve
 
@@ -79,6 +80,10 @@ installed to a phone's home screen.
   able to retrieve them. `song_lyrics` is physically separate from public song metadata
   solely to enforce that database permission boundary; it is not a separate domain
   concept. Without this requirement, the extra table would not be justified.
+- The lyrics PowerPoint action is editor-only and online-only. It fetches each selected
+  song through the existing private-song read, refuses to create an incomplete deck,
+  and generates the `.pptx` entirely in the browser. The deck follows canonical Mass
+  order, repeats a song when it is assigned twice, and is not uploaded or cached.
 - Song and reading embeddings are also private. Logged-out users may view suggestions
   for an empty Mass slot, but the bounded database function returns only public song
   metadata. It may include one clearly labelled extended-library candidate alongside
@@ -128,9 +133,11 @@ appropriate source file:
 - `src/domain/music-parts.js` — canonical Mass slots, labels, and suggestion normalization
 - `src/domain/song-presentation.js` — YouTube ID parsing, canonical links, and shared attribution formatting
 - `src/domain/practice-queue.js` — validated YouTube IDs and ordered ephemeral queue URLs
+- `src/domain/lyrics-presentation.js` — deterministic lyric splitting and projection-deck layout
 - `src/domain/songs.js` — song validation and phase-one title search
 - `src/domain/plan-music-data.js` — database-row to browser-plan conversion
 - `src/app/print-controller.js` — print-only A4 document rendering and browser print lifecycle
+- `src/app/lyrics-pptx-controller.js` — editor-only lyric preflight and PowerPoint download
 - `src/services/plan-store.js` — Supabase/local persistence adapter
 - `src/repertoire.html` — repertoire page structure
 - `src/styles/repertoire.css` — repertoire layout
@@ -268,16 +275,15 @@ viewport (390 × 844 is the established baseline) and at a desktop width:
 - Run `npm run check`, inspect native mobile interactions in Chrome when appropriate,
   then verify the deployed GitHub Pages version after its build completes.
 
-## Future lyric-powered repertoire and projector slides
+## Lyric-powered repertoire and projector slides
 
 Canonical song entities, weekly song-ID assignments, optional lyrics, and basic title
-search are now implemented. Lyrics are editor-only and may be omitted at song creation.
-The next phases can build three connected capabilities on that foundation:
+search are implemented. Lyrics are editor-only and may be omitted at song creation.
+The first projection workflow is also implemented:
 
-1. **Automatic projector slides.** Generate each Sunday's slide deck from the ordered
-   music plan and the selected songs' full lyrics. Lyrics should preserve meaningful
-   structure such as verses, choruses, responses, and repeated sections rather than
-   being stored only as an undifferentiated text blob.
+1. **Automatic projector slides.** Editors can generate each Sunday's PowerPoint from
+   the ordered music plan and selected songs' full lyrics. The current deterministic
+   splitter preserves blank-line stanza boundaries and never truncates content.
 2. **A parish repertoire.** Build up the set of songs the community already knows.
    Planning and future recommendations should prefer familiar or previously used songs
    when they are suitable; plan history can provide useful usage and recency signals.
@@ -290,15 +296,13 @@ search data and must be regenerable when lyrics or embedding models change. Sinc
 app already uses Supabase Postgres, `pgvector` is the natural first option before adding
 a separate vector database.
 
-The accepted phase-one history policy is intentionally simple: editing a song rewrites
-what every referencing Sunday displays. Before generated slides become durable records,
-decide whether those exported artifacts need their own immutable snapshots; do not add
-snapshot complexity to weekly planning by default.
+The accepted history policy is intentionally simple: editing a song rewrites what every
+referencing Sunday displays. Exported decks are local files, not durable app records,
+so the application adds no immutable snapshot model.
 
-Full lyric storage and projection also make licensing material, not merely attribution.
-Before this phase ships, confirm that the church's licences or direct permissions cover
-storing lyrics in the app and generating projector slides, and design public/editor
-access accordingly.
+Full lyric storage and projection make licensing material, not merely attribution. The
+church must ensure that its licences or direct permissions cover storing and projecting
+the lyrics it uses.
 
 ## Suggested next steps / TODO
 
@@ -308,9 +312,8 @@ access accordingly.
   with lectionary numbering.
 - Handle the Daniel 3 canticle (maps to KJVA "Prayer of Azariah").
 - Optional: hymnal / hymn-number column on the sung-parts grid.
-- Define a structured lyric format for verses, choruses, responses, and repeats before
-  slide generation.
-- Generate projector slides from each Sunday's ordered plan.
+- Optional: define a structured lyric format for explicit verses, choruses, responses,
+  and repeats beyond the current blank-line stanza convention.
 - Refine `suggestion_parts` as the choir uses the repertoire; intentionally
   unclassified songs remain searchable but are not automatically suggested.
 - Replace password sign-in with email magic links and configure production email

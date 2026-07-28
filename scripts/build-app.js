@@ -30,6 +30,8 @@ const appValues = {
   "@@PLANNER_STATE_JS@@": read("src/app/planner-state.js"),
   "@@SONG_FORM_JS@@": read("src/app/song-form.js"),
   "@@PRINT_CONTROLLER_JS@@": read("src/app/print-controller.js"),
+  "@@LYRICS_PRESENTATION_JS@@": read("src/domain/lyrics-presentation.js"),
+  "@@LYRICS_PPTX_CONTROLLER_JS@@": read("src/app/lyrics-pptx-controller.js"),
   "@@MUSIC_PARTS_JS@@": read("src/domain/music-parts.js"),
   "@@SONG_PRESENTATION_JS@@": read("src/domain/song-presentation.js"),
   "@@PRACTICE_QUEUE_JS@@": read("src/domain/practice-queue.js"),

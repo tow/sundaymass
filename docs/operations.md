@@ -225,6 +225,8 @@ With an editor account:
 
 - sign in and verify the editor state;
 - open and close the song picker without changing data;
+- download a lyrics PowerPoint for a fully populated plan and open it in PowerPoint or
+  LibreOffice; confirm every selected position appears in Mass order;
 - verify suggestion-index status on the repertoire page; and
 - make a real data change only when the release specifically needs a mutation test.
 

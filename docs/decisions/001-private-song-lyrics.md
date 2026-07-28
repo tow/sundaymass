@@ -31,3 +31,7 @@ Function may access them.
   questionable.
 - Integration tests must continue to exercise anonymous, non-editor, and editor access
   directly against the migrated database.
+- An editor may explicitly export selected lyrics to a local PowerPoint file. The
+  browser must fetch them through the same authorised private-song path, block partial
+  decks when lyrics are missing, and never add lyrics to public plan state, rendered
+  page content, application storage, or a server-side export service.

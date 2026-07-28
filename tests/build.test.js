@@ -36,6 +36,8 @@ test("the generated planner contains no unresolved build tokens", () => {
     "@@PLANNER_STATE_JS@@",
     "@@SONG_FORM_JS@@",
     "@@PRINT_CONTROLLER_JS@@",
+    "@@LYRICS_PRESENTATION_JS@@",
+    "@@LYRICS_PPTX_CONTROLLER_JS@@",
     "@@MUSIC_PARTS_JS@@",
     "@@SONG_PRESENTATION_JS@@",
     "@@MUSIC_PLAN_VIEW_JS@@",
@@ -140,4 +142,28 @@ test("the Supabase browser client is pinned, built locally, and cached for offli
   assert.doesNotMatch(planStore, /document\.baseURI|document\.currentScript/);
   assert.doesNotMatch(repertoireStore, /document\.baseURI|document\.currentScript/);
   assert.match(serviceWorker, /"\.\/vendor\/supabase\.js"/);
+});
+
+test("the PowerPoint generator is pinned, built locally, and cached for on-demand export", () => {
+  const packageJson = JSON.parse(read("package.json"));
+  const serviceWorker = read("service-worker.js");
+  const controller = read("src/app/lyrics-pptx-controller.js");
+  const bundlePath = path.join(ROOT, "vendor/pptxgenjs.js");
+
+  assert.match(packageJson.dependencies.pptxgenjs, /^\d+\.\d+\.\d+$/);
+  assert.ok(fs.existsSync(bundlePath));
+  const importCheck = spawnSync(
+    process.execPath,
+    [
+      "--no-warnings",
+      "--eval",
+      `import(${JSON.stringify(bundlePath)}).then(module => {`
+        + `if (typeof module.default !== "function") process.exit(1);`
+        + `});`,
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(importCheck.status, 0, importCheck.stderr);
+  assert.match(controller, /new URL\("\.\/vendor\/pptxgenjs\.js", document\.baseURI\)/);
+  assert.match(serviceWorker, /"\.\/vendor\/pptxgenjs\.js"/);
 });

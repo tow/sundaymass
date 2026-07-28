@@ -20,7 +20,8 @@ A failed verification or incompatible backend contract cannot deploy the fronten
 
 - `npm run test:unit` runs the fast Node suite in `tests/*.test.js`. These tests cover
   domain rules, controller state, rendering, store adapters, privacy projections,
-  generated-data invariants, and source/build contracts.
+  generated-data invariants, source/build contracts, deterministic lyric pagination,
+  editor-only export preflight, and the structure of a generated `.pptx`.
 - `npm run test:e2e` serves the repository on an ephemeral localhost port and controls
   installed Chrome through pinned `playwright-core`. It does not download or bundle a
   second browser. The suite currently checks 320 px, 390 px, and desktop overflow plus
@@ -36,9 +37,11 @@ A failed verification or incompatible backend contract cannot deploy the fronten
   both print modes to real PDF buffers; the suite verifies A4 media boxes, separate
   reading pages, every music slot including both Communion songs, HTML escaping,
   attribution warnings, celebration and individual-reading overrides, and lyric
-  exclusion. A service-worker-controlled workflow then goes offline, reloads and
-  prints a cached Sunday, and distinguishes an uncached Sunday without contacting
-  production.
+  exclusion. The editor export workflow downloads and opens the `.pptx` package,
+  checks private lyric fetch deduplication, and verifies slide order while confirming
+  those lyrics never enter the DOM. A service-worker-controlled workflow then goes
+  offline, reloads and prints a cached Sunday, and distinguishes an uncached Sunday
+  without contacting production.
 - `npm run test:integration` resets a local Supabase project and tests the migrated
   authorization, RLS, RPC, privacy, and semantic-suggestion contract. Run it separately
   because it requires Docker and the pinned Supabase CLI.

@@ -15,6 +15,7 @@ const PAGES_FILES = Object.freeze([
   "src/services/plan-store.js",
   "src/services/repertoire-store.js",
   "vendor/supabase.js",
+  "vendor/pptxgenjs.js",
   "data/generated/readings_text.json",
   "icons/favicon-16.png",
   "icons/favicon-32.png",

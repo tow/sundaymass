@@ -54,7 +54,11 @@
       </button>
     </div>
     <span class="sync-status music-sync-status" id="syncStatus" role="status">Connecting…</span>
-    <div class="editor-help" id="editorHelp" hidden>Changes are live.</div>
+    <div class="editor-help" id="editorHelp" hidden>
+      <span>Changes are live.</span>
+      <button type="button" id="downloadLyricsPptx">Download lyrics PowerPoint</button>
+      <span class="lyrics-pptx-status" id="lyricsPptxStatus" role="status" aria-live="polite"></span>
+    </div>
     <div class="music-list" id="musicList"></div>
   </section>
 

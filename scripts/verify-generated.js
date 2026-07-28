@@ -15,6 +15,7 @@ const OUTPUTS = [
   "icons/icon-512.png",
   "icons/apple-touch-icon.png",
   "vendor/supabase.js",
+  "vendor/pptxgenjs.js",
 ];
 
 function hashes() {

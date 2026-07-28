@@ -37,7 +37,8 @@ server between the browser and Supabase.
 - `repertoire.html` is the public browser and editor surface for both the choir
   repertoire and the distinct extended library.
 - `about.html` contains help, provenance, and limitations.
-- `vendor/supabase.js` is built locally from the exact pinned npm dependency.
+- `vendor/supabase.js` and `vendor/pptxgenjs.js` are built locally from exact pinned npm
+  dependencies. PowerPoint generation is loaded only when an editor requests it.
 - `data/generated/` contains deterministic lectionary catalogues used by the planner.
 - `service-worker.js` is generated from `src/service-worker.js` and the explicit shell
   in `src/service-worker-assets.json`.
@@ -192,6 +193,21 @@ Print actions construct a dedicated escaped A4 document rather than printing the
 mobile interface. Music-only and music-plus-readings modes share the same renderer.
 The output includes public song attribution but never private lyrics.
 
+### Lyrics PowerPoint export
+
+The editor-only export controller derives the selected songs in canonical Mass order,
+deduplicates IDs only for private fetching, and calls `getSong` for each distinct song.
+That existing store operation is independently protected by editor membership and
+`song_lyrics` RLS. The controller refuses export when any selected song has no lyrics.
+
+The pure lyrics-presentation domain module normalizes stanza spacing, wraps unusually
+long lines, divides the complete text into bounded large-type slides, and builds a
+16:9 deck. Repeated assignments remain repeated in the deck. PptxGenJS writes the file
+in the browser; neither lyrics nor the generated deck enter the public plan, DOM,
+service-worker data cache, application storage, or an application server. The static
+generator library itself is part of the offline shell, but exporting private content
+remains online-only because it must fetch authorised current lyrics.
+
 ### YouTube practice queue
 
 The public planner derives an ephemeral practice queue from the selected plan in
@@ -231,6 +247,8 @@ These are hard constraints:
    lyrics, and raw vectors never reach browser assets.
 6. Public plan projections, cached plans, rendered music rows, and print documents
    contain no lyrics.
+7. Lyrics PowerPoint export fetches private lyrics only after editor authorization and
+   creates a local download without publishing or persisting the result.
 7. HTML and user-entered URLs are escaped or validated at presentation boundaries.
 
 The Supabase integration suite is the executable authority for database permissions.

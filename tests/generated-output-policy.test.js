@@ -11,6 +11,7 @@ const generatedOutputs = [
   "service-worker.js",
   "favicon.ico",
   "vendor/supabase.js",
+  "vendor/pptxgenjs.js",
   "icons/favicon-16.png",
   "icons/favicon-32.png",
   "icons/icon-192.png",

@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
 const { chromium } = require("playwright-core");
+const JSZip = require("jszip");
 
 const ROOT = path.resolve(__dirname, "../..");
 
@@ -835,6 +836,79 @@ test("editor can create a private-lyric song with explicit suggestion positions"
   );
   assert.match(await communionRow.innerText(), /New duplicate title/);
   assert.equal(await page.getByText("EDITOR-ONLY CREATED LYRIC").count(), 0);
+  await context.close();
+});
+
+test("editor downloads a complete private-lyrics PowerPoint in Mass order", async () => {
+  const { context, page } = await plannerPage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+  await page.evaluate(() => {
+    const songs = {
+      entrance: { id: "pptx-entrance", title: "Gathered in Hope", authors: "Test Author" },
+      communion: { id: "pptx-communion", title: "Bread for the Journey", authors: "Other Author" },
+      communion2: { id: "pptx-entrance", title: "Gathered in Hope", authors: "Test Author" },
+    };
+    const privateSongs = {
+      "pptx-entrance": {
+        ...songs.entrance,
+        lyrics: "ENTRANCE PRIVATE LINE ONE\nENTRANCE PRIVATE LINE TWO",
+      },
+      "pptx-communion": {
+        ...songs.communion,
+        lyrics: "COMMUNION PRIVATE LINE ONE\n\nCOMMUNION PRIVATE LINE TWO",
+      },
+    };
+    window.__pptxPrivateFetches = [];
+    window.massPlanApp.connect({
+      subscribeAuth(callback) {
+        callback({ user: { id: "editor" }, isEditor: true });
+        return () => {};
+      },
+      subscribePlan(date, onValue) {
+        onValue({ songs, readingOverrides: {}, celebrationOverride: null });
+        return () => {};
+      },
+      getSong(id) {
+        window.__pptxPrivateFetches.push(id);
+        return Promise.resolve(privateSongs[id]);
+      },
+    });
+  });
+
+  const button = page.locator("#downloadLyricsPptx");
+  await assert.doesNotReject(() => button.waitFor({ state: "visible" }));
+  assert.equal(await page.getByText("ENTRANCE PRIVATE LINE ONE").count(), 0);
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    button.click(),
+  ]);
+  assert.match(download.suggestedFilename(), /^st-james-lyrics-\d{4}-\d{2}-\d{2}\.pptx$/);
+  await page.waitForFunction(() =>
+    document.querySelector("#lyricsPptxStatus")?.textContent === "PowerPoint downloaded.",
+  );
+  assert.deepEqual(
+    await page.evaluate(() => window.__pptxPrivateFetches),
+    ["pptx-entrance", "pptx-communion"],
+  );
+  assert.equal(await page.getByText("COMMUNION PRIVATE LINE ONE").count(), 0);
+
+  const downloadedPath = await download.path();
+  const buffer = fs.readFileSync(downloadedPath);
+  const zip = await JSZip.loadAsync(buffer);
+  const slideFiles = Object.keys(zip.files)
+    .filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name))
+    .sort((left, right) => Number(left.match(/\d+/)[0]) - Number(right.match(/\d+/)[0]));
+  assert.equal(slideFiles.length, 4);
+  const slideText = await Promise.all(
+    slideFiles.map(name => zip.file(name).async("string")),
+  );
+  assert.match(slideText[1], /ENTRANCE PRIVATE LINE ONE/);
+  assert.match(slideText[2], /COMMUNION PRIVATE LINE ONE/);
+  assert.match(slideText[3], /ENTRANCE PRIVATE LINE ONE/);
+
   await context.close();
 });
 

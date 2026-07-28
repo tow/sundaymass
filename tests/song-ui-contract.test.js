@@ -83,7 +83,8 @@ test("selected rows show only Change and move secondary actions into the picker"
   assert.match(html, />Remove from this Mass<\/button>/);
   assert.match(pickerRenderer, /author: song\?\.authors \|\| "Author not recorded"/);
   assert.match(app, /editorAttribution:SongPresentation\.planAuthor/);
-  assert.match(html, />Changes are live\.<\/div>/);
+  assert.match(html, />Changes are live\.<\/span>/);
+  assert.match(html, /id="downloadLyricsPptx">Download lyrics PowerPoint</);
 });
 
 test("legacy free-text music editing and autosave are removed", () => {

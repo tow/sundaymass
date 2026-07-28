@@ -8,6 +8,8 @@
 @@PLANNER_STATE_JS@@
 @@SONG_FORM_JS@@
 @@PRINT_CONTROLLER_JS@@
+@@LYRICS_PRESENTATION_JS@@
+@@LYRICS_PPTX_CONTROLLER_JS@@
 @@MUSIC_PARTS_JS@@
 @@SONG_PRESENTATION_JS@@
 @@PRACTICE_QUEUE_JS@@
@@ -148,6 +150,7 @@ function renderMusicPlan(){
   musicList.innerHTML=view.html;
   musicList.dataset.mode=view.mode;
   practiceQueueController.render();
+  lyricsPptxController.render();
 }
 function computedCitation(slot){ return plannerState.computedCitation(slot); }
 function displayedCitation(slot){ return plannerState.displayedCitation(slot); }
@@ -422,6 +425,21 @@ const printController=PrintController.create({
   },
 });
 printController.start();
+const lyricsPptxController=LyricsPptxController.create({
+  button:downloadLyricsPptx,
+  status:lyricsPptxStatus,
+  document,
+  parts:MUSIC_PARTS,
+  presentation:LyricsPresentation,
+  getStore:()=>planStore,
+  getSongs:plannerState.songs,
+  getDate:()=>current().d,
+  getValues:vals,
+  isEditor:()=>isEditor,
+  isOnline:()=>navigator.onLine,
+  logger:console,
+});
+lyricsPptxController.start();
 
 // wire up
 function upcomingSunday(){
