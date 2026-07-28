@@ -117,6 +117,122 @@ test("the action is rejected while offline", async () => {
   assert.equal(status.textContent, "Connect to the internet to fetch private lyrics.");
 });
 
+test("the action waits for the store to connect", async () => {
+  const builds = [];
+  const button = element();
+  const status = element();
+  const controller = LyricsExportController.create({
+    button,
+    status,
+    parts: [{ key: "entrance", label: "Entrance" }],
+    presentation: {
+      selectedAssignments: () => [{ partLabel: "Entrance", title: "Song A", lyrics: "A lyric" }],
+      missingLyrics: () => [],
+    },
+    getStore: () => null,
+    getSongs: () => ({ entrance: { id: "song-a" } }),
+    getDate: () => "2026-08-02",
+    getValues: () => ({ day: "18th Sunday", meta: "" }),
+    isEditor: () => true,
+    isOnline: () => true,
+    preparingMessage: "Preparing…",
+    errorMessage: "Could not build. Try again.",
+    errorLogLabel: "Could not build",
+    logger: { error() {} },
+    async build(args) { builds.push(args); },
+  });
+  controller.start();
+  await button.click();
+
+  assert.equal(builds.length, 0);
+  assert.equal(status.textContent, "Still connecting. Try again in a moment.");
+  assert.equal(status.dataset.state, "error");
+});
+
+test("the action requires at least one selected song", async () => {
+  const builds = [];
+  const button = element();
+  const status = element();
+  const controller = LyricsExportController.create({
+    button,
+    status,
+    parts: [{ key: "entrance", label: "Entrance" }],
+    presentation: {
+      selectedAssignments: () => [],
+      missingLyrics: () => [],
+    },
+    getStore: () => ({ async getSong() { return {}; } }),
+    getSongs: () => ({}),
+    getDate: () => "2026-08-02",
+    getValues: () => ({ day: "18th Sunday", meta: "" }),
+    isEditor: () => true,
+    isOnline: () => true,
+    preparingMessage: "Preparing…",
+    errorMessage: "Could not build. Try again.",
+    errorLogLabel: "Could not build",
+    logger: { error() {} },
+    async build(args) { builds.push(args); },
+  });
+  controller.start();
+  await controller.run();
+
+  assert.equal(builds.length, 0);
+  assert.equal(status.textContent, "Choose at least one song first.");
+  assert.equal(status.dataset.state, "error");
+});
+
+test("a run in progress ignores a second concurrent click", async () => {
+  let releaseFirstBuild;
+  let signalBuildStarted;
+  const buildStarted = new Promise(resolve => { signalBuildStarted = resolve; });
+  const started = [];
+  const button = element();
+  const status = element();
+  const controller = LyricsExportController.create({
+    button,
+    status,
+    parts: [{ key: "entrance", label: "Entrance" }],
+    presentation: {
+      selectedAssignments: () => [{ partLabel: "Entrance", title: "Song A", lyrics: "A lyric" }],
+      missingLyrics: () => [],
+    },
+    getStore: () => ({ async getSong(id) { return { id, lyrics: "A lyric" }; } }),
+    getSongs: () => ({ entrance: { id: "song-a" } }),
+    getDate: () => "2026-08-02",
+    getValues: () => ({ day: "18th Sunday", meta: "" }),
+    isEditor: () => true,
+    isOnline: () => true,
+    preparingMessage: "Preparing…",
+    errorMessage: "Could not build. Try again.",
+    errorLogLabel: "Could not build",
+    logger: { error() {} },
+    async build() {
+      started.push(Date.now());
+      signalBuildStarted();
+      await new Promise(resolve => { releaseFirstBuild = resolve; });
+    },
+  });
+  controller.start();
+
+  const first = button.click();
+  assert.equal(button.disabled, true);
+  const second = button.click();
+  await buildStarted;
+
+  releaseFirstBuild();
+  await Promise.all([first, second]);
+
+  assert.equal(started.length, 1);
+  assert.equal(button.disabled, false);
+});
+
+test("stop unbinds the click listener", async () => {
+  const { builds, button, controller } = setup();
+  controller.stop();
+  await button.click();
+  assert.equal(builds.length, 0);
+});
+
 test("build errors are logged and surfaced as the configured error message", async () => {
   const errors = [];
   const button = element();

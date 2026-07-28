@@ -299,3 +299,66 @@ test("the print slideshow escapes lyric and title HTML", () => {
   assert.match(markup, /Rock &amp; &lt;Roll&gt;/);
   assert.match(markup, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
 });
+
+test("the print slideshow keeps each assignment's own label, title, and order", () => {
+  const markup = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "",
+    assignments: [
+      { partLabel: "Entrance", title: "First Song", lyrics: "Opening line" },
+      { partLabel: "Communion", title: "Second Song", lyrics: "Closing line" },
+    ],
+  });
+  const entranceIndex = markup.indexOf("Opening line");
+  const communionIndex = markup.indexOf("Closing line");
+  assert.ok(entranceIndex > 0 && communionIndex > entranceIndex);
+  assert.match(markup, /ENTRANCE[\s\S]*First Song[\s\S]*Opening line/);
+  assert.match(markup, /COMMUNION[\s\S]*Second Song[\s\S]*Closing line/);
+});
+
+test("the print slideshow omits the attribution line when there is none", () => {
+  const markup = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "",
+    assignments: [{ partLabel: "Entrance", title: "Traditional Hymn", lyrics: "A line" }],
+  });
+  assert.doesNotMatch(markup, /pdf-slide-attribution/);
+});
+
+test("the print slideshow numbers each lyric slide's position within its song", () => {
+  const assignment = {
+    partLabel: "Entrance",
+    title: "Gathered in Hope",
+    lyrics: ["One", "Two", "Three", "Four", "Five"].join("\n"),
+  };
+  const markup = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "",
+    assignments: [assignment],
+  });
+  const chunkCount = LyricsPresentation.lyricSlides(assignment.lyrics).length;
+  const counters = [...markup.matchAll(/pdf-slide-counter">([^<]+)</g)].map(match => match[1]);
+  assert.deepEqual(counters, Array.from({ length: chunkCount }, (_, index) => `${index + 1} / ${chunkCount}`));
+});
+
+test("the cover title shrinks for long celebration names instead of overflowing", () => {
+  const short = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "",
+    assignments: [],
+  });
+  assert.match(short, /pdf-slide-cover-title" style="font-size:38pt"/);
+
+  const long = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "St. Andrew Kim Taegon, priest and martyr, St. Paul Chong Hasang, "
+      + "catechist and martyr, and their companions, martyrs",
+    meta: "",
+    assignments: [],
+  });
+  assert.match(long, /pdf-slide-cover-title" style="font-size:20pt"/);
+});

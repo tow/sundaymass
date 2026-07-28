@@ -363,11 +363,21 @@
     return chunk.split("\n").map(line => `<div>${escapeHtml(line) || "&nbsp;"}</div>`).join("");
   }
 
+  function coverTitleFontSize(text) {
+    const length = String(text || "").length;
+    if (length > 90) return 20;
+    if (length > 60) return 26;
+    if (length > 45) return 32;
+    return 38;
+  }
+
   function renderCoverSlide({ date, celebration, meta }) {
+    const title = celebration || "Sunday Mass";
     return `<article class="pdf-slide pdf-slide-cover">`
       + `<div class="pdf-slide-bar"></div>`
       + `<div class="pdf-slide-kicker">ST JAMES THE APOSTLE · 6PM MASS</div>`
-      + `<h1 class="pdf-slide-cover-title">${escapeHtml(celebration || "Sunday Mass")}</h1>`
+      + `<h1 class="pdf-slide-cover-title" style="font-size:${coverTitleFontSize(title)}pt">`
+      + `${escapeHtml(title)}</h1>`
       + `<div class="pdf-slide-rule"></div>`
       + `<p class="pdf-slide-cover-meta">${escapeHtml(meta || date || "")}</p>`
       + `</article>`;
