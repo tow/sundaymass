@@ -19,7 +19,7 @@ function buildBundle({ name, contents, sourcefile }) {
     bundle: true,
     charset: "utf8",
     format: "esm",
-    legalComments: "none",
+    legalComments: "eof",
     minify: true,
     platform: "browser",
     sourcemap: false,
