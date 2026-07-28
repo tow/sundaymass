@@ -85,4 +85,11 @@ to be decided.
 - Document how another maintainer can export the data, obtain operational access, and
   continue running the service.
 - Periodically check for broken YouTube links and stale repertoire metadata.
-- GPL licence check for 3rd-party licenses
+- License check (2026-07-28): audited every dependency in `package-lock.json` (frontend/
+  build, via `npm ci` + `npx license-checker --summary`) and every dependency in
+  `deno.lock` (Supabase edge functions, including the `openai` package used by
+  `semantic-songs`). All resolved to permissive licences (MIT, ISC, Apache-2.0,
+  BSD-2-Clause, 0BSD, Unlicense, or MIT/Zlib). The only GPL-adjacent package is `jszip`
+  (pulled in by `pptxgenjs`), which is dual-licensed `MIT OR GPL-3.0-or-later`; the MIT
+  option applies, so no copyleft obligation is triggered. No GPL/LGPL/AGPL-only package
+  is in use. Re-check after any dependency upgrade that adds or changes major deps.
