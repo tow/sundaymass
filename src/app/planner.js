@@ -10,7 +10,9 @@
 @@PRINT_CONTROLLER_JS@@
 @@LYRICS_PRESENTATION_JS@@
 @@LYRICS_BOOKLET_JS@@
+@@LYRICS_EXPORT_CONTROLLER_JS@@
 @@LYRICS_PPTX_CONTROLLER_JS@@
+@@LYRICS_SLIDES_CONTROLLER_JS@@
 @@LYRICS_BOOKLET_CONTROLLER_JS@@
 @@MUSIC_PARTS_JS@@
 @@SONG_PRESENTATION_JS@@
@@ -153,6 +155,7 @@ function renderMusicPlan(){
   musicList.dataset.mode=view.mode;
   practiceQueueController.render();
   lyricsPptxController.render();
+  lyricsSlidesController.render();
   lyricsBookletController.render();
 }
 function computedCitation(slot){ return plannerState.computedCitation(slot); }
@@ -434,6 +437,7 @@ const lyricsPptxController=LyricsPptxController.create({
   document,
   parts:MUSIC_PARTS,
   presentation:LyricsPresentation,
+  exportController:LyricsExportController,
   getStore:()=>planStore,
   getSongs:plannerState.songs,
   getDate:()=>current().d,
@@ -443,11 +447,29 @@ const lyricsPptxController=LyricsPptxController.create({
   logger:console,
 });
 lyricsPptxController.start();
+const lyricsSlidesController=LyricsSlidesController.create({
+  button:downloadLyricsSlidesPdf,
+  status:lyricsPptxStatus,
+  parts:MUSIC_PARTS,
+  presentation:LyricsPresentation,
+  exportController:LyricsExportController,
+  printController,
+  getStore:()=>planStore,
+  getSongs:plannerState.songs,
+  getDate:()=>current().d,
+  getValues:vals,
+  isEditor:()=>isEditor,
+  isOnline:()=>navigator.onLine,
+  logger:console,
+});
+lyricsSlidesController.start();
 const lyricsBookletController=LyricsBookletController.create({
   button:printLyricsBooklet,
   status:lyricsPptxStatus,
   parts:MUSIC_PARTS,
+  presentation:LyricsPresentation,
   booklet:LyricsBooklet,
+  exportController:LyricsExportController,
   printController,
   getStore:()=>planStore,
   getSongs:plannerState.songs,

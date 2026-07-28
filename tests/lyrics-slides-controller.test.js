@@ -1,9 +1,9 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const LyricsPresentation = require("../src/domain/lyrics-presentation.js");
+require("../src/domain/lyrics-presentation.js");
 const LyricsExportController = require("../src/app/lyrics-export-controller.js");
-const LyricsBookletController = require("../src/app/lyrics-booklet-controller.js");
+const LyricsSlidesController = require("../src/app/lyrics-slides-controller.js");
 
 function element() {
   const listeners = new Map();
@@ -36,20 +36,30 @@ function setup({
   const status = element();
   const fetched = [];
   const prints = [];
-  const controller = LyricsBookletController.create({
+  const controller = LyricsSlidesController.create({
     button,
     status,
     parts: [
       { key: "entrance", label: "Entrance" },
       { key: "communion", label: "Communion" },
     ],
-    presentation: LyricsPresentation,
-    exportController: LyricsExportController,
-    booklet: {
-      renderBooklet(values) {
-        return `<booklet assignments="${values.assignments.length}"></booklet>`;
+    presentation: {
+      selectedAssignments(parts, songs, detailsById) {
+        return parts.flatMap(part => {
+          const selected = songs[part.key];
+          if (!selected?.id) return [];
+          const detail = detailsById.get(selected.id) || selected;
+          return [{ partKey: part.key, partLabel: part.label, songId: selected.id, ...detail }];
+        });
+      },
+      missingLyrics(assignments) {
+        return assignments.filter(assignment => !assignment.lyrics);
+      },
+      renderSlides(values) {
+        return `<slides assignments="${values.assignments.length}"></slides>`;
       },
     },
+    exportController: LyricsExportController,
     printController: {
       printCustom(markup, mode) { prints.push({ markup, mode }); },
     },
@@ -73,21 +83,21 @@ function setup({
   return { button, controller, fetched, prints, status };
 }
 
-test("booklet export fetches each private song once and opens custom print", async () => {
+test("slides export fetches each private song once and opens custom print", async () => {
   const { button, fetched, prints, status } = setup();
   await button.click();
 
   assert.deepEqual(fetched, ["song-a"]);
   assert.deepEqual(prints, [{
-    markup: "<booklet assignments=\"2\"></booklet>",
-    mode: "lyrics-booklet",
+    markup: "<slides assignments=\"2\"></slides>",
+    mode: "lyrics-slides",
   }]);
-  assert.equal(status.textContent, "Booklet sent to print.");
+  assert.equal(status.textContent, "Slides sent to print.");
   assert.equal(status.dataset.state, "success");
   assert.equal(button.disabled, false);
 });
 
-test("booklet export blocks when selected lyrics are missing", async () => {
+test("slides export blocks when selected lyrics are missing", async () => {
   const { button, prints, status } = setup({
     details: { "song-a": { id: "song-a", title: "Song A", lyrics: "" } },
   });
@@ -98,7 +108,7 @@ test("booklet export blocks when selected lyrics are missing", async () => {
   assert.equal(status.dataset.state, "error");
 });
 
-test("booklet action is hidden and rejected without editor access", async () => {
+test("slides action is hidden and rejected without editor access", async () => {
   const { button, controller, prints, status } = setup({ editor: false });
   assert.equal(button.hidden, true);
   await controller.print();

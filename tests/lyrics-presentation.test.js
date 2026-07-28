@@ -233,3 +233,255 @@ test("the generated file is a valid widescreen PowerPoint with every lyric chunk
     assert.match(xml, /© 2026 Test Publisher/);
   });
 });
+
+test("the print slideshow reuses lyricSlides pagination, one slide per chunk", () => {
+  const assignment = {
+    partLabel: "Entrance",
+    title: "Gathered in Hope",
+    lyrics: ["One", "Two", "Three", "Four", "Five"].join("\n"),
+  };
+  const markup = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "Sunday, 2 August 2026 · Year A",
+    assignments: [assignment],
+  });
+  const chunkCount = LyricsPresentation.lyricSlides(assignment.lyrics).length;
+
+  assert.equal((markup.match(/class="pdf-slide pdf-slide-cover"/g) || []).length, 1);
+  assert.equal((markup.match(/class="pdf-slide pdf-slide-lyrics"/g) || []).length, chunkCount);
+});
+
+test("the print slideshow matches the PowerPoint deck's slide count and content", async () => {
+  const assignments = [{
+    partLabel: "Entrance",
+    title: "Gathered in Hope",
+    authors: "Test Author",
+    copyrightOwner: "Test Publisher",
+    copyrightYear: "2026",
+    lyrics: "First line\nSecond line\n\nThird line",
+  }];
+  const options = {
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "Sunday, 2 August 2026 · Year A",
+    assignments,
+  };
+  const markup = LyricsPresentation.renderSlides(options);
+  const deck = LyricsPresentation.buildDeck(PptxGenJS, options);
+  const buffer = await deck.write({ outputType: "nodebuffer" });
+  const zip = await JSZip.loadAsync(buffer);
+  const slideFiles = Object.keys(zip.files).filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name));
+
+  assert.equal((markup.match(/pdf-slide-lyrics/g) || []).length, slideFiles.length - 1);
+  [
+    "18th Sunday in Ordinary Time",
+    "Gathered in Hope",
+    "Test Author",
+    "© 2026 Test Publisher",
+    "First line",
+    "Third line",
+  ].forEach(text => assert.match(markup, new RegExp(text)));
+});
+
+test("the print slideshow escapes lyric and title HTML", () => {
+  const markup = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "<script>alert(1)</script>",
+    meta: "",
+    assignments: [{
+      partLabel: "Entrance",
+      title: "Rock & <Roll>",
+      lyrics: "A line with <b>tags</b> & ampersands",
+    }],
+  });
+  assert.doesNotMatch(markup, /<script>|<b>tags<\/b>/);
+  assert.match(markup, /Rock &amp; &lt;Roll&gt;/);
+  assert.match(markup, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+});
+
+test("the print slideshow keeps each assignment's own label, title, and order", () => {
+  const markup = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "",
+    assignments: [
+      { partLabel: "Entrance", title: "First Song", lyrics: "Opening line" },
+      { partLabel: "Communion", title: "Second Song", lyrics: "Closing line" },
+    ],
+  });
+  const entranceIndex = markup.indexOf("Opening line");
+  const communionIndex = markup.indexOf("Closing line");
+  assert.ok(entranceIndex > 0 && communionIndex > entranceIndex);
+  assert.match(markup, /ENTRANCE[\s\S]*First Song[\s\S]*Opening line/);
+  assert.match(markup, /COMMUNION[\s\S]*Second Song[\s\S]*Closing line/);
+});
+
+test("the print slideshow omits the attribution line when there is none", () => {
+  const markup = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "",
+    assignments: [{ partLabel: "Entrance", title: "Traditional Hymn", lyrics: "A line" }],
+  });
+  assert.doesNotMatch(markup, /pdf-slide-attribution/);
+});
+
+test("the print slideshow numbers each lyric slide's position within its song", () => {
+  const assignment = {
+    partLabel: "Entrance",
+    title: "Gathered in Hope",
+    lyrics: ["One", "Two", "Three", "Four", "Five"].join("\n"),
+  };
+  const markup = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "",
+    assignments: [assignment],
+  });
+  const chunkCount = LyricsPresentation.lyricSlides(assignment.lyrics).length;
+  const counters = [...markup.matchAll(/pdf-slide-counter"[^>]*>([^<]+)</g)].map(match => match[1]);
+  assert.deepEqual(counters, Array.from({ length: chunkCount }, (_, index) => `${index + 1} / ${chunkCount}`));
+});
+
+test("the cover title shrinks for long celebration names instead of overflowing", () => {
+  const short = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "",
+    assignments: [],
+  });
+  assert.match(short, /pdf-slide-cover-title"[^>]*font-size:38pt/);
+
+  const long = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "St. Andrew Kim Taegon, priest and martyr, St. Paul Chong Hasang, "
+      + "catechist and martyr, and their companions, martyrs",
+    meta: "",
+    assignments: [],
+  });
+  assert.match(long, /pdf-slide-cover-title"[^>]*font-size:20pt/);
+});
+
+test("the PowerPoint deck and the print slideshow position the label box from the same geometry", async () => {
+  const assignments = [{ partLabel: "Entrance", title: "Gathered in Hope", lyrics: "A line" }];
+  const options = { date: "2026-08-02", celebration: "Test", meta: "", assignments };
+  const markup = LyricsPresentation.renderSlides(options);
+  const deck = LyricsPresentation.buildDeck(PptxGenJS, options);
+  const buffer = await deck.write({ outputType: "nodebuffer" });
+  const zip = await JSZip.loadAsync(buffer);
+  const slideXml = await zip.file("ppt/slides/slide2.xml").async("string");
+
+  const EMU_PER_INCH = 914400;
+  const [, offX, offY, extCx, extCy] = slideXml.match(
+    /name="Text 1"[\s\S]*?<a:off x="(\d+)" y="(\d+)"\/><a:ext cx="(\d+)" cy="(\d+)"\/>/,
+  );
+  const { x, y, w, h } = LyricsPresentation.SLIDE_LAYOUT.label;
+  const expectedBox = { x, y, w, h };
+  const pptxBox = {
+    x: Number(offX) / EMU_PER_INCH,
+    y: Number(offY) / EMU_PER_INCH,
+    w: Number(extCx) / EMU_PER_INCH,
+    h: Number(extCy) / EMU_PER_INCH,
+  };
+  assert.deepEqual(pptxBox, expectedBox);
+
+  const [, style] = markup.match(/class="pdf-slide-label" style="([^"]+)"/);
+  const cssBox = Object.fromEntries(
+    [...style.matchAll(/(left|top|width|height):([\d.]+)in/g)]
+      .map(([, prop, value]) => [{ left: "x", top: "y", width: "w", height: "h" }[prop], Number(value)]),
+  );
+  assert.deepEqual(cssBox, expectedBox);
+});
+
+test("lyricFontSize shrinks at each visible-line-count tier", () => {
+  const shortLine = "x".repeat(10);
+  assert.equal(LyricsPresentation.lyricFontSize(shortLine), 52);
+  assert.equal(LyricsPresentation.lyricFontSize([shortLine, shortLine].join("\n")), 48);
+  assert.equal(LyricsPresentation.lyricFontSize([shortLine, shortLine, shortLine].join("\n")), 44);
+  assert.equal(
+    LyricsPresentation.lyricFontSize([shortLine, shortLine, shortLine, shortLine].join("\n")),
+    40,
+  );
+  assert.equal(
+    LyricsPresentation.lyricFontSize(
+      [shortLine, shortLine, shortLine, shortLine, shortLine].join("\n"),
+    ),
+    40,
+  );
+});
+
+test("lyricFontSize shrinks at each character-length tier on a single line", () => {
+  assert.equal(LyricsPresentation.lyricFontSize("x".repeat(30)), 52);
+  assert.equal(LyricsPresentation.lyricFontSize("x".repeat(31)), 48);
+  assert.equal(LyricsPresentation.lyricFontSize("x".repeat(34)), 48);
+  assert.equal(LyricsPresentation.lyricFontSize("x".repeat(35)), 44);
+  assert.equal(LyricsPresentation.lyricFontSize("x".repeat(38)), 44);
+  assert.equal(LyricsPresentation.lyricFontSize("x".repeat(39)), 40);
+});
+
+test("coverTitleFontSize shrinks at each celebration-name-length tier", () => {
+  assert.equal(LyricsPresentation.coverTitleFontSize("x".repeat(45)), 38);
+  assert.equal(LyricsPresentation.coverTitleFontSize("x".repeat(46)), 32);
+  assert.equal(LyricsPresentation.coverTitleFontSize("x".repeat(60)), 32);
+  assert.equal(LyricsPresentation.coverTitleFontSize("x".repeat(61)), 26);
+  assert.equal(LyricsPresentation.coverTitleFontSize("x".repeat(90)), 26);
+  assert.equal(LyricsPresentation.coverTitleFontSize("x".repeat(91)), 20);
+});
+
+test("wrapLine avoids starting a middle line with a stopword when otherwise tied", () => {
+  // Seven equal-length filler words wrapped at width 15 forces a 3-line split
+  // where (3,2,2) and (2,3,2) word-counts score identically on line-length
+  // balance alone, so only the stopword-start penalty breaks the tie.
+  const withStopword = LyricsPresentation.wrapLine("Rock Rise and Song Hope Rest Wave", 15);
+  assert.deepEqual(withStopword, ["Rock Rise and", "Song Hope", "Rest Wave"]);
+
+  const withNeutralWord = LyricsPresentation.wrapLine("Rock Rise Owl Song Hope Rest Wave", 15);
+  assert.deepEqual(withNeutralWord, ["Rock Rise", "Owl Song Hope", "Rest Wave"]);
+});
+
+test("pagination prefers splitting right after a line that ends a sentence", () => {
+  // Five lines with maxLines:3 have two equally-balanced two-page splits,
+  // (3,2) and (2,3), with no comma-continuation or parity tiebreak in play
+  // (odd unit count). Only the sentence-ending bonus should decide between them.
+  const periodOnSecondLine = LyricsPresentation.lyricSlides(
+    ["Line one", "Line two.", "Line three", "Line four", "Line five"].join("\n"),
+    { maxLines: 3, maxLineLength: 100 },
+  );
+  assert.deepEqual(periodOnSecondLine, [
+    "Line one\nLine two.",
+    "Line three\nLine four\nLine five",
+  ]);
+
+  const noSentenceBoundary = LyricsPresentation.lyricSlides(
+    ["Line one", "Line two", "Line three", "Line four", "Line five"].join("\n"),
+    { maxLines: 3, maxLineLength: 100 },
+  );
+  assert.deepEqual(noSentenceBoundary, [
+    "Line one\nLine two\nLine three",
+    "Line four\nLine five",
+  ]);
+});
+
+test("a split stanza's trailing page shares a slide with a short next stanza instead of stranding it", () => {
+  const slides = LyricsPresentation.lyricSlides(
+    ["One", "Two", "Three", "Four", "Five", "", "Six"].join("\n"),
+    { maxLineLength: 100 },
+  );
+  assert.deepEqual(slides, [
+    "One\nTwo\nThree",
+    "Four\nFive\n\nSix",
+  ]);
+});
+
+test("a split stanza's trailing page still gets its own slide when the next stanza doesn't fit", () => {
+  const slides = LyricsPresentation.lyricSlides(
+    ["One", "Two", "Three", "Four", "Five", "", "Six", "Seven", "Eight"].join("\n"),
+    { maxLineLength: 100 },
+  );
+  assert.deepEqual(slides, [
+    "One\nTwo\nThree",
+    "Four\nFive",
+    "Six\nSeven\nEight",
+  ]);
+});

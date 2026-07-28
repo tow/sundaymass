@@ -1,4 +1,4 @@
-// Fetches private lyrics on demand and opens an imposed A4 booklet print job.
+// Fetches private lyrics on demand and opens a print-to-PDF widescreen slideshow.
 (function (global) {
   "use strict";
 
@@ -7,7 +7,6 @@
     status,
     parts,
     presentation,
-    booklet,
     exportController,
     printController,
     getStore,
@@ -30,19 +29,19 @@
       isEditor,
       isOnline,
       logger,
-      preparingMessage: "Preparing booklet…",
-      errorMessage: "Could not create booklet. Try again.",
-      errorLogLabel: "Could not create lyrics booklet",
+      preparingMessage: "Preparing slides…",
+      errorMessage: "Could not create slides. Try again.",
+      errorLogLabel: "Could not create lyrics slides",
       async build({ assignments, values, date, setStatus }) {
-        const markup = booklet.renderBooklet({
+        const markup = presentation.renderSlides({
           date,
           celebration: values.day,
           meta: values.meta,
           assignments,
         });
-        setStatus("Print double-sided, flip on short edge, actual size; leave printer booklet mode off.");
-        printController.printCustom(markup, "lyrics-booklet");
-        setStatus("Booklet sent to print.", "success");
+        setStatus("Choose \"Save as PDF\" in the print dialog.");
+        printController.printCustom(markup, "lyrics-slides");
+        setStatus("Slides sent to print.", "success");
       },
     });
 
@@ -55,6 +54,6 @@
   }
 
   const api = Object.freeze({ create });
-  global.LyricsBookletController = api;
+  global.LyricsSlidesController = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window === "undefined" ? globalThis : window);
