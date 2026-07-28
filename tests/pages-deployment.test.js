@@ -9,18 +9,21 @@ const workflow = fs.readFileSync(
   "utf8",
 );
 
-test("Pages deployment waits for verification and the production backend", () => {
+test("Pages deployment waits for verification and the production backend contract", () => {
   assert.match(
     workflow,
     /build-pages:\s*\n\s+if: github\.ref == 'refs\/heads\/main'.*push/s,
   );
   assert.match(
     workflow,
-    /release-backend:[\s\S]*needs: \[check, supabase-integration\]/,
+    /production-backend-contract:[\s\S]*needs: \[check, supabase-integration\]/,
   );
-  assert.match(workflow, /release-backend:[\s\S]*supabase db push --linked --dry-run/);
-  assert.match(workflow, /release-backend:[\s\S]*production-backend-smoke\.js/);
-  assert.match(workflow, /build-pages:[\s\S]*needs: release-backend/);
+  assert.match(
+    workflow,
+    /production-backend-contract:[\s\S]*run: npm run smoke:backend/,
+  );
+  assert.doesNotMatch(workflow, /secrets\.SUPABASE|supabase db push --linked/);
+  assert.match(workflow, /build-pages:[\s\S]*needs: production-backend-contract/);
   assert.match(workflow, /deploy-pages:[\s\S]*needs: build-pages/);
   assert.match(workflow, /production-smoke:[\s\S]*needs: deploy-pages/);
   assert.doesNotMatch(workflow, /actions\/(?:checkout|setup-node)@v4/);
