@@ -962,6 +962,87 @@ test("editor downloads a complete private-lyrics PowerPoint in Mass order", asyn
   await context.close();
 });
 
+test("editor prints a print-ready widescreen lyrics slideshow matching the PowerPoint pagination", async () => {
+  const { context, page } = await plannerPage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+  await page.evaluate(() => {
+    const songs = {
+      entrance: { id: "slides-entrance", title: "Gathered in Hope", authors: "Test Author" },
+      communion: { id: "slides-communion", title: "Bread for the Journey", authors: "Other Author" },
+      communion2: { id: "slides-entrance", title: "Gathered in Hope", authors: "Test Author" },
+    };
+    const privateSongs = {
+      "slides-entrance": {
+        ...songs.entrance,
+        lyrics: "ENTRANCE PRIVATE LINE ONE\nENTRANCE PRIVATE LINE TWO",
+      },
+      "slides-communion": {
+        ...songs.communion,
+        lyrics: "COMMUNION PRIVATE LINE ONE\n\nCOMMUNION PRIVATE LINE TWO",
+      },
+    };
+    window.__slidesPrivateFetches = [];
+    window.__slidesPrintCalls = 0;
+    window.print = () => { window.__slidesPrintCalls += 1; };
+    window.massPlanApp.connect({
+      subscribeAuth(callback) {
+        callback({ user: { id: "editor" }, isEditor: true });
+        return () => {};
+      },
+      subscribePlan(date, onValue) {
+        onValue({ songs, readingOverrides: {}, celebrationOverride: null });
+        return () => {};
+      },
+      getSong(id) {
+        window.__slidesPrivateFetches.push(id);
+        return Promise.resolve(privateSongs[id]);
+      },
+    });
+  });
+
+  const button = page.locator("#downloadLyricsSlidesPdf");
+  await assert.doesNotReject(() => button.waitFor({ state: "visible" }));
+  assert.equal(await page.getByText("ENTRANCE PRIVATE LINE ONE").count(), 0);
+  await button.click();
+  await page.waitForFunction(() =>
+    document.querySelector("#lyricsPptxStatus")?.textContent === "Slides sent to print.",
+  );
+
+  const state = await page.evaluate(() => ({
+    fetches: window.__slidesPrivateFetches,
+    printCalls: window.__slidesPrintCalls,
+    mode: document.querySelector("#printSheet")?.dataset.printMode,
+    slideCount: Number(document.querySelector(".pdf-slides")?.dataset.slideCount),
+    lyricSlideCount: document.querySelectorAll(".pdf-slide-lyrics").length,
+    coverCount: document.querySelectorAll(".pdf-slide-cover").length,
+    text: document.querySelector("#printSheet")?.innerText,
+  }));
+  assert.deepEqual(state.fetches, ["slides-entrance", "slides-communion"]);
+  assert.equal(state.printCalls, 1);
+  assert.equal(state.mode, "lyrics-slides");
+  assert.equal(state.coverCount, 1);
+  assert.equal(state.slideCount, state.lyricSlideCount + 1);
+  assert.match(state.text, /Gathered in Hope/);
+  assert.match(state.text, /ENTRANCE PRIVATE LINE ONE/);
+  assert.match(state.text, /COMMUNION PRIVATE LINE ONE/);
+
+  await page.emulateMedia({ media: "print" });
+  const pdf = await page.pdf({ preferCSSPageSize: true, printBackground: true });
+  const geometry = pdfPageGeometry(pdf);
+  assert.equal(geometry.pageCount, state.slideCount);
+  assert.equal(geometry.boxes.length, state.slideCount);
+  geometry.boxes.forEach(({ width, height }) => {
+    assert.ok(Math.abs(width - 960) < 2, `unexpected slide width ${width}`);
+    assert.ok(Math.abs(height - 540) < 2, `unexpected slide height ${height}`);
+  });
+  await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
+  assert.equal(await page.locator("#printSheet").getAttribute("aria-hidden"), "true");
+  await context.close();
+});
+
 test("editor prints private lyrics as an imposed landscape A4 booklet", async () => {
   const { context, page } = await plannerPage(
     browser,

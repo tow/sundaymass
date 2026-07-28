@@ -353,6 +353,50 @@
     return `st-james-lyrics-${String(date || "mass").replace(/[^0-9A-Za-z-]+/g, "-")}.pptx`;
   }
 
+  const escapeHtml = value => String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+  function renderSlideLines(chunk) {
+    return chunk.split("\n").map(line => `<div>${escapeHtml(line) || "&nbsp;"}</div>`).join("");
+  }
+
+  function renderCoverSlide({ date, celebration, meta }) {
+    return `<article class="pdf-slide pdf-slide-cover">`
+      + `<div class="pdf-slide-bar"></div>`
+      + `<div class="pdf-slide-kicker">ST JAMES THE APOSTLE · 6PM MASS</div>`
+      + `<h1 class="pdf-slide-cover-title">${escapeHtml(celebration || "Sunday Mass")}</h1>`
+      + `<div class="pdf-slide-rule"></div>`
+      + `<p class="pdf-slide-cover-meta">${escapeHtml(meta || date || "")}</p>`
+      + `</article>`;
+  }
+
+  function renderLyricSlide({ assignment, chunk, index, total, attribution }) {
+    return `<article class="pdf-slide pdf-slide-lyrics">`
+      + `<div class="pdf-slide-bar"></div>`
+      + `<div class="pdf-slide-label">${escapeHtml(assignment.partLabel.toUpperCase())}</div>`
+      + `<div class="pdf-slide-song-title">${escapeHtml(assignment.title)}</div>`
+      + `<div class="pdf-slide-lyric" style="font-size:${lyricFontSize(chunk)}pt">`
+      + `${renderSlideLines(chunk)}</div>`
+      + (attribution ? `<div class="pdf-slide-attribution">${escapeHtml(attribution)}</div>` : "")
+      + `<div class="pdf-slide-counter">${index + 1} / ${total}</div>`
+      + `</article>`;
+  }
+
+  function renderSlides({ date, celebration, meta, assignments }) {
+    const slides = [renderCoverSlide({ date, celebration, meta })];
+    assignments.forEach(assignment => {
+      const chunks = lyricSlides(assignment.lyrics);
+      const attribution = attributionLine(assignment);
+      chunks.forEach((chunk, index) => {
+        slides.push(renderLyricSlide({ assignment, chunk, index, total: chunks.length, attribution }));
+      });
+    });
+    return `<section class="pdf-slides" data-slide-count="${slides.length}">${slides.join("")}</section>`;
+  }
+
   const api = Object.freeze({
     attributionLine,
     buildDeck,
@@ -361,6 +405,7 @@
     lyricSlides,
     missingLyrics,
     normalizeLyrics,
+    renderSlides,
     selectedAssignments,
     wrapLine,
   });

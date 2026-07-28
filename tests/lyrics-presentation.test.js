@@ -233,3 +233,69 @@ test("the generated file is a valid widescreen PowerPoint with every lyric chunk
     assert.match(xml, /© 2026 Test Publisher/);
   });
 });
+
+test("the print slideshow reuses lyricSlides pagination, one slide per chunk", () => {
+  const assignment = {
+    partLabel: "Entrance",
+    title: "Gathered in Hope",
+    lyrics: ["One", "Two", "Three", "Four", "Five"].join("\n"),
+  };
+  const markup = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "Sunday, 2 August 2026 · Year A",
+    assignments: [assignment],
+  });
+  const chunkCount = LyricsPresentation.lyricSlides(assignment.lyrics).length;
+
+  assert.equal((markup.match(/class="pdf-slide pdf-slide-cover"/g) || []).length, 1);
+  assert.equal((markup.match(/class="pdf-slide pdf-slide-lyrics"/g) || []).length, chunkCount);
+});
+
+test("the print slideshow matches the PowerPoint deck's slide count and content", async () => {
+  const assignments = [{
+    partLabel: "Entrance",
+    title: "Gathered in Hope",
+    authors: "Test Author",
+    copyrightOwner: "Test Publisher",
+    copyrightYear: "2026",
+    lyrics: "First line\nSecond line\n\nThird line",
+  }];
+  const options = {
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "Sunday, 2 August 2026 · Year A",
+    assignments,
+  };
+  const markup = LyricsPresentation.renderSlides(options);
+  const deck = LyricsPresentation.buildDeck(PptxGenJS, options);
+  const buffer = await deck.write({ outputType: "nodebuffer" });
+  const zip = await JSZip.loadAsync(buffer);
+  const slideFiles = Object.keys(zip.files).filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name));
+
+  assert.equal((markup.match(/pdf-slide-lyrics/g) || []).length, slideFiles.length - 1);
+  [
+    "18th Sunday in Ordinary Time",
+    "Gathered in Hope",
+    "Test Author",
+    "© 2026 Test Publisher",
+    "First line",
+    "Third line",
+  ].forEach(text => assert.match(markup, new RegExp(text)));
+});
+
+test("the print slideshow escapes lyric and title HTML", () => {
+  const markup = LyricsPresentation.renderSlides({
+    date: "2026-08-02",
+    celebration: "<script>alert(1)</script>",
+    meta: "",
+    assignments: [{
+      partLabel: "Entrance",
+      title: "Rock & <Roll>",
+      lyrics: "A line with <b>tags</b> & ampersands",
+    }],
+  });
+  assert.doesNotMatch(markup, /<script>|<b>tags<\/b>/);
+  assert.match(markup, /Rock &amp; &lt;Roll&gt;/);
+  assert.match(markup, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+});
