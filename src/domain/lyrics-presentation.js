@@ -208,7 +208,10 @@
       const pages = paginateUnits(units, maxLines);
       if (pages.length > 1) {
         flush();
-        pages.forEach(page => slides.push(page.join("\n")));
+        // Leave the trailing page pending so a short next stanza can still
+        // share its slide, instead of stranding that stanza as a widow.
+        pages.slice(0, -1).forEach(page => slides.push(page.join("\n")));
+        pendingSlide = pages.at(-1).slice();
         return;
       }
 
@@ -450,8 +453,10 @@
     attributionLine,
     buildDeck,
     congregationLyrics,
+    coverTitleFontSize,
     escapeHtml,
     fileName,
+    lyricFontSize,
     lyricSlides,
     missingLyrics,
     normalizeLyrics,

@@ -393,3 +393,95 @@ test("the PowerPoint deck and the print slideshow position the label box from th
   );
   assert.deepEqual(cssBox, expectedBox);
 });
+
+test("lyricFontSize shrinks at each visible-line-count tier", () => {
+  const shortLine = "x".repeat(10);
+  assert.equal(LyricsPresentation.lyricFontSize(shortLine), 52);
+  assert.equal(LyricsPresentation.lyricFontSize([shortLine, shortLine].join("\n")), 48);
+  assert.equal(LyricsPresentation.lyricFontSize([shortLine, shortLine, shortLine].join("\n")), 44);
+  assert.equal(
+    LyricsPresentation.lyricFontSize([shortLine, shortLine, shortLine, shortLine].join("\n")),
+    40,
+  );
+  assert.equal(
+    LyricsPresentation.lyricFontSize(
+      [shortLine, shortLine, shortLine, shortLine, shortLine].join("\n"),
+    ),
+    40,
+  );
+});
+
+test("lyricFontSize shrinks at each character-length tier on a single line", () => {
+  assert.equal(LyricsPresentation.lyricFontSize("x".repeat(30)), 52);
+  assert.equal(LyricsPresentation.lyricFontSize("x".repeat(31)), 48);
+  assert.equal(LyricsPresentation.lyricFontSize("x".repeat(34)), 48);
+  assert.equal(LyricsPresentation.lyricFontSize("x".repeat(35)), 44);
+  assert.equal(LyricsPresentation.lyricFontSize("x".repeat(38)), 44);
+  assert.equal(LyricsPresentation.lyricFontSize("x".repeat(39)), 40);
+});
+
+test("coverTitleFontSize shrinks at each celebration-name-length tier", () => {
+  assert.equal(LyricsPresentation.coverTitleFontSize("x".repeat(45)), 38);
+  assert.equal(LyricsPresentation.coverTitleFontSize("x".repeat(46)), 32);
+  assert.equal(LyricsPresentation.coverTitleFontSize("x".repeat(60)), 32);
+  assert.equal(LyricsPresentation.coverTitleFontSize("x".repeat(61)), 26);
+  assert.equal(LyricsPresentation.coverTitleFontSize("x".repeat(90)), 26);
+  assert.equal(LyricsPresentation.coverTitleFontSize("x".repeat(91)), 20);
+});
+
+test("wrapLine avoids starting a middle line with a stopword when otherwise tied", () => {
+  // Seven equal-length filler words wrapped at width 15 forces a 3-line split
+  // where (3,2,2) and (2,3,2) word-counts score identically on line-length
+  // balance alone, so only the stopword-start penalty breaks the tie.
+  const withStopword = LyricsPresentation.wrapLine("Rock Rise and Song Hope Rest Wave", 15);
+  assert.deepEqual(withStopword, ["Rock Rise and", "Song Hope", "Rest Wave"]);
+
+  const withNeutralWord = LyricsPresentation.wrapLine("Rock Rise Owl Song Hope Rest Wave", 15);
+  assert.deepEqual(withNeutralWord, ["Rock Rise", "Owl Song Hope", "Rest Wave"]);
+});
+
+test("pagination prefers splitting right after a line that ends a sentence", () => {
+  // Five lines with maxLines:3 have two equally-balanced two-page splits,
+  // (3,2) and (2,3), with no comma-continuation or parity tiebreak in play
+  // (odd unit count). Only the sentence-ending bonus should decide between them.
+  const periodOnSecondLine = LyricsPresentation.lyricSlides(
+    ["Line one", "Line two.", "Line three", "Line four", "Line five"].join("\n"),
+    { maxLines: 3, maxLineLength: 100 },
+  );
+  assert.deepEqual(periodOnSecondLine, [
+    "Line one\nLine two.",
+    "Line three\nLine four\nLine five",
+  ]);
+
+  const noSentenceBoundary = LyricsPresentation.lyricSlides(
+    ["Line one", "Line two", "Line three", "Line four", "Line five"].join("\n"),
+    { maxLines: 3, maxLineLength: 100 },
+  );
+  assert.deepEqual(noSentenceBoundary, [
+    "Line one\nLine two\nLine three",
+    "Line four\nLine five",
+  ]);
+});
+
+test("a split stanza's trailing page shares a slide with a short next stanza instead of stranding it", () => {
+  const slides = LyricsPresentation.lyricSlides(
+    ["One", "Two", "Three", "Four", "Five", "", "Six"].join("\n"),
+    { maxLineLength: 100 },
+  );
+  assert.deepEqual(slides, [
+    "One\nTwo\nThree",
+    "Four\nFive\n\nSix",
+  ]);
+});
+
+test("a split stanza's trailing page still gets its own slide when the next stanza doesn't fit", () => {
+  const slides = LyricsPresentation.lyricSlides(
+    ["One", "Two", "Three", "Four", "Five", "", "Six", "Seven", "Eight"].join("\n"),
+    { maxLineLength: 100 },
+  );
+  assert.deepEqual(slides, [
+    "One\nTwo\nThree",
+    "Four\nFive",
+    "Six\nSeven\nEight",
+  ]);
+});
