@@ -1,7 +1,8 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-require("../src/domain/lyrics-presentation.js");
+const LyricsPresentation = require("../src/domain/lyrics-presentation.js");
+const LyricsExportController = require("../src/app/lyrics-export-controller.js");
 const LyricsBookletController = require("../src/app/lyrics-booklet-controller.js");
 
 function element() {
@@ -42,6 +43,8 @@ function setup({
       { key: "entrance", label: "Entrance" },
       { key: "communion", label: "Communion" },
     ],
+    presentation: LyricsPresentation,
+    exportController: LyricsExportController,
     booklet: {
       renderBooklet(values) {
         return `<booklet assignments="${values.assignments.length}"></booklet>`;

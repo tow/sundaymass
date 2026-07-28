@@ -1,6 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
+const LyricsExportController = require("../src/app/lyrics-export-controller.js");
 const LyricsPptxController = require("../src/app/lyrics-pptx-controller.js");
 const LyricsPresentation = require("../src/domain/lyrics-presentation.js");
 
@@ -61,6 +62,7 @@ function setup({
       { key: "communion", label: "Communion" },
     ],
     presentation,
+    exportController: LyricsExportController,
     getStore: () => store,
     getSongs: () => songs,
     getDate: () => "2026-08-02",

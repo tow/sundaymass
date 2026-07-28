@@ -32,6 +32,7 @@ const appValues = {
   "@@PRINT_CONTROLLER_JS@@": read("src/app/print-controller.js"),
   "@@LYRICS_PRESENTATION_JS@@": read("src/domain/lyrics-presentation.js"),
   "@@LYRICS_BOOKLET_JS@@": read("src/domain/lyrics-booklet.js"),
+  "@@LYRICS_EXPORT_CONTROLLER_JS@@": read("src/app/lyrics-export-controller.js"),
   "@@LYRICS_PPTX_CONTROLLER_JS@@": read("src/app/lyrics-pptx-controller.js"),
   "@@LYRICS_SLIDES_CONTROLLER_JS@@": read("src/app/lyrics-slides-controller.js"),
   "@@LYRICS_BOOKLET_CONTROLLER_JS@@": read("src/app/lyrics-booklet-controller.js"),

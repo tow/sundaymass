@@ -10,6 +10,7 @@
 @@PRINT_CONTROLLER_JS@@
 @@LYRICS_PRESENTATION_JS@@
 @@LYRICS_BOOKLET_JS@@
+@@LYRICS_EXPORT_CONTROLLER_JS@@
 @@LYRICS_PPTX_CONTROLLER_JS@@
 @@LYRICS_SLIDES_CONTROLLER_JS@@
 @@LYRICS_BOOKLET_CONTROLLER_JS@@
@@ -436,6 +437,7 @@ const lyricsPptxController=LyricsPptxController.create({
   document,
   parts:MUSIC_PARTS,
   presentation:LyricsPresentation,
+  exportController:LyricsExportController,
   getStore:()=>planStore,
   getSongs:plannerState.songs,
   getDate:()=>current().d,
@@ -450,6 +452,7 @@ const lyricsSlidesController=LyricsSlidesController.create({
   status:lyricsPptxStatus,
   parts:MUSIC_PARTS,
   presentation:LyricsPresentation,
+  exportController:LyricsExportController,
   printController,
   getStore:()=>planStore,
   getSongs:plannerState.songs,
@@ -464,7 +467,9 @@ const lyricsBookletController=LyricsBookletController.create({
   button:printLyricsBooklet,
   status:lyricsPptxStatus,
   parts:MUSIC_PARTS,
+  presentation:LyricsPresentation,
   booklet:LyricsBooklet,
+  exportController:LyricsExportController,
   printController,
   getStore:()=>planStore,
   getSongs:plannerState.songs,

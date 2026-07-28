@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 require("../src/domain/lyrics-presentation.js");
+const LyricsExportController = require("../src/app/lyrics-export-controller.js");
 const LyricsSlidesController = require("../src/app/lyrics-slides-controller.js");
 
 function element() {
@@ -58,6 +59,7 @@ function setup({
         return `<slides assignments="${values.assignments.length}"></slides>`;
       },
     },
+    exportController: LyricsExportController,
     printController: {
       printCustom(markup, mode) { prints.push({ markup, mode }); },
     },
