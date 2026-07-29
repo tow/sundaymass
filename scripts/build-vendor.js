@@ -39,3 +39,8 @@ buildBundle({
   contents: 'export { default } from "pptxgenjs";',
   sourcefile: "pptxgenjs-entry.js",
 });
+buildBundle({
+  name: "jspdf",
+  contents: 'export { jsPDF } from "jspdf";',
+  sourcefile: "jspdf-entry.js",
+});

@@ -35,7 +35,9 @@ function setup({
   const button = element();
   const status = element();
   const fetched = [];
-  const prints = [];
+  const built = [];
+  const saved = [];
+  function FakeJsPDF() {}
   const controller = LyricsSlidesController.create({
     button,
     status,
@@ -55,14 +57,16 @@ function setup({
       missingLyrics(assignments) {
         return assignments.filter(assignment => !assignment.lyrics);
       },
-      renderSlides(values) {
-        return `<slides assignments="${values.assignments.length}"></slides>`;
+      buildPdfDoc(JsPDF, values) {
+        built.push({ JsPDF, assignments: values.assignments.length });
+        return { save(name) { saved.push(name); } };
+      },
+      pdfFileName(date) {
+        return `st-james-lyrics-${date}.pdf`;
       },
     },
     exportController: LyricsExportController,
-    printController: {
-      printCustom(markup, mode) { prints.push({ markup, mode }); },
-    },
+    loadJsPdf: async () => FakeJsPDF,
     getStore: () => ({
       async getSong(id) {
         fetched.push(id);
@@ -80,38 +84,36 @@ function setup({
     logger: { error() {} },
   });
   controller.start();
-  return { button, controller, fetched, prints, status };
+  return { button, controller, fetched, built, saved, status, FakeJsPDF };
 }
 
-test("slides export fetches each private song once and opens custom print", async () => {
-  const { button, fetched, prints, status } = setup();
+test("slides export fetches each private song once and downloads the PDF", async () => {
+  const { button, fetched, built, saved, status, FakeJsPDF } = setup();
   await button.click();
 
   assert.deepEqual(fetched, ["song-a"]);
-  assert.deepEqual(prints, [{
-    markup: "<slides assignments=\"2\"></slides>",
-    mode: "lyrics-slides",
-  }]);
-  assert.equal(status.textContent, "Slides sent to print.");
+  assert.deepEqual(built, [{ JsPDF: FakeJsPDF, assignments: 2 }]);
+  assert.deepEqual(saved, ["st-james-lyrics-2026-08-02.pdf"]);
+  assert.equal(status.textContent, "PDF downloaded.");
   assert.equal(status.dataset.state, "success");
   assert.equal(button.disabled, false);
 });
 
 test("slides export blocks when selected lyrics are missing", async () => {
-  const { button, prints, status } = setup({
+  const { button, built, status } = setup({
     details: { "song-a": { id: "song-a", title: "Song A", lyrics: "" } },
   });
   await button.click();
 
-  assert.equal(prints.length, 0);
+  assert.equal(built.length, 0);
   assert.equal(status.textContent, "Add lyrics for: Song A.");
   assert.equal(status.dataset.state, "error");
 });
 
 test("slides action is hidden and rejected without editor access", async () => {
-  const { button, controller, prints, status } = setup({ editor: false });
+  const { button, controller, built, status } = setup({ editor: false });
   assert.equal(button.hidden, true);
-  await controller.print();
-  assert.equal(prints.length, 0);
+  await controller.download();
+  assert.equal(built.length, 0);
   assert.equal(status.textContent, "Editor access required.");
 });

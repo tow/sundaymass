@@ -962,7 +962,7 @@ test("editor downloads a complete private-lyrics PowerPoint in Mass order", asyn
   await context.close();
 });
 
-test("editor prints a print-ready widescreen lyrics slideshow matching the PowerPoint pagination", async () => {
+test("editor downloads a widescreen lyrics PDF matching the PowerPoint pagination", async () => {
   const { context, page } = await plannerPage(
     browser,
     server,
@@ -985,8 +985,6 @@ test("editor prints a print-ready widescreen lyrics slideshow matching the Power
       },
     };
     window.__slidesPrivateFetches = [];
-    window.__slidesPrintCalls = 0;
-    window.print = () => { window.__slidesPrintCalls += 1; };
     window.massPlanApp.connect({
       subscribeAuth(callback) {
         callback({ user: { id: "editor" }, isEditor: true });
@@ -1006,40 +1004,31 @@ test("editor prints a print-ready widescreen lyrics slideshow matching the Power
   const button = page.locator("#downloadLyricsSlidesPdf");
   await assert.doesNotReject(() => button.waitFor({ state: "visible" }));
   assert.equal(await page.getByText("ENTRANCE PRIVATE LINE ONE").count(), 0);
-  await button.click();
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    button.click(),
+  ]);
+  assert.match(download.suggestedFilename(), /^st-james-lyrics-\d{4}-\d{2}-\d{2}\.pdf$/);
   await page.waitForFunction(() =>
-    document.querySelector("#lyricsPptxStatus")?.textContent === "Slides sent to print.",
+    document.querySelector("#lyricsPptxStatus")?.textContent === "PDF downloaded.",
   );
+  assert.deepEqual(
+    await page.evaluate(() => window.__slidesPrivateFetches),
+    ["slides-entrance", "slides-communion"],
+  );
+  assert.equal(await page.getByText("ENTRANCE PRIVATE LINE ONE").count(), 0);
 
-  const state = await page.evaluate(() => ({
-    fetches: window.__slidesPrivateFetches,
-    printCalls: window.__slidesPrintCalls,
-    mode: document.querySelector("#printSheet")?.dataset.printMode,
-    slideCount: Number(document.querySelector(".pdf-slides")?.dataset.slideCount),
-    lyricSlideCount: document.querySelectorAll(".pdf-slide-lyrics").length,
-    coverCount: document.querySelectorAll(".pdf-slide-cover").length,
-    text: document.querySelector("#printSheet")?.innerText,
-  }));
-  assert.deepEqual(state.fetches, ["slides-entrance", "slides-communion"]);
-  assert.equal(state.printCalls, 1);
-  assert.equal(state.mode, "lyrics-slides");
-  assert.equal(state.coverCount, 1);
-  assert.equal(state.slideCount, state.lyricSlideCount + 1);
-  assert.match(state.text, /Gathered in Hope/);
-  assert.match(state.text, /ENTRANCE PRIVATE LINE ONE/);
-  assert.match(state.text, /COMMUNION PRIVATE LINE ONE/);
-
-  await page.emulateMedia({ media: "print" });
-  const pdf = await page.pdf({ preferCSSPageSize: true, printBackground: true });
+  const pdf = fs.readFileSync(await download.path());
   const geometry = pdfPageGeometry(pdf);
-  assert.equal(geometry.pageCount, state.slideCount);
-  assert.equal(geometry.boxes.length, state.slideCount);
+  assert.equal(geometry.pageCount, 4);
   geometry.boxes.forEach(({ width, height }) => {
     assert.ok(Math.abs(width - 960) < 2, `unexpected slide width ${width}`);
     assert.ok(Math.abs(height - 540) < 2, `unexpected slide height ${height}`);
   });
-  await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
-  assert.equal(await page.locator("#printSheet").getAttribute("aria-hidden"), "true");
+  const source = pdf.toString("latin1");
+  assert.match(source, /Gathered in Hope/);
+  assert.match(source, /ENTRANCE PRIVATE LINE ONE/);
+  assert.match(source, /COMMUNION PRIVATE LINE ONE/);
   await context.close();
 });
 

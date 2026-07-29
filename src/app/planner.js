@@ -450,10 +450,10 @@ lyricsPptxController.start();
 const lyricsSlidesController=LyricsSlidesController.create({
   button:downloadLyricsSlidesPdf,
   status:lyricsPptxStatus,
+  document,
   parts:MUSIC_PARTS,
   presentation:LyricsPresentation,
   exportController:LyricsExportController,
-  printController,
   getStore:()=>planStore,
   getSongs:plannerState.songs,
   getDate:()=>current().d,

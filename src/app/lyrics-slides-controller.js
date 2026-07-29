@@ -1,20 +1,26 @@
-// Fetches private lyrics on demand and opens a print-to-PDF widescreen slideshow.
+// Fetches private lyrics on demand and downloads a client-side widescreen PDF slide deck.
 (function (global) {
   "use strict";
+
+  function defaultLoader(document) {
+    return import(new URL("./vendor/jspdf.js", document.baseURI).href)
+      .then(module => module.jsPDF);
+  }
 
   function create({
     button,
     status,
+    document,
     parts,
     presentation,
     exportController,
-    printController,
     getStore,
     getSongs,
     getDate,
     getValues,
     isEditor,
     isOnline,
+    loadJsPdf = () => defaultLoader(document),
     logger = console,
   }) {
     const controller = exportController.create({
@@ -30,23 +36,24 @@
       isOnline,
       logger,
       preparingMessage: "Preparing slides…",
-      errorMessage: "Could not create slides. Try again.",
-      errorLogLabel: "Could not create lyrics slides",
+      errorMessage: "Could not create the PDF. Try again.",
+      errorLogLabel: "Could not create lyrics PDF",
       async build({ assignments, values, date, setStatus }) {
-        const markup = presentation.renderSlides({
+        setStatus("Building PDF…");
+        const JsPDF = await loadJsPdf();
+        const doc = presentation.buildPdfDoc(JsPDF, {
           date,
           celebration: values.day,
           meta: values.meta,
           assignments,
         });
-        setStatus("Choose \"Save as PDF\" in the print dialog.");
-        printController.printCustom(markup, "lyrics-slides");
-        setStatus("Slides sent to print.", "success");
+        doc.save(presentation.pdfFileName(date));
+        setStatus("PDF downloaded.", "success");
       },
     });
 
     return Object.freeze({
-      print: controller.run,
+      download: controller.run,
       render: controller.render,
       start: controller.start,
       stop: controller.stop,

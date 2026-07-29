@@ -2,8 +2,19 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const JSZip = require("jszip");
 const PptxGenJS = require("pptxgenjs");
+const { jsPDF } = require("jspdf");
 
 const LyricsPresentation = require("../src/domain/lyrics-presentation.js");
+
+// jsPDF writes uncompressed content streams, so the serialized document can be
+// searched for the latin1 text drawn on its pages.
+function pdfSource(doc) {
+  return Buffer.from(doc.output("arraybuffer")).toString("latin1");
+}
+
+function pageStream(doc, pageNumber) {
+  return doc.internal.pages[pageNumber].join("\n");
+}
 
 test("lyrics are split deterministically without dropping words", () => {
   const lyrics = [
@@ -234,13 +245,13 @@ test("the generated file is a valid widescreen PowerPoint with every lyric chunk
   });
 });
 
-test("the print slideshow reuses lyricSlides pagination, one slide per chunk", () => {
+test("the PDF deck reuses lyricSlides pagination, one page per chunk after the cover", () => {
   const assignment = {
     partLabel: "Entrance",
     title: "Gathered in Hope",
     lyrics: ["One", "Two", "Three", "Four", "Five"].join("\n"),
   };
-  const markup = LyricsPresentation.renderSlides({
+  const doc = LyricsPresentation.buildPdfDoc(jsPDF, {
     date: "2026-08-02",
     celebration: "18th Sunday in Ordinary Time",
     meta: "Sunday, 2 August 2026 · Year A",
@@ -248,11 +259,10 @@ test("the print slideshow reuses lyricSlides pagination, one slide per chunk", (
   });
   const chunkCount = LyricsPresentation.lyricSlides(assignment.lyrics).length;
 
-  assert.equal((markup.match(/class="pdf-slide pdf-slide-cover"/g) || []).length, 1);
-  assert.equal((markup.match(/class="pdf-slide pdf-slide-lyrics"/g) || []).length, chunkCount);
+  assert.equal(doc.getNumberOfPages(), chunkCount + 1);
 });
 
-test("the print slideshow matches the PowerPoint deck's slide count and content", async () => {
+test("the PDF deck matches the PowerPoint deck's slide count and content", async () => {
   const assignments = [{
     partLabel: "Entrance",
     title: "Gathered in Hope",
@@ -267,13 +277,14 @@ test("the print slideshow matches the PowerPoint deck's slide count and content"
     meta: "Sunday, 2 August 2026 · Year A",
     assignments,
   };
-  const markup = LyricsPresentation.renderSlides(options);
+  const doc = LyricsPresentation.buildPdfDoc(jsPDF, options);
   const deck = LyricsPresentation.buildDeck(PptxGenJS, options);
   const buffer = await deck.write({ outputType: "nodebuffer" });
   const zip = await JSZip.loadAsync(buffer);
   const slideFiles = Object.keys(zip.files).filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name));
 
-  assert.equal((markup.match(/pdf-slide-lyrics/g) || []).length, slideFiles.length - 1);
+  assert.equal(doc.getNumberOfPages(), slideFiles.length);
+  const source = pdfSource(doc);
   [
     "18th Sunday in Ordinary Time",
     "Gathered in Hope",
@@ -281,27 +292,26 @@ test("the print slideshow matches the PowerPoint deck's slide count and content"
     "© 2026 Test Publisher",
     "First line",
     "Third line",
-  ].forEach(text => assert.match(markup, new RegExp(text)));
+  ].forEach(text => assert.ok(source.includes(text), `PDF should contain "${text}"`));
 });
 
-test("the print slideshow escapes lyric and title HTML", () => {
-  const markup = LyricsPresentation.renderSlides({
+test("every PDF page uses the widescreen slide size", () => {
+  const doc = LyricsPresentation.buildPdfDoc(jsPDF, {
     date: "2026-08-02",
-    celebration: "<script>alert(1)</script>",
+    celebration: "18th Sunday in Ordinary Time",
     meta: "",
-    assignments: [{
-      partLabel: "Entrance",
-      title: "Rock & <Roll>",
-      lyrics: "A line with <b>tags</b> & ampersands",
-    }],
+    assignments: [{ partLabel: "Entrance", title: "Gathered in Hope", lyrics: "A line" }],
   });
-  assert.doesNotMatch(markup, /<script>|<b>tags<\/b>/);
-  assert.match(markup, /Rock &amp; &lt;Roll&gt;/);
-  assert.match(markup, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+  const boxes = [...pdfSource(doc).matchAll(/MediaBox \[0 0 ([\d.]+) ([\d.]+)\]/g)];
+  assert.equal(boxes.length, doc.getNumberOfPages());
+  boxes.forEach(([, width, height]) => {
+    assert.ok(Math.abs(Number(width) - 960) < 1, `unexpected page width ${width}`);
+    assert.ok(Math.abs(Number(height) - 540) < 1, `unexpected page height ${height}`);
+  });
 });
 
-test("the print slideshow keeps each assignment's own label, title, and order", () => {
-  const markup = LyricsPresentation.renderSlides({
+test("the PDF deck keeps each assignment's own label, title, and order", () => {
+  const doc = LyricsPresentation.buildPdfDoc(jsPDF, {
     date: "2026-08-02",
     celebration: "18th Sunday in Ordinary Time",
     meta: "",
@@ -310,63 +320,86 @@ test("the print slideshow keeps each assignment's own label, title, and order", 
       { partLabel: "Communion", title: "Second Song", lyrics: "Closing line" },
     ],
   });
-  const entranceIndex = markup.indexOf("Opening line");
-  const communionIndex = markup.indexOf("Closing line");
-  assert.ok(entranceIndex > 0 && communionIndex > entranceIndex);
-  assert.match(markup, /ENTRANCE[\s\S]*First Song[\s\S]*Opening line/);
-  assert.match(markup, /COMMUNION[\s\S]*Second Song[\s\S]*Closing line/);
+  assert.equal(doc.getNumberOfPages(), 3);
+  assert.match(pageStream(doc, 2), /ENTRANCE[\s\S]*First Song[\s\S]*Opening line/);
+  assert.match(pageStream(doc, 3), /COMMUNION[\s\S]*Second Song[\s\S]*Closing line/);
 });
 
-test("the print slideshow omits the attribution line when there is none", () => {
-  const markup = LyricsPresentation.renderSlides({
+test("the PDF deck omits the attribution line when there is none", () => {
+  const doc = LyricsPresentation.buildPdfDoc(jsPDF, {
     date: "2026-08-02",
     celebration: "18th Sunday in Ordinary Time",
     meta: "",
     assignments: [{ partLabel: "Entrance", title: "Traditional Hymn", lyrics: "A line" }],
   });
-  assert.doesNotMatch(markup, /pdf-slide-attribution/);
+  // Only the page counter draws at 9pt when there is no attribution.
+  const smallText = pageStream(doc, 2).match(/9 Tf/g) || [];
+  assert.equal(smallText.length, 1);
+  assert.match(pageStream(doc, 2), /\(1 \/ 1\) Tj/);
 });
 
-test("the print slideshow numbers each lyric slide's position within its song", () => {
+test("the PDF deck numbers each lyric slide's position within its song", () => {
   const assignment = {
     partLabel: "Entrance",
     title: "Gathered in Hope",
     lyrics: ["One", "Two", "Three", "Four", "Five"].join("\n"),
   };
-  const markup = LyricsPresentation.renderSlides({
+  const doc = LyricsPresentation.buildPdfDoc(jsPDF, {
     date: "2026-08-02",
     celebration: "18th Sunday in Ordinary Time",
     meta: "",
     assignments: [assignment],
   });
   const chunkCount = LyricsPresentation.lyricSlides(assignment.lyrics).length;
-  const counters = [...markup.matchAll(/pdf-slide-counter"[^>]*>([^<]+)</g)].map(match => match[1]);
-  assert.deepEqual(counters, Array.from({ length: chunkCount }, (_, index) => `${index + 1} / ${chunkCount}`));
+  Array.from({ length: chunkCount }, (_, index) => index).forEach(index => {
+    assert.match(
+      pageStream(doc, index + 2),
+      new RegExp(`\\(${index + 1} / ${chunkCount}\\) Tj`),
+    );
+  });
 });
 
-test("the cover title shrinks for long celebration names instead of overflowing", () => {
-  const short = LyricsPresentation.renderSlides({
+test("the PDF cover title shrinks for long celebration names instead of overflowing", () => {
+  // The cover title is the only times-bold (/F10) text on the cover page.
+  const titleFontSize = doc => Number(pageStream(doc, 1).match(/\/F10 ([\d.]+) Tf/)[1]);
+  const short = LyricsPresentation.buildPdfDoc(jsPDF, {
     date: "2026-08-02",
     celebration: "18th Sunday in Ordinary Time",
     meta: "",
     assignments: [],
   });
-  assert.match(short, /pdf-slide-cover-title"[^>]*font-size:3.9583cqw/);
+  assert.equal(titleFontSize(short), 38);
 
-  const long = LyricsPresentation.renderSlides({
+  const long = LyricsPresentation.buildPdfDoc(jsPDF, {
     date: "2026-08-02",
     celebration: "St. Andrew Kim Taegon, priest and martyr, St. Paul Chong Hasang, "
       + "catechist and martyr, and their companions, martyrs",
     meta: "",
     assignments: [],
   });
-  assert.match(long, /pdf-slide-cover-title"[^>]*font-size:2.0833cqw/);
+  assert.ok(titleFontSize(long) <= 20, `expected at most 20pt, got ${titleFontSize(long)}`);
 });
 
-test("the PowerPoint deck and the print slideshow position the label box from the same geometry", async () => {
+test("over-wide lyric lines shrink to fit the slide instead of overflowing", () => {
+  const wideLine = "W".repeat(60);
+  const doc = LyricsPresentation.buildPdfDoc(jsPDF, {
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "",
+    assignments: [{ partLabel: "Entrance", title: "Wide Song", lyrics: wideLine }],
+  });
+  const startSize = LyricsPresentation.lyricFontSize(wideLine);
+  const [, size, x] = pageStream(doc, 2)
+    .match(/\/F\d+ ([\d.]+) Tf\n[^\n]*\n[^\n]*\n[^\n]*\n([\d.]+) [\d.]+ Td\n\(W+\) Tj/);
+  assert.ok(Number(size) < startSize, `expected under ${startSize}pt, got ${size}`);
+  const lyricBox = LyricsPresentation.SLIDE_LAYOUT.lyric;
+  assert.ok(Number(x) >= lyricBox.x * 72 - 0.01, `line starts at ${x}, left of the lyric box`);
+});
+
+test("the PowerPoint deck and the PDF deck position the label box from the same geometry", async () => {
   const assignments = [{ partLabel: "Entrance", title: "Gathered in Hope", lyrics: "A line" }];
   const options = { date: "2026-08-02", celebration: "Test", meta: "", assignments };
-  const markup = LyricsPresentation.renderSlides(options);
+  const doc = LyricsPresentation.buildPdfDoc(jsPDF, options);
   const deck = LyricsPresentation.buildDeck(PptxGenJS, options);
   const buffer = await deck.write({ outputType: "nodebuffer" });
   const zip = await JSZip.loadAsync(buffer);
@@ -386,16 +419,14 @@ test("the PowerPoint deck and the print slideshow position the label box from th
   };
   assert.deepEqual(pptxBox, expectedBox);
 
-  const CQW_PER_INCH = 7.5;
-  const [, style] = markup.match(/class="pdf-slide-label" style="([^"]+)"/);
-  const cssBox = Object.fromEntries(
-    [...style.matchAll(/(left|top|width|height):([\d.]+)cqw/g)]
-      .map(([, prop, value]) => [
-        { left: "x", top: "y", width: "w", height: "h" }[prop],
-        Number(value) / CQW_PER_INCH,
-      ]),
+  // PDF user space is bottom-up: the label's pen position must sit inside the
+  // SLIDE_LAYOUT.label box converted to points from the 540pt-tall page.
+  const [, pdfX, pdfY] = pageStream(doc, 2).match(/([\d.]+) ([\d.]+) Td\n\(ENTRANCE\) Tj/);
+  assert.ok(Math.abs(Number(pdfX) - x * 72) < 0.01, `label x ${pdfX} != ${x * 72}`);
+  assert.ok(
+    Number(pdfY) <= 540 - y * 72 && Number(pdfY) >= 540 - (y + h) * 72,
+    `label baseline ${pdfY} outside the label box`,
   );
-  assert.deepEqual(cssBox, expectedBox);
 });
 
 test("lyricFontSize shrinks at each visible-line-count tier", () => {

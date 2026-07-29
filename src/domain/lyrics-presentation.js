@@ -1,4 +1,4 @@
-// Plans and builds a large-type PowerPoint deck from editor-only song lyrics.
+// Plans and builds large-type PowerPoint and PDF slide decks from editor-only song lyrics.
 (function (global) {
   "use strict";
 
@@ -13,8 +13,8 @@
   const MAX_LINE_LENGTH = 45;
 
   // Single source of truth for slide geometry, in inches, matching the widescreen
-  // (13.333x7.5in) layout — shared by the PowerPoint deck and the print/PDF slideshow
-  // so the two outputs cannot drift apart.
+  // (13.333x7.5in) layout — shared by the PowerPoint deck and the PDF deck so the
+  // two outputs cannot drift apart.
   const SLIDE_LAYOUT = Object.freeze({
     bar: { x: 0, y: 0, w: 0.16, h: 7.5, color: "accent" },
     kicker: { x: 0.7, y: 0.7, w: 11.9, h: 0.35, color: "accent" },
@@ -28,31 +28,20 @@
     counter: { x: 11.45, y: 6.88, w: 1.1, h: 0.22, color: "muted" },
   });
 
+  const POINTS_PER_INCH = 72;
+  const PAGE = Object.freeze({ w: 13.333 * POINTS_PER_INCH, h: 7.5 * POINTS_PER_INCH });
+
   function pptxBox(box) {
     return { x: box.x, y: box.y, w: box.w, h: box.h };
   }
 
-  // The print slideshow positions everything in container-query units so a slide
-  // scales with the printed page: Safari ignores `@page size`, so the 13.333in
-  // design canvas must shrink to whatever paper the print dialog uses. The slide
-  // is 100cqw wide, hence 1in = 100/13.333 ≈ 7.5cqw and 1pt = 7.5/72cqw.
-  const CQW_PER_INCH = 7.5;
-
-  function cssLength(inches) {
-    return `${Number((inches * CQW_PER_INCH).toFixed(4))}cqw`;
-  }
-
-  function cssFontSize(points) {
-    return `font-size:${cssLength(points / 72)};`;
-  }
-
-  function cssBox(box) {
-    return `left:${cssLength(box.x)};top:${cssLength(box.y)};`
-      + `width:${cssLength(box.w)};height:${cssLength(box.h)};`;
-  }
-
-  function cssColor(box) {
-    return `color:#${COLOURS[box.color]};`;
+  function pointsBox(box) {
+    return {
+      x: box.x * POINTS_PER_INCH,
+      y: box.y * POINTS_PER_INCH,
+      w: box.w * POINTS_PER_INCH,
+      h: box.h * POINTS_PER_INCH,
+    };
   }
 
   function normalizeLyrics(value) {
@@ -392,8 +381,16 @@
     return pptx;
   }
 
+  function baseFileName(date) {
+    return `st-james-lyrics-${String(date || "mass").replace(/[^0-9A-Za-z-]+/g, "-")}`;
+  }
+
   function fileName(date) {
-    return `st-james-lyrics-${String(date || "mass").replace(/[^0-9A-Za-z-]+/g, "-")}.pptx`;
+    return `${baseFileName(date)}.pptx`;
+  }
+
+  function pdfFileName(date) {
+    return `${baseFileName(date)}.pdf`;
   }
 
   const escapeHtml = value => String(value || "")
@@ -401,10 +398,6 @@
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
-
-  function renderSlideLines(chunk) {
-    return chunk.split("\n").map(line => `<div>${escapeHtml(line) || "&nbsp;"}</div>`).join("");
-  }
 
   function coverTitleFontSize(text) {
     const length = String(text || "").length;
@@ -414,59 +407,106 @@
     return 38;
   }
 
-  function renderCoverSlide({ date, celebration, meta }) {
+  function paintPdfBackground(doc) {
+    doc.setFillColor(`#${COLOURS.backgroundDeep}`);
+    doc.rect(0, 0, PAGE.w, PAGE.h, "F");
+    const bar = pointsBox(SLIDE_LAYOUT.bar);
+    doc.setFillColor(`#${COLOURS[SLIDE_LAYOUT.bar.color]}`);
+    doc.rect(bar.x, bar.y, bar.w, bar.h, "F");
+  }
+
+  // Draws text into a SLIDE_LAYOUT box, shrinking the font so the widest row
+  // (and, for multi-row text, the stack of rows) stays inside the box — the
+  // PDF equivalent of the PowerPoint deck's fit:"shrink".
+  function paintPdfText(doc, text, layoutBox, {
+    font = "helvetica",
+    style = "normal",
+    size,
+    align = "left",
+    valign = "top",
+    charSpace = 0,
+    lineSpacing = 1.08,
+  }) {
+    const box = pointsBox(layoutBox);
+    const rows = String(text).split("\n");
+    doc.setFont(font, style);
+    doc.setTextColor(`#${COLOURS[layoutBox.color]}`);
+    const widest = rows.reduce((max, row) =>
+      Math.max(max, doc.getStringUnitWidth(row) * size + charSpace * Math.max(0, row.length - 1)), 0);
+    let fitted = widest > box.w ? size * (box.w / widest) : size;
+    if (rows.length > 1) fitted = Math.min(fitted, box.h / (rows.length * lineSpacing));
+    doc.setFontSize(fitted);
+
+    const lineHeight = fitted * lineSpacing;
+    const firstMiddle = valign === "middle"
+      ? box.y + (box.h - rows.length * lineHeight) / 2 + lineHeight / 2
+      : box.y + lineHeight / 2;
+    const x = align === "center" ? box.x + box.w / 2 : align === "right" ? box.x + box.w : box.x;
+    rows.forEach((row, index) => {
+      if (!row) return;
+      doc.text(row, x, firstMiddle + index * lineHeight, {
+        align,
+        baseline: "middle",
+        ...(charSpace ? { charSpace } : {}),
+      });
+    });
+  }
+
+  function buildPdfDoc(JsPDF, { date, celebration, meta, assignments }) {
+    if (typeof JsPDF !== "function") throw new Error("PDF generator unavailable");
+    const doc = new JsPDF({ orientation: "landscape", unit: "pt", format: [PAGE.w, PAGE.h] });
+    doc.setProperties({
+      title: `${celebration} — ${date}`,
+      subject: "Lyrics for the selected Sunday Mass",
+      author: "St James the Apostle 6pm Mass",
+      creator: "Datamediate Oy",
+    });
+
     const title = celebration || "Sunday Mass";
-    return `<article class="pdf-slide pdf-slide-cover" `
-      + `style="background:#${COLOURS.backgroundDeep};color:#${COLOURS.text}">`
-      + `<div class="pdf-slide-bar" style="${cssBox(SLIDE_LAYOUT.bar)}background:#${COLOURS[SLIDE_LAYOUT.bar.color]}"></div>`
-      + `<div class="pdf-slide-kicker" style="${cssBox(SLIDE_LAYOUT.kicker)}${cssColor(SLIDE_LAYOUT.kicker)}">`
-      + `ST JAMES THE APOSTLE · 6PM MASS</div>`
-      + `<h1 class="pdf-slide-cover-title" `
-      + `style="${cssBox(SLIDE_LAYOUT.coverTitle)}${cssColor(SLIDE_LAYOUT.coverTitle)}${cssFontSize(coverTitleFontSize(title))}">`
-      + `${escapeHtml(title)}</h1>`
-      + `<div class="pdf-slide-rule" `
-      + `style="left:${cssLength(SLIDE_LAYOUT.coverRule.x)};top:${cssLength(SLIDE_LAYOUT.coverRule.y)};`
-      + `width:${cssLength(SLIDE_LAYOUT.coverRule.w)};border-top-color:#${COLOURS[SLIDE_LAYOUT.coverRule.color]}"></div>`
-      + `<p class="pdf-slide-cover-meta" style="${cssBox(SLIDE_LAYOUT.coverMeta)}${cssColor(SLIDE_LAYOUT.coverMeta)}">`
-      + `${escapeHtml(meta || date || "")}</p>`
-      + `</article>`;
-  }
+    paintPdfBackground(doc);
+    paintPdfText(doc, "ST JAMES THE APOSTLE · 6PM MASS", SLIDE_LAYOUT.kicker, {
+      style: "bold", size: 12, charSpace: 1.5,
+    });
+    paintPdfText(doc, title, SLIDE_LAYOUT.coverTitle, {
+      font: "times", style: "bold", size: coverTitleFontSize(title), valign: "middle",
+    });
+    const rule = pointsBox(SLIDE_LAYOUT.coverRule);
+    doc.setDrawColor(`#${COLOURS[SLIDE_LAYOUT.coverRule.color]}`);
+    doc.setLineWidth(2);
+    doc.line(rule.x, rule.y, rule.x + rule.w, rule.y);
+    paintPdfText(doc, meta || date || "", SLIDE_LAYOUT.coverMeta, { size: 18 });
 
-  function renderLyricSlide({ assignment, chunk, index, total, attribution }) {
-    return `<article class="pdf-slide pdf-slide-lyrics" `
-      + `style="background:#${COLOURS.backgroundDeep};color:#${COLOURS.text}">`
-      + `<div class="pdf-slide-bar" style="${cssBox(SLIDE_LAYOUT.bar)}background:#${COLOURS[SLIDE_LAYOUT.bar.color]}"></div>`
-      + `<div class="pdf-slide-label" style="${cssBox(SLIDE_LAYOUT.label)}${cssColor(SLIDE_LAYOUT.label)}">`
-      + `${escapeHtml(assignment.partLabel.toUpperCase())}</div>`
-      + `<div class="pdf-slide-song-title" style="${cssBox(SLIDE_LAYOUT.songTitle)}${cssColor(SLIDE_LAYOUT.songTitle)}">`
-      + `${escapeHtml(assignment.title)}</div>`
-      + `<div class="pdf-slide-lyric" `
-      + `style="${cssBox(SLIDE_LAYOUT.lyric)}${cssColor(SLIDE_LAYOUT.lyric)}${cssFontSize(lyricFontSize(chunk))}">`
-      + `${renderSlideLines(chunk)}</div>`
-      + (attribution
-        ? `<div class="pdf-slide-attribution" style="${cssBox(SLIDE_LAYOUT.attribution)}${cssColor(SLIDE_LAYOUT.attribution)}">`
-          + `${escapeHtml(attribution)}</div>`
-        : "")
-      + `<div class="pdf-slide-counter" style="${cssBox(SLIDE_LAYOUT.counter)}${cssColor(SLIDE_LAYOUT.counter)}">`
-      + `${index + 1} / ${total}</div>`
-      + `</article>`;
-  }
-
-  function renderSlides({ date, celebration, meta, assignments }) {
-    const slides = [renderCoverSlide({ date, celebration, meta })];
     assignments.forEach(assignment => {
       const chunks = lyricSlides(assignment.lyrics);
       const attribution = attributionLine(assignment);
       chunks.forEach((chunk, index) => {
-        slides.push(renderLyricSlide({ assignment, chunk, index, total: chunks.length, attribution }));
+        doc.addPage([PAGE.w, PAGE.h], "landscape");
+        paintPdfBackground(doc);
+        paintPdfText(doc, assignment.partLabel.toUpperCase(), SLIDE_LAYOUT.label, {
+          style: "bold", size: 10, charSpace: 1.4,
+        });
+        paintPdfText(doc, assignment.title, SLIDE_LAYOUT.songTitle, {
+          font: "times", style: "bold", size: 20,
+        });
+        paintPdfText(doc, chunk, SLIDE_LAYOUT.lyric, {
+          style: "bold", size: lyricFontSize(chunk), align: "center", valign: "middle",
+        });
+        if (attribution) {
+          paintPdfText(doc, attribution, SLIDE_LAYOUT.attribution, { size: 9 });
+        }
+        paintPdfText(doc, `${index + 1} / ${chunks.length}`, SLIDE_LAYOUT.counter, {
+          size: 9, align: "right",
+        });
       });
     });
-    return `<section class="pdf-slides" data-slide-count="${slides.length}">${slides.join("")}</section>`;
+
+    return doc;
   }
 
   const api = Object.freeze({
     attributionLine,
     buildDeck,
+    buildPdfDoc,
     congregationLyrics,
     coverTitleFontSize,
     escapeHtml,
@@ -475,7 +515,7 @@
     lyricSlides,
     missingLyrics,
     normalizeLyrics,
-    renderSlides,
+    pdfFileName,
     selectedAssignments,
     SLIDE_LAYOUT,
     wrapLine,
