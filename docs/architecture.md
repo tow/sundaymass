@@ -171,6 +171,17 @@ Creating a song and assigning it use one atomic RPC. Editing updates the canonic
 so every Mass referencing its UUID sees the new metadata. Lyrics are loaded only for
 an authorised editor editing song details.
 
+“Lyrics for this Sunday” creates one private full-text override for the selected slot.
+The editor can reset to canonical text or explicitly copy the newest earlier override
+for the same song. There is no linked template/version layer. Responsorial Psalm
+editing presents the assembly response and cantor verses as separate sections; omitted
+verses stay visible in the editor but are excluded from saved effective text and all
+exports.
+
+Psalm suggestions take a separate structured path. The reading's book and number are
+matched against responsorial metadata, with exact citations used only to rank matching
+settings. Semantic song search is never used for the Psalm slot.
+
 After an explicit song save, the browser requests one best-effort vector refresh.
 Autosave typing does not invoke the embedding model repeatedly. Repertoire maintenance
 can repair missing or stale vectors in bounded batches.
@@ -196,13 +207,16 @@ The output includes public song attribution but never private lyrics.
 ### Lyrics PowerPoint export
 
 The editor-only export controller derives the selected songs in canonical Mass order,
-deduplicates IDs only for private fetching, and calls `getSong` for each distinct song.
+deduplicates IDs only for private fetching, calls `getSong` for each distinct song, and
+loads the selected Sunday's private lyric overrides.
 That existing store operation is independently protected by editor membership and
 `song_lyrics` RLS. The controller refuses export when any selected song has no lyrics.
 
 The pure lyrics-presentation domain module normalizes stanza spacing, wraps unusually
-long lines, divides the complete text into bounded large-type slides, and builds a
-16:9 deck. Repeated assignments remain repeated in the deck. PptxGenJS writes the file
+long lines, divides the effective text into bounded large-type slides, and builds a
+16:9 deck. Psalm response slides are marked `ALL`, included verse slides are marked
+`CANTOR`, and omitted verses are absent. Repeated assignments remain repeated in the
+deck. PptxGenJS writes the file
 in the browser; neither lyrics nor the generated deck enter the public plan, DOM,
 service-worker data cache, application storage, or an application server. The static
 generator library itself is part of the offline shell, but exporting private content
@@ -249,7 +263,7 @@ These are hard constraints:
    contain no lyrics.
 7. Lyrics PowerPoint export fetches private lyrics only after editor authorization and
    creates a local download without publishing or persisting the result.
-7. HTML and user-entered URLs are escaped or validated at presentation boundaries.
+8. HTML and user-entered URLs are escaped or validated at presentation boundaries.
 
 The Supabase integration suite is the executable authority for database permissions.
 Unit and browser tests cover the corresponding client-side projections and workflows.

@@ -162,6 +162,7 @@
   .music-editor-actions.empty{ grid-column:2 / -1; justify-content:flex-start; }
   .music-editor-actions button{ min-height:34px; padding:6px 9px; font-size:11px; }
   .music-editor-actions.assigned button{ min-height:32px; padding:4px 10px; font-size:10.5px; }
+  .weekly-lyrics-badge{ align-self:center; padding:3px 7px; border-radius:999px; color:#315f43; background:#e5f1e8; font-size:9.5px; font-weight:750; }
   .music-editor-actions .remove-song,.song-current-buttons .remove-song{ color:#8d3c29; border-color:#d7b9ae; }
   .choose-song{ min-width:118px; }
   .song-picker-modes{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; padding:10px 22px; border-bottom:1px solid #eee6d5; background:#fcfaf6; }
@@ -222,6 +223,25 @@
   .song-lyrics-section{ margin-top:18px; padding:12px; border:1px solid #ddd4c5; border-radius:7px; background:#fcfaf6; }
   .song-lyrics-section summary{ color:var(--accent); cursor:pointer; font-size:13px; font-weight:750; }
   .song-lyrics-section p{ margin:8px 0 0; color:var(--muted); font-size:11px; line-height:1.4; }
+  .responsorial-fields{ margin-top:18px!important; padding:12px!important; border:1px solid #ddd4c5!important; border-radius:7px; background:#fcfaf6; }
+  .responsorial-fields legend{ color:var(--accent); font-size:12px; font-weight:750; }
+  .responsorial-fields > p{ margin:4px 0 8px; color:var(--muted); font-size:11px; line-height:1.4; }
+  .weekly-lyrics-dialog{ width:min(760px,calc(100% - 28px)); }
+  .weekly-lyrics-body label{ display:block; margin:0 0 6px; color:var(--accent); font-size:11px; font-weight:750; letter-spacing:.3px; text-transform:uppercase; }
+  .weekly-lyrics-body textarea{ width:100%; padding:10px 12px; border:1px solid #c9c0b1; border-radius:7px; color:var(--ink); background:#fff; font:inherit; font-size:15px; line-height:1.45; resize:vertical; }
+  .weekly-custom-notice,.weekly-psalm-fallback{ margin:0 0 12px; padding:9px 11px; border-radius:6px; color:#315f43; background:#e5f1e8; font-size:12px; }
+  .weekly-previous{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 14px; padding:10px 12px; border:1px solid #ddd4c5; border-radius:7px; background:#fcfaf6; }
+  .weekly-previous strong{ color:var(--muted); font-size:11px; font-weight:650; }
+  .weekly-psalm-editor > p{ margin:0 0 12px; color:var(--muted); font-size:12px; line-height:1.45; }
+  .weekly-psalm-section{ margin:0 0 12px; padding:12px; border:1px solid #ddd4c5; border-radius:7px; background:#fcfaf6; }
+  .weekly-psalm-section-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+  .weekly-psalm-section-head strong{ color:var(--accent); font-size:11px; letter-spacing:.5px; }
+  .weekly-psalm-section-head label{ display:flex; align-items:center; gap:6px; margin:0; color:var(--muted); font-size:10px; letter-spacing:0; text-transform:none; }
+  .weekly-psalm-section-head input{ width:18px; height:18px; }
+  .weekly-psalm-section textarea:disabled{ color:#777; background:#eee; opacity:.7; }
+  .weekly-psalm-section.omitted{ border-style:dashed; background:#f1efeb; }
+  .weekly-psalm-section.omitted .weekly-psalm-section-head strong{ color:#7d5a4e; }
+  .weekly-lyrics-actions{ grid-template-columns:1fr 1fr 1.4fr; }
   .editor-help{ display:flex; align-items:center; flex-wrap:wrap; gap:7px 10px; padding:10px 22px; color:var(--muted); background:#fcfaf6; border-bottom:1px solid #eee6d5; font-size:11.5px; }
   .editor-help[hidden]{ display:none; }
   .editor-help button{ min-height:34px; padding:5px 9px; font-size:11px; }
@@ -350,6 +370,10 @@
     .song-picker-actions{ padding:7px 16px calc(7px + env(safe-area-inset-bottom)); }
     .song-picker-actions button{ min-height:38px; }
     .song-editor-grid{ grid-template-columns:1fr; }
+    .weekly-previous{ align-items:stretch; flex-direction:column; }
+    .weekly-previous button{ width:100%; }
+    .weekly-lyrics-actions{ grid-template-columns:1fr 1fr; }
+    #weeklyLyricsReset{ grid-column:1 / -1; }
     .editor-help{ align-items:flex-start; padding:9px 16px; }
     .editor-help button{ min-height:38px; }
     .lyrics-pptx-status{ flex-basis:100%; }

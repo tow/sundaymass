@@ -5,7 +5,7 @@
   const BOOKLET_PAGES = 8;
   const PAGE_CAPACITY = 48;
   const LINE_LENGTH = 68;
-  const LABEL_PATTERN = /^(?:refrain|response|chorus|bridge|verse(?:\s+\d+)?|coda|repeat)(?::|\b)/i;
+  const LABEL_PATTERN = /^(?:all|cantor|refrain|response|chorus|bridge|verse(?:\s+\d+)?|coda|repeat)(?::|\b)/i;
 
   const MM_PER_POINT = 25.4 / 72;
   const SHEET = Object.freeze({ w: 297, h: 210, half: 148.5 });
@@ -76,14 +76,25 @@
         assignment?.lyrics,
       );
     }
-    const lyrics = String(assignment?.lyrics || "").trim();
-    if (assignment?.partKey !== "psalm" || !lyrics) return lyrics;
-    const firstStanza = lyrics.split(/\n{2,}/)[0];
-    const lines = firstStanza.split("\n");
-    const firstVerse = lines.findIndex((line, index) =>
-      index > 0 && /^\s*(?:verse\s*)?1(?:[.):]|\s)/i.test(line),
-    );
-    return (firstVerse > 0 ? lines.slice(0, firstVerse) : lines).join("\n").trim();
+    return String(assignment?.lyrics || "").trim();
+  }
+
+  function bookletStanzas(assignment) {
+    const blocks = assignment?.lyricBlocks?.length
+      ? assignment.lyricBlocks
+      : [{ text: bookletLyrics(assignment), audienceLabel: "" }];
+    return blocks.flatMap(block => String(block.text || "")
+      .split(/\n{2,}/)
+      .map(stanzaUnits)
+      .filter(units => units.length)
+      .map((units, index) => {
+        if (!block.audienceLabel || index > 0) return units;
+        return [{
+          raw: block.audienceLabel,
+          label: true,
+          lines: [block.audienceLabel],
+        }, ...units];
+      }));
   }
 
   function newLyricsPage() {
@@ -118,10 +129,7 @@
     };
 
     assignments.forEach(assignment => {
-      const stanzas = bookletLyrics(assignment)
-        .split(/\n{2,}/)
-        .map(stanzaUnits)
-        .filter(units => units.length);
+      const stanzas = bookletStanzas(assignment);
       if (!stanzas.length) return;
 
       const firstLines = stanzas[0].reduce((sum, unit) => sum + unit.lines.length, 0);
@@ -385,6 +393,7 @@
 
   const api = Object.freeze({
     bookletLyrics,
+    bookletStanzas,
     buildPdf,
     fileName,
     impose,

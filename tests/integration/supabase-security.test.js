@@ -207,6 +207,114 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       assert.match(JSON.stringify(invalid.data), /Invalid music part/i);
     });
 
+    await t.test("Psalm matching is structured and weekly lyric copies remain private", async () => {
+      const exactPsalmId = await expectOk(await editor.request("/rest/v1/rpc/create_song", {
+        method: "POST",
+        body: {
+          p_title: `Exact Psalm ${suffix}`,
+          p_responsorial_book: "Psalm",
+          p_responsorial_number: 85,
+          p_responsorial_citations: ["Psalm 85:9, 10, 11-12, 13-14"],
+          p_lyrics: "Response:\nExact response\n\n1. Cantor verse",
+          p_suggestion_parts: ["psalm"],
+        },
+      }));
+      const otherPsalmId = await expectOk(await editor.request("/rest/v1/rpc/create_song", {
+        method: "POST",
+        body: {
+          p_title: `Other Psalm ${suffix}`,
+          p_responsorial_book: "Psalm",
+          p_responsorial_number: 85,
+          p_responsorial_citations: ["Psalm 85:2-8"],
+          p_lyrics: "Response:\nOther response\n\n1. Other verse",
+          p_suggestion_parts: ["psalm"],
+        },
+      }));
+      songIds.push(exactPsalmId, otherPsalmId);
+
+      const suggestions = await expectOk(await anonymous(
+        "/rest/v1/rpc/suggest_psalms_for_reading",
+        {
+          method: "POST",
+          body: {
+            p_citation: "Psalm 85:9, 10, 11-12, 13-14",
+            p_limit: 3,
+          },
+        },
+      ));
+      assert.equal(suggestions[0].id, exactPsalmId);
+      assert.match(suggestions[0].suggestion_reason, /^Exact /);
+      assert.equal(Object.hasOwn(suggestions[0], "lyrics"), false);
+
+      await expectOk(await editor.request("/rest/v1/rpc/assign_plan_song", {
+        method: "POST",
+        body: { p_sunday: sunday, p_part: "psalm", p_song_id: exactPsalmId },
+      }));
+      await expectOk(await editor.request("/rest/v1/rpc/save_plan_song_lyrics", {
+        method: "POST",
+        body: {
+          p_sunday: sunday,
+          p_part: "psalm",
+          p_song_id: exactPsalmId,
+          p_lyrics: "Response:\nEdited response\n\n1. Included cantor verse",
+        },
+      }));
+
+      const anonymousLyrics = await anonymous(
+        `/rest/v1/plan_song_lyrics?sunday=eq.${sunday}&select=lyrics`,
+      );
+      assert.ok([401, 403].includes(anonymousLyrics.response.status));
+      const nonEditorLyrics = await nonEditor.request(
+        `/rest/v1/plan_song_lyrics?sunday=eq.${sunday}&select=lyrics`,
+      );
+      assert.equal(nonEditorLyrics.response.status, 200);
+      assert.deepEqual(nonEditorLyrics.data, []);
+      const editorLyrics = await expectOk(await editor.request(
+        `/rest/v1/plan_song_lyrics?sunday=eq.${sunday}&select=song_id,lyrics`,
+      ));
+      assert.deepEqual(editorLyrics, [{
+        song_id: exactPsalmId,
+        lyrics: "Response:\nEdited response\n\n1. Included cantor verse",
+      }]);
+
+      await expectOk(await editor.request("/rest/v1/rpc/assign_plan_song", {
+        method: "POST",
+        body: { p_sunday: sunday, p_part: "psalm", p_song_id: otherPsalmId },
+      }));
+      assert.deepEqual(await expectOk(await editor.request(
+        `/rest/v1/plan_song_lyrics?sunday=eq.${sunday}&select=song_id`,
+      )), []);
+
+      await expectOk(await editor.request("/rest/v1/rpc/save_plan_song_lyrics", {
+        method: "POST",
+        body: {
+          p_sunday: sunday,
+          p_part: "psalm",
+          p_song_id: otherPsalmId,
+          p_lyrics: "Response:\nNew assignment edit\n\n1. New assignment verse",
+        },
+      }));
+      await expectOk(await editor.request("/rest/v1/rpc/clear_plan_song_lyrics", {
+        method: "POST",
+        body: {
+          p_sunday: sunday,
+          p_part: "psalm",
+          p_song_id: exactPsalmId,
+        },
+      }));
+      assert.deepEqual(await expectOk(await editor.request(
+        `/rest/v1/plan_song_lyrics?sunday=eq.${sunday}&select=song_id`,
+      )), [{ song_id: otherPsalmId }]);
+      await expectOk(await editor.request("/rest/v1/rpc/clear_plan_song_lyrics", {
+        method: "POST",
+        body: {
+          p_sunday: sunday,
+          p_part: "psalm",
+          p_song_id: otherPsalmId,
+        },
+      }));
+    });
+
     await t.test("celebration replacement atomically clears individual reading overrides", async () => {
       const denied = await nonEditor.request("/rest/v1/rpc/save_celebration_override", {
         method: "POST",
@@ -280,6 +388,17 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
           p_title: "Forbidden assigned song",
         }],
         ["update_song", { p_song_id: fixtureSong.id, p_title: "Forbidden title" }],
+        ["save_plan_song_lyrics", {
+          p_sunday: sunday,
+          p_part: "entrance",
+          p_song_id: fixtureSong.id,
+          p_lyrics: "Forbidden weekly lyrics",
+        }],
+        ["clear_plan_song_lyrics", {
+          p_sunday: sunday,
+          p_part: "entrance",
+          p_song_id: fixtureSong.id,
+        }],
         ["save_reading_override", {
           p_sunday: sunday,
           p_slot: "first",

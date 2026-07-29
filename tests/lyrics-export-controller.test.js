@@ -35,12 +35,18 @@ function setup({
       { key: "communion", label: "Communion" },
     ],
     presentation: {
-      selectedAssignments(parts, songs, detailsById) {
+      selectedAssignments(parts, songs, detailsById, weeklyByPart) {
         return parts.flatMap(part => {
           const selected = songs[part.key];
           if (!selected?.id) return [];
           const detail = detailsById.get(selected.id) || selected;
-          return [{ partKey: part.key, partLabel: part.label, songId: selected.id, ...detail }];
+          return [{
+            partKey: part.key,
+            partLabel: part.label,
+            songId: selected.id,
+            ...detail,
+            lyrics: weeklyByPart?.[part.key]?.lyrics || detail.lyrics,
+          }];
         });
       },
       missingLyrics(assignments) {
@@ -89,6 +95,30 @@ test("run fetches each unique song once and hands assignments to build", async (
   assert.equal(status.textContent, "Done.");
   assert.equal(status.dataset.state, "success");
   assert.equal(button.disabled, false);
+});
+
+test("run uses the selected Sunday's edited lyrics without changing canonical lyrics", async () => {
+  const { builds, button } = setup({
+    store: {
+      async getSong(id) {
+        return { id, title: "Psalm", lyrics: "Canonical response\n\nVerse 1" };
+      },
+      async getWeeklyLyrics(date) {
+        assert.equal(date, "2026-08-02");
+        return {
+          entrance: {
+            songId: "song-a",
+            lyrics: "Edited response",
+          },
+        };
+      },
+    },
+  });
+
+  await button.click();
+
+  assert.equal(builds[0].assignments[0].lyrics, "Edited response");
+  assert.equal(builds[0].assignments[1].lyrics, "Canonical response\n\nVerse 1");
 });
 
 test("missing lyrics block the build and identify only the affected song", async () => {

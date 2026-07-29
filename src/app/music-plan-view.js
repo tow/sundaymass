@@ -45,7 +45,7 @@
       return escapeHtml(choice.song) + listenLink(choice);
     }
 
-    function renderEditorRow(part, songs) {
+    function renderEditorRow(part, songs, customizedParts) {
       const song = songs?.[part.key];
       const choice = choiceFor(songs, part.key);
       const attribution = editorAttribution(choice);
@@ -58,6 +58,10 @@
           + copyrightWarning(choice)
           + '</div><div class="music-editor-actions assigned">'
           + `<button type="button" data-song-action="choose" data-part="${escapeHtml(part.key)}">Change</button>`
+          + `<button type="button" data-song-action="lyrics" data-part="${escapeHtml(part.key)}">Lyrics for this Sunday</button>`
+          + (customizedParts?.has(part.key)
+            ? '<span class="weekly-lyrics-badge">Weekly lyrics customized</span>'
+            : "")
           + "</div>"
         : '<div class="music-editor-actions empty">'
           + `<button class="primary choose-song" type="button" data-song-action="choose" data-part="${escapeHtml(part.key)}">Choose song</button>`
@@ -85,11 +89,11 @@
         + "</div></div>";
     }
 
-    function render({ parts, songs, isEditor }) {
+    function render({ parts, songs, isEditor, customizedParts = new Set() }) {
       return Object.freeze({
         html: parts
           .map(part => isEditor
-            ? renderEditorRow(part, songs)
+            ? renderEditorRow(part, songs, customizedParts)
             : renderPublicRow(part, songs))
           .join(""),
         mode: isEditor ? "edit" : "view",

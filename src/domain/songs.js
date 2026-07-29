@@ -36,6 +36,13 @@
     return massMusicParts.suggestionPartFor(part);
   }
 
+  function responsorialCitations(value) {
+    const citations = Array.isArray(value)
+      ? value
+      : String(value || "").split(/\n+/);
+    return [...new Set(citations.map(text).filter(Boolean))];
+  }
+
   function normalizeDraft(value) {
     const draft = value && typeof value === "object" ? value : {};
     const youtubeInput = text(draft.youtubeUrl) || text(draft.youtubeVideoId);
@@ -48,6 +55,11 @@
       copyrightOwner: text(draft.copyrightOwner),
       copyrightYear: text(draft.copyrightYear),
       source: text(draft.source),
+      responsorialBook: text(draft.responsorialBook),
+      responsorialNumber: draft.responsorialNumber === "" || draft.responsorialNumber == null
+        ? null
+        : Number(draft.responsorialNumber),
+      responsorialCitations: responsorialCitations(draft.responsorialCitations),
       lyrics: text(draft.lyrics),
       inRepertoire: draft.inRepertoire !== false,
       suggestionParts: suggestionParts(draft.suggestionParts),
@@ -65,6 +77,22 @@
         error: "Enter a valid YouTube video link.",
         value: normalized,
       };
+    }
+    if (normalized.suggestionParts.includes("psalm")) {
+      if (!normalized.responsorialBook || !Number.isInteger(normalized.responsorialNumber)) {
+        return {
+          valid: false,
+          error: "Enter the responsorial book and number.",
+          value: normalized,
+        };
+      }
+      if (normalized.responsorialNumber < 1 || normalized.responsorialNumber > 999) {
+        return {
+          valid: false,
+          error: "Enter a valid responsorial number.",
+          value: normalized,
+        };
+      }
     }
     return {
       valid: true,
@@ -99,6 +127,7 @@
 
   global.SongCatalog = {
     SUGGESTION_PARTS,
+    responsorialCitations,
     suggestionPartFor,
     normalizeDraft,
     validateDraft,

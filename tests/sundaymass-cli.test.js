@@ -26,7 +26,14 @@ test("mutating commands use UUIDs and never accept titles as identifiers", () =>
 test("song creation defaults to repertoire and mutations default to dry-run", () => {
   let calls = 0;
   const result = cli.execute(
-    ["create_song", "--title", "New Psalm", "--suggestion-part", "psalm", "--json"],
+    [
+      "create_song", "--title", "New Psalm",
+      "--suggestion-part", "psalm",
+      "--responsorial-book", "Psalm",
+      "--responsorial-number", "85",
+      "--responsorial-citation", "Psalm 85:9-14",
+      "--json",
+    ],
     { runQuery() { calls += 1; } },
   );
 
@@ -40,6 +47,9 @@ test("song creation defaults to repertoire and mutations default to dry-run", ()
     copyrightOwner: "",
     copyrightYear: "",
     source: "",
+    responsorialBook: "Psalm",
+    responsorialNumber: 85,
+    responsorialCitations: ["Psalm 85:9-14"],
     suggestionParts: ["psalm"],
     inRepertoire: true,
   }]);
@@ -91,6 +101,39 @@ test("metadata updates patch a UUID-targeted row", () => {
   assert.match(sql, /update public\.songs/i);
   assert.match(sql, /where s\.id = \(p->>'id'\)::uuid/i);
   assert.doesNotMatch(sql, /Respond & Acclaim 2026/);
+});
+
+test("responsorial metadata is parameterized and the audit is read-only", () => {
+  let createSql = "";
+  cli.execute([
+    "create_song",
+    "--title", "Canticle",
+    "--suggestion-part", "psalm",
+    "--responsorial-book", "Isaiah",
+    "--responsorial-number", "12",
+    "--responsorial-citation", "Isaiah 12:2-3, 4, 5-6",
+    "--apply",
+  ], {
+    runQuery(sql) {
+      createSql = sql;
+      return [{ id: SONG_ID, title: "Canticle" }];
+    },
+  });
+  assert.match(createSql, /responsorial_book, responsorial_number, responsorial_citations/i);
+  assert.doesNotMatch(createSql, /Isaiah 12|Canticle/);
+
+  let auditSql = "";
+  cli.execute(["audit_psalms", "--json"], {
+    runQuery(sql) {
+      auditSql = sql;
+      return [];
+    },
+  });
+  assert.match(auditSql, /missing exact citation/i);
+  assert.match(auditSql, /invalid exact citation/i);
+  assert.match(auditSql, /Respond & Acclaim/i);
+  assert.match(auditSql, /pp\\\./i);
+  assert.doesNotMatch(auditSql, /\b(insert|update|delete)\b/i);
 });
 
 test("lyrics are read from a file, hidden from previews, and encoded in SQL", () => {

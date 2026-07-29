@@ -40,6 +40,7 @@ function localStore({
   let notifyAuth = () => {};
   const planKey = date => "st-james-plan-v2-" + date;
   const songsKey = "st-james-song-catalog-v1";
+  const weeklyLyricsKey = "st-james-weekly-lyrics-v1";
 
   const readSongs = () => {
     try {
@@ -84,6 +85,11 @@ function localStore({
       copyrightOwner: song.copyrightOwner,
       copyrightYear: song.copyrightYear,
       source: song.source,
+      responsorialBook: song.responsorialBook || "",
+      responsorialNumber: song.responsorialNumber || null,
+      responsorialCitations: Array.isArray(song.responsorialCitations)
+        ? song.responsorialCitations
+        : [],
       suggestionParts: Array.isArray(song.suggestionParts) ? song.suggestionParts : [],
     });
     return {
@@ -99,6 +105,15 @@ function localStore({
   const requireEditor = () => {
     if (!editor) throw new Error("Sign in before editing");
   };
+  const readWeeklyLyrics = () => {
+    try {
+      const value = JSON.parse(storage.getItem(weeklyLyricsKey) || "[]");
+      return Array.isArray(value) ? value : [];
+    } catch {
+      return [];
+    }
+  };
+  const writeWeeklyLyrics = value => storage.setItem(weeklyLyricsKey, JSON.stringify(value));
   const emit = date => {
     const callback = listeners.get(date);
     if (callback) callback(read(date), { offline: true });
@@ -141,8 +156,13 @@ function localStore({
       requireEditor();
       if (!readSongs().some(song => song.id === songId)) throw new Error("Song not found");
       const plan = readPlanRecord(date);
+      const previousSongId = plan.songs[part];
       plan.songs[part] = songId;
       writePlanRecord(date, plan);
+      if (previousSongId && previousSongId !== songId) {
+        writeWeeklyLyrics(readWeeklyLyrics()
+          .filter(item => item.sunday !== date || item.part !== part));
+      }
       emit(date);
     },
     async createAndAssignSong(date, part, draft) {
@@ -154,6 +174,8 @@ function localStore({
       const plan = readPlanRecord(date);
       plan.songs[part] = song.id;
       writePlanRecord(date, plan);
+      writeWeeklyLyrics(readWeeklyLyrics()
+        .filter(item => item.sunday !== date || item.part !== part));
       emit(date);
       return song;
     },
@@ -174,7 +196,49 @@ function localStore({
       const plan = readPlanRecord(date);
       delete plan.songs[part];
       writePlanRecord(date, plan);
+      writeWeeklyLyrics(readWeeklyLyrics()
+        .filter(item => item.sunday !== date || item.part !== part));
       emit(date);
+    },
+    async getWeeklyLyrics(date) {
+      requireEditor();
+      return Object.fromEntries(readWeeklyLyrics()
+        .filter(item => item.sunday === date)
+        .map(item => [item.part, item]));
+    },
+    async getWeeklyLyricsParts(date) {
+      requireEditor();
+      return readWeeklyLyrics()
+        .filter(item => item.sunday === date)
+        .map(item => item.part);
+    },
+    async getWeeklyLyricsContext(date, part, songId) {
+      requireEditor();
+      const rows = readWeeklyLyrics();
+      const current = rows.find(item =>
+        item.sunday === date && item.part === part && item.songId === songId) || null;
+      const previous = rows
+        .filter(item => item.songId === songId && item.sunday < date)
+        .sort((a, b) => b.sunday.localeCompare(a.sunday)
+          || Number(a.part !== part) - Number(b.part !== part))[0] || null;
+      return { current, previous };
+    },
+    async saveWeeklyLyrics(date, part, songId, lyrics) {
+      requireEditor();
+      const plan = readPlanRecord(date);
+      if (plan.songs[part] !== songId) {
+        throw new Error("The song is not assigned to this Mass slot");
+      }
+      const rows = readWeeklyLyrics()
+        .filter(item => item.sunday !== date || item.part !== part);
+      rows.push({ sunday: date, part, songId, lyrics: String(lyrics || "").trim() });
+      writeWeeklyLyrics(rows);
+    },
+    async clearWeeklyLyrics(date, part, songId) {
+      requireEditor();
+      writeWeeklyLyrics(readWeeklyLyrics()
+        .filter(item =>
+          item.sunday !== date || item.part !== part || item.songId !== songId));
     },
     async saveReadingOverride(date, slot, readingOverride) {
       requireEditor();
@@ -246,6 +310,11 @@ function unavailableStore({
     createAndAssignSong: unavailable,
     updateSong: unavailable,
     clearSong: unavailable,
+    getWeeklyLyrics: unavailable,
+    getWeeklyLyricsParts: unavailable,
+    getWeeklyLyricsContext: unavailable,
+    saveWeeklyLyrics: unavailable,
+    clearWeeklyLyrics: unavailable,
     saveReadingOverride: unavailable,
     clearReadingOverride: unavailable,
     saveCelebrationOverride: unavailable,
@@ -286,6 +355,9 @@ function createSupabaseStore(
             copyright_owner,
             copyright_year,
             source,
+            responsorial_book,
+            responsorial_number,
+            responsorial_citations,
             in_repertoire,
             suggestion_parts
           )
@@ -308,6 +380,9 @@ function createSupabaseStore(
         p_copyright_owner: value.value.copyrightOwner,
         p_copyright_year: value.value.copyrightYear,
         p_source: value.value.source,
+        p_responsorial_book: value.value.responsorialBook,
+        p_responsorial_number: value.value.responsorialNumber,
+        p_responsorial_citations: value.value.responsorialCitations,
         p_lyrics: value.value.lyrics || null,
         p_suggestion_parts: value.value.suggestionParts,
         p_in_repertoire: value.value.inRepertoire !== false,
@@ -424,6 +499,9 @@ function createSupabaseStore(
           copyright_owner,
           copyright_year,
           source,
+          responsorial_book,
+          responsorial_number,
+          responsorial_citations,
           in_repertoire,
           suggestion_parts,
           song_lyrics (lyrics)
@@ -432,13 +510,18 @@ function createSupabaseStore(
       if (error) throw error;
       return songCatalogApi.search((data || []).map(planDataApi.songFromRow), query);
     },
-    async suggestSongs(citations, part) {
+    async suggestSongs(citations, part, psalmCitation = "") {
       requireOnline();
-      const { data, error } = await supabase.rpc("suggest_songs_for_readings", {
-        p_citations: citations,
-        p_part: part,
-        p_limit: 3,
-      });
+      const { data, error } = part === "psalm"
+        ? await supabase.rpc("suggest_psalms_for_reading", {
+            p_citation: psalmCitation,
+            p_limit: 3,
+          })
+        : await supabase.rpc("suggest_songs_for_readings", {
+            p_citations: citations,
+            p_part: part,
+            p_limit: 3,
+          });
       if (error) throw error;
       return (data || []).map(planDataApi.songFromRow);
     },
@@ -458,6 +541,9 @@ function createSupabaseStore(
           copyright_owner,
           copyright_year,
           source,
+          responsorial_book,
+          responsorial_number,
+          responsorial_citations,
           in_repertoire,
           suggestion_parts,
           song_lyrics (lyrics)
@@ -502,6 +588,71 @@ function createSupabaseStore(
       const { error } = await supabase.rpc("clear_plan_song", {
         p_sunday: date,
         p_part: part,
+      });
+      if (error) throw error;
+    },
+    async getWeeklyLyrics(date) {
+      requireOnline();
+      const { data, error } = await supabase
+        .from("plan_song_lyrics")
+        .select("sunday,part,song_id,lyrics")
+        .eq("sunday", date);
+      if (error) throw error;
+      return Object.fromEntries((data || []).map(row => [row.part, {
+        sunday: row.sunday,
+        part: row.part,
+        songId: row.song_id,
+        lyrics: row.lyrics,
+      }]));
+    },
+    async getWeeklyLyricsParts(date) {
+      const values = await this.getWeeklyLyrics(date);
+      return Object.keys(values);
+    },
+    async getWeeklyLyricsContext(date, part, songId) {
+      requireOnline();
+      const currentQuery = supabase
+        .from("plan_song_lyrics")
+        .select("sunday,part,song_id,lyrics")
+        .eq("sunday", date)
+        .eq("part", part)
+        .eq("song_id", songId)
+        .maybeSingle();
+      const previousQuery = supabase
+        .from("plan_song_lyrics")
+        .select("sunday,part,song_id,lyrics")
+        .eq("song_id", songId)
+        .lt("sunday", date)
+        .order("sunday", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const [currentResult, previousResult] = await Promise.all([currentQuery, previousQuery]);
+      if (currentResult.error) throw currentResult.error;
+      if (previousResult.error) throw previousResult.error;
+      const map = row => row ? {
+        sunday: row.sunday,
+        part: row.part,
+        songId: row.song_id,
+        lyrics: row.lyrics,
+      } : null;
+      return { current: map(currentResult.data), previous: map(previousResult.data) };
+    },
+    async saveWeeklyLyrics(date, part, songId, lyrics) {
+      requireOnline();
+      const { error } = await supabase.rpc("save_plan_song_lyrics", {
+        p_sunday: date,
+        p_part: part,
+        p_song_id: songId,
+        p_lyrics: lyrics,
+      });
+      if (error) throw error;
+    },
+    async clearWeeklyLyrics(date, part, songId) {
+      requireOnline();
+      const { error } = await supabase.rpc("clear_plan_song_lyrics", {
+        p_sunday: date,
+        p_part: part,
+        p_song_id: songId,
       });
       if (error) throw error;
     },

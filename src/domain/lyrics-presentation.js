@@ -252,21 +252,34 @@
   }
 
   function congregationLyrics(partKey, value) {
-    const lyrics = normalizeLyrics(value);
-    if (partKey !== "psalm" || !lyrics) return lyrics;
-    const firstStanza = lyrics.split(/\n{2,}/)[0];
-    const lines = firstStanza.split("\n");
-    const firstVerse = lines.findIndex((line, index) =>
-      index > 0 && /^\s*(?:verse\s*)?1(?:[.):]|\s)/i.test(line),
-    );
-    return (firstVerse > 0 ? lines.slice(0, firstVerse) : lines).join("\n").trim();
+    return normalizeLyrics(value);
   }
 
-  function selectedAssignments(parts, songs, detailsById) {
+  function lyricBlocks(partKey, lyrics) {
+    if (global.WeeklyLyrics?.lyricBlocks) {
+      return global.WeeklyLyrics.lyricBlocks(partKey, lyrics);
+    }
+    return lyrics ? [{ id: "lyrics", role: "all", text: lyrics }] : [];
+  }
+
+  function projectionChunks(assignment) {
+    const blocks = assignment.lyricBlocks?.length
+      ? assignment.lyricBlocks
+      : lyricBlocks(assignment.partKey, assignment.lyrics);
+    return blocks.flatMap(block => lyricSlides(block.text)
+      .map(text => ({ text, audienceLabel: block.audienceLabel || "" })));
+  }
+
+  function selectedAssignments(parts, songs, detailsById, weeklyByPart = {}) {
     return parts.flatMap(part => {
       const selected = songs[part.key];
       if (!selected?.id) return [];
       const detail = detailsById.get(selected.id) || selected;
+      const weekly = weeklyByPart[part.key];
+      const effective = weekly?.songId === selected.id || weekly?.song_id === selected.id
+        ? weekly.lyrics
+        : detail.lyrics;
+      const lyrics = congregationLyrics(part.key, effective);
       return [{
         partKey: part.key,
         partLabel: part.label,
@@ -275,7 +288,8 @@
         authors: detail.authors || selected.authors || "",
         copyrightOwner: detail.copyrightOwner || selected.copyrightOwner || "",
         copyrightYear: detail.copyrightYear || selected.copyrightYear || "",
-        lyrics: congregationLyrics(part.key, detail.lyrics),
+        lyrics,
+        lyricBlocks: lyricBlocks(part.key, lyrics),
       }];
     });
   }
@@ -363,12 +377,15 @@
     });
 
     assignments.forEach(assignment => {
-      const chunks = lyricSlides(assignment.lyrics);
+      const chunks = projectionChunks(assignment);
       const attribution = attributionLine(assignment);
       chunks.forEach((chunk, index) => {
         const slide = pptx.addSlide();
         addBackground(slide);
-        slide.addText(assignment.partLabel.toUpperCase(), {
+        const slideLabel = [assignment.partLabel.toUpperCase(), chunk.audienceLabel]
+          .filter(Boolean)
+          .join(" · ");
+        slide.addText(slideLabel, {
           ...pptxBox(SLIDE_LAYOUT.label),
           fontFace: "Aptos", fontSize: 10, bold: true,
           charSpacing: 1.4, color: COLOURS[SLIDE_LAYOUT.label.color], margin: 0,
@@ -379,9 +396,9 @@
           color: COLOURS[SLIDE_LAYOUT.songTitle.color], margin: 0, breakLine: false,
           fit: "shrink",
         });
-        slide.addText(chunk, {
+        slide.addText(chunk.text, {
           ...pptxBox(SLIDE_LAYOUT.lyric),
-          fontFace: "Aptos", fontSize: lyricFontSize(chunk), bold: true,
+          fontFace: "Aptos", fontSize: lyricFontSize(chunk.text), bold: true,
           color: COLOURS[SLIDE_LAYOUT.lyric.color], margin: 0,
           breakLine: false, align: "center", valign: "mid", fit: "shrink",
           paraSpaceAfterPt: 0, lineSpacingMultiple: 1.08,
@@ -501,19 +518,22 @@
     paintPdfText(doc, meta || date || "", SLIDE_LAYOUT.coverMeta, { size: 18 });
 
     assignments.forEach(assignment => {
-      const chunks = lyricSlides(assignment.lyrics);
+      const chunks = projectionChunks(assignment);
       const attribution = attributionLine(assignment);
       chunks.forEach((chunk, index) => {
         doc.addPage([PAGE.w, PAGE.h], "landscape");
         paintPdfBackground(doc);
-        paintPdfText(doc, assignment.partLabel.toUpperCase(), SLIDE_LAYOUT.label, {
+        const slideLabel = [assignment.partLabel.toUpperCase(), chunk.audienceLabel]
+          .filter(Boolean)
+          .join(" · ");
+        paintPdfText(doc, slideLabel, SLIDE_LAYOUT.label, {
           style: "bold", size: 10, charSpace: 1.4,
         });
         paintPdfText(doc, assignment.title, SLIDE_LAYOUT.songTitle, {
           font: "times", style: "bold", size: 20,
         });
-        paintPdfText(doc, chunk, SLIDE_LAYOUT.lyric, {
-          style: "bold", size: lyricFontSize(chunk), align: "center", valign: "middle",
+        paintPdfText(doc, chunk.text, SLIDE_LAYOUT.lyric, {
+          style: "bold", size: lyricFontSize(chunk.text), align: "center", valign: "middle",
         });
         if (attribution) {
           paintPdfText(doc, attribution, SLIDE_LAYOUT.attribution, { size: 9 });
@@ -536,10 +556,12 @@
     escapeHtml,
     fileName,
     lyricFontSize,
+    lyricBlocks,
     lyricSlides,
     missingLyrics,
     normalizeLyrics,
     pdfFileName,
+    projectionChunks,
     selectedAssignments,
     SLIDE_LAYOUT,
     wrapLine,

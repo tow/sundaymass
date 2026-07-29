@@ -28,12 +28,41 @@ test("lyrics and all metadata except title are optional", () => {
     copyrightOwner: "",
     copyrightYear: "",
     source: "",
+    responsorialBook: "",
+    responsorialNumber: null,
+    responsorialCitations: [],
     lyrics: "",
     inRepertoire: true,
     suggestionParts: [],
   });
   assert.equal(catalog.hasLyrics(result.value), false);
   assert.equal(catalog.hasLyrics({ lyrics: "  [Verse 1]\nWords  " }), true);
+});
+
+test("responsorial songs require structured book and number and retain exact citations", () => {
+  assert.match(catalog.validateDraft({
+    title: "A Psalm",
+    suggestionParts: ["psalm"],
+  }).error, /book and number/);
+  assert.equal(catalog.validateDraft({
+    title: "A Psalm",
+    suggestionParts: ["psalm"],
+    responsorialBook: "Psalm",
+    responsorialNumber: 85,
+  }).valid, true);
+  const result = catalog.validateDraft({
+    title: "A Psalm",
+    suggestionParts: ["psalm"],
+    responsorialBook: "Psalm",
+    responsorialNumber: "85",
+    responsorialCitations: "Psalm 85:9–14\nPsalm 85:8–13",
+  });
+  assert.equal(result.valid, true);
+  assert.equal(result.value.responsorialNumber, 85);
+  assert.deepEqual(result.value.responsorialCitations, [
+    "Psalm 85:9–14",
+    "Psalm 85:8–13",
+  ]);
 });
 
 test("YouTube links are validated and normalized to a video ID", () => {

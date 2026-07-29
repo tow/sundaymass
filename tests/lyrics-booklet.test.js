@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { jsPDF } = require("jspdf");
 
+require("../src/domain/weekly-lyrics.js");
 require("../src/domain/lyrics-presentation.js");
 const LyricsBooklet = require("../src/domain/lyrics-booklet.js");
 
@@ -106,13 +107,15 @@ test("the booklet PDF has one A4 landscape page per imposed sheet with every lyr
   ].forEach(text => assert.ok(source.includes(text), `PDF should contain "${text}"`));
 });
 
-test("the booklet PDF keeps only the Psalm response", () => {
+test("the booklet PDF labels the Psalm response and included cantor verses", () => {
+  const lyrics = "Response:\nThe Hand of the Lord feeds us;\nhe answers all our needs.\n\n"
+    + "Verse 1\nThe LORD is gracious and merciful,\nslow to anger.";
   const psalm = assignment({
     partKey: "psalm",
     partLabel: "Psalm",
     title: "The Hand of the Lord",
-    lyrics: "Response:\nThe Hand of the Lord feeds us;\nhe answers all our needs.\n\n"
-      + "Verse 1\nThe LORD is gracious and merciful,\nslow to anger.",
+    lyrics,
+    lyricBlocks: global.WeeklyLyrics.lyricBlocks("psalm", lyrics),
   });
   const doc = LyricsBooklet.buildPdf(jsPDF, {
     date: "2026-08-02",
@@ -123,8 +126,9 @@ test("the booklet PDF keeps only the Psalm response", () => {
 
   const source = pdfSource(doc);
   assert.ok(source.includes("The Hand of the Lord feeds us;"));
-  assert.equal(source.includes("The LORD is gracious and merciful"), false);
-  assert.equal(source.includes("Verse 1"), false);
+  assert.ok(source.includes("The LORD is gracious and merciful"));
+  assert.ok(source.includes("ALL"));
+  assert.ok(source.includes("CANTOR"));
 });
 
 test("the booklet PDF is strictly monochrome to save colour ink", () => {

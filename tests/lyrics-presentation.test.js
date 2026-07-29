@@ -4,6 +4,7 @@ const JSZip = require("jszip");
 const PptxGenJS = require("pptxgenjs");
 const { jsPDF } = require("jspdf");
 
+require("../src/domain/weekly-lyrics.js");
 const LyricsPresentation = require("../src/domain/lyrics-presentation.js");
 
 // jsPDF writes uncompressed content streams, so the serialized document can be
@@ -204,7 +205,7 @@ test("PowerPoint attribution includes authors and normalized copyright", () => {
   }), "Traditional · Public domain");
 });
 
-test("Psalm assignments retain only the congregational response", () => {
+test("Psalm assignments retain response and cantor verses as separate blocks", () => {
   const lyrics = [
     "Response:",
     "The hand of the Lord feeds us;",
@@ -215,11 +216,35 @@ test("Psalm assignments retain only the congregational response", () => {
     "",
     "2. The eyes of all look hopefully to you.",
   ].join("\n");
-  assert.equal(
-    LyricsPresentation.congregationLyrics("psalm", lyrics),
-    "Response:\nThe hand of the Lord feeds us;\nhe answers all our needs.",
-  );
+  assert.equal(LyricsPresentation.congregationLyrics("psalm", lyrics), lyrics);
   assert.equal(LyricsPresentation.congregationLyrics("entrance", lyrics), lyrics);
+  assert.deepEqual(LyricsPresentation.lyricBlocks("psalm", lyrics)
+    .map(block => [block.audienceLabel, block.text]), [
+    ["ALL", "Response:\nThe hand of the Lord feeds us;\nhe answers all our needs."],
+    ["CANTOR", "1. The LORD is gracious and merciful,\nslow to anger and of great kindness."],
+    ["CANTOR", "2. The eyes of all look hopefully to you."],
+  ]);
+});
+
+test("a weekly Psalm edit controls exactly which verses reach projection", () => {
+  const parts = [{ key: "psalm", label: "Psalm" }];
+  const songs = { psalm: { id: "psalm-85", title: "Lord, Let Us See Your Kindness" } };
+  const canonical = "Response:\nLord, let us see your kindness.\n\n"
+    + "1. Kindness and truth shall meet.\n\n"
+    + "2. The Lord himself will give his benefits.";
+  const edited = "Response:\nLord, let us see your kindness.\n\n"
+    + "2. The Lord himself will give his benefits.";
+  const assignments = LyricsPresentation.selectedAssignments(
+    parts,
+    songs,
+    new Map([["psalm-85", { ...songs.psalm, lyrics: canonical }]]),
+    { psalm: { songId: "psalm-85", lyrics: edited } },
+  );
+  const chunks = LyricsPresentation.projectionChunks(assignments[0]);
+
+  assert.deepEqual(chunks.map(chunk => chunk.audienceLabel), ["ALL", "CANTOR"]);
+  assert.doesNotMatch(chunks.map(chunk => chunk.text).join("\n"), /Kindness and truth/);
+  assert.match(chunks.map(chunk => chunk.text).join("\n"), /give his benefits/);
 });
 
 test("the generated file is a valid widescreen PowerPoint with every lyric chunk", async () => {

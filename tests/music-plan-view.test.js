@@ -72,7 +72,7 @@ test("public rendering includes safe metadata but never private lyrics", () => {
   assert.doesNotMatch(result.html, /\blyrics\b/i);
 });
 
-test("editor rendering uses one row action for selected and empty slots", () => {
+test("editor rendering offers weekly lyrics only for selected slots", () => {
   const result = view.render({ parts, songs, isEditor: true });
 
   assert.equal(result.mode, "edit");
@@ -80,7 +80,8 @@ test("editor rendering uses one row action for selected and empty slots", () => 
   assert.match(result.intro, /Choose or add a song/);
   assert.match(result.html, /data-song-action="choose" data-part="entrance">Change<\/button>/);
   assert.match(result.html, /data-song-action="choose" data-part="communion">Choose song<\/button>/);
-  assert.equal((result.html.match(/data-song-action=/g) || []).length, 2);
+  assert.match(result.html, /data-song-action="lyrics" data-part="entrance">Lyrics for this Sunday/);
+  assert.equal((result.html.match(/data-song-action=/g) || []).length, 3);
   assert.doesNotMatch(result.html, /data-song-action="edit"/);
   assert.doesNotMatch(result.html, /data-song-action="remove"/);
   assert.doesNotMatch(result.html, /Not yet chosen/);

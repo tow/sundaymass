@@ -50,6 +50,7 @@
           return opening
             + `<strong>${escapeHtml(song.title)}${listenLink}</strong>`
             + `<span>${escapeHtml([
+              song.suggestionReason,
               song.authors || "Author not recorded",
               song.inRepertoire === false ? "Extended library" : "",
             ].filter(Boolean).join(" · "))}</span>`

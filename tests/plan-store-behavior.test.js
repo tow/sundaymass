@@ -44,7 +44,11 @@ const songCatalog = {
         copyrightOwner: draft.copyrightOwner || "",
         copyrightYear: draft.copyrightYear || "",
         source: draft.source || "",
+        responsorialBook: draft.responsorialBook || "",
+        responsorialNumber: draft.responsorialNumber || null,
+        responsorialCitations: draft.responsorialCitations || [],
         lyrics: draft.lyrics || "",
+        inRepertoire: draft.inRepertoire !== false,
         suggestionParts: draft.suggestionParts || [],
       },
     };
@@ -110,6 +114,9 @@ test("local plan mutations enforce editor access and never publish lyrics", asyn
     copyrightOwner: "",
     copyrightYear: "",
     source: "",
+    responsorialBook: "",
+    responsorialNumber: null,
+    responsorialCitations: [],
     suggestionParts: ["entrance"],
   });
   assert.equal(Object.hasOwn(plans.at(-1).songs.entrance, "lyrics"), false);
@@ -122,6 +129,9 @@ test("local plan mutations enforce editor access and never publish lyrics", asyn
     copyrightOwner: "",
     copyrightYear: "",
     source: "",
+    responsorialBook: "",
+    responsorialNumber: null,
+    responsorialCitations: [],
     suggestionParts: ["entrance"],
   });
 
@@ -142,6 +152,59 @@ test("local plan mutations enforce editor access and never publish lyrics", asyn
   await assert.rejects(store.getPlan("2026-08-02"), /Sign in before editing/);
   await assert.rejects(store.clearSong("2026-08-02", "entrance"), /Sign in before editing/);
   assert.deepEqual(authStates.map(state => state.isEditor), [false, true, false]);
+});
+
+test("local weekly lyrics keep canonical text and offer the newest earlier copy", async () => {
+  const store = createStore();
+  await store.signIn();
+  const song = await store.createAndAssignSong("2026-07-19", "entrance", {
+    title: "Reusable hymn",
+    lyrics: "Canonical words",
+  });
+  await store.saveWeeklyLyrics("2026-07-19", "entrance", song.id, "Earlier edited words");
+  await store.assignSong("2026-07-26", "entrance", song.id);
+
+  assert.deepEqual(await store.getWeeklyLyricsContext(
+    "2026-07-26",
+    "entrance",
+    song.id,
+  ), {
+    current: null,
+    previous: {
+      sunday: "2026-07-19",
+      part: "entrance",
+      songId: song.id,
+      lyrics: "Earlier edited words",
+    },
+  });
+  assert.equal((await store.getSong(song.id)).lyrics, "Canonical words");
+
+  await store.saveWeeklyLyrics("2026-07-26", "entrance", song.id, "This week's words");
+  assert.deepEqual(await store.getWeeklyLyricsParts("2026-07-26"), ["entrance"]);
+  await store.clearWeeklyLyrics("2026-07-26", "entrance", song.id);
+  assert.deepEqual(await store.getWeeklyLyricsParts("2026-07-26"), []);
+});
+
+test("local create-and-assign clears the replaced slot's weekly lyric copy", async () => {
+  const store = createStore();
+  await store.signIn();
+  const original = await store.createAndAssignSong("2026-08-02", "entrance", {
+    title: "Original song",
+    lyrics: "Original canonical lyrics",
+  });
+  await store.saveWeeklyLyrics(
+    "2026-08-02",
+    "entrance",
+    original.id,
+    "Original weekly edit",
+  );
+
+  await store.createAndAssignSong("2026-08-02", "entrance", {
+    title: "Replacement song",
+    lyrics: "Replacement canonical lyrics",
+  });
+
+  assert.deepEqual(await store.getWeeklyLyricsParts("2026-08-02"), []);
 });
 
 function deferred() {
@@ -289,6 +352,50 @@ test("public suggestions use the bounded read-only RPC rather than the editor Ed
   assert.deepEqual(calls.functionInvokes, []);
 });
 
+test("Psalm suggestions use the structured citation RPC instead of semantic search", async () => {
+  const { calls, supabase } = supabaseFixture(Promise.resolve({ data: null, error: null }));
+  const store = storeModule.createSupabaseStore(supabase, {
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+  });
+
+  await store.suggestSongs(
+    ["Wisdom 18:6-9", "Psalm 33:1, 12, 18-19, 20-22"],
+    "psalm",
+    "Psalm 33:1, 12, 18-19, 20-22",
+  );
+
+  assert.deepEqual(calls.rpcs, [{
+    name: "suggest_psalms_for_reading",
+    params: {
+      p_citation: "Psalm 33:1, 12, 18-19, 20-22",
+      p_limit: 3,
+    },
+  }]);
+  assert.deepEqual(calls.functionInvokes, []);
+});
+
+test("Supabase weekly reset includes the song identity", async () => {
+  const { calls, supabase } = supabaseFixture(Promise.resolve({ data: null, error: null }));
+  const store = storeModule.createSupabaseStore(supabase, {
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+  });
+
+  await store.clearWeeklyLyrics("2026-08-02", "psalm", "psalm-song-id");
+
+  assert.deepEqual(calls.rpcs, [{
+    name: "clear_plan_song_lyrics",
+    params: {
+      p_sunday: "2026-08-02",
+      p_part: "psalm",
+      p_song_id: "psalm-song-id",
+    },
+  }]);
+});
+
 test("Supabase plan song creation maps validated drafts to the atomic RPC", async () => {
   const { calls, supabase } = supabaseFixture(Promise.resolve({ data: null, error: null }));
   const store = storeModule.createSupabaseStore(supabase, {
@@ -315,6 +422,9 @@ test("Supabase plan song creation maps validated drafts to the atomic RPC", asyn
       p_copyright_owner: "",
       p_copyright_year: "",
       p_source: "",
+      p_responsorial_book: "",
+      p_responsorial_number: null,
+      p_responsorial_citations: [],
       p_lyrics: null,
       p_suggestion_parts: [],
       p_in_repertoire: true,

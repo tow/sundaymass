@@ -13,6 +13,13 @@ const mapSong = row => {
     copyrightOwner: row.copyright_owner || "",
     copyrightYear: row.copyright_year || "",
     source: row.source || "",
+    responsorialBook: row.responsorial_book || "",
+    responsorialNumber: Number.isInteger(row.responsorial_number)
+      ? row.responsorial_number
+      : null,
+    responsorialCitations: Array.isArray(row.responsorial_citations)
+      ? row.responsorial_citations
+      : [],
     inRepertoire: row.in_repertoire !== false,
     suggestionParts: Array.isArray(row.suggestion_parts) ? row.suggestion_parts : [],
     lyrics: Array.isArray(row.song_lyrics)
@@ -32,6 +39,9 @@ const draftParams = (draft, songCatalog = globalThis.window?.SongCatalog) => {
       p_copyright_owner: result.value.copyrightOwner,
       p_copyright_year: result.value.copyrightYear,
       p_source: result.value.source,
+      p_responsorial_book: result.value.responsorialBook,
+      p_responsorial_number: result.value.responsorialNumber,
+      p_responsorial_citations: result.value.responsorialCitations,
       p_lyrics: result.value.lyrics || null,
       p_suggestion_parts: result.value.suggestionParts,
       p_in_repertoire: result.value.inRepertoire !== false,
@@ -109,7 +119,7 @@ function createSupabaseStore(
     async browseSongs() {
       const { data, error } = await supabase
         .from("songs")
-        .select("id,title,youtube_video_id,authors,copyright_owner,copyright_year,source,in_repertoire,suggestion_parts")
+        .select("id,title,youtube_video_id,authors,copyright_owner,copyright_year,source,responsorial_book,responsorial_number,responsorial_citations,in_repertoire,suggestion_parts")
         .order("title");
       if (error) throw error;
       return (data || []).map(mapSong);
@@ -117,7 +127,7 @@ function createSupabaseStore(
     async getSong(songId) {
       const { data, error } = await supabase
         .from("songs")
-        .select("id,title,youtube_video_id,authors,copyright_owner,copyright_year,source,in_repertoire,suggestion_parts,song_lyrics(lyrics)")
+        .select("id,title,youtube_video_id,authors,copyright_owner,copyright_year,source,responsorial_book,responsorial_number,responsorial_citations,in_repertoire,suggestion_parts,song_lyrics(lyrics)")
         .eq("id", songId)
         .single();
       if (error) throw error;

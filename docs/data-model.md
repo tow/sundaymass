@@ -16,6 +16,8 @@ auth.users
 plans (one row per Sunday with shared data)
    |
    +--< plan_songs >-- songs --0..1-- song_lyrics
+   |        |
+   |        +--0..1-- plan_song_lyrics
                               |
                               +--0..1-- song_embeddings
 
@@ -92,6 +94,9 @@ their own membership row.
 | `copyright_owner` | Optional owner or publisher |
 | `copyright_year` | Optional text, not a number; values such as `1975, 2016` are valid |
 | `source` | Optional source or collection |
+| `responsorial_book` | Scripture book for a Psalm or canticle, otherwise empty |
+| `responsorial_number` | Lectionary Psalm/canticle number, otherwise null |
+| `responsorial_citations` | Known exact lectionary citations for this setting |
 | `in_repertoire` | Whether the choir currently knows and uses the song |
 | `suggestion_parts` | Soft allow-list for automatic recommendations |
 | audit fields | Creator and last editor/time |
@@ -114,6 +119,13 @@ The suggestion array accepts the normal classes `entrance`, `kyrie`, `gloria`, `
 `communion`, and `recessional`. Both Communion plan slots use the single `communion`
 class. An empty array means that the song remains searchable and assignable but is not
 automatically suggested.
+
+A song offered for the `psalm` slot must have a responsorial book and number. Psalms
+with dual Grail/modern numbering use the greater number (for example `84(85)` is
+stored as `Psalm`, `85`). Canticles use their own book and chapter, such as `Isaiah`,
+`12` or `Daniel`, `3`. The bounded `suggest_psalms_for_reading` RPC matches these
+fields directly and gives an exact-citation setting priority. It does not use song or
+reading embeddings.
 
 Anonymous and authenticated users may execute the bounded
 `suggest_songs_for_readings` function. It is a security-definer boundary over the
@@ -148,6 +160,26 @@ The 14 valid plan slots are `entrance`, `kyrie`, `gloria`, `psalm`, `acclamation
 There is deliberately no foreign-key or check constraint between a plan part and a
 song's `suggestion_parts`. Manual assignment is unrestricted.
 
+### `plan_song_lyrics`
+
+| Field | Meaning |
+|---|---|
+| `sunday`, `part` | One optional override for an assigned Sunday slot |
+| `song_id` | Must be the song currently assigned to that slot |
+| `lyrics` | Private edited full text for this use only |
+| `updated_at`, `updated_by` | Last-write audit data |
+
+Canonical lyrics remain in `song_lyrics`. Saving a weekly edit copies a complete edited
+text into this table; it does not create a reusable lyric-version entity or link future
+weeks. “Reuse most recent edit” is an explicit copy operation. Replacing or clearing
+the assigned song deletes the slot override.
+
+For a structured Responsorial Psalm, the editor starts from all canonical response and
+verse sections. Omitted verses remain visible and clearly disabled in the editor, but
+the stored edited text contains only included sections. Exports label the response
+`ALL` and verses `CANTOR`; omitted sections therefore cannot reach PDF or PowerPoint
+output.
+
 ### Vector tables
 
 `song_embeddings` stores one 384-dimensional vector and canonical content hash per
@@ -165,6 +197,7 @@ staleness.
 |---|---:|---:|---:|---:|
 | Read plans, assignments, song metadata | Yes | Yes | Yes | Yes |
 | Read song lyrics | No | No | Yes | Yes |
+| Read weekly lyric overrides | No | No | Yes | Yes |
 | Read own editor membership | No | Yes, if present | Yes | Yes |
 | Change plans, assignments, songs, lyrics | No | No | Yes | Yes |
 | Read or write raw vector tables | No | No | No | Yes |
@@ -190,11 +223,14 @@ like a successful no-op.
 | `create_song` | Create an unassigned canonical song and optional private lyric row |
 | `create_and_assign_song` | Atomically create a song and assign it to one plan slot |
 | `update_song` | Replace canonical public fields, suggestion parts, and optional lyric row |
+| `save_plan_song_lyrics` | Save one private edited lyric copy for the currently assigned slot |
+| `clear_plan_song_lyrics` | Return one slot to canonical lyrics |
 | `save_reading_override` | Add or replace one structured slot override |
 | `clear_reading_override` | Clear one slot or all individual reading overrides |
 | `save_celebration_override` | Save one complete snapshot and clear individual overrides |
 | `clear_celebration_override` | Restore computed celebration and clear individual overrides |
 | `suggest_songs_for_readings` | Rank classified songs, reserving two places for repertoire songs and one for an extended-library candidate |
+| `suggest_psalms_for_reading` | Match Psalm/canticle settings by structured book and number, prioritizing exact citations |
 
 Successful writes are live immediately. There is no draft/publish table or status.
 

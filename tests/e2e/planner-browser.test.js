@@ -1119,8 +1119,10 @@ test("editor downloads private lyrics as an imposed landscape A4 booklet PDF", a
   const source = pdf.toString("latin1");
   assert.match(source, /Gathered & Sent/);
   assert.match(source, /ENTRANCE PRIVATE LINE ONE/);
+  assert.match(source, /ALL/);
   assert.match(source, /PSALM RESPONSE FOR EVERYONE/);
-  assert.doesNotMatch(source, /PSALM VERSE FOR THE CANTOR ONLY/);
+  assert.match(source, /CANTOR/);
+  assert.match(source, /PSALM VERSE FOR THE CANTOR ONLY/);
   assert.match(source, /COMMUNION PRIVATE LINE TWO/);
   await context.close();
 });

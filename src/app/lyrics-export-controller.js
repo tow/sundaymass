@@ -63,7 +63,15 @@
         const uniqueIds = [...new Set(selected.map(song => song.id))];
         const details = await Promise.all(uniqueIds.map(id => store.getSong(id)));
         const detailsById = new Map(details.map(song => [song.id, song]));
-        const assignments = presentation.selectedAssignments(parts, songs, detailsById);
+        const weeklyLyrics = typeof store.getWeeklyLyrics === "function"
+          ? await store.getWeeklyLyrics(getDate())
+          : {};
+        const assignments = presentation.selectedAssignments(
+          parts,
+          songs,
+          detailsById,
+          weeklyLyrics,
+        );
         const missing = presentation.missingLyrics(assignments);
         if (missing.length) {
           const titles = [...new Set(missing.map(song => song.title))];

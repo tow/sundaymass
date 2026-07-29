@@ -292,6 +292,22 @@
           <label><input type="checkbox" value="recessional"> Recessional</label>
         </div>
       </fieldset>
+      <fieldset class="responsorial-fields" id="songResponsorialFields" hidden>
+        <legend>Responsorial scripture reference</legend>
+        <p>Required for Psalm suggestions. Use the numbering shown in this planner’s lectionary.</p>
+        <div class="song-editor-grid">
+          <div>
+            <label for="songResponsorialBook">Book</label>
+            <input id="songResponsorialBook" type="text" maxlength="100" placeholder="Psalm, Isaiah, Daniel…">
+          </div>
+          <div>
+            <label for="songResponsorialNumber">Psalm / chapter number</label>
+            <input id="songResponsorialNumber" type="number" min="1" max="999" inputmode="numeric">
+          </div>
+        </div>
+        <label for="songResponsorialCitations">Exact citations <span>One per line</span></label>
+        <textarea id="songResponsorialCitations" rows="3" placeholder="Psalm 85:9, 10, 11–12, 13–14"></textarea>
+      </fieldset>
       <details class="song-lyrics-section">
         <summary id="songLyricsSummary">Add lyrics now (optional)</summary>
         <p>Lyrics are restricted to signed-in editors and are never included in the public plan.</p>
@@ -303,6 +319,41 @@
     <div class="reading-dialog-actions">
       <button type="button" id="songEditorCancel">Cancel</button>
       <button class="primary" type="submit" id="saveSong">Create and use song</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="reading-dialog weekly-lyrics-dialog" id="weeklyLyricsDialog">
+  <form class="reading-dialog-form" id="weeklyLyricsForm">
+    <div class="reading-dialog-head">
+      <div>
+        <div class="eyebrow" id="weeklyLyricsEyebrow">Weekly lyrics</div>
+        <h2 id="weeklyLyricsTitle"></h2>
+        <p id="weeklyLyricsContext"></p>
+      </div>
+      <button class="reading-dialog-close" id="weeklyLyricsClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="reading-dialog-body weekly-lyrics-body">
+      <p class="weekly-custom-notice" id="weeklyLyricsCustomNotice" hidden>This Sunday currently uses edited lyrics.</p>
+      <section class="weekly-previous" id="weeklyLyricsPrevious" hidden>
+        <div><strong id="weeklyLyricsPreviousMeta"></strong></div>
+        <button type="button" id="weeklyLyricsPreviousButton">Reuse most recent edit</button>
+      </section>
+      <p class="weekly-psalm-fallback" id="weeklyPsalmFallback" hidden>This Psalm is not consistently sectioned, so it is shown as plain text.</p>
+      <div id="weeklyLyricsTextEditor">
+        <label for="weeklyLyricsTextarea">Lyrics for this Sunday</label>
+        <textarea id="weeklyLyricsTextarea" rows="18"></textarea>
+      </div>
+      <div class="weekly-psalm-editor" id="weeklyPsalmEditor" hidden>
+        <p><strong>ALL</strong> is sung by the congregation. Included verses are marked <strong>CANTOR</strong>; omitted verses will not appear in exports.</p>
+        <div id="weeklyPsalmSections"></div>
+      </div>
+      <p class="reading-validation" id="weeklyLyricsError" role="alert"></p>
+    </div>
+    <div class="reading-dialog-actions weekly-lyrics-actions">
+      <button type="button" id="weeklyLyricsReset">Use canonical</button>
+      <button type="button" id="weeklyLyricsCancel">Cancel</button>
+      <button class="primary" type="submit" id="weeklyLyricsSave">Save for this Sunday</button>
     </div>
   </form>
 </dialog>

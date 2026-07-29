@@ -32,6 +32,14 @@
       copyrightOwner: string(source.copyright_owner),
       copyrightYear: string(source.copyright_year),
       source: string(source.source),
+      responsorialBook: string(source.responsorial_book),
+      responsorialNumber: Number.isInteger(source.responsorial_number)
+        ? source.responsorial_number
+        : null,
+      responsorialCitations: Array.isArray(source.responsorial_citations)
+        ? source.responsorial_citations.filter(value => typeof value === "string")
+        : [],
+      suggestionReason: string(source.suggestion_reason),
       inRepertoire: source.in_repertoire !== false,
       lyrics,
       hasLyrics: Boolean(lyrics.trim()),

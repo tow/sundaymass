@@ -82,6 +82,20 @@ test("suggestions show compact author details without private lyrics", () => {
   assert.doesNotMatch(result.html, /Private first lyrics|Private second lyrics|Lyrics recorded/);
 });
 
+test("Psalm suggestions explain exact structured citation matches", () => {
+  const result = view.renderSuggestions({
+    songs: [{
+      id: "psalm-85",
+      title: "Lord, Let Us See Your Kindness",
+      authors: "Owen Alstott",
+      suggestionReason: "Exact Psalm 85:9, 10, 11-12, 13-14",
+    }],
+    selectedSong: null,
+  });
+
+  assert.match(result.html, /Exact Psalm 85:9, 10, 11-12, 13-14 · Owen Alstott/);
+});
+
 test("read-only suggestions cannot be selected or assigned", () => {
   const result = view.renderSuggestions({
     songs: [{

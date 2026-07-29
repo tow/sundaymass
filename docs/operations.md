@@ -71,6 +71,9 @@ sundaymass create_song \
   --title "Psalm response" \
   --authors "Composer" \
   --suggestion-part psalm \
+  --responsorial-book Psalm \
+  --responsorial-number 85 \
+  --responsorial-citation "Psalm 85:9, 10, 11-12, 13-14" \
   --non-repertoire
 
 sundaymass create_song \
@@ -83,6 +86,7 @@ sundaymass create_song \
 sundaymass add_lyrics SONG_UUID --file lyrics.txt --apply
 sundaymass update_song SONG_UUID --source "Licensed source" --apply
 sundaymass assign_song 2026-08-02 psalm SONG_UUID --apply
+sundaymass audit_psalms --json
 ```
 
 The supported commands are:
@@ -91,6 +95,7 @@ The supported commands are:
 - `create_song` and `update_song` for song metadata
 - `add_lyrics` and `clear_lyrics` for the private lyric record
 - `assign_song` and `clear_song` for one Mass-plan slot
+- `audit_psalms` for a read-only structured-metadata completeness report
 
 Use `--file -` to pipe lyrics through standard input. Never pass lyric text as a
 command-line argument. Mutation commands accept song UUIDs only; `list_songs` is the

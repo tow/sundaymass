@@ -28,11 +28,13 @@ const SONG_VALUE_FLAGS = new Map([
   ["copyright-owner", "copyrightOwner"],
   ["copyright-year", "copyrightYear"],
   ["source", "source"],
+  ["responsorial-book", "responsorialBook"],
+  ["responsorial-number", "responsorialNumber"],
 ]);
 const BOOLEAN_FLAGS = new Set([
   "apply", "dry-run", "json", "lyrics", "repertoire", "non-repertoire", "local",
 ]);
-const REPEATABLE_FLAGS = new Set(["suggestion-part"]);
+const REPEATABLE_FLAGS = new Set(["suggestion-part", "responsorial-citation"]);
 
 const HELP = `Sundaymass production maintenance
 
@@ -45,6 +47,7 @@ Usage:
   sundaymass clear_lyrics SONG_ID [--apply]
   sundaymass assign_song YYYY-MM-DD PART SONG_ID [--apply]
   sundaymass clear_song YYYY-MM-DD PART [--apply]
+  sundaymass audit_psalms [--json]
 
 Metadata options:
   --youtube-id ID
@@ -52,6 +55,10 @@ Metadata options:
   --copyright-owner TEXT
   --copyright-year TEXT
   --source TEXT
+  --responsorial-book BOOK
+  --responsorial-number NUMBER
+  --responsorial-citation CITATION
+                              Repeatable; include the exact lectionary verses
   --suggestion-part PART       Repeatable
   --repertoire | --non-repertoire
 
@@ -141,6 +148,14 @@ function songPatch(flags, { requireTitle = false } = {}) {
   if (flags.has("suggestion-part")) {
     patch.suggestionParts = flags.get("suggestion-part");
   }
+  if (flags.has("responsorial-citation")) {
+    patch.responsorialCitations = flags.get("responsorial-citation");
+  }
+  if (patch.responsorialNumber !== undefined) {
+    patch.responsorialNumber = intOption(patch.responsorialNumber, {
+      min: 1, max: 999, label: "responsorial number",
+    });
+  }
   if (flags.has("repertoire") && flags.has("non-repertoire")) {
     throw new Error("Choose either --repertoire or --non-repertoire");
   }
@@ -166,6 +181,9 @@ function songPatch(flags, { requireTitle = false } = {}) {
         copyrightOwner: "",
         copyrightYear: "",
         source: "",
+        responsorialBook: "",
+        responsorialNumber: null,
+        responsorialCitations: [],
         lyrics: "",
         suggestionParts: [],
         inRepertoire: true,
@@ -189,6 +207,9 @@ function songPatch(flags, { requireTitle = false } = {}) {
       copyrightOwner: validated.value.copyrightOwner,
       copyrightYear: validated.value.copyrightYear,
       source: validated.value.source,
+      responsorialBook: validated.value.responsorialBook,
+      responsorialNumber: validated.value.responsorialNumber,
+      responsorialCitations: validated.value.responsorialCitations,
       suggestionParts: validated.value.suggestionParts,
       inRepertoire: validated.value.inRepertoire,
     };
@@ -214,6 +235,7 @@ function createSongSql(song) {
 created as (
   insert into public.songs (
     title, youtube_video_id, authors, copyright_owner, copyright_year, source,
+    responsorial_book, responsorial_number, responsorial_citations,
     suggestion_parts, in_repertoire, created_at, created_by, updated_at, updated_by
   )
   select
@@ -223,15 +245,20 @@ created as (
     btrim(coalesce(p->>'copyrightOwner', '')),
     btrim(coalesce(p->>'copyrightYear', '')),
     btrim(coalesce(p->>'source', '')),
+    btrim(coalesce(p->>'responsorialBook', '')),
+    nullif(p->>'responsorialNumber', '')::integer,
+    ${textArraySql("p->'responsorialCitations'")},
     ${textArraySql("p->'suggestionParts'")},
     coalesce((p->>'inRepertoire')::boolean, true),
     now(), null, now(), null
   from input
   returning id, title, youtube_video_id, authors, copyright_owner,
-    copyright_year, source, suggestion_parts, in_repertoire
+    copyright_year, source, responsorial_book, responsorial_number,
+    responsorial_citations, suggestion_parts, in_repertoire
 )
 select id::text, title, youtube_video_id, authors, copyright_owner,
-  copyright_year, source, suggestion_parts, in_repertoire, false as has_lyrics
+  copyright_year, source, responsorial_book, responsorial_number,
+  responsorial_citations, suggestion_parts, in_repertoire, false as has_lyrics
 from created;`;
 }
 
@@ -251,6 +278,12 @@ updated as (
       then btrim(coalesce(p->>'copyrightYear', '')) else s.copyright_year end,
     source = case when p ? 'source'
       then btrim(coalesce(p->>'source', '')) else s.source end,
+    responsorial_book = case when p ? 'responsorialBook'
+      then btrim(coalesce(p->>'responsorialBook', '')) else s.responsorial_book end,
+    responsorial_number = case when p ? 'responsorialNumber'
+      then nullif(p->>'responsorialNumber', '')::integer else s.responsorial_number end,
+    responsorial_citations = case when p ? 'responsorialCitations'
+      then ${textArraySql("p->'responsorialCitations'")} else s.responsorial_citations end,
     suggestion_parts = case when p ? 'suggestionParts'
       then ${textArraySql("p->'suggestionParts'")} else s.suggestion_parts end,
     in_repertoire = case when p ? 'inRepertoire'
@@ -260,10 +293,12 @@ updated as (
   from input
   where s.id = (p->>'id')::uuid
   returning s.id, s.title, s.youtube_video_id, s.authors, s.copyright_owner,
-    s.copyright_year, s.source, s.suggestion_parts, s.in_repertoire
+    s.copyright_year, s.source, s.responsorial_book, s.responsorial_number,
+    s.responsorial_citations, s.suggestion_parts, s.in_repertoire
 )
 select u.id::text, u.title, u.youtube_video_id, u.authors, u.copyright_owner,
-  u.copyright_year, u.source, u.suggestion_parts, u.in_repertoire,
+  u.copyright_year, u.source, u.responsorial_book, u.responsorial_number,
+  u.responsorial_citations, u.suggestion_parts, u.in_repertoire,
   exists(select 1 from public.song_lyrics sl where sl.song_id = u.id) as has_lyrics
 from updated u;`;
 }
@@ -304,7 +339,8 @@ function showSongSql(songId, includeLyrics = false) {
   return `${payloadSql({ id: songId })},
 selected as (
   select s.id, s.title, s.youtube_video_id, s.authors, s.copyright_owner,
-    s.copyright_year, s.source, s.suggestion_parts, s.in_repertoire,
+    s.copyright_year, s.source, s.responsorial_book, s.responsorial_number,
+    s.responsorial_citations, s.suggestion_parts, s.in_repertoire,
     sl.song_id is not null as has_lyrics,
     ${includeLyrics ? "sl.lyrics" : "null::text"} as lyrics
   from public.songs s
@@ -313,7 +349,8 @@ selected as (
   where s.id = (p->>'id')::uuid
 )
 select id::text, title, youtube_video_id, authors, copyright_owner,
-  copyright_year, source, suggestion_parts, in_repertoire, has_lyrics, lyrics
+  copyright_year, source, responsorial_book, responsorial_number,
+  responsorial_citations, suggestion_parts, in_repertoire, has_lyrics, lyrics
 from selected;`;
 }
 
@@ -321,6 +358,7 @@ function listSongsSql(query, limit) {
   return `${payloadSql({ query, limit })},
 selected as (
   select s.id, s.title, s.authors, s.in_repertoire, s.suggestion_parts,
+    s.responsorial_book, s.responsorial_number, s.responsorial_citations,
     exists(select 1 from public.song_lyrics sl where sl.song_id = s.id) as has_lyrics
   from public.songs s
   cross join input
@@ -329,8 +367,36 @@ selected as (
   order by lower(s.title), lower(s.authors), s.id
   limit (select (p->>'limit')::integer from input)
 )
-select id::text, title, authors, in_repertoire, suggestion_parts, has_lyrics
+select id::text, title, authors, in_repertoire, suggestion_parts,
+  responsorial_book, responsorial_number, responsorial_citations, has_lyrics
 from selected;`;
+}
+
+function auditPsalmsSql() {
+  return `select
+  id::text,
+  title,
+  source,
+  suggestion_parts,
+  responsorial_book,
+  responsorial_number,
+  responsorial_citations,
+  case
+    when nullif(btrim(responsorial_book), '') is null then 'missing book'
+    when responsorial_number is null then 'missing number'
+    when cardinality(responsorial_citations) = 0 then 'missing exact citation'
+    when exists (
+      select 1
+      from unnest(responsorial_citations) citation
+      where nullif(btrim(citation), '') is null
+         or citation ~* 'Respond & Acclaim|[[:space:]]+·[[:space:]]+pp\\.'
+    ) then 'invalid exact citation'
+    else 'complete'
+  end as status
+from public.songs
+where 'psalm' = any(suggestion_parts)
+   or nullif(btrim(responsorial_book), '') is not null
+order by status desc, lower(title), id;`;
 }
 
 function assignSongSql(sunday, part, songId) {
@@ -487,6 +553,13 @@ function execute(argv, dependencies = {}) {
       break;
     }
 
+    case "audit_psalms": {
+      assertKnownFlags(parsed.flags, new Set(["json", "local"]));
+      if (parsed.positionals.length) throw new Error("audit_psalms takes no positional arguments");
+      rows = query(auditPsalmsSql(), { local });
+      break;
+    }
+
     case "create_song": {
       assertKnownFlags(parsed.flags, allowedMetadataFlags());
       if (parsed.positionals.length) throw new Error("create_song takes no positional arguments");
@@ -582,6 +655,7 @@ module.exports = {
   HELP,
   MUSIC_PARTS,
   addLyricsSql,
+  auditPsalmsSql,
   assertDate,
   assertPart,
   assertUuid,

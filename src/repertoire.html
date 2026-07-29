@@ -70,6 +70,16 @@
           <label><input type="checkbox" value="recessional"> Recessional</label>
         </div>
       </fieldset>
+      <fieldset class="responsorial-fields" id="songResponsorialFields" hidden>
+        <legend>Responsorial scripture reference</legend>
+        <p>Required for Psalm suggestions. Use the planner’s lectionary numbering.</p>
+        <div class="field-grid">
+          <div><label for="songResponsorialBook">Book</label><input id="songResponsorialBook" maxlength="100" placeholder="Psalm, Isaiah, Daniel…"></div>
+          <div><label for="songResponsorialNumber">Psalm / chapter number</label><input id="songResponsorialNumber" type="number" min="1" max="999"></div>
+        </div>
+        <label for="songResponsorialCitations">Exact citations — one per line</label>
+        <textarea id="songResponsorialCitations" rows="3"></textarea>
+      </fieldset>
       <details><summary>Lyrics (editors only)</summary><textarea id="songLyrics" rows="14"></textarea></details>
       <p class="error" id="songEditorError"></p>
     </div>

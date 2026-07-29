@@ -7,6 +7,7 @@
     isEditor,
     getPreviousDate,
     getReadingCitations,
+    getPsalmCitation = () => "",
     suggestionPartFor,
     onChange,
     logger = console,
@@ -85,6 +86,7 @@
           const suggestions = await store.suggestSongs(
             getReadingCitations(),
             suggestionPartFor(partKey),
+            getPsalmCitation(),
           );
           if (generation !== requestGeneration || !value.open) return;
           value.suggestions = suggestions.slice(0, maxSuggestions);

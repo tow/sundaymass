@@ -8,6 +8,7 @@ complex:
 - [ADR 003: Treat suggestion positions as soft filters](003-soft-suggestion-parts.md)
 - [ADR 004: Store resolved celebration snapshots](004-resolved-celebration-snapshots.md)
 - [ADR 005: Support offline public use but require online editing](005-offline-public-online-editing.md)
+- [ADR 006: Keep weekly lyrics as explicit full-text copies](006-weekly-lyrics-copies.md)
 
 An accepted decision may be superseded by a later ADR, but should not be silently
 rewritten after the implementation or its tradeoffs change.

@@ -14,6 +14,8 @@
 @@LYRICS_PPTX_CONTROLLER_JS@@
 @@LYRICS_SLIDES_CONTROLLER_JS@@
 @@LYRICS_BOOKLET_CONTROLLER_JS@@
+@@WEEKLY_LYRICS_JS@@
+@@WEEKLY_LYRICS_CONTROLLER_JS@@
 @@MUSIC_PARTS_JS@@
 @@SONG_PRESENTATION_JS@@
 @@PRACTICE_QUEUE_JS@@
@@ -106,6 +108,10 @@ const songForm=SongForm.create({
   copyrightOwner:songCopyrightOwner,
   copyrightYear:songCopyrightYear,
   source:songSource,
+  responsorialBook:songResponsorialBook,
+  responsorialNumber:songResponsorialNumber,
+  responsorialCitations:songResponsorialCitations,
+  responsorialFields:songResponsorialFields,
   lyrics:songLyrics,
   inRepertoire:songInRepertoire,
   suggestionParts:songSuggestionParts,
@@ -117,6 +123,7 @@ function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").repla
 let planStore = null;
 let isEditor = false;
 let signedIn = false;
+let weeklyLyricsParts = new Set();
 
 const plannerState=PlannerState.create({
   initialSunday:initialUrlSelection?.sunday
@@ -148,7 +155,12 @@ function vals(){ return plannerState.values(); }
 function textFor(citation){ return READINGS[citation] || ""; }
 function choiceFor(key){ return musicPlanView.choiceFor(plannerState.songs(),key); }
 function renderMusicPlan(){
-  const view=musicPlanView.render({parts:MUSIC_PARTS,songs:plannerState.songs(),isEditor});
+  const view=musicPlanView.render({
+    parts:MUSIC_PARTS,
+    songs:plannerState.songs(),
+    isEditor,
+    customizedParts:weeklyLyricsParts,
+  });
   editorHelp.hidden=view.editorHelpHidden;
   musicIntro.textContent=view.intro;
   musicList.innerHTML=view.html;
@@ -274,6 +286,7 @@ const planSessionController=PlanSessionController.create({
   isOnline:()=>navigator.onLine,
   onReset:()=>{
     plannerState.reset();
+    weeklyLyricsParts=new Set();
     renderMusicPlan();
     refresh();
   },
@@ -281,6 +294,7 @@ const planSessionController=PlanSessionController.create({
     plannerState.applyPlan(plan);
     renderMusicPlan();
     refresh();
+    weeklyLyricsController.refreshSummary();
   },
   onAuth:(auth)=>{
     isEditor=!!auth.isEditor;
@@ -289,9 +303,12 @@ const planSessionController=PlanSessionController.create({
     if(!isEditor){
       readingWorkflow.closeAll();
       songWorkflow.closeAll();
+      weeklyLyricsController.close();
+      weeklyLyricsParts=new Set();
     }
     renderMusicPlan();
     readingWorkflow.renderEditor();
+    weeklyLyricsController.refreshSummary();
   },
   onStatus:setSyncStatus,
   logger:console,
@@ -354,6 +371,7 @@ const songWorkflow=SongWorkflow.create({
   getDate:()=>current().d,
   getPreviousDate:()=>calendarNavigation.previousSunday(current()).d,
   getReadingCitations:()=>READING_SLOTS.map(slot=>displayedCitation(slot)).filter(Boolean),
+  getPsalmCitation:()=>displayedCitation(READING_SLOTS.find(slot=>slot.key==="psalm")),
   getSongs:plannerState.songs,
   openModal,
   onStatus:setSyncStatus,
@@ -373,6 +391,46 @@ const songWorkflow=SongWorkflow.create({
   logger:console,
 });
 songWorkflow.start();
+const weeklyLyricsController=WeeklyLyricsController.create({
+  elements:{
+    musicList,
+    dialog:weeklyLyricsDialog,
+    form:weeklyLyricsForm,
+    eyebrow:weeklyLyricsEyebrow,
+    title:weeklyLyricsTitle,
+    context:weeklyLyricsContext,
+    close:weeklyLyricsClose,
+    cancel:weeklyLyricsCancel,
+    save:weeklyLyricsSave,
+    reset:weeklyLyricsReset,
+    error:weeklyLyricsError,
+    customNotice:weeklyLyricsCustomNotice,
+    previous:weeklyLyricsPrevious,
+    previousButton:weeklyLyricsPreviousButton,
+    previousMeta:weeklyLyricsPreviousMeta,
+    textEditor:weeklyLyricsTextEditor,
+    textarea:weeklyLyricsTextarea,
+    psalmEditor:weeklyPsalmEditor,
+    psalmSections:weeklyPsalmSections,
+    psalmFallback:weeklyPsalmFallback,
+  },
+  parts:MUSIC_PARTS,
+  weeklyLyrics:WeeklyLyrics,
+  getStore:()=>planStore,
+  getSongs:plannerState.songs,
+  getDate:()=>current().d,
+  isEditor:()=>isEditor,
+  isOnline:()=>navigator.onLine,
+  openModal,
+  onStatus:setSyncStatus,
+  onSummaryChanged:parts=>{
+    weeklyLyricsParts=new Set(parts);
+    renderMusicPlan();
+  },
+  formatDate:fmtPicker,
+  logger:console,
+});
+weeklyLyricsController.start();
 AuthController.create({
   button:authButton,
   dialog:loginDialog,
@@ -392,7 +450,9 @@ AuthController.create({
 
 // pick nearest Sunday to a chosen date
 function selectSunday(sunday,{updateUrl=true,replaceUrl=false}={}){
+  weeklyLyricsController.close();
   plannerState.setSunday(sunday);
+  weeklyLyricsParts=new Set();
   if(updateUrl) DateUrlState.write(window,sunday.d,{replace:replaceUrl});
   refresh();
   subscribeToCurrentPlan();
