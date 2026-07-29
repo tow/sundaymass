@@ -127,6 +127,19 @@ test("the booklet PDF keeps only the Psalm response", () => {
   assert.equal(source.includes("Verse 1"), false);
 });
 
+test("the booklet PDF is strictly monochrome to save colour ink", () => {
+  const doc = LyricsBooklet.buildPdf(jsPDF, {
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "Sunday · Year A",
+    assignments: [assignment()],
+  });
+  // jsPDF only emits the RGB operators (rg/RG) when a colour has unequal
+  // channels; greyscale values collapse to the g/G operators.
+  const colourOps = pdfSource(doc).match(/[\d.]+ [\d.]+ [\d.]+ (rg|RG)/g) || [];
+  assert.deepEqual(colourOps, []);
+});
+
 test("the booklet PDF file name derives from the selected date", () => {
   assert.equal(LyricsBooklet.fileName("2026-08-02"), "st-james-booklet-2026-08-02.pdf");
   assert.equal(LyricsBooklet.fileName(""), "st-james-booklet-mass.pdf");

@@ -10,13 +10,14 @@
   const MM_PER_POINT = 25.4 / 72;
   const SHEET = Object.freeze({ w: 297, h: 210, half: 148.5 });
   const PAGE_PADDING = Object.freeze({ top: 10, side: 10, bottom: 11 });
+  // Deliberately monochrome — the booklet is photocopied in bulk, so it must
+  // not spend colour ink (no cover flood-fill, greyscale accents only).
   const COLORS = Object.freeze({
     ink: "#111111",
-    navy: "#002f45",
-    gold: "#e0b96a",
-    bronze: "#80632d",
-    slate: "#667078",
-    paleBlue: "#d6e1e6",
+    heading: "#111111",
+    label: "#444444",
+    muted: "#555555",
+    rule: "#8c8c8c",
     footer: "#777777",
     divider: "#d5d5d5",
     foldMark: "#999999",
@@ -239,8 +240,6 @@
   }
 
   function paintCover(doc, page, x0) {
-    doc.setFillColor(COLORS.navy);
-    doc.rect(x0, 0, SHEET.half, SHEET.h, "F");
     const left = x0 + 14;
     const width = SHEET.half - 28;
     const titleLines = splitToWidth(doc, page.celebration || "Sunday Mass", {
@@ -255,45 +254,43 @@
       + lineStep(9, 1.25);
     let y = (SHEET.h - total) / 2;
     y = writeLines(doc, ["ST JAMES THE APOSTLE · 6PM MASS"], left, y, {
-      style: "bold", size: 8, color: COLORS.gold, charSpace: 1.1 * MM_PER_POINT,
+      style: "bold", size: 8, color: COLORS.label, charSpace: 1.1 * MM_PER_POINT,
     });
     y += 10;
     y = writeLines(doc, titleLines, left, y, {
-      font: "times", style: "bold", size: 25, color: "#ffffff", lineHeight: 1.08,
+      font: "times", style: "bold", size: 25, color: COLORS.heading, lineHeight: 1.08,
     });
     y += 4;
-    doc.setDrawColor(COLORS.gold);
+    doc.setDrawColor(COLORS.rule);
     doc.setLineWidth(1.5 * MM_PER_POINT);
     doc.line(left, y, left + 22, y);
     y += 4;
     y = writeLines(doc, metaLines, left, y, {
-      size: 11, color: COLORS.paleBlue, lineHeight: 1.35,
+      size: 11, color: COLORS.muted, lineHeight: 1.35,
     });
     y += 10;
     writeLines(doc, ["CONGREGATIONAL SONG BOOKLET"], left, y, {
-      style: "bold", size: 9, color: COLORS.gold, charSpace: 0.7 * MM_PER_POINT,
+      style: "bold", size: 9, color: COLORS.label, charSpace: 0.7 * MM_PER_POINT,
     });
   }
 
   function paintBackCover(doc, page, x0) {
-    doc.setFillColor(COLORS.navy);
-    doc.rect(x0, 0, SHEET.half, SHEET.h, "F");
     const center = x0 + SHEET.half / 2;
     const total = lineStep(9, 1.25) + 3.2 + lineStep(9, 1.25);
     let y = (SHEET.h - total) / 2;
     y = writeLines(doc, ["ST JAMES THE APOSTLE · 6PM MASS"], center, y, {
-      style: "bold", size: 9, color: COLORS.gold,
+      style: "bold", size: 9, color: COLORS.label,
       align: "center", charSpace: 0.8 * MM_PER_POINT,
     });
     y += 3.2;
     writeLines(doc, [String(page.date || "")], center, y, {
-      size: 9, color: COLORS.paleBlue, align: "center",
+      size: 9, color: COLORS.muted, align: "center",
     });
   }
 
   function paintSongHeader(doc, item, left, width, y) {
     y = writeLines(doc, [String(item.partLabel || "").toUpperCase()], left, y, {
-      style: "bold", size: 6.5, color: COLORS.bronze, charSpace: 0.65 * MM_PER_POINT,
+      style: "bold", size: 6.5, color: COLORS.label, charSpace: 0.65 * MM_PER_POINT,
     });
     y += 0.7;
     const titleLines = splitToWidth(doc, item.title, {
@@ -301,23 +298,23 @@
     });
     const titleTop = y;
     y = writeLines(doc, titleLines, left, y, {
-      font: "times", style: "bold", size: 12, color: COLORS.navy, lineHeight: 1.06,
+      font: "times", style: "bold", size: 12, color: COLORS.heading, lineHeight: 1.06,
     });
     if (item.continued) {
       doc.setFont("times", "bold");
       doc.setFontSize(12);
       const lastLineTop = titleTop + (titleLines.length - 1) * lineStep(12, 1.06);
       writeLines(doc, ["(continued)"], left + doc.getTextWidth(titleLines.at(-1)) + 1.5,
-        lastLineTop + lineStep(12 - 7, 1), { size: 7, color: COLORS.slate });
+        lastLineTop + lineStep(12 - 7, 1), { size: 7, color: COLORS.muted });
     }
     if (item.attribution) {
       y += 0.6;
       y = writeLines(doc, [item.attribution], left, y, {
-        size: 6.5, color: COLORS.slate, lineHeight: 1.15,
+        size: 6.5, color: COLORS.muted, lineHeight: 1.15,
       });
     }
     y += item.continued ? 0.8 : 1.2;
-    doc.setDrawColor(COLORS.gold);
+    doc.setDrawColor(COLORS.rule);
     doc.setLineWidth(1 * MM_PER_POINT);
     doc.line(left, y, left + width, y);
     return y + (item.continued ? 1.5 : 1.7);
@@ -337,7 +334,7 @@
         unit.lines.forEach((line, wrapIndex) => {
           const indent = wrapIndex ? 1.2 * 8.5 * MM_PER_POINT : 0;
           writeLines(doc, [line], left + indent, y, unit.label
-            ? { style: "bolditalic", size: 7.5, color: COLORS.bronze, lineHeight: 1.15 }
+            ? { style: "bolditalic", size: 7.5, color: COLORS.label, lineHeight: 1.15 }
             : { font: "times", size: 8.5, color: COLORS.ink, lineHeight: 1.15 });
           y += lineStep(unit.label ? 7.5 : 8.5, 1.15);
         });
