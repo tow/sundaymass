@@ -18,14 +18,18 @@
       return Boolean(isEditor() && getStore() && !saving);
     }
 
-    async function run(work, onSuccess) {
+    async function run(date, work, onSuccess) {
       if (!available()) return false;
       saving = true;
       onStatus("Saving…", "");
       try {
         await work(getStore());
-        onSuccess();
-        onStatus("Saved", "saved");
+        if (getDate() === date) {
+          onSuccess();
+          onStatus("Saved", "saved");
+        } else {
+          onStatus("Saved for previous Sunday", "saved");
+        }
         return true;
       } catch (error) {
         logger.error(error);
@@ -53,23 +57,28 @@
     async function save(selection, confirmed) {
       if (!selection?.slot) return false;
       if (selection.requiresConfirmation && !confirmed) return false;
+      const date = getDate();
       if (selection.isDefault) {
         return run(
-          store => store.clearReadingOverride(getDate(), selection.slot),
+          date,
+          store => store.clearReadingOverride(date, selection.slot),
           () => onOverrideChanged(selection.slot, null),
         );
       }
       const value = overrideFor(selection, confirmed);
       return run(
-        store => store.saveReadingOverride(getDate(), selection.slot, value),
+        date,
+        store => store.saveReadingOverride(date, selection.slot, value),
         () => onOverrideChanged(selection.slot, value),
       );
     }
 
     async function restore(slot) {
       if (!slot) return false;
+      const date = getDate();
       return run(
-        store => store.clearReadingOverride(getDate(), slot),
+        date,
+        store => store.clearReadingOverride(date, slot),
         () => onOverrideChanged(slot, null),
       );
     }
@@ -79,8 +88,10 @@
       if (!confirmAll(
         "Restore all individual readings to the selected celebration?",
       )) return false;
+      const date = getDate();
       return run(
-        store => store.clearReadingOverride(getDate(), null),
+        date,
+        store => store.clearReadingOverride(date, null),
         onAllRestored,
       );
     }

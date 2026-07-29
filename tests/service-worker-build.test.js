@@ -33,3 +33,13 @@ test("the generated service-worker cache version represents its complete app she
   assert.doesNotMatch(generated, /@@(?:CACHE_VERSION|APP_SHELL)@@/);
   assets.forEach(asset => assert.match(generated, new RegExp(JSON.stringify(asset))));
 });
+
+test("failed navigation responses never replace a cached app-shell document", () => {
+  const template = read("src/service-worker.js");
+  const navigationBranch = template.slice(
+    template.indexOf('if (event.request.mode === "navigate")'),
+    template.indexOf("return;\n  }", template.indexOf('if (event.request.mode === "navigate")')),
+  );
+
+  assert.match(navigationBranch, /if \(response\.ok\) \{[\s\S]*cache\.put\(cacheTarget, copy\)/);
+});

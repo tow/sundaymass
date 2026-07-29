@@ -27,6 +27,7 @@ const james = {
 
 function harness() {
   let editor = true;
+  let date = sunday.d;
   let store = null;
   let confirmRestore = true;
   const states = [];
@@ -56,7 +57,7 @@ function harness() {
   const controller = CelebrationController.create({
     getStore: () => store,
     isEditor: () => editor,
-    getDate: () => sunday.d,
+    getDate: () => date,
     getCurrentSunday: () => sunday,
     getCandidates: () => [james],
     pickerView,
@@ -75,9 +76,16 @@ function harness() {
     errors,
     get restored() { return restored; },
     setEditor(value) { editor = value; },
+    setDate(value) { date = value; },
     setStore(value) { store = value; },
     setConfirmRestore(value) { confirmRestore = value; },
   };
+}
+
+function deferred() {
+  let resolve;
+  const promise = new Promise(done => { resolve = done; });
+  return { promise, resolve };
 }
 
 test("opening and searching own the visible celebration selection", () => {
@@ -191,4 +199,31 @@ test("restoring requires confirmation and clears celebration plus readings", asy
     { text: "Saving…", kind: "" },
     { text: "Saved", kind: "saved" },
   ]);
+});
+
+test("a late celebration save cannot replace the newly selected Sunday", async () => {
+  const state = harness();
+  const pending = deferred();
+  const dates = [];
+  state.setStore({
+    async saveCelebrationOverride(date) {
+      dates.push(date);
+      return pending.promise;
+    },
+  });
+  state.controller.open();
+  state.controller.select(0);
+
+  const operation = state.controller.save();
+  state.setDate("2026-08-02");
+  pending.resolve();
+  assert.equal(await operation, true);
+
+  assert.deepEqual(dates, [sunday.d]);
+  assert.deepEqual(state.saved, []);
+  assert.equal(state.controller.state().open, false);
+  assert.deepEqual(state.statuses.at(-1), {
+    text: "Saved for previous Sunday",
+    kind: "saved",
+  });
 });

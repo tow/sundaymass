@@ -114,6 +114,31 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
 
       const anonymousVectors = await anonymous("/rest/v1/song_embeddings?select=song_id");
       assert.ok([401, 403].includes(anonymousVectors.response.status));
+
+      for (const [table, auditColumns] of [
+        ["plans", "sunday,updated_by"],
+        ["songs", "id,created_by,updated_by"],
+        ["plan_songs", "sunday,part,updated_by"],
+      ]) {
+        for (const [role, request] of [
+          ["anonymous", anonymous],
+          ["editor", editor.request],
+        ]) {
+          const audit = await request(
+            `/rest/v1/${table}?select=${auditColumns}&limit=1`,
+          );
+          assert.ok(
+            [401, 403].includes(audit.response.status),
+            `${role} ${table} audit columns returned ${audit.response.status}`,
+          );
+        }
+      }
+
+      const serviceAudit = await service(
+        `/rest/v1/songs?id=eq.${fixtureSong.id}&select=id,created_by,updated_by`,
+      );
+      assert.equal(serviceAudit.response.status, 200);
+      assert.equal(serviceAudit.data[0].id, fixtureSong.id);
     });
 
     await t.test("authenticated non-editors cannot read lyrics or mutate songs", async () => {

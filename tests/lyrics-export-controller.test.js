@@ -24,6 +24,12 @@ function setup({
   store = { async getSong(id) { return { id, title: id, lyrics: "A lyric" }; } },
   build = async ({ setStatus }) => setStatus("Done.", "success"),
 } = {}) {
+  let currentDate = "2026-08-02";
+  let currentValues = { day: "18th Sunday", meta: "Sunday · Year A" };
+  let currentSongs = {
+    entrance: { id: "song-a", title: "Song A" },
+    communion: { id: "song-a", title: "Song A" },
+  };
   const button = element();
   const status = element();
   const builds = [];
@@ -54,12 +60,9 @@ function setup({
       },
     },
     getStore: () => store,
-    getSongs: () => ({
-      entrance: { id: "song-a", title: "Song A" },
-      communion: { id: "song-a", title: "Song A" },
-    }),
-    getDate: () => "2026-08-02",
-    getValues: () => ({ day: "18th Sunday", meta: "Sunday · Year A" }),
+    getSongs: () => currentSongs,
+    getDate: () => currentDate,
+    getValues: () => currentValues,
     isEditor: () => editor,
     isOnline: () => online,
     preparingMessage: "Preparing…",
@@ -72,7 +75,23 @@ function setup({
     },
   });
   controller.start();
-  return { button, builds, controller, status };
+  return {
+    button,
+    builds,
+    controller,
+    status,
+    setContext({ date = currentDate, values = currentValues, songs = currentSongs }) {
+      currentDate = date;
+      currentValues = values;
+      currentSongs = songs;
+    },
+  };
+}
+
+function deferred() {
+  let resolve;
+  const promise = new Promise(done => { resolve = done; });
+  return { promise, resolve };
 }
 
 test("run fetches each unique song once and hands assignments to build", async () => {
@@ -119,6 +138,43 @@ test("run uses the selected Sunday's edited lyrics without changing canonical ly
 
   assert.equal(builds[0].assignments[0].lyrics, "Edited response");
   assert.equal(builds[0].assignments[1].lyrics, "Canonical response\n\nVerse 1");
+});
+
+test("an export snapshots one Sunday before private lyric fetches begin", async () => {
+  const pending = deferred();
+  const weeklyDates = [];
+  const state = setup({
+    store: {
+      async getSong(id) {
+        await pending.promise;
+        return { id, title: "Original song", lyrics: "Original lyrics" };
+      },
+      async getWeeklyLyrics(date) {
+        weeklyDates.push(date);
+        return {};
+      },
+    },
+  });
+
+  const operation = state.button.click();
+  state.setContext({
+    date: "2026-08-09",
+    values: { day: "19th Sunday", meta: "Sunday · Year A" },
+    songs: { entrance: { id: "new-song", title: "New song" } },
+  });
+  pending.resolve();
+  await operation;
+
+  assert.deepEqual(weeklyDates, ["2026-08-02"]);
+  assert.equal(state.builds[0].date, "2026-08-02");
+  assert.deepEqual(state.builds[0].values, {
+    day: "18th Sunday",
+    meta: "Sunday · Year A",
+  });
+  assert.deepEqual(
+    state.builds[0].assignments.map(assignment => assignment.songId),
+    ["song-a", "song-a"],
+  );
 });
 
 test("missing lyrics block the build and identify only the affected song", async () => {

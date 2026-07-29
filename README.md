@@ -325,9 +325,6 @@ the lyrics it uses.
 
 - Verify St Henry's odd-looking first-reading citation ("Sirach 45:12-20, 4-5") against a
   printed Ordo; wire in the option-2 alternates as a toggle if wanted.
-- Improve Psalm versification (map NAB→WEB superscription offset) or source a PD psalter
-  with lectionary numbering.
-- Handle the Daniel 3 canticle (maps to KJVA "Prayer of Azariah").
 - Optional: hymnal / hymn-number column on the sung-parts grid.
 - Optional: define a structured lyric format for explicit verses, choruses, responses,
   and repeats beyond the current blank-line stanza convention.

@@ -214,9 +214,16 @@ function deferred() {
 }
 
 function supabaseFixture(planResult) {
-  const calls = { selects: [], rpcs: [], functionInvokes: [], removedChannels: [] };
+  const calls = {
+    selects: [],
+    rpcs: [],
+    functionInvokes: [],
+    removedChannels: [],
+    channelCallbacks: [],
+  };
   const channel = {
-    on() {
+    on(_event, _filter, callback) {
+      calls.channelCallbacks.push(callback);
       return channel;
     },
     subscribe() {
@@ -376,6 +383,136 @@ test("Psalm suggestions use the structured citation RPC instead of semantic sear
   assert.deepEqual(calls.functionInvokes, []);
 });
 
+function weeklyContextSupabase({ samePart, otherPart }) {
+  return {
+    from(table) {
+      assert.equal(table, "plan_song_lyrics");
+      const equals = new Map();
+      const notEquals = new Map();
+      const query = {
+        select() { return query; },
+        eq(column, value) {
+          equals.set(column, value);
+          return query;
+        },
+        neq(column, value) {
+          notEquals.set(column, value);
+          return query;
+        },
+        lt() { return query; },
+        order() { return query; },
+        limit() { return query; },
+        maybeSingle() { return query; },
+        then(resolve, reject) {
+          const data = equals.has("sunday")
+            ? null
+            : equals.has("part")
+              ? samePart
+              : notEquals.has("part")
+                ? otherPart
+                : null;
+          return Promise.resolve({ data, error: null }).then(resolve, reject);
+        },
+      };
+      return query;
+    },
+  };
+}
+
+test("Supabase weekly lyric reuse chooses the newest date and same-part ties", async () => {
+  const samePart = {
+    sunday: "2026-07-19",
+    part: "entrance",
+    song_id: "song-1",
+    lyrics: "Entrance edit",
+  };
+  const sameDateOtherPart = {
+    sunday: "2026-07-19",
+    part: "offertory",
+    song_id: "song-1",
+    lyrics: "Offertory edit",
+  };
+  const tiedStore = storeModule.createSupabaseStore(
+    weeklyContextSupabase({ samePart, otherPart: sameDateOtherPart }),
+    { storage: memoryStorage(), planData, songCatalog },
+  );
+  assert.equal(
+    (await tiedStore.getWeeklyLyricsContext(
+      "2026-08-02",
+      "entrance",
+      "song-1",
+    )).previous.lyrics,
+    "Entrance edit",
+  );
+
+  const newerOtherPart = {
+    ...sameDateOtherPart,
+    sunday: "2026-07-26",
+    lyrics: "Newer offertory edit",
+  };
+  const newerStore = storeModule.createSupabaseStore(
+    weeklyContextSupabase({ samePart, otherPart: newerOtherPart }),
+    { storage: memoryStorage(), planData, songCatalog },
+  );
+  assert.equal(
+    (await newerStore.getWeeklyLyricsContext(
+      "2026-08-02",
+      "entrance",
+      "song-1",
+    )).previous.lyrics,
+    "Newer offertory edit",
+  );
+});
+
+test("Supabase auth ignores a stale editor lookup after a newer auth event", async () => {
+  const sessionResult = deferred();
+  const editorResult = deferred();
+  let authCallback;
+  const supabase = {
+    from(table) {
+      assert.equal(table, "editors");
+      const query = {
+        select() { return query; },
+        eq() { return query; },
+        maybeSingle() { return editorResult.promise; },
+      };
+      return query;
+    },
+    auth: {
+      getSession() { return sessionResult.promise; },
+      onAuthStateChange(callback) {
+        authCallback = callback;
+        return {
+          data: {
+            subscription: { unsubscribe() {} },
+          },
+        };
+      },
+    },
+  };
+  const store = storeModule.createSupabaseStore(supabase, {
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+    defer: callback => callback(),
+    logger: { warn() {} },
+  });
+  const states = [];
+  const unsubscribe = store.subscribeAuth(state => states.push(state));
+
+  sessionResult.resolve({
+    data: { session: { user: { id: "old-user" } } },
+    error: null,
+  });
+  await new Promise(resolve => setImmediate(resolve));
+  authCallback("SIGNED_OUT", null);
+  editorResult.resolve({ data: { user_id: "old-user" }, error: null });
+  await new Promise(resolve => setImmediate(resolve));
+  unsubscribe();
+
+  assert.deepEqual(states, [{ user: null, isEditor: false }]);
+});
+
 test("Supabase weekly reset includes the song identity", async () => {
   const { calls, supabase } = supabaseFixture(Promise.resolve({ data: null, error: null }));
   const store = storeModule.createSupabaseStore(supabase, {
@@ -486,6 +623,49 @@ test("Supabase network failures report whether an offline copy exists", async ()
     error: failure,
     status: { offline: true, cached: true },
   }]);
+});
+
+test("a successful live load becomes the cache available to later failures", async () => {
+  const results = [
+    {
+      data: {
+        mappedPlan: {
+          songs: { entrance: { id: "live", title: "Live song" } },
+          readingOverrides: {},
+          celebrationOverride: null,
+        },
+      },
+      error: null,
+    },
+    {
+      data: null,
+      error: { message: "TypeError: Failed to fetch" },
+    },
+  ];
+  const planResult = {
+    then(resolve, reject) {
+      return Promise.resolve(results.shift()).then(resolve, reject);
+    },
+  };
+  const { calls, supabase } = supabaseFixture(planResult);
+  const store = storeModule.createSupabaseStore(supabase, {
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+  });
+  const failures = [];
+  const unsubscribe = store.subscribePlan(
+    "2026-08-02",
+    () => {},
+    (error, status) => failures.push({ error, status }),
+  );
+  await new Promise(resolve => setImmediate(resolve));
+  calls.channelCallbacks[0]();
+  await new Promise(resolve => setImmediate(resolve));
+  unsubscribe();
+
+  assert.equal(failures.length, 1);
+  assert.deepEqual(failures[0].status, { offline: true, cached: true });
 });
 
 test("an unavailable shared store preserves the last cached public plan", async () => {

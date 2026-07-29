@@ -145,13 +145,18 @@
         return false;
       }
       const payload = payloadFor(value.selectedCelebration);
+      const date = getDate();
       value.saving = true;
       emit();
       onStatus("Saving…", "");
       try {
-        await store.saveCelebrationOverride(getDate(), payload);
-        onSaved(payload);
-        onStatus("Saved", "saved");
+        await store.saveCelebrationOverride(date, payload);
+        if (getDate() === date) {
+          onSaved(payload);
+          onStatus("Saved", "saved");
+        } else {
+          onStatus("Saved for previous Sunday", "saved");
+        }
         close();
         return true;
       } catch (error) {
@@ -169,11 +174,16 @@
       if (!confirmRestore(
         "Restore the computed Sunday celebration and all of its readings?",
       )) return false;
+      const date = getDate();
       onStatus("Saving…", "");
       try {
-        await store.clearCelebrationOverride(getDate());
-        onRestored();
-        onStatus("Saved", "saved");
+        await store.clearCelebrationOverride(date);
+        if (getDate() === date) {
+          onRestored();
+          onStatus("Saved", "saved");
+        } else {
+          onStatus("Saved for previous Sunday", "saved");
+        }
         return true;
       } catch (error) {
         logger.error(error);

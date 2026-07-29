@@ -5,6 +5,7 @@ const ReadingOverrideController = require("../src/app/reading-override-controlle
 
 function harness() {
   let editor = true;
+  let date = "2026-08-02";
   let store = null;
   let confirmAll = true;
   const statuses = [];
@@ -14,7 +15,7 @@ function harness() {
   const controller = ReadingOverrideController.create({
     getStore: () => store,
     isEditor: () => editor,
-    getDate: () => "2026-08-02",
+    getDate: () => date,
     confirmAll: () => confirmAll,
     onStatus: (text, kind) => statuses.push({ text, kind }),
     onOverrideChanged: (slot, value) => changes.push({ slot, value }),
@@ -28,9 +29,16 @@ function harness() {
     errors,
     get allRestored() { return allRestored; },
     setEditor(value) { editor = value; },
+    setDate(value) { date = value; },
     setStore(value) { store = value; },
     setConfirmAll(value) { confirmAll = value; },
   };
+}
+
+function deferred() {
+  let resolve;
+  const promise = new Promise(done => { resolve = done; });
+  return { promise, resolve };
 }
 
 test("saving the computed reading clears its stored override", async () => {
@@ -168,4 +176,28 @@ test("authorization and database failures cannot report success", async () => {
     { text: "Save failed", kind: "error" },
   ]);
   assert.equal(state.errors.length, 1);
+});
+
+test("a late reading save does not overwrite the newly selected Sunday", async () => {
+  const state = harness();
+  const pending = deferred();
+  const calls = [];
+  state.setStore({
+    async clearReadingOverride(date, slot) {
+      calls.push({ date, slot });
+      return pending.promise;
+    },
+  });
+
+  const operation = state.controller.restore("first");
+  state.setDate("2026-08-09");
+  pending.resolve();
+  assert.equal(await operation, true);
+
+  assert.deepEqual(calls, [{ date: "2026-08-02", slot: "first" }]);
+  assert.deepEqual(state.changes, []);
+  assert.deepEqual(state.statuses.at(-1), {
+    text: "Saved for previous Sunday",
+    kind: "saved",
+  });
 });

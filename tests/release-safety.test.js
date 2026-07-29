@@ -52,6 +52,7 @@ test("backend smoke verifies current fields without exposing lyric data", async 
   const responses = [
     [{ id: "1", title: "Song", youtube_video_id: "AAAAAAAAAAA" }],
     [{ id: "1", title: "Song", youtube_video_id: "AAAAAAAAAAA" }],
+    [{ id: "1", title: "Psalm", youtube_video_id: "BBBBBBBBBBB" }],
   ];
   const calls = [];
   const fetchImpl = async (url, options) => {
@@ -67,8 +68,16 @@ test("backend smoke verifies current fields without exposing lyric data", async 
     url: "https://example.supabase.co",
     publishableKey: "public-key",
   });
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 3);
   assert.match(calls[0].url, /youtube_video_id/);
+  assert.match(calls[0].url, /responsorial_book/);
+  assert.match(calls[0].url, /responsorial_number/);
+  assert.match(calls[0].url, /responsorial_citations/);
   assert.match(calls[1].url, /suggest_songs_for_readings/);
+  assert.match(calls[2].url, /suggest_psalms_for_reading/);
+  assert.deepEqual(JSON.parse(calls[2].options.body), {
+    p_citation: "Psalm 85:9, 10, 11-12, 13-14",
+    p_limit: 1,
+  });
   assert.doesNotMatch(calls[0].url, /lyrics/);
 });

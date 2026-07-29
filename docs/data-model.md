@@ -16,10 +16,10 @@ auth.users
 plans (one row per Sunday with shared data)
    |
    +--< plan_songs >-- songs --0..1-- song_lyrics
-   |        |
-   |        +--0..1-- plan_song_lyrics
-                              |
-                              +--0..1-- song_embeddings
+            |           |
+            |           +--0..1-- song_embeddings
+            |
+            +--0..1-- plan_song_lyrics
 
 reading_embeddings (one row per canonical citation)
 ```
@@ -36,7 +36,7 @@ is created when an editor first persists shared data for that date.
 | `sunday` | Primary-key calendar date |
 | `reading_overrides` | Object keyed by `first`, `psalm`, `second`, or `gospel` |
 | `celebration_override` | Optional complete resolved celebration snapshot |
-| `updated_at`, `updated_by` | Last-write audit data |
+| `updated_at`, `updated_by` | Private last-write audit data |
 
 The former free-form `choices` JSON column no longer exists. Music assignments are
 normalized into `plan_songs`.
@@ -99,7 +99,7 @@ their own membership row.
 | `responsorial_citations` | Known exact lectionary citations for this setting |
 | `in_repertoire` | Whether the choir currently knows and uses the song |
 | `suggestion_parts` | Soft allow-list for automatic recommendations |
-| audit fields | Creator and last editor/time |
+| audit fields | Private creator and last-editor/time data |
 
 Only `title` is required. Duplicate titles represent distinct UUID records and are
 disambiguated in editing interfaces with author information.
@@ -139,7 +139,7 @@ access retain their existing editor-only permissions.
 |---|---|
 | `song_id` | Primary key and foreign key to `songs` |
 | `lyrics` | Optional private full text, up to the database limit |
-| `updated_at`, `updated_by` | Last-write audit data |
+| `updated_at`, `updated_by` | Private last-write audit data |
 
 This one-to-one split exists solely for the hard permission boundary. Lyrics remain
 part of the song domain model. See
@@ -151,7 +151,7 @@ part of the song domain model. See
 |---|---|
 | `sunday`, `part` | Composite primary key identifying one plan slot |
 | `song_id` | Reference to the canonical song |
-| `updated_at`, `updated_by` | Last-write audit data |
+| `updated_at`, `updated_by` | Private last-write audit data |
 
 The 14 valid plan slots are `entrance`, `kyrie`, `gloria`, `psalm`, `acclamation`,
 `offertory`, `sanctus`, `memorial`, `amen`, `lordPrayer`, `agnus`, `communion`,
@@ -167,7 +167,7 @@ song's `suggestion_parts`. Manual assignment is unrestricted.
 | `sunday`, `part` | One optional override for an assigned Sunday slot |
 | `song_id` | Must be the song currently assigned to that slot |
 | `lyrics` | Private edited full text for this use only |
-| `updated_at`, `updated_by` | Last-write audit data |
+| `updated_at`, `updated_by` | Private last-write audit data |
 
 Canonical lyrics remain in `song_lyrics`. Saving a weekly edit copies a complete edited
 text into this table; it does not create a reusable lyric-version entity or link future
@@ -198,10 +198,11 @@ staleness.
 | Read plans, assignments, song metadata | Yes | Yes | Yes | Yes |
 | Read song lyrics | No | No | Yes | Yes |
 | Read weekly lyric overrides | No | No | Yes | Yes |
+| Read audit user UUIDs directly | No | No | No | Yes |
 | Read own editor membership | No | Yes, if present | Yes | Yes |
 | Change plans, assignments, songs, lyrics | No | No | Yes | Yes |
 | Read or write raw vector tables | No | No | No | Yes |
-| Request semantic suggestions | No | No | Yes | Maintenance access |
+| Request bounded song or Psalm suggestions | Yes | Yes | Yes | Yes |
 
 Table privileges and Row Level Security are both intentional. RLS is not a substitute
 for revoking broad table access to lyrics and vectors, and hiding editor controls is not
@@ -262,5 +263,5 @@ unsubscribes the previous date before subscribing to the next.
 - Keep editor checks in database mutations even when the UI already checked them.
 - Preserve title non-uniqueness and manual cross-position assignment.
 - Treat JSON snapshot shapes and RPC parameter names as application/database contracts.
-- Run `npm run test:integration` after resetting the local Supabase database whenever
+- Reset the local Supabase database, then run `npm run test:integration`, whenever
   tables, grants, policies, or RPCs change.

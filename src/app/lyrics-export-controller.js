@@ -49,7 +49,14 @@
         return;
       }
 
-      const songs = getSongs();
+      const date = getDate();
+      const values = { ...getValues() };
+      const songs = Object.fromEntries(
+        Object.entries(getSongs()).map(([part, song]) => [
+          part,
+          song ? { ...song } : song,
+        ]),
+      );
       const selected = parts.map(part => songs[part.key]).filter(song => song?.id);
       if (!selected.length) {
         setStatus("Choose at least one song first.", "error");
@@ -64,7 +71,7 @@
         const details = await Promise.all(uniqueIds.map(id => store.getSong(id)));
         const detailsById = new Map(details.map(song => [song.id, song]));
         const weeklyLyrics = typeof store.getWeeklyLyrics === "function"
-          ? await store.getWeeklyLyrics(getDate())
+          ? await store.getWeeklyLyrics(date)
           : {};
         const assignments = presentation.selectedAssignments(
           parts,
@@ -81,8 +88,8 @@
 
         await build({
           assignments,
-          values: getValues(),
-          date: getDate(),
+          values,
+          date,
           setStatus,
         });
       } catch (error) {

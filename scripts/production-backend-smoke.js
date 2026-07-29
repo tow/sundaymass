@@ -62,6 +62,9 @@ async function smokeBackend({
     "copyright_owner",
     "copyright_year",
     "source",
+    "responsorial_book",
+    "responsorial_number",
+    "responsorial_citations",
     "in_repertoire",
     "suggestion_parts",
   ].join(",");
@@ -93,19 +96,44 @@ async function smokeBackend({
     throw new Error("public song-suggestion RPC did not return an array");
   }
 
-  const privateFields = privateFieldPaths({ songs, suggestions });
+  const psalmSuggestions = await requestJson(
+    fetchImpl,
+    `${baseUrl}/rest/v1/rpc/suggest_psalms_for_reading`,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        p_citation: "Psalm 85:9, 10, 11-12, 13-14",
+        p_limit: 1,
+      }),
+    },
+    "public Psalm-suggestion RPC contract",
+  );
+  if (!Array.isArray(psalmSuggestions)) {
+    throw new Error("public Psalm-suggestion RPC did not return an array");
+  }
+
+  // The Psalm RPC and the private weekly-lyric schema ship in the same transactional
+  // migration. Exercising it therefore catches a frontend deploy ahead of that schema.
+  const publicValues = { songs, suggestions, psalmSuggestions };
+  const privateFields = privateFieldPaths(publicValues);
   if (privateFields.length) {
     throw new Error(`public backend exposed private lyric fields: ${privateFields.join(", ")}`);
   }
-  const obsoleteFields = suggestions.flatMap((song, index) =>
-    Object.hasOwn(song || {}, "youtube_url") ? [`suggestions[${index}].youtube_url`] : [],
+  const obsoleteFields = Object.entries(publicValues).flatMap(([collection, values]) =>
+    values.flatMap((song, index) =>
+      Object.hasOwn(song || {}, "youtube_url")
+        ? [`${collection}[${index}].youtube_url`]
+        : [],
+    ),
   );
   if (obsoleteFields.length) {
     throw new Error(`public backend returned obsolete fields: ${obsoleteFields.join(", ")}`);
   }
   console.log(
     `production backend contract passed (${songs.length} song sample, `
-    + `${suggestions.length} suggestion sample)`,
+    + `${suggestions.length} suggestion sample, `
+    + `${psalmSuggestions.length} Psalm suggestion sample)`,
   );
 }
 

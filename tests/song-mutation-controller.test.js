@@ -8,6 +8,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 function harness() {
   let editor = true;
   let online = true;
+  let date = "2026-08-02";
   let store = null;
   const statuses = [];
   const assigned = [];
@@ -19,7 +20,7 @@ function harness() {
     getStore: () => store,
     isEditor: () => editor,
     isOnline: () => online,
-    getDate: () => "2026-08-02",
+    getDate: () => date,
     onStatus: (text, kind) => statuses.push({ text, kind }),
     onAssigned: (part, song) => assigned.push({ part, song }),
     onCleared: part => cleared.push(part),
@@ -39,8 +40,15 @@ function harness() {
     warnings,
     setEditor(value) { editor = value; },
     setOnline(value) { online = value; },
+    setDate(value) { date = value; },
     setStore(value) { store = value; },
   };
+}
+
+function deferred() {
+  let resolve;
+  const promise = new Promise(done => { resolve = done; });
+  return { promise, resolve };
 }
 
 test("offline and unauthorized mutations stop before reaching the store", async () => {
@@ -190,4 +198,35 @@ test("database failures report failure and do not change local song state", asyn
   assert.deepEqual(state.cleared, []);
   assert.deepEqual(state.statuses.slice(-1), [{ text: "Save failed", kind: "error" }]);
   assert.equal(state.errors.length, 1);
+});
+
+test("a late Sunday assignment never changes the newly selected plan", async () => {
+  const state = harness();
+  const pending = deferred();
+  const calls = [];
+  state.setStore({
+    async assignSong(date, part, songId) {
+      calls.push({ date, part, songId });
+      return pending.promise;
+    },
+  });
+
+  const operation = state.controller.assign("entrance", {
+    id: "song-1",
+    title: "Song",
+  });
+  state.setDate("2026-08-09");
+  pending.resolve();
+  await operation;
+
+  assert.deepEqual(calls, [{
+    date: "2026-08-02",
+    part: "entrance",
+    songId: "song-1",
+  }]);
+  assert.deepEqual(state.assigned, []);
+  assert.deepEqual(state.statuses.at(-1), {
+    text: "Saved for previous Sunday",
+    kind: "saved",
+  });
 });

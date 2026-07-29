@@ -399,6 +399,7 @@ function createSupabaseStore(
   return {
     subscribePlan(date, onValue, onError) {
       const cached = readSharedPlanCache(storage, date);
+      let hasCachedPlan = Boolean(cached);
       if (cached) onValue(cached, { offline: true, cached: true });
 
       let active = true;
@@ -415,12 +416,13 @@ function createSupabaseStore(
           const plan = await loadPlan(date);
           if (!active) return;
           writeSharedPlanCache(storage, date, plan);
+          hasCachedPlan = true;
           onValue(plan, { offline: false });
         } catch (error) {
           if (active && onError) {
             onError(error, {
               offline: !isOnline() || isNetworkFailure(error),
-              cached: Boolean(cached),
+              cached: hasCachedPlan,
             });
           }
         } finally {
@@ -459,7 +461,8 @@ function createSupabaseStore(
     },
     subscribeAuth(onValue) {
       let active = true;
-      const resolveEditor = async session => {
+      let generation = 0;
+      const resolveEditor = async (session, requestGeneration) => {
         const user = session?.user || null;
         let isEditor = false;
         if (user) {
@@ -468,15 +471,31 @@ function createSupabaseStore(
             .select("user_id")
             .eq("user_id", user.id)
             .maybeSingle();
-          if (error) logger.warn("Could not verify editor access", error);
+          if (error && active && requestGeneration === generation) {
+            logger.warn("Could not verify editor access", error);
+          }
           isEditor = Boolean(data);
         }
-        if (active) onValue({ user, isEditor });
+        if (active && requestGeneration === generation) onValue({ user, isEditor });
       };
 
-      supabase.auth.getSession().then(({ data }) => resolveEditor(data.session));
+      const initialGeneration = ++generation;
+      supabase.auth.getSession()
+        .then(({ data, error }) => {
+          if (error && active && initialGeneration === generation) {
+            logger.warn("Could not read authentication session", error);
+          }
+          return resolveEditor(data?.session, initialGeneration);
+        })
+        .catch(error => {
+          if (active && initialGeneration === generation) {
+            logger.warn("Could not read authentication session", error);
+            onValue({ user: null, isEditor: false });
+          }
+        });
       const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-        defer(() => resolveEditor(session), 0);
+        const requestGeneration = ++generation;
+        defer(() => resolveEditor(session, requestGeneration), 0);
       });
       return () => {
         active = false;
@@ -618,24 +637,44 @@ function createSupabaseStore(
         .eq("part", part)
         .eq("song_id", songId)
         .maybeSingle();
-      const previousQuery = supabase
+      const previousSamePartQuery = supabase
         .from("plan_song_lyrics")
         .select("sunday,part,song_id,lyrics")
         .eq("song_id", songId)
+        .eq("part", part)
         .lt("sunday", date)
         .order("sunday", { ascending: false })
         .limit(1)
         .maybeSingle();
-      const [currentResult, previousResult] = await Promise.all([currentQuery, previousQuery]);
+      const previousOtherPartQuery = supabase
+        .from("plan_song_lyrics")
+        .select("sunday,part,song_id,lyrics")
+        .eq("song_id", songId)
+        .neq("part", part)
+        .lt("sunday", date)
+        .order("sunday", { ascending: false })
+        .order("part", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      const [currentResult, samePartResult, otherPartResult] = await Promise.all([
+        currentQuery,
+        previousSamePartQuery,
+        previousOtherPartQuery,
+      ]);
       if (currentResult.error) throw currentResult.error;
-      if (previousResult.error) throw previousResult.error;
+      if (samePartResult.error) throw samePartResult.error;
+      if (otherPartResult.error) throw otherPartResult.error;
       const map = row => row ? {
         sunday: row.sunday,
         part: row.part,
         songId: row.song_id,
         lyrics: row.lyrics,
       } : null;
-      return { current: map(currentResult.data), previous: map(previousResult.data) };
+      const previous = [samePartResult.data, otherPartResult.data]
+        .filter(Boolean)
+        .sort((a, b) => b.sunday.localeCompare(a.sunday)
+          || Number(a.part !== part) - Number(b.part !== part))[0] || null;
+      return { current: map(currentResult.data), previous: map(previous) };
     },
     async saveWeeklyLyrics(date, part, songId, lyrics) {
       requireOnline();

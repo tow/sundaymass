@@ -45,9 +45,10 @@ integration test, or incompatible backend contract cannot deploy the frontend.
   those lyrics never enter the DOM. A service-worker-controlled workflow then goes
   offline, reloads and prints a cached Sunday, and distinguishes an uncached Sunday
   without contacting production.
-- `npm run test:integration` resets a local Supabase project and tests the migrated
-  authorization, RLS, RPC, privacy, and semantic-suggestion contract. Run it separately
-  because it requires Docker and the pinned Supabase CLI.
+- `npm run test:integration` tests the authorization, RLS, RPC, privacy, and
+  semantic-suggestion contract of an already-running, migrated local Supabase project.
+  For a clean local replay, run `npx --yes supabase@2.109.1 db reset --local` first.
+  Run the suite separately because it requires Docker and the pinned Supabase CLI.
 - `npm run test:coverage` runs the Node suite with Node's built-in coverage report.
 - `npm run lint` syntax-checks tracked JavaScript modules. Build-tokenized entry points
   are syntax-checked after assembly by the build-contract tests.
@@ -55,8 +56,10 @@ integration test, or incompatible backend contract cannot deploy the frontend.
   Deno/JSR dependency graph without invoking the function.
 - `npm run check:migrations` requires each newly changed migration to declare an
   expand or contract rollout phase and rejects destructive SQL labelled as expand.
-- `npm run smoke:backend` calls the production public song projection and suggestion
-  RPC, checking their current schema and lyric privacy.
+- `npm run smoke:backend` calls the production public song projection plus both the
+  song and structured-Psalm suggestion RPCs, checking their current schema and lyric
+  privacy. The Psalm RPC ships transactionally with the weekly-lyric schema, so this
+  also blocks a frontend deploy when that migration is missing.
 - `npm run smoke:browser` loads the production planner and repertoire in a new
   service-worker-free browser context. `npm run smoke:production` runs both production
   checks. CI runs it once after each deployment.

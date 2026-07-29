@@ -80,6 +80,9 @@ sundaymass create_song \
   --title "Psalm response" \
   --authors "Composer" \
   --suggestion-part psalm \
+  --responsorial-book Psalm \
+  --responsorial-number 85 \
+  --responsorial-citation "Psalm 85:9, 10, 11-12, 13-14" \
   --non-repertoire \
   --apply
 

@@ -107,7 +107,11 @@ function localStore({
 
 function createSupabaseStore(
   supabase,
-  { songCatalog = globalThis.window?.SongCatalog } = {},
+  {
+    songCatalog = globalThis.window?.SongCatalog,
+    defer = setTimeout,
+    logger = console,
+  } = {},
 ) {
   const invoke = async body => {
     const { data, error } = await supabase.functions.invoke("semantic-songs", { body });
@@ -147,18 +151,40 @@ function createSupabaseStore(
     },
     subscribeAuth(callback) {
       let active = true;
-      const resolve = async session => {
+      let generation = 0;
+      const resolve = async (session, requestGeneration) => {
         const user = session?.user || null;
         let isEditor = false;
         if (user) {
-          const { data } = await supabase.from("editors").select("user_id").maybeSingle();
+          const { data, error } = await supabase
+            .from("editors")
+            .select("user_id")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          if (error && active && requestGeneration === generation) {
+            logger.warn("Could not verify editor access", error);
+          }
           isEditor = Boolean(data);
         }
-        if (active) callback({ user, isEditor });
+        if (active && requestGeneration === generation) callback({ user, isEditor });
       };
-      supabase.auth.getSession().then(({ data }) => resolve(data.session));
+      const initialGeneration = ++generation;
+      supabase.auth.getSession()
+        .then(({ data, error }) => {
+          if (error && active && initialGeneration === generation) {
+            logger.warn("Could not read authentication session", error);
+          }
+          return resolve(data?.session, initialGeneration);
+        })
+        .catch(error => {
+          if (active && initialGeneration === generation) {
+            logger.warn("Could not read authentication session", error);
+            callback({ user: null, isEditor: false });
+          }
+        });
       const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-        setTimeout(() => resolve(session), 0);
+        const requestGeneration = ++generation;
+        defer(() => resolve(session, requestGeneration), 0);
       });
       return () => { active = false; listener.subscription.unsubscribe(); };
     },

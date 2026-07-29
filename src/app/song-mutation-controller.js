@@ -24,13 +24,17 @@
       return store;
     }
 
-    async function runMutation(work, onSuccess) {
+    async function runMutation(work, onSuccess, stillCurrent = () => true) {
       const store = requireAccess();
       onStatus("Saving…", "");
       try {
         const result = await work(store);
-        onSuccess(result);
-        onStatus("Saved", "saved");
+        if (stillCurrent()) {
+          onSuccess(result);
+          onStatus("Saved", "saved");
+        } else {
+          onStatus("Saved for previous Sunday", "saved");
+        }
         return result;
       } catch (error) {
         logger.error(error);
@@ -58,17 +62,21 @@
 
     async function assign(part, song) {
       if (!part || !song?.id) throw new Error("Choose a song and Mass part");
+      const date = getDate();
       return runMutation(
-        store => store.assignSong(getDate(), part, song.id),
+        store => store.assignSong(date, part, song.id),
         () => onAssigned(part, song),
+        () => getDate() === date,
       ).then(() => song);
     }
 
     async function clear(part) {
       if (!part) throw new Error("Choose a Mass part");
+      const date = getDate();
       await runMutation(
-        store => store.clearSong(getDate(), part),
+        store => store.clearSong(date, part),
         () => onCleared(part),
+        () => getDate() === date,
       );
       return true;
     }
@@ -82,14 +90,16 @@
     async function save({ existingSong, part, draft }) {
       if (!part) throw new Error("Choose a Mass part");
       const store = requireAccess();
+      const date = getDate();
       const song = await runMutation(
         activeStore => existingSong
           ? activeStore.updateSong(existingSong.id, draft)
-          : activeStore.createAndAssignSong(getDate(), part, draft),
+          : activeStore.createAndAssignSong(date, part, draft),
         value => {
           if (existingSong) onUpdated(value);
           else onAssigned(part, value);
         },
+        () => existingSong || getDate() === date,
       );
       scheduleEmbedding(store, song.id);
       return song;

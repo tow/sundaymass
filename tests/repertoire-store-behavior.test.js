@@ -146,6 +146,12 @@ function supabaseFixture() {
   return { calls, supabase };
 }
 
+function deferred() {
+  let resolve;
+  const promise = new Promise(done => { resolve = done; });
+  return { promise, resolve };
+}
+
 test("Supabase repertoire projections keep public browsing separate from editor lyrics", async () => {
   const { calls, supabase } = supabaseFixture();
   const store = storeModule.createSupabaseStore(supabase, { songCatalog });
@@ -200,4 +206,52 @@ test("Supabase repertoire mutation failures reach the caller", async () => {
     store.createSong({ title: "New Song" }),
     /Editor access required/,
   );
+});
+
+test("repertoire auth ignores a stale editor lookup after sign-out", async () => {
+  const sessionResult = deferred();
+  const editorResult = deferred();
+  let authCallback;
+  const supabase = {
+    from(table) {
+      assert.equal(table, "editors");
+      const query = {
+        select() { return query; },
+        eq() { return query; },
+        maybeSingle() { return editorResult.promise; },
+      };
+      return query;
+    },
+    auth: {
+      getSession() { return sessionResult.promise; },
+      onAuthStateChange(callback) {
+        authCallback = callback;
+        return {
+          data: {
+            subscription: { unsubscribe() {} },
+          },
+        };
+      },
+    },
+    functions: { invoke: async () => ({ data: {}, error: null }) },
+  };
+  const store = storeModule.createSupabaseStore(supabase, {
+    songCatalog,
+    defer: callback => callback(),
+    logger: { warn() {} },
+  });
+  const states = [];
+  const unsubscribe = store.subscribeAuth(state => states.push(state));
+
+  sessionResult.resolve({
+    data: { session: { user: { id: "old-user" } } },
+    error: null,
+  });
+  await new Promise(resolve => setImmediate(resolve));
+  authCallback("SIGNED_OUT", null);
+  editorResult.resolve({ data: { user_id: "old-user" }, error: null });
+  await new Promise(resolve => setImmediate(resolve));
+  unsubscribe();
+
+  assert.deepEqual(states, [{ user: null, isEditor: false }]);
 });
