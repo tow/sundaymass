@@ -34,27 +34,38 @@ test("lyrics are split deterministically without dropping words", () => {
   const slides = LyricsPresentation.lyricSlides(lyrics);
   assert.ok(slides.length >= 2);
   slides.forEach(slide => {
-    assert.ok(slide.split("\n").filter(Boolean).length <= 4);
+    assert.ok(slide.split("\n").filter(Boolean).length <= 8);
   });
+  // The eight-line second stanza stays together on one slide.
+  assert.ok(slides.some(slide =>
+    slide.startsWith("Second stanza line one") && slide.endsWith("Second stanza line eight")));
   const words = value => value.match(/\S+/g) || [];
   assert.deepEqual(words(slides.join("\n")), words(LyricsPresentation.normalizeLyrics(lyrics)));
 });
 
-test("long lyric sections are balanced without one-line continuation slides", () => {
-  const fiveLines = LyricsPresentation.lyricSlides(
-    ["One", "Two", "Three", "Four", "Five"].join("\n"),
-    { maxLineLength: 100 },
-  );
-  assert.deepEqual(fiveLines.map(slide => slide.split("\n").length), [3, 2]);
+test("whole verses of up to eight lines stay together on one stretched slide", () => {
+  [5, 6, 7, 8].forEach(count => {
+    const verse = Array.from({ length: count }, (_, index) => `Line number ${index + 1}`);
+    const slides = LyricsPresentation.lyricSlides(verse.join("\n"), { maxLineLength: 100 });
+    assert.deepEqual(slides, [verse.join("\n")], `${count}-line verse should fill one slide`);
+  });
+});
 
+test("verses beyond eight lines split into balanced slides without one-line continuations", () => {
   const nineLines = LyricsPresentation.lyricSlides(
     ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"].join("\n"),
     { maxLineLength: 100 },
   );
-  assert.deepEqual(nineLines.map(slide => slide.split("\n").length), [3, 3, 3]);
+  assert.deepEqual(nineLines.map(slide => slide.split("\n").length), [5, 4]);
+
+  const sixteenLines = LyricsPresentation.lyricSlides(
+    Array.from({ length: 16 }, (_, index) => `Line number ${index + 1}`).join("\n"),
+    { maxLineLength: 100 },
+  );
+  assert.deepEqual(sixteenLines.map(slide => slide.split("\n").length), [8, 8]);
 });
 
-test("six-line sections break between couplets instead of through them", () => {
+test("split verses break between couplets instead of through them", () => {
   const slides = LyricsPresentation.lyricSlides([
     "Couplet one, line one",
     "Couplet one, line two",
@@ -62,11 +73,15 @@ test("six-line sections break between couplets instead of through them", () => {
     "Couplet two, line two",
     "Couplet three, line one",
     "Couplet three, line two",
+    "Couplet four, line one",
+    "Couplet four, line two",
+    "Couplet five, line one",
+    "Couplet five, line two",
   ].join("\n"), { maxLineLength: 100 });
 
-  assert.deepEqual(slides.map(slide => slide.split("\n").length), [4, 2]);
-  assert.match(slides[0], /Couplet two, line one\nCouplet two, line two$/);
-  assert.match(slides[1], /^Couplet three, line one\nCouplet three, line two$/);
+  assert.deepEqual(slides.map(slide => slide.split("\n").length), [6, 4]);
+  assert.match(slides[0], /Couplet three, line one\nCouplet three, line two$/);
+  assert.match(slides[1], /^Couplet four, line one\nCouplet four, line two/);
 });
 
 test("semantic continuation lines are kept on the same slide", () => {
@@ -77,7 +92,7 @@ test("semantic continuation lines are kept on the same slide", () => {
     "have mercy on us",
     "You take away the sins of the world,",
     "receive our prayer",
-  ].join("\n"), { maxLineLength: 100 });
+  ].join("\n"), { maxLineLength: 100, keepStanzaLines: 4 });
 
   assert.deepEqual(slides.map(slide => slide.split("\n").length), [4, 2]);
   assert.match(slides[0], /You take away the sins of the world,\nhave mercy on us$/);
@@ -438,12 +453,11 @@ test("lyricFontSize shrinks at each visible-line-count tier", () => {
     LyricsPresentation.lyricFontSize([shortLine, shortLine, shortLine, shortLine].join("\n")),
     40,
   );
-  assert.equal(
-    LyricsPresentation.lyricFontSize(
-      [shortLine, shortLine, shortLine, shortLine, shortLine].join("\n"),
-    ),
-    40,
-  );
+  const stack = count => Array.from({ length: count }, () => shortLine).join("\n");
+  assert.equal(LyricsPresentation.lyricFontSize(stack(5)), 36);
+  assert.equal(LyricsPresentation.lyricFontSize(stack(6)), 36);
+  assert.equal(LyricsPresentation.lyricFontSize(stack(7)), 32);
+  assert.equal(LyricsPresentation.lyricFontSize(stack(8)), 32);
 });
 
 test("lyricFontSize shrinks at each character-length tier on a single line", () => {
@@ -481,7 +495,7 @@ test("pagination prefers splitting right after a line that ends a sentence", () 
   // (odd unit count). Only the sentence-ending bonus should decide between them.
   const periodOnSecondLine = LyricsPresentation.lyricSlides(
     ["Line one", "Line two.", "Line three", "Line four", "Line five"].join("\n"),
-    { maxLines: 3, maxLineLength: 100 },
+    { maxLines: 3, maxLineLength: 100, keepStanzaLines: 3 },
   );
   assert.deepEqual(periodOnSecondLine, [
     "Line one\nLine two.",
@@ -490,7 +504,7 @@ test("pagination prefers splitting right after a line that ends a sentence", () 
 
   const noSentenceBoundary = LyricsPresentation.lyricSlides(
     ["Line one", "Line two", "Line three", "Line four", "Line five"].join("\n"),
-    { maxLines: 3, maxLineLength: 100 },
+    { maxLines: 3, maxLineLength: 100, keepStanzaLines: 3 },
   );
   assert.deepEqual(noSentenceBoundary, [
     "Line one\nLine two\nLine three",
@@ -498,25 +512,34 @@ test("pagination prefers splitting right after a line that ends a sentence", () 
   ]);
 });
 
-test("a split stanza's trailing page shares a slide with a short next stanza instead of stranding it", () => {
+test("a one-line closing stanza joins the stretched verse before it instead of stranding", () => {
   const slides = LyricsPresentation.lyricSlides(
     ["One", "Two", "Three", "Four", "Five", "", "Six"].join("\n"),
     { maxLineLength: 100 },
   );
   assert.deepEqual(slides, [
-    "One\nTwo\nThree",
-    "Four\nFive\n\nSix",
+    "One\nTwo\nThree\nFour\nFive\n\nSix",
   ]);
 });
 
-test("a split stanza's trailing page still gets its own slide when the next stanza doesn't fit", () => {
+test("a split stanza's trailing page shares a slide with a one-line next stanza instead of stranding it", () => {
+  const slides = LyricsPresentation.lyricSlides(
+    ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "", "Ten"].join("\n"),
+    { maxLineLength: 100 },
+  );
+  assert.deepEqual(slides, [
+    "One\nTwo\nThree\nFour\nFive",
+    "Six\nSeven\nEight\nNine\n\nTen",
+  ]);
+});
+
+test("stanzas that cannot share a slide each get their own", () => {
   const slides = LyricsPresentation.lyricSlides(
     ["One", "Two", "Three", "Four", "Five", "", "Six", "Seven", "Eight"].join("\n"),
     { maxLineLength: 100 },
   );
   assert.deepEqual(slides, [
-    "One\nTwo\nThree",
-    "Four\nFive",
+    "One\nTwo\nThree\nFour\nFive",
     "Six\nSeven\nEight",
   ]);
 });

@@ -10,6 +10,9 @@
     muted: "B9CDD6",
   });
   const MAX_LINES = 4;
+  // A slide may stretch past MAX_LINES, up to this many lines, when that keeps
+  // a whole verse together (or halves the splits of an even longer verse).
+  const KEEP_STANZA_LINES = 8;
   const MAX_LINE_LENGTH = 45;
 
   // Single source of truth for slide geometry, in inches, matching the widescreen
@@ -182,9 +185,14 @@
     return bestFrom(0)?.pages || [];
   }
 
-  function lyricSlides(value, { maxLines = MAX_LINES, maxLineLength = MAX_LINE_LENGTH } = {}) {
+  function lyricSlides(value, {
+    maxLines = MAX_LINES,
+    maxLineLength = MAX_LINE_LENGTH,
+    keepStanzaLines = KEEP_STANZA_LINES,
+  } = {}) {
     const lyrics = normalizeLyrics(value);
     if (!lyrics) return [];
+    const keepLines = Math.max(maxLines, keepStanzaLines);
     const stanzas = lyrics.split(/\n{2,}/)
       .map(stanza => stanza.split("\n")
         .filter(line => !isProjectionLabel(line))
@@ -193,10 +201,10 @@
           lines: wrapLine(line, maxLineLength),
         }))
         .flatMap(unit => {
-          if (unit.lines.length <= maxLines) return [unit];
+          if (unit.lines.length <= keepLines) return [unit];
           const chunks = [];
-          for (let offset = 0; offset < unit.lines.length; offset += maxLines) {
-            chunks.push({ raw: unit.raw, lines: unit.lines.slice(offset, offset + maxLines) });
+          for (let offset = 0; offset < unit.lines.length; offset += keepLines) {
+            chunks.push({ raw: unit.raw, lines: unit.lines.slice(offset, offset + keepLines) });
           }
           return chunks;
         }))
@@ -209,7 +217,17 @@
     };
 
     stanzas.forEach(units => {
-      const pages = paginateUnits(units, maxLines);
+      const visibleTotal = units.reduce((sum, unit) => sum + unit.lines.length, 0);
+      // A denser slide reads better than a split verse: stretch past maxLines
+      // when the whole stanza then fits on one slide. Left pending so a
+      // one-line closing stanza can still join it below.
+      if (visibleTotal > maxLines && visibleTotal <= keepLines) {
+        flush();
+        pendingSlide = units.flatMap(unit => unit.lines);
+        return;
+      }
+
+      const pages = paginateUnits(units, visibleTotal > keepLines ? keepLines : maxLines);
       if (pages.length > 1) {
         flush();
         // Leave the trailing page pending so a short next stanza can still
@@ -221,7 +239,11 @@
 
       const stanza = pages[0] || [];
       const visibleCount = pendingSlide.filter(Boolean).length;
-      if (visibleCount + stanza.length > maxLines) flush();
+      // Stanzas share a slide up to maxLines visible lines; a one-line stanza
+      // may stretch the slide further rather than stand widowed on its own.
+      const fits = visibleCount + stanza.length <= maxLines
+        || (stanza.length === 1 && visibleCount + 1 <= keepLines);
+      if (!fits) flush();
       if (pendingSlide.length) pendingSlide.push("");
       pendingSlide.push(...stanza);
     });
@@ -279,7 +301,9 @@
     const lines = String(text || "").split("\n");
     const visibleLines = lines.filter(Boolean);
     const longest = visibleLines.reduce((max, line) => Math.max(max, line.length), 0);
-    if (visibleLines.length >= 4 || longest > 38) return 40;
+    if (visibleLines.length >= 7) return 32;
+    if (visibleLines.length >= 5) return 36;
+    if (visibleLines.length === 4 || longest > 38) return 40;
     if (visibleLines.length === 3 || longest > 34) return 44;
     if (visibleLines.length === 2 || longest > 30) return 48;
     return 52;
