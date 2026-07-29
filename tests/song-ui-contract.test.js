@@ -20,7 +20,12 @@ test("planner contains a song picker and optional-lyrics editor", () => {
   assert.match(html, /id="songLyrics"/);
   assert.match(html, /id="songSuggestionParts"/);
   assert.match(html, /Manual selection remains unrestricted/);
-  assert.match(html, /Add lyrics now \(optional\)/);
+  assert.match(html, /id="songLyricsSummary">Add lyrics now \(optional\)</);
+  // Editing a song that already has lyrics relabels the collapsed section.
+  assert.match(
+    workflow,
+    /elements\.lyricsSummary\.textContent = editingSong\?\.lyrics\s*\? "Edit lyrics"\s*: "Add lyrics now \(optional\)"/,
+  );
   assert.match(workflow, /defaultSuggestionParts: \[suggestionPartFor\(pickerState\.partKey\)\]/);
   assert.match(workflow, /mutationController\.assign\(part, song\)/);
 });

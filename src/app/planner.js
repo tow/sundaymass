@@ -339,6 +339,7 @@ const songWorkflow=SongWorkflow.create({
     editorCancel:songEditorCancel,
     sharedWarning:songSharedWarning,
     editorError:songEditorError,
+    lyricsSummary:songLyricsSummary,
     songTitle,
     save:saveSong,
   },

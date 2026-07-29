@@ -868,6 +868,10 @@ test("editor can create a private-lyric song with explicit suggestion positions"
   ).check();
   await page.locator("#songTitle").fill("New duplicate title");
   await page.locator("#songAuthors").fill("Test Composer");
+  assert.equal(
+    await page.locator("#songLyricsSummary").textContent(),
+    "Add lyrics now (optional)",
+  );
   await page.locator(".song-lyrics-section summary").click();
   await page.locator("#songLyrics").fill("EDITOR-ONLY CREATED LYRIC");
   await page.locator("#saveSong").focus();

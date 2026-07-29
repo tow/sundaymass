@@ -176,6 +176,9 @@
         ? "Update the shared song record."
         : "Only the title is required. Another song may use the same title.";
       elements.sharedWarning.hidden = !editingSong;
+      elements.lyricsSummary.textContent = editingSong?.lyrics
+        ? "Edit lyrics"
+        : "Add lyrics now (optional)";
       elements.save.textContent = editingSong ? "Save song" : "Create and use song";
       elements.editorError.textContent = "";
       if (elements.dialog.open) closePicker();
