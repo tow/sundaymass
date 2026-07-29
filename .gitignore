@@ -6,6 +6,7 @@ node_modules/
 /favicon.ico
 /vendor/
 /icons/
+/data/readings/
 web.json
 kjva.json
 *.docx

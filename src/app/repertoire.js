@@ -1,3 +1,5 @@
+@@APP_LOGGER_JS@@
+@@ASSET_URL_JS@@
 @@REPERTOIRE_URL_STATE_JS@@
 @@MUSIC_PARTS_JS@@
 @@PWA_CONTROLLER_JS@@
@@ -6,6 +8,9 @@
 @@SONG_PRESENTATION_JS@@
 @@SONG_CATALOG_JS@@
 @@EMBEDDING_REPAIR_JS@@
+window.MASS_PLANNER_ASSET_VERSIONS=Object.freeze(@@ASSET_VERSIONS@@);
+window.MASS_PLANNER_BUILD="@@BUILD_VERSION@@";
+const appLogger=AppLogger;
 let store;
 let songs=[];
 let isEditor=false;
@@ -67,7 +72,7 @@ async function loadSongs(){
     repertoireStatus.textContent="Up to date";
     render();
   }catch(error){
-    console.error(error);
+    appLogger.error(error);
     repertoireStatus.textContent="Could not load repertoire";
   }
 }
@@ -85,12 +90,12 @@ function openEditor(song){
 async function loadForEditing(id){
   repertoireStatus.textContent="Loading song…";
   try{ openEditor(await store.getSong(id)); repertoireStatus.textContent="Up to date"; }
-  catch(error){ console.error(error); repertoireStatus.textContent="Could not load song"; }
+  catch(error){ appLogger.error(error); repertoireStatus.textContent="Could not load song"; }
 }
 async function refreshIndex(){
   indexButton.disabled=true;
   try{
-    const readingResponse=await fetch("./data/generated/readings_text.json");
+    const readingResponse=await fetch(AppAssets.url("data/generated/readings_text.json"));
     const readingMap=await readingResponse.json();
     const songIds=songs.map(song=>song.id);
     const readings=Object.entries(readingMap).map(([citation,text])=>({citation,text}));
@@ -116,7 +121,7 @@ async function refreshIndex(){
     }
     await loadIndexStatus();
   }catch(error){
-    console.error(error);
+    appLogger.error(error);
     indexStatus.textContent="Indexing failed. You can safely try again.";
   }finally{ indexButton.disabled=false; }
 }
@@ -142,7 +147,10 @@ async function loadIndexStatus(){
         ? `${status.embeddedSongs}/${status.songs} songs · ${remaining.length} still need updating; try Update suggestion index`
         : `${status.embeddedSongs}/${status.songs} songs · ${status.embeddedReadings} readings indexed · up to date`;
     }
-  }catch{ indexStatus.textContent="Suggestion index not available yet."; }
+  }catch(error){
+    appLogger.warn("Suggestion index not available yet",error);
+    indexStatus.textContent="Suggestion index not available yet.";
+  }
 }
 
 repertoireSearch.value=initialUrlState.query;
@@ -156,7 +164,7 @@ window.repertoireApp={
     });
     loadSongs();
   },
-  fail(error){ console.error(error); repertoireStatus.textContent="Could not connect"; },
+  fail(error){ appLogger.error(error); repertoireStatus.textContent="Could not connect"; },
 };
 
 repertoireSearch.addEventListener("input",()=>{
@@ -199,10 +207,14 @@ songEditorForm.addEventListener("submit",async event=>{
     const saved=editingSong
       ? await store.updateSong(editingSong.id,validation.value)
       : await store.createSong(validation.value);
-    await store.syncSongs([saved.id]).catch(()=>{});
+    await store.syncSongs([saved.id])
+      .catch(error=>appLogger.warn("Song indexing failed",error));
     songEditorDialog.close();
     await loadSongs();
-  }catch(error){songEditorError.textContent=error.message||"Could not save song.";}
+  }catch(error){
+    appLogger.error(error);
+    songEditorError.textContent=error.message||"Could not save song.";
+  }
   finally{saveSong.disabled=false;}
 });
 AuthController.create({
@@ -220,6 +232,7 @@ AuthController.create({
   scheduleFocus:callback=>setTimeout(callback,0),
   onUnavailable:()=>{repertoireStatus.textContent="Editor sign-in unavailable";},
   onActionFailure:()=>{repertoireStatus.textContent="Sign-in failed";},
+  logger:appLogger,
 }).start();
 indexButton.addEventListener("click",refreshIndex);
 

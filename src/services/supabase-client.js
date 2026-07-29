@@ -3,6 +3,7 @@
   "use strict";
 
   function defaultModuleUrl() {
+    if (global.AppAssets) return global.AppAssets.url("vendor/supabase.js");
     if (typeof document === "undefined") return "../../vendor/supabase.js";
     return new URL("./vendor/supabase.js", document.baseURI).href;
   }

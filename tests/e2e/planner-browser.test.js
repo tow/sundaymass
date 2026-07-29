@@ -70,7 +70,7 @@ async function plannerPage(browser, server, viewport) {
     }
   });
   page.on("pageerror", error => startupProblems.push(error.message));
-  await page.route("**/supabase-config.js", route =>
+  await page.route("**/supabase-config.js*", route =>
     route.fulfill({
       contentType: "text/javascript",
       body: "window.MASS_PLANNER_SUPABASE_CONFIG = null;",
@@ -120,7 +120,7 @@ async function repertoirePage(browser, server, viewport) {
     ]));
   });
   const page = await context.newPage();
-  await page.route("**/supabase-config.js", route =>
+  await page.route("**/supabase-config.js*", route =>
     route.fulfill({
       contentType: "text/javascript",
       body: "window.MASS_PLANNER_SUPABASE_CONFIG = null;",
@@ -209,6 +209,66 @@ test("planner has no horizontal overflow at mobile and desktop widths", async ()
     await context.close();
   }
 });
+
+test(
+  "configured monitoring forwards errors without user, request, or breadcrumb data",
+  { timeout: 10000 },
+  async () => {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    serviceWorkers: "block",
+  });
+  let resolveEventEnvelope;
+  let resolveLogEnvelope;
+  const eventEnvelopeReceived = new Promise(resolve => {
+    resolveEventEnvelope = resolve;
+  });
+  const logEnvelopeReceived = new Promise(resolve => {
+    resolveLogEnvelope = resolve;
+  });
+  await context.route("https://example.com/**", async route => {
+    const body = route.request().postData() || "";
+    if (body.includes("Monitoring pipeline test")) resolveEventEnvelope(body);
+    if (body.includes("Monitoring warning test")) resolveLogEnvelope(body);
+    await route.fulfill({ status: 200, body: "{}" });
+  });
+  const page = await context.newPage();
+  await page.route("**/supabase-config.js*", route =>
+    route.fulfill({
+      contentType: "text/javascript",
+      body: `
+        window.MASS_PLANNER_SUPABASE_CONFIG = null;
+        window.MASS_PLANNER_MONITORING_CONFIG = {
+          dsn: "https://public@example.com/1",
+          environment: "test"
+        };
+      `,
+    }),
+  );
+  await page.goto(`${server.origin}/index.html`);
+  await page.evaluate(() => {
+    AppLogger.error("Monitoring pipeline test", new Error("Test exception"));
+    AppLogger.warn("Monitoring warning test");
+  });
+
+  const [eventEnvelope, logEnvelope] = await Promise.all([
+    eventEnvelopeReceived,
+    logEnvelopeReceived,
+  ]);
+  const event = JSON.parse(eventEnvelope.trim().split("\n").at(-1));
+  assert.equal(event.environment, "test");
+  assert.equal(event.tags.app_surface, "planner");
+  assert.equal(typeof event.tags.app_build, "string");
+  assert.equal(event.user, undefined);
+  assert.equal(event.request, undefined);
+  assert.equal(event.breadcrumbs, undefined);
+  assert.match(logEnvelope, /Monitoring warning test/);
+  assert.match(logEnvelope, /app_surface/);
+  assert.match(logEnvelope, /app_build/);
+  assert.doesNotMatch(logEnvelope, /user\.(?:id|email|name)/);
+    await context.close();
+  },
+);
 
 test("music header omits redundant mobile copy", async () => {
   const mobile = await plannerPage(browser, server, { width: 390, height: 844 });
@@ -1263,8 +1323,11 @@ test("a service-worker-controlled offline reload shows and prints the saved publ
     return caches.keys().then(async names => {
       const cache = await caches.open(names.find(name =>
         name.startsWith("st-james-mass-planner-")));
+      const configUrl = [...document.scripts]
+        .map(script => script.src)
+        .find(url => url.includes("/supabase-config.js"));
       await cache.put(
-        new Request(new URL("./supabase-config.js", location.href)),
+        new Request(configUrl),
         new Response(config, {
           headers: { "Content-Type": "text/javascript; charset=utf-8" },
         }),
@@ -1272,7 +1335,7 @@ test("a service-worker-controlled offline reload shows and prints the saved publ
     });
   }, { date: selectedDate, config: productionConfig });
 
-  await page.unroute("**/supabase-config.js");
+  await page.unroute("**/supabase-config.js*");
   await context.setOffline(true);
   await page.reload({ waitUntil: "domcontentloaded" });
   await page.waitForFunction(() =>

@@ -9,7 +9,7 @@
   },
   "scripts": {
     "icons": "node scripts/generate_icons.js",
-    "build": "node scripts/generate_icons.js && node scripts/build-vendor.js && node scripts/build-app.js && node scripts/build-service-worker.js",
+    "build": "node scripts/generate_icons.js && node scripts/build-vendor.js && node scripts/build-reading-assets.js && node scripts/build-app.js && node scripts/build-service-worker.js",
     "test": "npm run test:unit",
     "test:unit": "npm run build && node --test tests/*.test.js",
     "test:e2e": "npm run build && node --test tests/e2e/*.test.js",
@@ -30,6 +30,7 @@
     "node": ">=22.20 <23"
   },
   "dependencies": {
+    "@sentry/browser": "10.69.0",
     "@supabase/supabase-js": "2.110.8",
     "jspdf": "4.2.1",
     "pptxgenjs": "4.0.1"

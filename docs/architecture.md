@@ -37,9 +37,15 @@ server between the browser and Supabase.
 - `repertoire.html` is the public browser and editor surface for both the choir
   repertoire and the distinct extended library.
 - `about.html` contains help, provenance, and limitations.
-- `vendor/supabase.js` and `vendor/pptxgenjs.js` are built locally from exact pinned npm
-  dependencies. PowerPoint generation is loaded only when an editor requests it.
-- `data/generated/` contains deterministic lectionary catalogues used by the planner.
+- `vendor/supabase.js`, export libraries, and the optional `vendor/sentry.js` are built
+  locally from exact pinned npm dependencies. Export libraries and Sentry are outside
+  the install shell and load only when their features are requested or configured;
+  successful responses then enter the normal runtime cache. External source maps with
+  embedded original sources are deployed beside every minified vendor bundle.
+- `data/generated/` contains deterministic lectionary catalogue inputs.
+- `data/readings/` is an ignored build output containing one content-hashed JSON file
+  per citation. The planner embeds its manifest, requests only the selected citations,
+  and fetches the complete source catalogue only for editor workflows that need it.
 - `service-worker.js` is generated from `src/service-worker.js` and the explicit shell
   in `src/service-worker-assets.json`.
 - `supabase/migrations/` and `supabase/functions/semantic-songs/` are the backend
@@ -51,8 +57,10 @@ again by tests and deployment. Do not hand-edit them.
 
 Browser asset URLs must resolve from `document.baseURI`, not the origin root. Production
 is a GitHub Pages project site under `/sundaymass/`; a root-relative or over-traversed
-dynamic import can work on localhost while failing only after deployment. The shared
-Supabase bootstrap has an executable subdirectory-hosting regression test.
+dynamic import can work on localhost while failing only after deployment. External
+application and vendor URLs carry a build-generated content version so a fresh page
+cannot silently reuse an incompatible stable-path script. The shared asset resolver
+preserves the project subdirectory.
 
 ## Browser module boundaries
 
@@ -239,13 +247,30 @@ rest of a previously visited plan is available offline.
 
 ### Offline behavior
 
-The service worker caches the static application shell. The plan store preserves the
-last public plan cached for a previously visited Sunday. That plan and its computed
-readings remain viewable and printable offline.
+The service worker caches the static application shell. Selected reading-text responses
+are cached on demand rather than placing the complete full-text catalogue in the
+install payload. The plan store preserves the last public plan cached for a previously
+visited Sunday. That plan and the readings fetched during its online visit remain
+viewable and printable offline.
 
 Shared editing is online-only. Offline mutations are refused before a request and must
 not be presented as saved. Local-storage persistence is a development adapter, not a
 production fallback for shared edits.
+
+### Browser error and log reporting
+
+Browser code reports caught failures, warnings, and explicit informational messages
+through `AppLogger`; uncaught errors and rejected promises are handled by the same
+Sentry installation. Entries logged before the monitoring bundle finishes loading are
+buffered and forwarded afterward. Errors appear both as Sentry issues and structured
+logs; warnings and information appear as structured logs.
+
+Monitoring is disabled when its DSN is blank. When enabled, the locally built browser
+SDK sends errors and application-authored logs only: tracing, replay, metrics, and
+automatic console capture are absent, default PII is disabled, and processors remove
+user, request, breadcrumb, and unapproved log-attribute data. Release and page-surface
+tags identify the affected build without attaching plan, song, lyric, or reading
+content.
 
 ## Security and privacy invariants
 

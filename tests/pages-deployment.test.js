@@ -57,7 +57,7 @@ test("Pages deployment skips database integration when database files are unchan
 });
 
 test("the Pages artifact contains only the explicit deployable surface", () => {
-  const { PAGES_FILES } = require("../scripts/stage-pages.js");
+  const { PAGES_DIRECTORIES, PAGES_FILES } = require("../scripts/stage-pages.js");
   assert.deepEqual(PAGES_FILES, [
     "index.html",
     "repertoire.html",
@@ -66,12 +66,18 @@ test("the Pages artifact contains only the explicit deployable surface", () => {
     "service-worker.js",
     "favicon.ico",
     "supabase-config.js",
+    "src/services/monitoring.js",
     "src/services/supabase-client.js",
     "src/services/plan-store.js",
     "src/services/repertoire-store.js",
     "vendor/supabase.js",
+    "vendor/supabase.js.map",
     "vendor/pptxgenjs.js",
+    "vendor/pptxgenjs.js.map",
     "vendor/jspdf.js",
+    "vendor/jspdf.js.map",
+    "vendor/sentry.js",
+    "vendor/sentry.js.map",
     "data/generated/readings_text.json",
     "icons/favicon-16.png",
     "icons/favicon-32.png",
@@ -82,10 +88,14 @@ test("the Pages artifact contains only the explicit deployable surface", () => {
   PAGES_FILES.forEach(file => {
     assert.equal(fs.existsSync(path.join(root, file)), true, `${file} must exist`);
   });
+  assert.deepEqual(PAGES_DIRECTORIES, ["data/readings"]);
+  PAGES_DIRECTORIES.forEach(directory => {
+    assert.equal(fs.existsSync(path.join(root, directory)), true, `${directory} must exist`);
+  });
 });
 
 test("every service-worker precache asset is part of the deployed Pages surface", () => {
-  const { PAGES_FILES } = require("../scripts/stage-pages.js");
+  const { PAGES_DIRECTORIES, PAGES_FILES } = require("../scripts/stage-pages.js");
   const assets = JSON.parse(
     fs.readFileSync(path.join(root, "src", "service-worker-assets.json"), "utf8"),
   );
@@ -93,7 +103,9 @@ test("every service-worker precache asset is part of the deployed Pages surface"
     .filter(asset => asset !== "./")
     .forEach(asset => {
       assert.equal(
-        PAGES_FILES.includes(asset.replace(/^\.\//, "")),
+        PAGES_FILES.includes(asset.replace(/^\.\//, ""))
+          || PAGES_DIRECTORIES.some(directory =>
+            asset.replace(/^\.\//, "").startsWith(`${directory}/`)),
         true,
         `${asset} is precached by the service worker but not staged for Pages`,
       );

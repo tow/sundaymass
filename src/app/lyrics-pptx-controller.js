@@ -3,7 +3,9 @@
   "use strict";
 
   function defaultLoader(document) {
-    return import(new URL("./vendor/pptxgenjs.js", document.baseURI).href)
+    const url = global.AppAssets?.url("vendor/pptxgenjs.js", document)
+      || new URL("./vendor/pptxgenjs.js", document.baseURI).href;
+    return import(url)
       .then(module => module.default);
   }
 

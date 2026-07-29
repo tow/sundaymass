@@ -28,6 +28,7 @@
     formatLong,
     escapeHtml,
     confirmAction,
+    prepare = async () => {},
     schedule = callback => setTimeout(callback, 0),
     logger = console,
   }) {
@@ -222,12 +223,26 @@
       closeReadingDialog();
     }
 
-    function start() {
-      elements.launchButton.addEventListener("click", () => {
+    async function openLiturgicalDialog() {
+      if (!isEditor() || elements.launchButton.disabled) return;
+      elements.launchButton.disabled = true;
+      setStatus("Loading reading library…", "");
+      try {
+        await prepare();
         if (!isEditor()) return;
+        setStatus("", "");
         renderEditor();
         openModal(elements.liturgicalDialog);
-      });
+      } catch (error) {
+        logger.error("Could not load reading library", error);
+        setStatus("Could not load reading library", "error");
+      } finally {
+        elements.launchButton.disabled = false;
+      }
+    }
+
+    function start() {
+      elements.launchButton.addEventListener("click", openLiturgicalDialog);
       elements.liturgicalClose.addEventListener("click", closeLiturgicalDialog);
       elements.liturgicalDialog.addEventListener("click", event => {
         if (event.target === elements.liturgicalDialog) closeLiturgicalDialog();

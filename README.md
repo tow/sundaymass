@@ -23,10 +23,9 @@ Developer documentation:
 This is an independent planning aid, not an official parish or Diocese of Helsinki
 publication. Liturgical details must always be checked against the parish Ordo.
 
-For deployment, serve `index.html`, `repertoire.html`, and `about.html` together with
-`supabase-config.js`, both files in `src/services/`, `data/generated/readings_text.json`,
-`manifest.webmanifest`, `service-worker.js`, `vendor/`, and `icons/`. On HTTPS, the
-planner can be installed to a phone's home screen.
+For deployment, use `npm run stage:pages`; it copies the explicit public surface,
+including the generated `data/readings/` assets and optional monitoring bundle. On
+HTTPS, the planner can be installed to a phone's home screen.
 
 ## Product decisions to preserve
 
@@ -133,6 +132,10 @@ appropriate source file:
 - `src/app/reading-override-controller.js` — individual reading save and restore persistence
 - `src/app/reading-dialog-controller.js` — reading slot, validation, and confirmation state
 - `src/app/reading-workflow.js` — celebration and reading-editor DOM coordination
+- `src/services/reading-text-store.js` — lazy, cached reading-text loading
+- `src/services/app-logger.js` — shared browser error/warning boundary
+- `src/services/monitoring.js` — optional Sentry issues and structured-logs bootstrap
+- `src/domain/asset-url.js` — content-versioned project-site asset URLs
 - `src/domain/lectionary.js` — lectionary selection and validation rules
 - `src/domain/reading-selection.js` — role-aware override validation and confirmation policy
 - `src/domain/music-parts.js` — canonical Mass slots, labels, and suggestion normalization
@@ -155,9 +158,10 @@ Then run:
 npm run build
 ```
 
-Generated planner HTML, repertoire HTML, service worker, vendor bundle, and icons are
-ignored build products. Do not hand-edit them: the next build overwrites them, tests
-rebuild them first, and the Pages workflow creates a fresh deployment artifact.
+Generated planner HTML, repertoire HTML, service worker, vendor bundles, lazy reading
+assets, and icons are ignored build products. Do not hand-edit them: the next build
+overwrites them, tests rebuild them first, and the Pages workflow creates a fresh
+deployment artifact.
 
 `about.html` and the manifest are maintained directly. `service-worker.js` is generated
 from the source template and asset manifest; do not hand-edit it. The print/PDF layout
@@ -169,6 +173,8 @@ is the final `@media print` block in `src/styles/planner.css`.
 - `scripts/` contains build and data-generation programs.
 - `vendor/` contains ignored browser bundles generated from pinned npm packages.
 - `data/generated/` contains checked-in derived catalogues embedded by the build.
+- `data/readings/` contains ignored, content-hashed per-citation assets generated from
+  the checked-in full-text catalogue.
 - `data/sources/` contains the ignored, downloadable public-domain Bible datasets.
 - `tests/` contains Node tests for domain and data invariants.
 - Root-level generated HTML, service worker, vendor bundle, and icons are local build
@@ -238,10 +244,11 @@ defaults.
 
 ## PWA and deployment notes
 
-GitHub Pages publishes an explicit artifact from the verified `main` workflow. A
-content-addressed service worker caches the complete shell and previously visited
-public plans remain viewable and printable offline. Shared editing is always
-online-only.
+GitHub Pages publishes an explicit artifact from the verified `main` workflow.
+External scripts use build-generated content versions, and the service worker caches
+the application shell. Only the selected Sunday's small reading files are requested;
+those files and previously visited public plans remain viewable and printable offline.
+Shared editing is always online-only.
 
 The first deployment, normal release order, editor lifecycle, backup/export, restore,
 semantic-index maintenance, migration recovery, frontend rollback, PWA cache diagnosis,
@@ -251,10 +258,12 @@ and incident priorities are documented in
 ## Calendar and lectionary
 
 The planner calculates Finnish Sundays locally as they are selected. It embeds one
-canonical reading set per distinct Sunday/cycle, a searchable standard-celebration and
-Commons catalogue, and public-domain full reading texts. Browser domain logic keeps
-calendar rules separate from reading data and resolves Proper and Common alternatives
-without materializing dated rows.
+canonical reading set per distinct Sunday/cycle plus a searchable standard-celebration
+and Commons catalogue. Public-domain full texts are emitted as content-hashed
+per-citation files and loaded for the selected Sunday. The complete catalogue is loaded
+only when an editor opens a workflow that needs to search or index every reading.
+Browser domain logic keeps calendar rules separate from reading data and resolves
+Proper and Common alternatives without materializing dated rows.
 
 This remains an independent planning aid, not the authoritative Finnish lectionary or
 parish Ordo. The sources, Finland corrections, Saint James titular solemnity, Commons

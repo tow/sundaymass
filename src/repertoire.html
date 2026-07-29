@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <style>@@STYLES@@</style>
-</head><body>
+</head><body data-surface="repertoire">
 <div class="parish-bar"><div class="parish-bar-inner">
   <a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener" aria-label="Visit the St James the Apostle church webpage"><span class="bar-desktop">St James the Apostle ↗</span><span class="bar-mobile">St James ↗</span></a>
   <nav><a href="./">Planner</a><a href="./about.html">Help</a><button id="authButton">Sign in</button></nav>
@@ -94,7 +94,8 @@
   <div class="dialog-actions"><button id="loginCancel" type="button">Cancel</button><button class="primary" id="loginSubmit" type="submit">Sign in</button></div>
 </form></dialog>
 <script>@@APP_SCRIPT@@</script>
-<script src="./supabase-config.js"></script>
-<script src="./src/services/supabase-client.js"></script>
-<script type="module" src="./src/services/repertoire-store.js"></script>
+<script src="@@SUPABASE_CONFIG_URL@@"></script>
+<script src="@@MONITORING_URL@@"></script>
+<script src="@@SUPABASE_CLIENT_URL@@"></script>
+<script type="module" src="@@REPERTOIRE_STORE_URL@@"></script>
 </body></html>

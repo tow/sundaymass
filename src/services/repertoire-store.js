@@ -110,7 +110,7 @@ function createSupabaseStore(
   {
     songCatalog = globalThis.window?.SongCatalog,
     defer = setTimeout,
-    logger = console,
+    logger = globalThis.AppLogger || console,
   } = {},
 ) {
   const invoke = async body => {

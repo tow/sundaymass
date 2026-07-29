@@ -11,7 +11,14 @@ const generatedOutputs = [
   "service-worker.js",
   "favicon.ico",
   "vendor/supabase.js",
+  "vendor/supabase.js.map",
   "vendor/pptxgenjs.js",
+  "vendor/pptxgenjs.js.map",
+  "vendor/jspdf.js",
+  "vendor/jspdf.js.map",
+  "vendor/sentry.js",
+  "vendor/sentry.js.map",
+  "data/readings/manifest.json",
   "icons/favicon-16.png",
   "icons/favicon-32.png",
   "icons/icon-192.png",
@@ -46,6 +53,7 @@ test("deployable build outputs are generated and ignored rather than versioned",
     "/favicon.ico",
     "/vendor/",
     "/icons/",
+    "/data/readings/",
   ].forEach(pattern => assert.match(ignore, new RegExp(`^${pattern.replaceAll("/", "\\/")}$`, "m")));
 });
 

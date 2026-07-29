@@ -15,7 +15,7 @@
 <style>
 @@STYLES@@
 </style></head>
-<body>
+<body data-surface="planner">
 <div class="parish-bar"><div class="parish-bar-inner"><a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener" aria-label="Visit the St James the Apostle church webpage"><span class="bar-desktop">St James the Apostle ↗</span><span class="bar-mobile">St James ↗</span></a><div class="parish-bar-actions"><span>Church of St. James the Apostle</span><a class="help-button" href="./repertoire.html" aria-label="Choir repertoire"><span class="bar-desktop">Repertoire</span><span class="bar-mobile">Songs</span></a><a class="help-button" href="./about.html">Help</a><button class="install-app" id="installApp" hidden>Install</button><button class="auth-button" id="authButton">Sign in</button></div></div></div>
 <div class="wrap">
   <header class="app">
@@ -402,7 +402,8 @@
 <script>
 @@APP_SCRIPT@@
 </script>
-<script src="./supabase-config.js"></script>
-<script src="./src/services/supabase-client.js"></script>
-<script type="module" src="./src/services/plan-store.js"></script>
+<script src="@@SUPABASE_CONFIG_URL@@"></script>
+<script src="@@MONITORING_URL@@"></script>
+<script src="@@SUPABASE_CLIENT_URL@@"></script>
+<script type="module" src="@@PLAN_STORE_URL@@"></script>
 </body></html>

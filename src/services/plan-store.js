@@ -33,7 +33,7 @@ function localStore({
   songCatalog: songCatalogApi = songCatalog(),
   randomUUID = () => globalThis.crypto?.randomUUID?.()
     || "local-" + Date.now() + "-" + Math.random().toString(36).slice(2),
-  logger = console,
+  logger = globalThis.AppLogger || console,
 } = {}) {
   const listeners = new Map();
   let editor = false;
@@ -332,7 +332,7 @@ function createSupabaseStore(
     songCatalog: songCatalogApi = songCatalog(),
     random = Math.random,
     defer = setTimeout,
-    logger = console,
+    logger = globalThis.AppLogger || console,
     isOnline = () => globalThis.navigator?.onLine !== false,
   } = {},
 ) {
@@ -755,7 +755,7 @@ async function start() {
     try {
       store = await supabaseStore(window.MASS_PLANNER_SUPABASE_CONFIG);
     } catch (error) {
-      console.error("Supabase startup failed", error);
+      (globalThis.AppLogger || console).error("Supabase startup failed", error);
       store = unavailableStore({ reason: error });
     }
   } else {

@@ -15,7 +15,14 @@ const OUTPUTS = [
   "icons/icon-512.png",
   "icons/apple-touch-icon.png",
   "vendor/supabase.js",
+  "vendor/supabase.js.map",
   "vendor/pptxgenjs.js",
+  "vendor/pptxgenjs.js.map",
+  "vendor/jspdf.js",
+  "vendor/jspdf.js.map",
+  "vendor/sentry.js",
+  "vendor/sentry.js.map",
+  "data/readings/manifest.json",
 ];
 
 function hashes() {

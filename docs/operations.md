@@ -25,6 +25,9 @@ service-role key, lyric export, or backup in the repository.
   cannot deploy the frontend even though `main` itself is not branch-protected.
 - The production smoke runs once after each Pages deployment. There is no scheduled
   synthetic monitor; this installation does not need continuous availability checks.
+- Sentry browser issue and structured-log reporting is enabled with the public EU
+  project DSN and is sized for the no-cost Developer plan. It does not provide uptime
+  monitoring.
 - Both push and manual deployment paths require `refs/heads/main`; a workflow manually
   run from another branch cannot publish.
 - The browser's Supabase URL and publishable key are intentionally public. Security
@@ -201,14 +204,44 @@ delivery and redirect-flow testing.
 
 ### Browser configuration
 
-`supabase-config.js` must contain only:
+`supabase-config.js` may contain only:
 
 - the project HTTPS URL; and
-- the public/publishable browser key.
+- the public/publishable browser key;
+- the public Sentry DSN (or an empty string to disable monitoring); and
+- a non-sensitive monitoring environment label.
 
 After changing it, run `npm run check` so the generated service-worker cache represents
 the new asset. Never put the database password, personal access token, or service-role
 key in this file.
+
+### Optional Sentry issue and log reporting
+
+This repository pins and locally builds the Sentry browser SDK, but does not require a
+Sentry account and does not load the SDK while the DSN is blank. To enable it without a
+paid subscription:
+
+1. Create a Sentry organization on the Developer/free plan, selecting the EU region if
+   that is the desired data location.
+2. Create a Browser JavaScript project and copy its public DSN.
+3. Set `MASS_PLANNER_MONITORING_CONFIG.dsn` in `supabase-config.js`; keep
+   `environment: "production"`.
+4. Review the site's privacy notice for the external error processor before deploying.
+5. Run `npm run check`, deploy, and deliberately trigger a harmless test exception in
+   a non-production branch or local Sentry project to confirm receipt.
+
+Do not enable Session Replay, tracing, profiling, metrics, automatic console capture,
+or default PII collection. The application configuration intentionally omits those
+features, sends only explicit application logs, and removes request, user, breadcrumb,
+and arbitrary log-attribute fields before sending. The DSN is not a secret; Sentry
+account tokens and auth keys are secrets and must never enter this repository.
+
+The build emits and deploys an external `.js.map` beside each minified vendor bundle;
+the bundle's `sourceMappingURL` lets Sentry fetch that map from GitHub Pages. The
+application entry code remains unminified in the generated HTML, so its reported line
+and column already point at readable deployed code. If source maps later stop being
+publicly hosted, add an authenticated CI upload before deployment rather than placing a
+Sentry auth token in browser configuration.
 
 ## Normal release
 
@@ -252,10 +285,11 @@ the workflow opens the site in a new mobile-sized browser context and verifies t
 planner, repertoire, Supabase responses, listening links, anonymous controls, and
 lyric privacy.
 
-`npm run build` writes the generated planner entry point, repertoire page, local
-Supabase bundle, icons, and content-addressed service worker. These are ignored build
-outputs, not versioned source. The workflow then runs `npm run stage:pages`, which
-copies only the explicit public surface into the Pages artifact.
+`npm run build` writes the generated planner entry point, repertoire page, local vendor
+bundles, per-citation reading files, icons, and content-addressed service worker. These
+are ignored build outputs, not versioned source. The workflow then runs
+`npm run stage:pages`, which copies only the explicit public surface into the Pages
+artifact.
 
 Frontend-only release:
 
@@ -500,11 +534,14 @@ The build hashes the service-worker template, shell manifest, and contents of ev
 shell asset into `CACHE_NAME`. A changed asset therefore produces a new worker cache
 without a manually maintained version.
 
-On installation, the worker downloads the complete shell and calls `skipWaiting()`. On
-activation, it claims clients and removes old application caches. Navigations are
-network-first with page-specific offline fallbacks; other same-origin assets return the
-cached response while refreshing it. Planner, repertoire, and About navigations have
-distinct cache targets.
+On installation, the worker downloads the application shell and calls `skipWaiting()`.
+The one-megabyte complete reading catalogue and the editor-only PowerPoint/PDF/Sentry
+bundles are not part of that shell: the current Sunday's content-hashed reading files
+and optional feature bundles are fetched and cached as needed. On activation, the
+worker claims clients and removes old application caches. Navigations are network-first
+with page-specific offline fallbacks; other same-origin assets return the cached
+response while refreshing it. Planner, repertoire, and About navigations have distinct
+cache targets.
 
 When a device appears stale:
 

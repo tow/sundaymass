@@ -1,5 +1,10 @@
 const fs = require("fs");
 const path = require("path");
+const {
+  buildAssetVersions,
+  digest,
+  versionedUrl,
+} = require("./asset-versions.js");
 
 const ROOT = path.resolve(__dirname, "..");
 const GENERATED_DATA = path.join("data", "generated");
@@ -17,7 +22,13 @@ function replaceOnce(source, token, value) {
   return source.replace(token, () => value);
 }
 
+const assetVersions = buildAssetVersions();
+const appAssetUrl = relativePath => versionedUrl(relativePath, assetVersions);
+
 const appValues = {
+  "@@APP_LOGGER_JS@@": read("src/services/app-logger.js"),
+  "@@ASSET_URL_JS@@": read("src/domain/asset-url.js"),
+  "@@READING_TEXT_STORE_JS@@": read("src/services/reading-text-store.js"),
   // Keep the source file's trailing newline: the historical single-file build
   // intentionally leaves a blank line between the domain module and embedded data.
   "@@MODAL_CONTROLLER_JS@@": read("src/app/modal-controller.js"),
@@ -61,22 +72,42 @@ const appValues = {
   "@@SUNDAY_LECTIONARY@@": read(path.join(GENERATED_DATA, "sunday-lectionary.json")),
   "@@CELEBRATIONS@@": read(path.join(GENERATED_DATA, "celebrations.json")),
   "@@COMMONS@@": read(path.join(GENERATED_DATA, "commons.json")),
-  "@@READINGS@@": read(path.join(GENERATED_DATA, "readings_text.json")),
+  "@@READING_ASSETS@@": read("data/readings/manifest.json"),
+  "@@ASSET_VERSIONS@@": JSON.stringify(assetVersions),
 };
 
 let appScript = read("src/app/planner.js").trimEnd();
 Object.entries(appValues).forEach(([token, value]) => {
   appScript = replaceOnce(appScript, token, value);
 });
+appScript = replaceOnce(
+  appScript,
+  "@@BUILD_VERSION@@",
+  digest(appScript.replace("@@BUILD_VERSION@@", "")),
+);
 
 let html = read("src/planner.html").trimEnd();
 html = replaceOnce(html, "@@STYLES@@", read("src/styles/planner.css").trimEnd());
 html = replaceOnce(html, "@@APP_SCRIPT@@", appScript);
+html = replaceOnce(html, "@@SUPABASE_CONFIG_URL@@", appAssetUrl("supabase-config.js"));
+html = replaceOnce(html, "@@MONITORING_URL@@", appAssetUrl("src/services/monitoring.js"));
+html = replaceOnce(html, "@@SUPABASE_CLIENT_URL@@", appAssetUrl("src/services/supabase-client.js"));
+html = replaceOnce(html, "@@PLAN_STORE_URL@@", appAssetUrl("src/services/plan-store.js"));
 
 fs.writeFileSync(path.join(ROOT, "index.html"), html);
 fs.rmSync(path.join(ROOT, "StJames_Mass_Planner.html"), { force: true });
 
 let repertoireScript = read("src/app/repertoire.js").trimEnd();
+repertoireScript = replaceOnce(
+  repertoireScript,
+  "@@APP_LOGGER_JS@@",
+  read("src/services/app-logger.js"),
+);
+repertoireScript = replaceOnce(
+  repertoireScript,
+  "@@ASSET_URL_JS@@",
+  read("src/domain/asset-url.js"),
+);
 repertoireScript = replaceOnce(
   repertoireScript,
   "@@REPERTOIRE_URL_STATE_JS@@",
@@ -113,6 +144,16 @@ repertoireScript = replaceOnce(
   "@@EMBEDDING_REPAIR_JS@@",
   read("src/domain/embedding-repair.js"),
 );
+repertoireScript = replaceOnce(
+  repertoireScript,
+  "@@ASSET_VERSIONS@@",
+  JSON.stringify(assetVersions),
+);
+repertoireScript = replaceOnce(
+  repertoireScript,
+  "@@BUILD_VERSION@@",
+  digest(repertoireScript.replace("@@BUILD_VERSION@@", "")),
+);
 let repertoireHtml = read("src/repertoire.html").trimEnd();
 repertoireHtml = replaceOnce(
   repertoireHtml,
@@ -120,6 +161,26 @@ repertoireHtml = replaceOnce(
   read("src/styles/repertoire.css").trimEnd(),
 );
 repertoireHtml = replaceOnce(repertoireHtml, "@@APP_SCRIPT@@", repertoireScript);
+repertoireHtml = replaceOnce(
+  repertoireHtml,
+  "@@SUPABASE_CONFIG_URL@@",
+  appAssetUrl("supabase-config.js"),
+);
+repertoireHtml = replaceOnce(
+  repertoireHtml,
+  "@@MONITORING_URL@@",
+  appAssetUrl("src/services/monitoring.js"),
+);
+repertoireHtml = replaceOnce(
+  repertoireHtml,
+  "@@SUPABASE_CLIENT_URL@@",
+  appAssetUrl("src/services/supabase-client.js"),
+);
+repertoireHtml = replaceOnce(
+  repertoireHtml,
+  "@@REPERTOIRE_STORE_URL@@",
+  appAssetUrl("src/services/repertoire-store.js"),
+);
 fs.writeFileSync(path.join(ROOT, "repertoire.html"), repertoireHtml);
 
 console.log(

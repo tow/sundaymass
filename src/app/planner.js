@@ -1,3 +1,6 @@
+@@APP_LOGGER_JS@@
+@@ASSET_URL_JS@@
+@@READING_TEXT_STORE_JS@@
 @@MODAL_CONTROLLER_JS@@
 @@PWA_CONTROLLER_JS@@
 @@LITURGICAL_CALENDAR_JS@@
@@ -39,14 +42,19 @@
 const SUNDAY_LECTIONARY = @@SUNDAY_LECTIONARY@@;
 const CELEBRATIONS = @@CELEBRATIONS@@;
 const COMMONS = @@COMMONS@@;
-const READINGS = @@READINGS@@;
+const READING_ASSETS = @@READING_ASSETS@@;
+window.MASS_PLANNER_ASSET_VERSIONS = Object.freeze(@@ASSET_VERSIONS@@);
+window.MASS_PLANNER_BUILD = "@@BUILD_VERSION@@";
+const appLogger=AppLogger;
+const readingTextStore=ReadingTextStore.create({assets:READING_ASSETS});
+const READINGS=readingTextStore.values();
 const MUSIC_PARTS=MassMusicParts.parts;
 const lectionary=LectionaryCatalog.create({
   liturgicalCalendar:LiturgicalCalendar,
   sundayLectionary:SUNDAY_LECTIONARY,
   celebrations:CELEBRATIONS,
   commons:COMMONS,
-  readings:READINGS,
+  readings:READING_ASSETS,
 });
 const READING_SLOTS=lectionary.readingSlots;
 const ROLE_CITATIONS=lectionary.roleCitations;
@@ -124,6 +132,8 @@ let planStore = null;
 let isEditor = false;
 let signedIn = false;
 let weeklyLyricsParts = new Set();
+let readingLoadGeneration = 0;
+const failedReadingTexts = new Set();
 
 const plannerState=PlannerState.create({
   initialSunday:initialUrlSelection?.sunday
@@ -152,7 +162,44 @@ practiceQueueController.start();
 function current(){ return plannerState.current(); }
 function baseCelebration(){ return plannerState.baseCelebration(); }
 function vals(){ return plannerState.values(); }
-function textFor(citation){ return READINGS[citation] || ""; }
+function selectedReadingCitations(){
+  const values=vals();
+  return READING_SLOTS.map(slot=>values[slot.key]).filter(Boolean);
+}
+function textFor(citation){
+  if(!citation)return "";
+  if(readingTextStore.has(citation))return readingTextStore.get(citation);
+  return failedReadingTexts.has(citation)
+    ? "(Reading text is unavailable. Check the citation while online.)"
+    : "(Loading reading text…)";
+}
+async function loadDisplayedReadings(){
+  const generation=++readingLoadGeneration;
+  const sunday=current().d;
+  const citations=selectedReadingCitations();
+  const missing=citations.filter(citation=>!readingTextStore.has(citation));
+  printMusicReadings.disabled=missing.length>0;
+  if(!missing.length)return;
+  missing.forEach(citation=>failedReadingTexts.delete(citation));
+  const results=await Promise.allSettled(missing.map(citation=>readingTextStore.load(citation)));
+  if(generation!==readingLoadGeneration||current().d!==sunday)return;
+  const failures=results
+    .map((result,index)=>({result,citation:missing[index]}))
+    .filter(({result})=>result.status==="rejected");
+  failures.forEach(({citation})=>failedReadingTexts.add(citation));
+  if(failures.length){
+    appLogger.error(
+      `Could not load ${failures.length} selected reading text${failures.length===1?"":"s"}`,
+      failures[0].result.reason,
+    );
+  }
+  printMusicReadings.disabled=selectedReadingCitations()
+    .some(citation=>!readingTextStore.has(citation));
+  renderReadingPlan();
+}
+async function prepareReadingLibrary(){
+  await readingTextStore.loadAll();
+}
 function choiceFor(key){ return musicPlanView.choiceFor(plannerState.songs(),key); }
 function renderMusicPlan(){
   const view=musicPlanView.render({
@@ -247,7 +294,8 @@ const readingWorkflow=ReadingWorkflow.create({
   formatLong:fmtLong,
   escapeHtml:esc,
   confirmAction:message=>confirm(message),
-  logger:console,
+  prepare:prepareReadingLibrary,
+  logger:appLogger,
 });
 readingWorkflow.start();
 function renderReadingPlan(){
@@ -271,6 +319,7 @@ function syncDateControl(){
 }
 function refresh(){
   syncDateControl(); renderReadingPlan(); readingWorkflow.renderEditor();
+  loadDisplayedReadings();
   today.hidden=current().d===upcomingSunday().d;
   const v = vals();
   if(!v.gospel && !v.first){ warn.style.display="block"; warn.textContent="This day has proper readings that are not in the dataset. Please confirm them against the parish Ordo."; }
@@ -311,7 +360,7 @@ const planSessionController=PlanSessionController.create({
     weeklyLyricsController.refreshSummary();
   },
   onStatus:setSyncStatus,
-  logger:console,
+  logger:appLogger,
 });
 function subscribeToCurrentPlan(){ planSessionController.subscribe(); }
 function connectPlanStore(store){
@@ -388,7 +437,7 @@ const songWorkflow=SongWorkflow.create({
     renderMusicPlan();
   },
   confirm:message=>confirm(message),
-  logger:console,
+  logger:appLogger,
 });
 songWorkflow.start();
 const weeklyLyricsController=WeeklyLyricsController.create({
@@ -428,7 +477,7 @@ const weeklyLyricsController=WeeklyLyricsController.create({
     renderMusicPlan();
   },
   formatDate:fmtPicker,
-  logger:console,
+  logger:appLogger,
 });
 weeklyLyricsController.start();
 AuthController.create({
@@ -446,6 +495,7 @@ AuthController.create({
   scheduleFocus:callback=>setTimeout(callback,0),
   onUnavailable:()=>setSyncStatus("Editor sign-in unavailable","error"),
   onActionFailure:()=>setSyncStatus("Sign-in failed","error"),
+  logger:appLogger,
 }).start();
 
 // pick nearest Sunday to a chosen date
@@ -505,7 +555,7 @@ const lyricsPptxController=LyricsPptxController.create({
   getValues:vals,
   isEditor:()=>isEditor,
   isOnline:()=>navigator.onLine,
-  logger:console,
+  logger:appLogger,
 });
 lyricsPptxController.start();
 const lyricsSlidesController=LyricsSlidesController.create({
@@ -521,7 +571,7 @@ const lyricsSlidesController=LyricsSlidesController.create({
   getValues:vals,
   isEditor:()=>isEditor,
   isOnline:()=>navigator.onLine,
-  logger:console,
+  logger:appLogger,
 });
 lyricsSlidesController.start();
 const lyricsBookletController=LyricsBookletController.create({
@@ -538,7 +588,7 @@ const lyricsBookletController=LyricsBookletController.create({
   getValues:vals,
   isEditor:()=>isEditor,
   isOnline:()=>navigator.onLine,
-  logger:console,
+  logger:appLogger,
 });
 lyricsBookletController.start();
 

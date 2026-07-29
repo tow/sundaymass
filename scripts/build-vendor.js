@@ -22,7 +22,7 @@ function buildBundle({ name, contents, sourcefile }) {
     legalComments: "eof",
     minify: true,
     platform: "browser",
-    sourcemap: false,
+    sourcemap: true,
     target: ["es2020"],
   });
   const size = Math.round(fs.statSync(outputFile).size / 1024);
@@ -43,4 +43,18 @@ buildBundle({
   name: "jspdf",
   contents: 'export { jsPDF } from "jspdf";',
   sourcefile: "jspdf-entry.js",
+});
+buildBundle({
+  name: "sentry",
+  contents: `export {
+    init,
+    captureException,
+    inboundFiltersIntegration,
+    browserApiErrorsIntegration,
+    globalHandlersIntegration,
+    linkedErrorsIntegration,
+    dedupeIntegration,
+    logger
+  } from "@sentry/browser";`,
+  sourcefile: "sentry-entry.js",
 });

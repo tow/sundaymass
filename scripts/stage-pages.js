@@ -11,18 +11,27 @@ const PAGES_FILES = Object.freeze([
   "service-worker.js",
   "favicon.ico",
   "supabase-config.js",
+  "src/services/monitoring.js",
   "src/services/supabase-client.js",
   "src/services/plan-store.js",
   "src/services/repertoire-store.js",
   "vendor/supabase.js",
+  "vendor/supabase.js.map",
   "vendor/pptxgenjs.js",
+  "vendor/pptxgenjs.js.map",
   "vendor/jspdf.js",
+  "vendor/jspdf.js.map",
+  "vendor/sentry.js",
+  "vendor/sentry.js.map",
   "data/generated/readings_text.json",
   "icons/favicon-16.png",
   "icons/favicon-32.png",
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/apple-touch-icon.png",
+]);
+const PAGES_DIRECTORIES = Object.freeze([
+  "data/readings",
 ]);
 
 function stagePages() {
@@ -36,9 +45,19 @@ function stagePages() {
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.copyFileSync(source, target);
   });
-  console.log(`staged ${PAGES_FILES.length} Pages assets`);
+  PAGES_DIRECTORIES.forEach(relativePath => {
+    const source = path.join(ROOT, relativePath);
+    const target = path.join(OUTPUT, relativePath);
+    if (!fs.existsSync(source)) {
+      throw new Error(`Missing Pages asset directory: ${relativePath}`);
+    }
+    fs.cpSync(source, target, { recursive: true });
+  });
+  console.log(
+    `staged ${PAGES_FILES.length} Pages assets and ${PAGES_DIRECTORIES.length} asset directory`,
+  );
 }
 
 if (require.main === module) stagePages();
 
-module.exports = { PAGES_FILES, stagePages };
+module.exports = { PAGES_DIRECTORIES, PAGES_FILES, stagePages };

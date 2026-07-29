@@ -58,22 +58,30 @@ test("the generated planner contains no unresolved build tokens", () => {
     "@@PLAN_MUSIC_DATA_JS@@",
     "@@LECTIONARY_CATALOG_JS@@",
     "@@READING_SELECTION_JS@@",
+    "@@APP_LOGGER_JS@@",
+    "@@ASSET_URL_JS@@",
+    "@@READING_TEXT_STORE_JS@@",
     "@@SUNDAY_LECTIONARY@@",
     "@@CELEBRATIONS@@",
     "@@COMMONS@@",
-    "@@READINGS@@",
+    "@@READING_ASSETS@@",
+    "@@ASSET_VERSIONS@@",
+    "@@BUILD_VERSION@@",
   ].forEach(token => assert.ok(!html.includes(token), `${token} must be resolved by the build`));
 });
 
 test("external application assets referenced by the planner exist", () => {
   const html = read("index.html");
   const localScripts = [...html.matchAll(/<script[^>]+src="\.\/([^"]+)"/g)].map(match => match[1]);
-  assert.deepEqual(localScripts, [
+  assert.deepEqual(localScripts.map(value => value.replace(/\?v=[^&]+$/, "")), [
     "supabase-config.js",
+    "src/services/monitoring.js",
     "src/services/supabase-client.js",
     "src/services/plan-store.js",
   ]);
-  localScripts.forEach(relativePath => {
+  localScripts.forEach(versionedPath => {
+    assert.match(versionedPath, /\?v=[0-9a-f]{12}$/);
+    const relativePath = versionedPath.replace(/\?v=[^&]+$/, "");
     assert.ok(fs.existsSync(path.join(ROOT, relativePath)), `${relativePath} must exist`);
   });
 });
@@ -96,6 +104,10 @@ test("the generated repertoire application parses and has no unresolved build to
     "@@SONG_FORM_JS@@",
     "@@SONG_PRESENTATION_JS@@",
     "@@SONG_CATALOG_JS@@",
+    "@@APP_LOGGER_JS@@",
+    "@@ASSET_URL_JS@@",
+    "@@ASSET_VERSIONS@@",
+    "@@BUILD_VERSION@@",
   ]
     .forEach(token => assert.ok(!html.includes(token), `${token} must be resolved by the build`));
 });
@@ -103,14 +115,59 @@ test("the generated repertoire application parses and has no unresolved build to
 test("external application assets referenced by the repertoire exist", () => {
   const html = read("repertoire.html");
   const localScripts = [...html.matchAll(/<script[^>]+src="\.\/([^"]+)"/g)].map(match => match[1]);
-  assert.deepEqual(localScripts, [
+  assert.deepEqual(localScripts.map(value => value.replace(/\?v=[^&]+$/, "")), [
     "supabase-config.js",
+    "src/services/monitoring.js",
     "src/services/supabase-client.js",
     "src/services/repertoire-store.js",
   ]);
-  localScripts.forEach(relativePath => {
+  localScripts.forEach(versionedPath => {
+    assert.match(versionedPath, /\?v=[0-9a-f]{12}$/);
+    const relativePath = versionedPath.replace(/\?v=[^&]+$/, "");
     assert.ok(fs.existsSync(path.join(ROOT, relativePath)), `${relativePath} must exist`);
   });
+});
+
+test("reading text is emitted as lazy content-hashed assets instead of inline HTML", () => {
+  const readings = JSON.parse(read("data/generated/readings_text.json"));
+  const manifest = JSON.parse(read("data/readings/manifest.json"));
+  const html = read("index.html");
+
+  assert.deepEqual(Object.keys(manifest).sort(), Object.keys(readings).sort());
+  assert.ok(Buffer.byteLength(html) < 600 * 1024, "planner HTML should stay below 600 KB");
+  Object.entries(manifest).forEach(([citation, filename]) => {
+    assert.match(filename, /^[0-9a-f]{16}\.json$/);
+    assert.equal(
+      JSON.parse(read(path.join("data/readings", filename))),
+      readings[citation],
+      `${citation} must resolve to its complete reading text`,
+    );
+  });
+  assert.doesNotMatch(read("src/app/planner.js"), /@@READINGS@@/);
+});
+
+test("Sentry is pinned, source-mapped, and configured for private errors and logs", () => {
+  const packageJson = JSON.parse(read("package.json"));
+  const monitoring = read("src/services/monitoring.js");
+  const config = read("supabase-config.js");
+  const bundlePath = path.join(ROOT, "vendor/sentry.js");
+
+  assert.match(packageJson.dependencies["@sentry/browser"], /^\d+\.\d+\.\d+$/);
+  assert.ok(fs.existsSync(bundlePath));
+  assert.ok(fs.existsSync(`${bundlePath}.map`));
+  assert.match(read("vendor/sentry.js"), /sourceMappingURL=sentry\.js\.map/);
+  assert.match(
+    config,
+    /dsn:\s*"https:\/\/[0-9a-f]+@[^"]+\.ingest\.de\.sentry\.io\/\d+"/,
+  );
+  assert.match(monitoring, /if \(!logger \|\| !config\.dsn\) return/);
+  assert.match(monitoring, /sendDefaultPii:\s*false/);
+  assert.match(monitoring, /enableLogs:\s*true/);
+  assert.match(monitoring, /enableMetrics:\s*false/);
+  assert.match(monitoring, /beforeSendLog\(log\)/);
+  assert.match(monitoring, /Sentry\.logger\[level\]/);
+  assert.match(monitoring, /tracesSampleRate:\s*0/);
+  assert.doesNotMatch(monitoring, /replayIntegration|browserTracingIntegration|tracesSampler/);
 });
 
 test("the Supabase browser client is pinned, built locally, and cached for offline startup", () => {
@@ -123,6 +180,8 @@ test("the Supabase browser client is pinned, built locally, and cached for offli
 
   assert.match(packageJson.dependencies["@supabase/supabase-js"], /^\d+\.\d+\.\d+$/);
   assert.ok(fs.existsSync(bundlePath));
+  assert.ok(fs.existsSync(`${bundlePath}.map`));
+  assert.match(read("vendor/supabase.js"), /sourceMappingURL=supabase\.js\.map/);
   const importCheck = spawnSync(
     process.execPath,
     [
@@ -143,10 +202,10 @@ test("the Supabase browser client is pinned, built locally, and cached for offli
   assert.match(sharedClient, /document\.baseURI/);
   assert.doesNotMatch(planStore, /document\.baseURI|document\.currentScript/);
   assert.doesNotMatch(repertoireStore, /document\.baseURI|document\.currentScript/);
-  assert.match(serviceWorker, /"\.\/vendor\/supabase\.js"/);
+  assert.match(serviceWorker, /"\.\/vendor\/supabase\.js\?v=[0-9a-f]{12}"/);
 });
 
-test("the PowerPoint generator is pinned, built locally, and cached for on-demand export", () => {
+test("the PowerPoint generator is pinned, built locally, and fetched only on demand", () => {
   const packageJson = JSON.parse(read("package.json"));
   const serviceWorker = read("service-worker.js");
   const controller = read("src/app/lyrics-pptx-controller.js");
@@ -154,6 +213,8 @@ test("the PowerPoint generator is pinned, built locally, and cached for on-deman
 
   assert.match(packageJson.dependencies.pptxgenjs, /^\d+\.\d+\.\d+$/);
   assert.ok(fs.existsSync(bundlePath));
+  assert.ok(fs.existsSync(`${bundlePath}.map`));
+  assert.match(read("vendor/pptxgenjs.js"), /sourceMappingURL=pptxgenjs\.js\.map/);
   const importCheck = spawnSync(
     process.execPath,
     [
@@ -167,5 +228,5 @@ test("the PowerPoint generator is pinned, built locally, and cached for on-deman
   );
   assert.equal(importCheck.status, 0, importCheck.stderr);
   assert.match(controller, /new URL\("\.\/vendor\/pptxgenjs\.js", document\.baseURI\)/);
-  assert.match(serviceWorker, /"\.\/vendor\/pptxgenjs\.js"/);
+  assert.doesNotMatch(serviceWorker, /vendor\/pptxgenjs\.js/);
 });
