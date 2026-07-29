@@ -78,6 +78,31 @@ to be decided.
 
 ## Copyright and continuity
 
+- Lectionary text check (2026-07-29): the readings proclaimed at Mass (England & Wales
+  lectionary, in use since Advent 2024, also the usual choice for English Masses in
+  Helsinki) are the ESV Catholic Edition (© Crossway, anglicised) with the Abbey Psalms
+  and Canticles (© USCCB) for the responsorial psalms — confirmed against a photo of
+  the printed lectionary. There is no legal machine-readable source of that text to
+  pull: Crossway's free ESV API serves only the standard US ESV (no anglicisation, no
+  CE variants, no deuterocanonical books) and caps local storage at ~500 verses; the
+  ESV-CE and Abbey Psalms exist digitally only inside licensed consumer products
+  (CTS/SPCK, Augustine Institute apps, Universalis) with no redistribution rights. The
+  public site therefore stays on the World English Bible.
+- What the lectionary copyrights allow without formal permission vs with a licence
+  (2026-07-29): reproducing a Sunday's readings in a one-off congregational worship
+  aid — the printed booklet for a single celebration, and by the same reasoning the
+  projected slides — is generally permitted with the required copyright
+  acknowledgment lines printed on it; Crossway's standing gratis-use policy for the
+  ESV (up to 1,000 verses, non-commercial, not a complete book, notice included)
+  comfortably covers that scale. What does need actual permission: ongoing digital
+  republication — the public website showing each Sunday's readings — and, to be
+  clean, the per-Sunday generated exports as a recurring series rather than a true
+  one-off. For that, write to the CBCEW Liturgy Office
+  (Liturgy.Office@cbcew.org.uk; their copyright guidance still predates the new
+  lectionary) for the ESV-CE readings and to USCCB permissions for the Abbey Psalms;
+  for a free parish tool this is usually granted and often free or cheap. No data
+  feed comes with permission, so ingestion would be an editor-only paste-per-Sunday
+  field handled like private lyrics.
 - Document the basis for storing, reproducing, printing, and projecting song lyrics,
   and provide a correction or removal contact.
 - Keep copyright work separate from GDPR work: attribution alone does not grant
