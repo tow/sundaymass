@@ -127,8 +127,10 @@ test("the booklet PDF labels the Psalm response and included cantor verses", () 
   const source = pdfSource(doc);
   assert.ok(source.includes("The Hand of the Lord feeds us;"));
   assert.ok(source.includes("The LORD is gracious and merciful"));
-  assert.ok(source.includes("ALL"));
-  assert.ok(source.includes("CANTOR"));
+  assert.ok(source.includes("ALL: RESPONSE"));
+  assert.ok(source.includes("CANTOR: VERSE 1"));
+  assert.ok(!source.includes("Response:"));
+  assert.ok(!source.includes("Verse 1"));
 });
 
 test("the booklet PDF is strictly monochrome to save colour ink", () => {

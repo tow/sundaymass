@@ -37,23 +37,41 @@ test("numbered verses are recognized without blank lines between sections", () =
   assert.equal(WeeklyLyrics.isStructuredPsalm(compact), true);
   assert.deepEqual(WeeklyLyrics.lyricBlocks("psalm", compact)
     .map(block => [block.id, block.audienceLabel]), [
-    ["response", "ALL"],
-    ["verse-1", "CANTOR"],
-    ["verse-2", "CANTOR"],
+    ["response", "ALL: RESPONSE"],
+    ["verse-1", "CANTOR: VERSE 1"],
+    ["verse-2", "CANTOR: VERSE 2"],
   ]);
 });
 
-test("unrecognized Psalm paragraphs are exported without a false ALL label", () => {
+test("unlabelled Psalm paragraphs normalize to a response and cantor verse", () => {
   const unstructured = "Response text without a heading.\n\nCantor text without a verse number.";
 
-  assert.equal(WeeklyLyrics.isStructuredPsalm(unstructured), false);
-  assert.deepEqual(WeeklyLyrics.lyricBlocks("psalm", unstructured), [{
-    id: "lyrics",
-    label: "",
-    role: "all",
-    text: unstructured,
-    audienceLabel: "",
-  }]);
+  assert.equal(WeeklyLyrics.isStructuredPsalm(unstructured), true);
+  assert.deepEqual(WeeklyLyrics.lyricBlocks("psalm", unstructured)
+    .map(block => [block.id, block.audienceLabel, block.text]), [
+    ["response", "ALL: RESPONSE", "Response text without a heading."],
+    ["verse-1", "CANTOR: VERSE 1", "Cantor text without a verse number."],
+  ]);
+});
+
+test("continuous Psalm lines normalize into response and cantor blocks", () => {
+  const lyrics = "A response line\nA first verse line\nA second verse line";
+  assert.deepEqual(WeeklyLyrics.lyricBlocks("psalm", lyrics)
+    .map(block => [block.role, block.text]), [
+    ["all", "A response line"],
+    ["cantor", "A first verse line\nA second verse line"],
+  ]);
+});
+
+test("repeated recorded responses collapse to one congregational block", () => {
+  const lyrics = "R. Sing to the Lord.\n\nCantor: A new song.\n\n"
+    + "R. Sing to the Lord.\n\n2. Let all creation rejoice.";
+  assert.deepEqual(WeeklyLyrics.lyricBlocks("psalm", lyrics)
+    .map(block => [block.role, block.text]), [
+    ["all", "Sing to the Lord."],
+    ["cantor", "A new song."],
+    ["cantor", "Let all creation rejoice."],
+  ]);
 });
 
 test("omitted Psalm verses remain visible in canonical sections but not serialized output", () => {
@@ -66,7 +84,11 @@ test("omitted Psalm verses remain visible in canonical sections but not serializ
   assert.doesNotMatch(edited, /They are happy/);
   assert.match(edited, /May your love/);
   assert.deepEqual(WeeklyLyrics.lyricBlocks("psalm", edited)
-    .map(block => block.audienceLabel), ["ALL", "CANTOR", "CANTOR"]);
+    .map(block => block.audienceLabel), [
+    "ALL: RESPONSE",
+    "CANTOR: VERSE 1",
+    "CANTOR: VERSE 3",
+  ]);
 });
 
 test("responsorial citations parse Psalms and canticles by structured number", () => {

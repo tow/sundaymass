@@ -220,10 +220,30 @@ test("Psalm assignments retain response and cantor verses as separate blocks", (
   assert.equal(LyricsPresentation.congregationLyrics("entrance", lyrics), lyrics);
   assert.deepEqual(LyricsPresentation.lyricBlocks("psalm", lyrics)
     .map(block => [block.audienceLabel, block.text]), [
-    ["ALL", "Response:\nThe hand of the Lord feeds us;\nhe answers all our needs."],
-    ["CANTOR", "1. The LORD is gracious and merciful,\nslow to anger and of great kindness."],
-    ["CANTOR", "2. The eyes of all look hopefully to you."],
+    ["ALL: RESPONSE", "The hand of the Lord feeds us;\nhe answers all our needs."],
+    ["CANTOR: VERSE 1", "The LORD is gracious and merciful,\nslow to anger and of great kindness."],
+    ["CANTOR: VERSE 2", "The eyes of all look hopefully to you."],
   ]);
+});
+
+test("exports reject a Psalm record that contains only its response", () => {
+  const assignments = LyricsPresentation.selectedAssignments(
+    [{ key: "psalm", label: "Psalm" }],
+    { psalm: { id: "incomplete-psalm", title: "Incomplete Psalm" } },
+    new Map([[
+      "incomplete-psalm",
+      {
+        id: "incomplete-psalm",
+        title: "Incomplete Psalm",
+        lyrics: "The Lord is kind and merciful.",
+      },
+    ]]),
+  );
+
+  assert.deepEqual(
+    LyricsPresentation.missingLyrics(assignments).map(item => item.title),
+    ["Incomplete Psalm"],
+  );
 });
 
 test("a weekly Psalm edit controls exactly which verses reach projection", () => {
@@ -242,7 +262,10 @@ test("a weekly Psalm edit controls exactly which verses reach projection", () =>
   );
   const chunks = LyricsPresentation.projectionChunks(assignments[0]);
 
-  assert.deepEqual(chunks.map(chunk => chunk.audienceLabel), ["ALL", "CANTOR"]);
+  assert.deepEqual(chunks.map(chunk => chunk.audienceLabel), [
+    "ALL: RESPONSE",
+    "CANTOR: VERSE 2",
+  ]);
   assert.doesNotMatch(chunks.map(chunk => chunk.text).join("\n"), /Kindness and truth/);
   assert.match(chunks.map(chunk => chunk.text).join("\n"), /give his benefits/);
 });
@@ -300,6 +323,26 @@ test("the PDF deck reuses lyricSlides pagination, one page per chunk after the c
   const chunkCount = LyricsPresentation.lyricSlides(assignment.lyrics).length;
 
   assert.equal(doc.getNumberOfPages(), chunkCount + 1);
+});
+
+test("Psalm PDF slides identify the congregational response and cantor verses", () => {
+  const doc = LyricsPresentation.buildPdfDoc(jsPDF, {
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "",
+    assignments: [{
+      partKey: "psalm",
+      partLabel: "Psalm",
+      title: "The Hand of the Lord",
+      lyrics: "Response:\nThe hand of the Lord feeds us.\n\n"
+        + "Verse 1:\nThe Lord is gracious and merciful.",
+    }],
+  });
+  const source = pdfSource(doc);
+
+  assert.ok(source.includes("PSALM · ALL: RESPONSE"));
+  assert.ok(source.includes("PSALM · CANTOR: VERSE 1"));
+  assert.equal(LyricsPresentation.projectionLabelFontSize("ALL: RESPONSE"), 16);
 });
 
 test("the PDF deck matches the PowerPoint deck's slide count and content", async () => {

@@ -1122,8 +1122,8 @@ test("editor downloads private lyrics as an imposed landscape A4 booklet PDF", a
       },
       "booklet-psalm": {
         ...songs.psalm,
-        lyrics: "Response:\nPSALM RESPONSE FOR EVERYONE\n\n"
-          + "Verse 1\nPSALM VERSE FOR THE CANTOR ONLY",
+        lyrics: "PSALM RESPONSE FOR EVERYONE\n\n"
+          + "PSALM VERSE FOR THE CANTOR ONLY",
       },
     };
     window.__bookletPrivateFetches = [];
@@ -1179,9 +1179,9 @@ test("editor downloads private lyrics as an imposed landscape A4 booklet PDF", a
   const source = pdf.toString("latin1");
   assert.match(source, /Gathered & Sent/);
   assert.match(source, /ENTRANCE PRIVATE LINE ONE/);
-  assert.match(source, /ALL/);
+  assert.match(source, /ALL: RESPONSE/);
   assert.match(source, /PSALM RESPONSE FOR EVERYONE/);
-  assert.match(source, /CANTOR/);
+  assert.match(source, /CANTOR: VERSE 1/);
   assert.match(source, /PSALM VERSE FOR THE CANTOR ONLY/);
   assert.match(source, /COMMUNION PRIVATE LINE TWO/);
   await context.close();

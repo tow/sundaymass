@@ -19,10 +19,12 @@ Keep canonical lyrics on the song and at most one edited full-text copy on a Sun
 slot. “Reuse most recent edit” copies prior text into the current editor; it does not
 link the weeks or create a reusable lyric-version entity.
 
-Psalm editing derives response and verse sections from canonical text. The response is
-always included. Verse inclusion is explicit, omitted verses remain visible as disabled
-editor sections, and only included sections are serialized. Exports mark included
-sections `ALL` or `CANTOR`.
+Psalm editing derives response and verse sections from canonical text. Explicit role
+headings are preferred, then stanza breaks, with a line-based fallback for otherwise
+unstructured text. The response is always included. Verse inclusion is explicit,
+omitted verses remain visible as disabled editor sections, and only included sections
+are serialized. Exports mark included sections `ALL: RESPONSE` or
+`CANTOR: VERSE n`.
 
 ## Consequences
 
@@ -30,5 +32,7 @@ sections `ALL` or `CANTOR`.
 - Reused edits can diverge independently after copying.
 - Replacing a slot's song safely discards that slot's override.
 - Historical overrides are private lyric data and cannot enter public plans or caches.
-- The parser depends on blank-line stanza structure and standard response/verse labels;
-  unstructured Psalms fall back to the normal full-text editor.
+- Psalm storage remains ordinary private lyric text; normalization is a domain and
+  presentation rule rather than a database schema commitment.
+- Ambiguous text is interpreted consistently for printing, and editors can correct the
+  normalized sections through the existing Sunday-specific editor.

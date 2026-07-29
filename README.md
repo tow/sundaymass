@@ -85,8 +85,10 @@ HTTPS, the planner can be installed to a phone's home screen.
   booklet imposes A5 pages on landscape A4 sheets; print double-sided, flip on the
   short edge, at actual size, with the printer's own booklet mode off, then fold the
   two sheets in half. The booklet is fixed at eight A5 pages. Both congregation-facing
-  exports label the Responsorial Psalm response `ALL` and included verses `CANTOR`;
-  verses omitted for that Sunday do not appear. Neither
+  exports normalize every Responsorial Psalm into one response plus cantor verses,
+  labelled `ALL: RESPONSE` and `CANTOR: VERSE n`; verses omitted for that Sunday do
+  not appear. An incomplete Psalm with no verse blocks export rather than presenting
+  its response as the whole text. Neither
   output is uploaded or cached.
 - Song and reading embeddings are also private. Logged-out users may view suggestions
   for an empty Mass slot, but the bounded database function returns only public song

@@ -181,10 +181,11 @@ an authorised editor editing song details.
 
 “Lyrics for this Sunday” creates one private full-text override for the selected slot.
 The editor can reset to canonical text or explicitly copy the newest earlier override
-for the same song. There is no linked template/version layer. Responsorial Psalm
-editing presents the assembly response and cantor verses as separate sections; omitted
-verses stay visible in the editor but are excluded from saved effective text and all
-exports.
+for the same song. There is no linked template/version layer. Responsorial Psalm text
+stays free-form in the database and is normalized at the domain boundary into one
+assembly response and cantor verse sections. The editor presents those normalized
+sections separately; omitted verses stay visible but are excluded from saved effective
+text and all exports.
 
 Psalm suggestions take a separate structured path. The reading's book and number are
 matched against responsorial metadata, with exact citations used only to rank matching

@@ -270,6 +270,10 @@
       .map(text => ({ text, audienceLabel: block.audienceLabel || "" })));
   }
 
+  function projectionLabelFontSize(audienceLabel) {
+    return audienceLabel ? 16 : 10;
+  }
+
   function selectedAssignments(parts, songs, detailsById, weeklyByPart = {}) {
     return parts.flatMap(part => {
       const selected = songs[part.key];
@@ -295,7 +299,15 @@
   }
 
   function missingLyrics(assignments) {
-    return assignments.filter(assignment => !assignment.lyrics);
+    return assignments.filter(assignment => {
+      if (!assignment.lyrics) return true;
+      if (assignment.partKey !== "psalm") return false;
+      const blocks = assignment.lyricBlocks?.length
+        ? assignment.lyricBlocks
+        : lyricBlocks(assignment.partKey, assignment.lyrics);
+      return blocks.filter(block => block.role === "all").length !== 1
+        || !blocks.some(block => block.role === "cantor");
+    });
   }
 
   function attributionLine(assignment) {
@@ -387,7 +399,7 @@
           .join(" · ");
         slide.addText(slideLabel, {
           ...pptxBox(SLIDE_LAYOUT.label),
-          fontFace: "Aptos", fontSize: 10, bold: true,
+          fontFace: "Aptos", fontSize: projectionLabelFontSize(chunk.audienceLabel), bold: true,
           charSpacing: 1.4, color: COLOURS[SLIDE_LAYOUT.label.color], margin: 0,
         });
         slide.addText(assignment.title, {
@@ -527,7 +539,7 @@
           .filter(Boolean)
           .join(" · ");
         paintPdfText(doc, slideLabel, SLIDE_LAYOUT.label, {
-          style: "bold", size: 10, charSpace: 1.4,
+          style: "bold", size: projectionLabelFontSize(chunk.audienceLabel), charSpace: 1.4,
         });
         paintPdfText(doc, assignment.title, SLIDE_LAYOUT.songTitle, {
           font: "times", style: "bold", size: 20,
@@ -562,6 +574,7 @@
     normalizeLyrics,
     pdfFileName,
     projectionChunks,
+    projectionLabelFontSize,
     selectedAssignments,
     SLIDE_LAYOUT,
     wrapLine,

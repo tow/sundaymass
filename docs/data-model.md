@@ -174,11 +174,14 @@ text into this table; it does not create a reusable lyric-version entity or link
 weeks. “Reuse most recent edit” is an explicit copy operation. Replacing or clearing
 the assigned song deletes the slot override.
 
-For a structured Responsorial Psalm, the editor starts from all canonical response and
-verse sections. Omitted verses remain visible and clearly disabled in the editor, but
-the stored edited text contains only included sections. Exports label the response
-`ALL` and verses `CANTOR`; omitted sections therefore cannot reach PDF or PowerPoint
-output.
+Responsorial Psalm text remains free-form in storage. At the domain boundary it is
+normalized into one response plus one or more verse sections, using explicit headings,
+stanza breaks, or a line-based fallback in that order. The editor starts from those
+normalized sections. Omitted verses remain visible and clearly disabled in the editor,
+but the stored edited text contains only included sections. Exports label the response
+`ALL: RESPONSE` and each verse `CANTOR: VERSE n`; omitted sections therefore cannot
+reach PDF or PowerPoint output. A Psalm without both roles is treated as incomplete
+lyrics and blocks export.
 
 ### Vector tables
 
