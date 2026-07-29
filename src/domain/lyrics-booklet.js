@@ -1,4 +1,4 @@
-// Builds an imposed A5 lyrics booklet for duplex printing on landscape A4 paper.
+// Builds an imposed A5 lyrics booklet PDF for duplex printing on landscape A4 paper.
 (function (global) {
   "use strict";
 
@@ -7,17 +7,20 @@
   const LINE_LENGTH = 68;
   const LABEL_PATTERN = /^(?:refrain|response|chorus|bridge|verse(?:\s+\d+)?|coda|repeat)(?::|\b)/i;
 
-  function fallbackEscapeHtml(value) {
-    return String(value || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
-
-  function escapeHtml(value) {
-    return (global.LyricsPresentation?.escapeHtml || fallbackEscapeHtml)(value);
-  }
+  const MM_PER_POINT = 25.4 / 72;
+  const SHEET = Object.freeze({ w: 297, h: 210, half: 148.5 });
+  const PAGE_PADDING = Object.freeze({ top: 10, side: 10, bottom: 11 });
+  const COLORS = Object.freeze({
+    ink: "#111111",
+    navy: "#002f45",
+    gold: "#e0b96a",
+    bronze: "#80632d",
+    slate: "#667078",
+    paleBlue: "#d6e1e6",
+    footer: "#777777",
+    divider: "#d5d5d5",
+    foldMark: "#999999",
+  });
 
   function fallbackWrap(value, maxLength = LINE_LENGTH) {
     const words = String(value || "").trim().split(/\s+/).filter(Boolean);
@@ -200,68 +203,196 @@
     return sheets;
   }
 
-  function renderPage(page) {
-    const footer = page.kind === "blank" || page.kind === "cover" || page.kind === "back-cover"
-      ? ""
-      : `<footer>${page.number}</footer>`;
-    if (page.kind === "cover") {
-      return `<article class="booklet-page booklet-cover">`
-        + `<div class="booklet-kicker">St James the Apostle · 6pm Mass</div>`
-        + `<h1>${escapeHtml(page.celebration || "Sunday Mass")}</h1>`
-        + `<div class="booklet-rule"></div>`
-        + `<p>${escapeHtml(page.meta || page.date || "")}</p>`
-        + `<strong>Congregational song booklet</strong></article>`;
-    }
-    if (page.kind === "contents") {
-      return `<article class="booklet-page booklet-contents"><h1>Music for the Mass</h1>`
-        + `<div class="booklet-contents-list">${page.entries.map(entry =>
-          `<div><span><small>${escapeHtml(entry.partLabel)}</small>`
-          + `${escapeHtml(entry.title)}</span><strong>${entry.page}</strong></div>`,
-        ).join("")}</div>${footer}</article>`;
-    }
-    if (page.kind === "back-cover") {
-      return `<article class="booklet-page booklet-back-cover">`
-        + `<div>St James the Apostle · 6pm Mass</div>`
-        + `<p>${escapeHtml(page.date || "")}</p></article>`;
-    }
-    if (page.kind === "blank") return `<article class="booklet-page booklet-blank"></article>`;
-
-    const items = page.items.map(item => {
-      if (item.type === "song-header") {
-        return `<section class="booklet-song-head${item.continued ? " is-continuation" : ""}">`
-          + `<p>${escapeHtml(item.partLabel)}</p>`
-          + `<h2>${escapeHtml(item.title)}${item.continued ? " <small>(continued)</small>" : ""}</h2>`
-          + `${item.attribution ? `<div>${escapeHtml(item.attribution)}</div>` : ""}</section>`;
-      }
-      return `<div class="booklet-stanza">${item.units.map(unit =>
-        unit.lines.map((line, index) =>
-          `<div class="booklet-line${unit.label ? " is-label" : ""}`
-          + `${index ? " is-wrap" : ""}">${escapeHtml(line)}</div>`,
-        ).join(""),
-      ).join("")}</div>`;
-    }).join("");
-    return `<article class="booklet-page booklet-lyrics-page">${items}${footer}</article>`;
+  function lineStep(sizePt, lineHeight) {
+    return sizePt * lineHeight * MM_PER_POINT;
   }
 
-  function renderBooklet(options) {
-    const pages = logicalPages(options);
-    return `<section class="print-booklet" data-logical-pages="${pages.length}">`
-      + impose(pages).map((sheet, index) =>
-        `<section class="booklet-sheet" data-sheet="${Math.floor(index / 2) + 1}" data-side="${sheet.side}">`
-        + `<div class="booklet-fold-mark booklet-fold-top"></div>`
-        + `<div class="booklet-half booklet-left">${renderPage(sheet.left)}</div>`
-        + `<div class="booklet-half booklet-right">${renderPage(sheet.right)}</div>`
-        + `<div class="booklet-fold-mark booklet-fold-bottom"></div></section>`,
-      ).join("")
-      + `</section>`;
+  // Draws pre-split lines top-aligned at (x, y) and returns the y below them.
+  function writeLines(doc, lines, x, y, {
+    font = "helvetica",
+    style = "normal",
+    size,
+    color,
+    lineHeight = 1.25,
+    align = "left",
+    charSpace = 0,
+  }) {
+    doc.setFont(font, style);
+    doc.setFontSize(size);
+    doc.setTextColor(color);
+    const step = lineStep(size, lineHeight);
+    lines.forEach((line, index) => {
+      if (!line) return;
+      doc.text(line, x, y + index * step, {
+        baseline: "top",
+        align,
+        ...(charSpace ? { charSpace } : {}),
+      });
+    });
+    return y + lines.length * step;
+  }
+
+  function splitToWidth(doc, text, { font, style, size, maxWidth }) {
+    doc.setFont(font, style);
+    doc.setFontSize(size);
+    return doc.splitTextToSize(String(text || ""), maxWidth);
+  }
+
+  function paintCover(doc, page, x0) {
+    doc.setFillColor(COLORS.navy);
+    doc.rect(x0, 0, SHEET.half, SHEET.h, "F");
+    const left = x0 + 14;
+    const width = SHEET.half - 28;
+    const titleLines = splitToWidth(doc, page.celebration || "Sunday Mass", {
+      font: "times", style: "bold", size: 25, maxWidth: width,
+    });
+    const metaLines = splitToWidth(doc, page.meta || page.date || "", {
+      font: "helvetica", style: "normal", size: 11, maxWidth: width,
+    });
+    const total = lineStep(8, 1.25) + 10
+      + titleLines.length * lineStep(25, 1.08) + 4
+      + 4 + metaLines.length * lineStep(11, 1.35) + 10
+      + lineStep(9, 1.25);
+    let y = (SHEET.h - total) / 2;
+    y = writeLines(doc, ["ST JAMES THE APOSTLE · 6PM MASS"], left, y, {
+      style: "bold", size: 8, color: COLORS.gold, charSpace: 1.1 * MM_PER_POINT,
+    });
+    y += 10;
+    y = writeLines(doc, titleLines, left, y, {
+      font: "times", style: "bold", size: 25, color: "#ffffff", lineHeight: 1.08,
+    });
+    y += 4;
+    doc.setDrawColor(COLORS.gold);
+    doc.setLineWidth(1.5 * MM_PER_POINT);
+    doc.line(left, y, left + 22, y);
+    y += 4;
+    y = writeLines(doc, metaLines, left, y, {
+      size: 11, color: COLORS.paleBlue, lineHeight: 1.35,
+    });
+    y += 10;
+    writeLines(doc, ["CONGREGATIONAL SONG BOOKLET"], left, y, {
+      style: "bold", size: 9, color: COLORS.gold, charSpace: 0.7 * MM_PER_POINT,
+    });
+  }
+
+  function paintBackCover(doc, page, x0) {
+    doc.setFillColor(COLORS.navy);
+    doc.rect(x0, 0, SHEET.half, SHEET.h, "F");
+    const center = x0 + SHEET.half / 2;
+    const total = lineStep(9, 1.25) + 3.2 + lineStep(9, 1.25);
+    let y = (SHEET.h - total) / 2;
+    y = writeLines(doc, ["ST JAMES THE APOSTLE · 6PM MASS"], center, y, {
+      style: "bold", size: 9, color: COLORS.gold,
+      align: "center", charSpace: 0.8 * MM_PER_POINT,
+    });
+    y += 3.2;
+    writeLines(doc, [String(page.date || "")], center, y, {
+      size: 9, color: COLORS.paleBlue, align: "center",
+    });
+  }
+
+  function paintSongHeader(doc, item, left, width, y) {
+    y = writeLines(doc, [String(item.partLabel || "").toUpperCase()], left, y, {
+      style: "bold", size: 6.5, color: COLORS.bronze, charSpace: 0.65 * MM_PER_POINT,
+    });
+    y += 0.7;
+    const titleLines = splitToWidth(doc, item.title, {
+      font: "times", style: "bold", size: 12, maxWidth: width,
+    });
+    const titleTop = y;
+    y = writeLines(doc, titleLines, left, y, {
+      font: "times", style: "bold", size: 12, color: COLORS.navy, lineHeight: 1.06,
+    });
+    if (item.continued) {
+      doc.setFont("times", "bold");
+      doc.setFontSize(12);
+      const lastLineTop = titleTop + (titleLines.length - 1) * lineStep(12, 1.06);
+      writeLines(doc, ["(continued)"], left + doc.getTextWidth(titleLines.at(-1)) + 1.5,
+        lastLineTop + lineStep(12 - 7, 1), { size: 7, color: COLORS.slate });
+    }
+    if (item.attribution) {
+      y += 0.6;
+      y = writeLines(doc, [item.attribution], left, y, {
+        size: 6.5, color: COLORS.slate, lineHeight: 1.15,
+      });
+    }
+    y += item.continued ? 0.8 : 1.2;
+    doc.setDrawColor(COLORS.gold);
+    doc.setLineWidth(1 * MM_PER_POINT);
+    doc.line(left, y, left + width, y);
+    return y + (item.continued ? 1.5 : 1.7);
+  }
+
+  function paintLyricsPage(doc, page, x0) {
+    const left = x0 + PAGE_PADDING.side;
+    const width = SHEET.half - 2 * PAGE_PADDING.side;
+    let y = PAGE_PADDING.top;
+    page.items.forEach((item, index) => {
+      if (item.type === "song-header") {
+        if (index) y += 2.7;
+        y = paintSongHeader(doc, item, left, width, y);
+        return;
+      }
+      item.units.forEach(unit => {
+        unit.lines.forEach((line, wrapIndex) => {
+          const indent = wrapIndex ? 1.2 * 8.5 * MM_PER_POINT : 0;
+          writeLines(doc, [line], left + indent, y, unit.label
+            ? { style: "bolditalic", size: 7.5, color: COLORS.bronze, lineHeight: 1.15 }
+            : { font: "times", size: 8.5, color: COLORS.ink, lineHeight: 1.15 });
+          y += lineStep(unit.label ? 7.5 : 8.5, 1.15);
+        });
+      });
+      y += 1.5;
+    });
+    writeLines(doc, [String(page.number)], x0 + SHEET.half / 2,
+      SHEET.h - 5 - lineStep(7.5, 1.25), {
+        size: 7.5, color: COLORS.footer, align: "center",
+      });
+  }
+
+  function paintPage(doc, page, x0) {
+    if (page.kind === "cover") return paintCover(doc, page, x0);
+    if (page.kind === "back-cover") return paintBackCover(doc, page, x0);
+    if (page.kind === "blank") return undefined;
+    return paintLyricsPage(doc, page, x0);
+  }
+
+  function buildPdf(JsPDF, options) {
+    if (typeof JsPDF !== "function") throw new Error("PDF generator unavailable");
+    const sheets = impose(logicalPages(options));
+    const doc = new JsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    doc.setProperties({
+      title: `${options.celebration || "Sunday Mass"} — congregational song booklet`,
+      subject: "Congregational song booklet for the selected Sunday Mass",
+      author: "St James the Apostle 6pm Mass",
+      creator: "Datamediate Oy",
+    });
+    sheets.forEach((sheet, index) => {
+      if (index) doc.addPage("a4", "landscape");
+      paintPage(doc, sheet.left, 0);
+      paintPage(doc, sheet.right, SHEET.half);
+      doc.setDrawColor(COLORS.divider);
+      doc.setLineWidth(0.25 * MM_PER_POINT);
+      doc.line(SHEET.half, 0, SHEET.half, SHEET.h);
+      doc.setDrawColor(COLORS.foldMark);
+      doc.setLineWidth(0.4 * MM_PER_POINT);
+      doc.line(148, 0, 148, 2.5);
+      doc.line(148, SHEET.h - 2.5, 148, SHEET.h);
+    });
+    return doc;
+  }
+
+  function fileName(date) {
+    return `st-james-booklet-${String(date || "mass").replace(/[^0-9A-Za-z-]+/g, "-")}.pdf`;
   }
 
   const api = Object.freeze({
     bookletLyrics,
+    buildPdf,
+    fileName,
     impose,
     logicalPages,
     paginateLyrics,
-    renderBooklet,
   });
   global.LyricsBooklet = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;

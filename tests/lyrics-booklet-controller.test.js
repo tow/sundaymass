@@ -35,7 +35,9 @@ function setup({
   const button = element();
   const status = element();
   const fetched = [];
-  const prints = [];
+  const built = [];
+  const saved = [];
+  function FakeJsPDF() {}
   const controller = LyricsBookletController.create({
     button,
     status,
@@ -46,13 +48,15 @@ function setup({
     presentation: LyricsPresentation,
     exportController: LyricsExportController,
     booklet: {
-      renderBooklet(values) {
-        return `<booklet assignments="${values.assignments.length}"></booklet>`;
+      buildPdf(JsPDF, values) {
+        built.push({ JsPDF, assignments: values.assignments.length });
+        return { save(name) { saved.push(name); } };
+      },
+      fileName(date) {
+        return `st-james-booklet-${date}.pdf`;
       },
     },
-    printController: {
-      printCustom(markup, mode) { prints.push({ markup, mode }); },
-    },
+    loadJsPdf: async () => FakeJsPDF,
     getStore: () => ({
       async getSong(id) {
         fetched.push(id);
@@ -70,38 +74,36 @@ function setup({
     logger: { error() {} },
   });
   controller.start();
-  return { button, controller, fetched, prints, status };
+  return { button, controller, fetched, built, saved, status, FakeJsPDF };
 }
 
-test("booklet export fetches each private song once and opens custom print", async () => {
-  const { button, fetched, prints, status } = setup();
+test("booklet export fetches each private song once and downloads the PDF", async () => {
+  const { button, fetched, built, saved, status, FakeJsPDF } = setup();
   await button.click();
 
   assert.deepEqual(fetched, ["song-a"]);
-  assert.deepEqual(prints, [{
-    markup: "<booklet assignments=\"2\"></booklet>",
-    mode: "lyrics-booklet",
-  }]);
-  assert.equal(status.textContent, "Booklet sent to print.");
+  assert.deepEqual(built, [{ JsPDF: FakeJsPDF, assignments: 2 }]);
+  assert.deepEqual(saved, ["st-james-booklet-2026-08-02.pdf"]);
+  assert.match(status.textContent, /^Booklet downloaded\. Print double-sided/);
   assert.equal(status.dataset.state, "success");
   assert.equal(button.disabled, false);
 });
 
 test("booklet export blocks when selected lyrics are missing", async () => {
-  const { button, prints, status } = setup({
+  const { button, built, status } = setup({
     details: { "song-a": { id: "song-a", title: "Song A", lyrics: "" } },
   });
   await button.click();
 
-  assert.equal(prints.length, 0);
+  assert.equal(built.length, 0);
   assert.equal(status.textContent, "Add lyrics for: Song A.");
   assert.equal(status.dataset.state, "error");
 });
 
 test("booklet action is hidden and rejected without editor access", async () => {
-  const { button, controller, prints, status } = setup({ editor: false });
+  const { button, controller, built, status } = setup({ editor: false });
   assert.equal(button.hidden, true);
-  await controller.print();
-  assert.equal(prints.length, 0);
+  await controller.download();
+  assert.equal(built.length, 0);
   assert.equal(status.textContent, "Editor access required.");
 });

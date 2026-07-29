@@ -360,7 +360,6 @@
   }
   @media print{
     @page{ size:A4; margin:12mm 14mm; }
-    @page booklet{ size:A4 landscape; margin:0; }
     html,body{ width:auto; min-width:0; margin:0!important; padding:0!important; color:#111; background:#fff; font-family:Arial,Helvetica,sans-serif; font-size:9pt; line-height:1.25; }
     body > :not(#printSheet){ display:none!important; }
     #printSheet{ display:block!important; width:auto; margin:0; padding:0; color:#111; background:#fff; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
@@ -394,39 +393,4 @@
     .print-reading-block h3 span{ margin-left:1.5mm; color:#555; font-size:9pt; font-style:italic; font-weight:400; }
     .print-reading-block p{ margin:0; font-family:Georgia,"Times New Roman",serif; font-size:9.5pt; line-height:1.42; text-align:justify; orphans:3; widows:3; }
     .print-scripture-note{ margin-top:6mm; color:#666; font-size:7.5pt; font-style:italic; break-inside:avoid; }
-    #printSheet[data-print-mode="lyrics-booklet"]{ width:297mm; }
-    .print-booklet{ width:297mm; margin:0; padding:0; }
-    .booklet-sheet{ position:relative; display:grid; grid-template-columns:148.5mm 148.5mm; width:297mm; height:210mm; margin:0; padding:0; overflow:hidden; page:booklet; break-after:page; page-break-after:always; }
-    .booklet-sheet:last-child{ break-after:auto; page-break-after:auto; }
-    .booklet-half{ box-sizing:border-box; width:148.5mm; height:210mm; overflow:hidden; }
-    .booklet-left{ border-right:.25pt solid #d5d5d5; }
-    .booklet-page{ position:relative; box-sizing:border-box; width:100%; height:100%; padding:10mm 10mm 11mm; overflow:hidden; color:#111; background:#fff; font-family:Arial,Helvetica,sans-serif; }
-    .booklet-page footer{ position:absolute; right:10mm; bottom:5mm; left:10mm; color:#777; font-size:7.5pt; text-align:center; }
-    .booklet-cover{ display:flex; flex-direction:column; justify-content:center; padding:18mm 14mm; background:#002f45; color:#fff; }
-    .booklet-kicker{ color:#e0b96a; font-size:8pt; font-weight:700; letter-spacing:1.1pt; text-transform:uppercase; }
-    .booklet-cover h1{ margin:10mm 0 4mm; font-family:Georgia,"Times New Roman",serif; font-size:25pt; line-height:1.08; }
-    .booklet-cover p{ margin:4mm 0 10mm; color:#d6e1e6; font-size:11pt; line-height:1.35; }
-    .booklet-cover strong{ color:#e0b96a; font-size:9pt; letter-spacing:.7pt; text-transform:uppercase; }
-    .booklet-rule{ width:22mm; border-top:1.5pt solid #e0b96a; }
-    .booklet-contents h1{ margin:0 0 6mm; color:#002f45; font-family:Georgia,"Times New Roman",serif; font-size:19pt; }
-    .booklet-contents-list>div{ display:grid; grid-template-columns:1fr auto; gap:3mm; padding:1.7mm 0; border-bottom:.4pt solid #d8d3c7; font-size:9pt; line-height:1.16; }
-    .booklet-contents-list small{ display:block; margin-bottom:.3mm; color:#80632d; font-size:6.5pt; font-weight:700; letter-spacing:.45pt; text-transform:uppercase; }
-    .booklet-contents-list strong{ align-self:end; color:#002f45; font-size:8pt; }
-    .booklet-song-head{ margin:0 0 1.7mm; padding:0 0 1.2mm; border-bottom:1pt solid #e0b96a; }
-    .booklet-song-head:not(:first-child){ margin-top:2.7mm; }
-    .booklet-song-head p{ margin:0 0 .7mm; color:#80632d; font-size:6.5pt; font-weight:700; letter-spacing:.65pt; text-transform:uppercase; }
-    .booklet-song-head h2{ margin:0; color:#002f45; font-family:Georgia,"Times New Roman",serif; font-size:12pt; line-height:1.06; }
-    .booklet-song-head h2 small{ color:#667078; font-family:Arial,Helvetica,sans-serif; font-size:7pt; font-weight:400; }
-    .booklet-song-head>div{ margin-top:.6mm; color:#667078; font-size:6.5pt; line-height:1.15; }
-    .booklet-song-head.is-continuation{ margin-bottom:1.5mm; padding-bottom:.8mm; }
-    .booklet-stanza{ margin:0 0 1.5mm; break-inside:avoid; page-break-inside:avoid; }
-    .booklet-line{ min-height:1.15em; font-family:Georgia,"Times New Roman",serif; font-size:8.5pt; line-height:1.15; }
-    .booklet-line.is-wrap{ padding-left:1.2em; }
-    .booklet-line.is-label{ color:#80632d; font-family:Arial,Helvetica,sans-serif; font-size:7.5pt; font-style:italic; font-weight:700; }
-    .booklet-back-cover{ display:flex; flex-direction:column; align-items:center; justify-content:center; background:#002f45; color:#fff; text-align:center; }
-    .booklet-back-cover>div{ color:#e0b96a; font-size:9pt; font-weight:700; letter-spacing:.8pt; text-transform:uppercase; }
-    .booklet-back-cover p{ color:#d6e1e6; font-size:9pt; }
-    .booklet-fold-mark{ position:absolute; z-index:2; left:148mm; width:1mm; height:2.5mm; border-left:.4pt solid #999; }
-    .booklet-fold-top{ top:0; }
-    .booklet-fold-bottom{ bottom:0; }
   }

@@ -1,8 +1,15 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const { jsPDF } = require("jspdf");
 
 require("../src/domain/lyrics-presentation.js");
 const LyricsBooklet = require("../src/domain/lyrics-booklet.js");
+
+// jsPDF writes uncompressed content streams, so the serialized document can be
+// searched for the latin1 text drawn on its pages.
+function pdfSource(doc) {
+  return Buffer.from(doc.output("arraybuffer")).toString("latin1");
+}
 
 function assignment(overrides = {}) {
   return {
@@ -73,26 +80,33 @@ test("eight-page imposition orders both duplex sheets for folding", () => {
   );
 });
 
-test("rendered booklet contains every lyric, attribution, and escaped title", () => {
-  const markup = LyricsBooklet.renderBooklet({
+test("the booklet PDF has one A4 landscape page per imposed sheet with every lyric", () => {
+  const doc = LyricsBooklet.buildPdf(jsPDF, {
     date: "2026-08-02",
     celebration: "18th Sunday < Ordinary Time",
     meta: "Sunday · Year A",
     assignments: [assignment()],
   });
 
-  assert.match(markup, /data-logical-pages="8"/);
-  assert.equal((markup.match(/class="booklet-sheet"/g) || []).length, 4);
-  assert.match(markup, /data-side="front"/);
-  assert.match(markup, /data-side="back"/);
-  assert.match(markup, /18th Sunday &lt; Ordinary Time/);
-  assert.match(markup, /Table &amp; Plenty/);
-  assert.match(markup, /Test Author · © 2026 Test Publisher/);
-  assert.match(markup, /Come to the feast/);
-  assert.match(markup, /class="booklet-line is-label"/);
+  assert.equal(doc.getNumberOfPages(), 4);
+  const source = pdfSource(doc);
+  const boxes = [...source.matchAll(/MediaBox \[0 0 ([\d.]+) ([\d.]+)\]/g)];
+  assert.equal(boxes.length, 4);
+  boxes.forEach(([, width, height]) => {
+    assert.ok(Math.abs(Number(width) - 841.89) < 1, `unexpected sheet width ${width}`);
+    assert.ok(Math.abs(Number(height) - 595.28) < 1, `unexpected sheet height ${height}`);
+  });
+  [
+    "18th Sunday < Ordinary Time",
+    "Table & Plenty",
+    "Test Author · © 2026 Test Publisher",
+    "Come to the feast",
+    "Refrain:",
+    "CONGREGATIONAL SONG BOOKLET",
+  ].forEach(text => assert.ok(source.includes(text), `PDF should contain "${text}"`));
 });
 
-test("the booklet prints only the Psalm response", () => {
+test("the booklet PDF keeps only the Psalm response", () => {
   const psalm = assignment({
     partKey: "psalm",
     partLabel: "Psalm",
@@ -100,16 +114,22 @@ test("the booklet prints only the Psalm response", () => {
     lyrics: "Response:\nThe Hand of the Lord feeds us;\nhe answers all our needs.\n\n"
       + "Verse 1\nThe LORD is gracious and merciful,\nslow to anger.",
   });
-  const markup = LyricsBooklet.renderBooklet({
+  const doc = LyricsBooklet.buildPdf(jsPDF, {
     date: "2026-08-02",
     celebration: "18th Sunday in Ordinary Time",
     meta: "Sunday · Year C",
     assignments: [psalm],
   });
 
-  assert.match(markup, /The Hand of the Lord feeds us/);
-  assert.doesNotMatch(markup, /The LORD is gracious and merciful/);
-  assert.doesNotMatch(markup, /Verse 1/);
+  const source = pdfSource(doc);
+  assert.ok(source.includes("The Hand of the Lord feeds us;"));
+  assert.equal(source.includes("The LORD is gracious and merciful"), false);
+  assert.equal(source.includes("Verse 1"), false);
+});
+
+test("the booklet PDF file name derives from the selected date", () => {
+  assert.equal(LyricsBooklet.fileName("2026-08-02"), "st-james-booklet-2026-08-02.pdf");
+  assert.equal(LyricsBooklet.fileName(""), "st-james-booklet-mass.pdf");
 });
 
 test("long lyrics continue on later logical pages without overflowing capacity", () => {

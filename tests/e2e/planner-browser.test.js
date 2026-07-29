@@ -1032,7 +1032,7 @@ test("editor downloads a widescreen lyrics PDF matching the PowerPoint paginatio
   await context.close();
 });
 
-test("editor prints private lyrics as an imposed landscape A4 booklet", async () => {
+test("editor downloads private lyrics as an imposed landscape A4 booklet PDF", async () => {
   const { context, page } = await plannerPage(
     browser,
     server,
@@ -1063,8 +1063,6 @@ test("editor prints private lyrics as an imposed landscape A4 booklet", async ()
       },
     };
     window.__bookletPrivateFetches = [];
-    window.__bookletPrintCalls = 0;
-    window.print = () => { window.__bookletPrintCalls += 1; };
     window.massPlanApp.connect({
       subscribeAuth(callback) {
         callback({ user: { id: "editor" }, isEditor: true });
@@ -1098,43 +1096,28 @@ test("editor prints private lyrics as an imposed landscape A4 booklet", async ()
   assert.ok(mobileLayout.actionRight <= mobileLayout.innerWidth);
   assert.equal(mobileLayout.hintVisible, true);
   assert.equal(await page.getByText("ENTRANCE PRIVATE LINE ONE").count(), 0);
-  await button.click();
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    button.click(),
+  ]);
+  assert.match(download.suggestedFilename(), /^st-james-booklet-\d{4}-\d{2}-\d{2}\.pdf$/);
   await page.waitForFunction(() =>
-    document.querySelector("#lyricsPptxStatus")?.textContent === "Booklet sent to print.",
+    document.querySelector("#lyricsPptxStatus")?.textContent?.startsWith("Booklet downloaded."),
   );
-
-  const state = await page.evaluate(() => ({
-    fetches: window.__bookletPrivateFetches,
-    printCalls: window.__bookletPrintCalls,
-    mode: document.querySelector("#printSheet")?.dataset.printMode,
-    logicalPages: Number(document.querySelector(".print-booklet")?.dataset.logicalPages),
-    physicalSides: document.querySelectorAll(".booklet-sheet").length,
-    sides: [...document.querySelectorAll(".booklet-sheet")].map(sheet => sheet.dataset.side),
-    text: document.querySelector("#printSheet")?.innerText,
-  }));
   assert.deepEqual(
-    state.fetches,
+    await page.evaluate(() => window.__bookletPrivateFetches),
     ["booklet-entrance", "booklet-psalm", "booklet-communion"],
   );
-  assert.equal(state.printCalls, 1);
-  assert.equal(state.mode, "lyrics-booklet");
-  assert.equal(state.logicalPages, 8);
-  assert.equal(state.physicalSides, state.logicalPages / 2);
-  assert.deepEqual(state.sides, ["front", "back", "front", "back"]);
-  assert.match(state.text, /Gathered & Sent/);
-  assert.match(state.text, /ENTRANCE PRIVATE LINE ONE/);
-  assert.match(state.text, /PSALM RESPONSE FOR EVERYONE/);
-  assert.doesNotMatch(state.text, /PSALM VERSE FOR THE CANTOR ONLY/);
-  assert.match(state.text, /COMMUNION PRIVATE LINE TWO/);
+  assert.equal(await page.getByText("ENTRANCE PRIVATE LINE ONE").count(), 0);
 
-  await page.emulateMedia({ media: "print" });
-  const pdf = await page.pdf({
-    preferCSSPageSize: true,
-    printBackground: true,
-  });
-  assertA4LandscapePages(pdf, state.physicalSides);
-  await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
-  assert.equal(await page.locator("#printSheet").getAttribute("aria-hidden"), "true");
+  const pdf = fs.readFileSync(await download.path());
+  assertA4LandscapePages(pdf, 4);
+  const source = pdf.toString("latin1");
+  assert.match(source, /Gathered & Sent/);
+  assert.match(source, /ENTRANCE PRIVATE LINE ONE/);
+  assert.match(source, /PSALM RESPONSE FOR EVERYONE/);
+  assert.doesNotMatch(source, /PSALM VERSE FOR THE CANTOR ONLY/);
+  assert.match(source, /COMMUNION PRIVATE LINE TWO/);
   await context.close();
 });
 

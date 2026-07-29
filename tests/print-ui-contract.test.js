@@ -22,17 +22,17 @@ test("the planner has a dedicated A4 print document with reliable break rules", 
   assert.match(app, /printController\.print\("music-readings"\)/);
 });
 
-test("the editor can print an imposed folded lyrics booklet", () => {
+test("the editor can download an imposed folded lyrics booklet PDF", () => {
   const html = read("src/planner.html");
   const styles = read("src/styles/planner.css");
   const app = read("src/app/planner.js");
 
-  assert.match(html, /id="printLyricsBooklet">Print folded lyrics booklet/);
+  assert.match(html, /id="printLyricsBooklet">Download folded lyrics booklet \(PDF\)/);
   assert.match(html, /flip on short edge/);
-  assert.match(styles, /@page booklet\{ size:A4 landscape; margin:0;/);
-  assert.match(styles, /\.booklet-sheet\{[^}]*grid-template-columns:148\.5mm 148\.5mm/);
+  // The booklet is a generated PDF now — no print stylesheet may remain for it.
+  assert.doesNotMatch(styles, /@page booklet|booklet-sheet|data-print-mode/);
   assert.match(app, /LyricsBookletController\.create/);
-  assert.match(app, /printController,/);
+  assert.match(app, /LyricsBooklet,/);
 });
 
 test("DOCX generation and its build dependency are removed", () => {

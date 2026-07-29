@@ -1,21 +1,27 @@
-// Fetches private lyrics on demand and opens an imposed A4 booklet print job.
+// Fetches private lyrics on demand and downloads an imposed A4 booklet PDF.
 (function (global) {
   "use strict";
+
+  function defaultLoader(document) {
+    return import(new URL("./vendor/jspdf.js", document.baseURI).href)
+      .then(module => module.jsPDF);
+  }
 
   function create({
     button,
     status,
+    document,
     parts,
     presentation,
     booklet,
     exportController,
-    printController,
     getStore,
     getSongs,
     getDate,
     getValues,
     isEditor,
     isOnline,
+    loadJsPdf = () => defaultLoader(document),
     logger = console,
   }) {
     const controller = exportController.create({
@@ -34,20 +40,24 @@
       errorMessage: "Could not create booklet. Try again.",
       errorLogLabel: "Could not create lyrics booklet",
       async build({ assignments, values, date, setStatus }) {
-        const markup = booklet.renderBooklet({
+        setStatus("Building booklet PDF…");
+        const JsPDF = await loadJsPdf();
+        const doc = booklet.buildPdf(JsPDF, {
           date,
           celebration: values.day,
           meta: values.meta,
           assignments,
         });
-        setStatus("Print double-sided, flip on short edge, actual size; leave printer booklet mode off.");
-        printController.printCustom(markup, "lyrics-booklet");
-        setStatus("Booklet sent to print.", "success");
+        doc.save(booklet.fileName(date));
+        setStatus(
+          "Booklet downloaded. Print double-sided, flip on short edge, actual size; leave printer booklet mode off.",
+          "success",
+        );
       },
     });
 
     return Object.freeze({
-      print: controller.run,
+      download: controller.run,
       render: controller.render,
       start: controller.start,
       stop: controller.stop,

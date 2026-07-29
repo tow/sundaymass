@@ -466,11 +466,11 @@ lyricsSlidesController.start();
 const lyricsBookletController=LyricsBookletController.create({
   button:printLyricsBooklet,
   status:lyricsPptxStatus,
+  document,
   parts:MUSIC_PARTS,
   presentation:LyricsPresentation,
   booklet:LyricsBooklet,
   exportController:LyricsExportController,
-  printController,
   getStore:()=>planStore,
   getSongs:plannerState.songs,
   getDate:()=>current().d,

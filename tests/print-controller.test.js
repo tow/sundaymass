@@ -135,36 +135,3 @@ test("browser-initiated printing defaults to the music sheet", () => {
   assert.throws(() => controller.print("unknown"), /Unknown print mode/);
 });
 
-test("custom print markup survives beforeprint and is cleaned after printing", () => {
-  const listeners = new Map();
-  let printCalls = 0;
-  const window = {
-    addEventListener(type, listener) { listeners.set(type, listener); },
-    removeEventListener() {},
-    print() { printCalls += 1; },
-  };
-  const root = {
-    innerHTML: "",
-    attributes: new Map(),
-    setAttribute(name, value) { this.attributes.set(name, value); },
-    removeAttribute(name) { this.attributes.delete(name); },
-  };
-  const controller = PrintController.create({
-    window,
-    root,
-    render: () => {
-      throw new Error("custom print must not render the planning sheet");
-    },
-  });
-  controller.start();
-  controller.printCustom("<section>booklet</section>", "lyrics-booklet");
-  listeners.get("beforeprint")();
-
-  assert.equal(root.innerHTML, "<section>booklet</section>");
-  assert.equal(root.attributes.get("data-print-mode"), "lyrics-booklet");
-  assert.equal(printCalls, 1);
-
-  listeners.get("afterprint")();
-  assert.equal(root.attributes.has("data-print-mode"), false);
-  assert.equal(root.attributes.get("aria-hidden"), "true");
-});
