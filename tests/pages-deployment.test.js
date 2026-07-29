@@ -71,6 +71,7 @@ test("the Pages artifact contains only the explicit deployable surface", () => {
     "src/services/repertoire-store.js",
     "vendor/supabase.js",
     "vendor/pptxgenjs.js",
+    "vendor/jspdf.js",
     "data/generated/readings_text.json",
     "icons/favicon-16.png",
     "icons/favicon-32.png",
@@ -81,4 +82,20 @@ test("the Pages artifact contains only the explicit deployable surface", () => {
   PAGES_FILES.forEach(file => {
     assert.equal(fs.existsSync(path.join(root, file)), true, `${file} must exist`);
   });
+});
+
+test("every service-worker precache asset is part of the deployed Pages surface", () => {
+  const { PAGES_FILES } = require("../scripts/stage-pages.js");
+  const assets = JSON.parse(
+    fs.readFileSync(path.join(root, "src", "service-worker-assets.json"), "utf8"),
+  );
+  assets
+    .filter(asset => asset !== "./")
+    .forEach(asset => {
+      assert.equal(
+        PAGES_FILES.includes(asset.replace(/^\.\//, "")),
+        true,
+        `${asset} is precached by the service worker but not staged for Pages`,
+      );
+    });
 });
