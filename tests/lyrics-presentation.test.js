@@ -351,7 +351,7 @@ test("the cover title shrinks for long celebration names instead of overflowing"
     meta: "",
     assignments: [],
   });
-  assert.match(short, /pdf-slide-cover-title"[^>]*font-size:38pt/);
+  assert.match(short, /pdf-slide-cover-title"[^>]*font-size:3.9583cqw/);
 
   const long = LyricsPresentation.renderSlides({
     date: "2026-08-02",
@@ -360,7 +360,7 @@ test("the cover title shrinks for long celebration names instead of overflowing"
     meta: "",
     assignments: [],
   });
-  assert.match(long, /pdf-slide-cover-title"[^>]*font-size:20pt/);
+  assert.match(long, /pdf-slide-cover-title"[^>]*font-size:2.0833cqw/);
 });
 
 test("the PowerPoint deck and the print slideshow position the label box from the same geometry", async () => {
@@ -386,10 +386,14 @@ test("the PowerPoint deck and the print slideshow position the label box from th
   };
   assert.deepEqual(pptxBox, expectedBox);
 
+  const CQW_PER_INCH = 7.5;
   const [, style] = markup.match(/class="pdf-slide-label" style="([^"]+)"/);
   const cssBox = Object.fromEntries(
-    [...style.matchAll(/(left|top|width|height):([\d.]+)in/g)]
-      .map(([, prop, value]) => [{ left: "x", top: "y", width: "w", height: "h" }[prop], Number(value)]),
+    [...style.matchAll(/(left|top|width|height):([\d.]+)cqw/g)]
+      .map(([, prop, value]) => [
+        { left: "x", top: "y", width: "w", height: "h" }[prop],
+        Number(value) / CQW_PER_INCH,
+      ]),
   );
   assert.deepEqual(cssBox, expectedBox);
 });

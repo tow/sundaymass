@@ -32,8 +32,23 @@
     return { x: box.x, y: box.y, w: box.w, h: box.h };
   }
 
+  // The print slideshow positions everything in container-query units so a slide
+  // scales with the printed page: Safari ignores `@page size`, so the 13.333in
+  // design canvas must shrink to whatever paper the print dialog uses. The slide
+  // is 100cqw wide, hence 1in = 100/13.333 ≈ 7.5cqw and 1pt = 7.5/72cqw.
+  const CQW_PER_INCH = 7.5;
+
+  function cssLength(inches) {
+    return `${Number((inches * CQW_PER_INCH).toFixed(4))}cqw`;
+  }
+
+  function cssFontSize(points) {
+    return `font-size:${cssLength(points / 72)};`;
+  }
+
   function cssBox(box) {
-    return `left:${box.x}in;top:${box.y}in;width:${box.w}in;height:${box.h}in;`;
+    return `left:${cssLength(box.x)};top:${cssLength(box.y)};`
+      + `width:${cssLength(box.w)};height:${cssLength(box.h)};`;
   }
 
   function cssColor(box) {
@@ -407,11 +422,11 @@
       + `<div class="pdf-slide-kicker" style="${cssBox(SLIDE_LAYOUT.kicker)}${cssColor(SLIDE_LAYOUT.kicker)}">`
       + `ST JAMES THE APOSTLE · 6PM MASS</div>`
       + `<h1 class="pdf-slide-cover-title" `
-      + `style="${cssBox(SLIDE_LAYOUT.coverTitle)}${cssColor(SLIDE_LAYOUT.coverTitle)}font-size:${coverTitleFontSize(title)}pt">`
+      + `style="${cssBox(SLIDE_LAYOUT.coverTitle)}${cssColor(SLIDE_LAYOUT.coverTitle)}${cssFontSize(coverTitleFontSize(title))}">`
       + `${escapeHtml(title)}</h1>`
       + `<div class="pdf-slide-rule" `
-      + `style="left:${SLIDE_LAYOUT.coverRule.x}in;top:${SLIDE_LAYOUT.coverRule.y}in;`
-      + `width:${SLIDE_LAYOUT.coverRule.w}in;border-top-color:#${COLOURS[SLIDE_LAYOUT.coverRule.color]}"></div>`
+      + `style="left:${cssLength(SLIDE_LAYOUT.coverRule.x)};top:${cssLength(SLIDE_LAYOUT.coverRule.y)};`
+      + `width:${cssLength(SLIDE_LAYOUT.coverRule.w)};border-top-color:#${COLOURS[SLIDE_LAYOUT.coverRule.color]}"></div>`
       + `<p class="pdf-slide-cover-meta" style="${cssBox(SLIDE_LAYOUT.coverMeta)}${cssColor(SLIDE_LAYOUT.coverMeta)}">`
       + `${escapeHtml(meta || date || "")}</p>`
       + `</article>`;
@@ -426,7 +441,7 @@
       + `<div class="pdf-slide-song-title" style="${cssBox(SLIDE_LAYOUT.songTitle)}${cssColor(SLIDE_LAYOUT.songTitle)}">`
       + `${escapeHtml(assignment.title)}</div>`
       + `<div class="pdf-slide-lyric" `
-      + `style="${cssBox(SLIDE_LAYOUT.lyric)}${cssColor(SLIDE_LAYOUT.lyric)}font-size:${lyricFontSize(chunk)}pt">`
+      + `style="${cssBox(SLIDE_LAYOUT.lyric)}${cssColor(SLIDE_LAYOUT.lyric)}${cssFontSize(lyricFontSize(chunk))}">`
       + `${renderSlideLines(chunk)}</div>`
       + (attribution
         ? `<div class="pdf-slide-attribution" style="${cssBox(SLIDE_LAYOUT.attribution)}${cssColor(SLIDE_LAYOUT.attribution)}">`
