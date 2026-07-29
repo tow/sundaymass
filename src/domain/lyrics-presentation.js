@@ -27,6 +27,9 @@
     label: { x: 0.7, y: 0.42, w: 9.8, h: 0.28, color: "accent" },
     songTitle: { x: 0.7, y: 0.8, w: 11.2, h: 0.55, color: "muted" },
     lyric: { x: 0.7, y: 1.45, w: 11.85, h: 5.2, color: "text" },
+    audienceCue: { x: 0.7, y: 1.55, w: 11.85, h: 0.38, color: "accent" },
+    cuedLyric: { x: 0.7, y: 2.05, w: 11.85, h: 4.6, color: "text" },
+    cantorLyric: { x: 0.7, y: 2.05, w: 11.85, h: 4.6, color: "muted" },
     attribution: { x: 0.7, y: 6.88, w: 10.35, h: 0.22, color: "muted" },
     counter: { x: 11.45, y: 6.88, w: 1.1, h: 0.22, color: "muted" },
   });
@@ -270,8 +273,23 @@
       .map(text => ({ text, audienceLabel: block.audienceLabel || "" })));
   }
 
-  function projectionLabelFontSize(audienceLabel) {
-    return audienceLabel ? 16 : 10;
+  function audienceCue(audienceLabel) {
+    const label = String(audienceLabel || "");
+    if (label === "ALL: RESPONSE") return "ALL SING - RESPONSE";
+    if (label.startsWith("CANTOR: ")) return `CANTOR ONLY - ${label.slice(8)}`;
+    return label;
+  }
+
+  function projectionTextStyle(chunk) {
+    const cantor = String(chunk?.audienceLabel || "").startsWith("CANTOR:");
+    return {
+      box: cantor ? SLIDE_LAYOUT.cantorLyric : SLIDE_LAYOUT.cuedLyric,
+      bold: !cantor,
+      italic: cantor,
+      size: cantor
+        ? Math.max(26, lyricFontSize(chunk.text) - 8)
+        : lyricFontSize(chunk.text),
+    };
   }
 
   function selectedAssignments(parts, songs, detailsById, weeklyByPart = {}) {
@@ -394,12 +412,9 @@
       chunks.forEach((chunk, index) => {
         const slide = pptx.addSlide();
         addBackground(slide);
-        const slideLabel = [assignment.partLabel.toUpperCase(), chunk.audienceLabel]
-          .filter(Boolean)
-          .join(" · ");
-        slide.addText(slideLabel, {
+        slide.addText(assignment.partLabel.toUpperCase(), {
           ...pptxBox(SLIDE_LAYOUT.label),
-          fontFace: "Aptos", fontSize: projectionLabelFontSize(chunk.audienceLabel), bold: true,
+          fontFace: "Aptos", fontSize: 10, bold: true,
           charSpacing: 1.4, color: COLOURS[SLIDE_LAYOUT.label.color], margin: 0,
         });
         slide.addText(assignment.title, {
@@ -408,10 +423,21 @@
           color: COLOURS[SLIDE_LAYOUT.songTitle.color], margin: 0, breakLine: false,
           fit: "shrink",
         });
+        const cue = audienceCue(chunk.audienceLabel);
+        if (cue) {
+          slide.addText(cue, {
+            ...pptxBox(SLIDE_LAYOUT.audienceCue),
+            fontFace: "Aptos", fontSize: 18, bold: true,
+            charSpacing: 1.2, color: COLOURS[SLIDE_LAYOUT.audienceCue.color],
+            margin: 0, align: "center",
+          });
+        }
+        const textStyle = projectionTextStyle(chunk);
+        const lyricBox = cue ? textStyle.box : SLIDE_LAYOUT.lyric;
         slide.addText(chunk.text, {
-          ...pptxBox(SLIDE_LAYOUT.lyric),
-          fontFace: "Aptos", fontSize: lyricFontSize(chunk.text), bold: true,
-          color: COLOURS[SLIDE_LAYOUT.lyric.color], margin: 0,
+          ...pptxBox(lyricBox),
+          fontFace: "Aptos", fontSize: textStyle.size, bold: textStyle.bold,
+          italic: textStyle.italic, color: COLOURS[lyricBox.color], margin: 0,
           breakLine: false, align: "center", valign: "mid", fit: "shrink",
           paraSpaceAfterPt: 0, lineSpacingMultiple: 1.08,
         });
@@ -535,17 +561,23 @@
       chunks.forEach((chunk, index) => {
         doc.addPage([PAGE.w, PAGE.h], "landscape");
         paintPdfBackground(doc);
-        const slideLabel = [assignment.partLabel.toUpperCase(), chunk.audienceLabel]
-          .filter(Boolean)
-          .join(" · ");
-        paintPdfText(doc, slideLabel, SLIDE_LAYOUT.label, {
-          style: "bold", size: projectionLabelFontSize(chunk.audienceLabel), charSpace: 1.4,
+        paintPdfText(doc, assignment.partLabel.toUpperCase(), SLIDE_LAYOUT.label, {
+          style: "bold", size: 10, charSpace: 1.4,
         });
         paintPdfText(doc, assignment.title, SLIDE_LAYOUT.songTitle, {
           font: "times", style: "bold", size: 20,
         });
-        paintPdfText(doc, chunk.text, SLIDE_LAYOUT.lyric, {
-          style: "bold", size: lyricFontSize(chunk.text), align: "center", valign: "middle",
+        const cue = audienceCue(chunk.audienceLabel);
+        if (cue) {
+          paintPdfText(doc, cue, SLIDE_LAYOUT.audienceCue, {
+            style: "bold", size: 18, align: "center", charSpace: 1.2,
+          });
+        }
+        const textStyle = projectionTextStyle(chunk);
+        const lyricBox = cue ? textStyle.box : SLIDE_LAYOUT.lyric;
+        paintPdfText(doc, chunk.text, lyricBox, {
+          style: textStyle.italic ? "italic" : "bold",
+          size: textStyle.size, align: "center", valign: "middle",
         });
         if (attribution) {
           paintPdfText(doc, attribution, SLIDE_LAYOUT.attribution, { size: 9 });
@@ -561,6 +593,7 @@
 
   const api = Object.freeze({
     attributionLine,
+    audienceCue,
     buildDeck,
     buildPdfDoc,
     congregationLyrics,
@@ -574,7 +607,7 @@
     normalizeLyrics,
     pdfFileName,
     projectionChunks,
-    projectionLabelFontSize,
+    projectionTextStyle,
     selectedAssignments,
     SLIDE_LAYOUT,
     wrapLine,

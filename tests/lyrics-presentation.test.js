@@ -340,9 +340,23 @@ test("Psalm PDF slides identify the congregational response and cantor verses", 
   });
   const source = pdfSource(doc);
 
-  assert.ok(source.includes("PSALM · ALL: RESPONSE"));
-  assert.ok(source.includes("PSALM · CANTOR: VERSE 1"));
-  assert.equal(LyricsPresentation.projectionLabelFontSize("ALL: RESPONSE"), 16);
+  assert.ok(source.includes("ALL SING - RESPONSE"));
+  assert.ok(source.includes("CANTOR ONLY - VERSE 1"));
+  assert.ok(source.match(/\(PSALM\) Tj/g).length >= 2);
+  assert.equal(LyricsPresentation.audienceCue("ALL: RESPONSE"), "ALL SING - RESPONSE");
+  assert.equal(LyricsPresentation.audienceCue("CANTOR: VERSE 1"), "CANTOR ONLY - VERSE 1");
+  assert.deepEqual(
+    LyricsPresentation.projectionTextStyle({
+      text: "A short cantor verse",
+      audienceLabel: "CANTOR: VERSE 1",
+    }),
+    {
+      box: LyricsPresentation.SLIDE_LAYOUT.cantorLyric,
+      bold: false,
+      italic: true,
+      size: 44,
+    },
+  );
 });
 
 test("the PDF deck matches the PowerPoint deck's slide count and content", async () => {
