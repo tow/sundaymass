@@ -24,9 +24,11 @@ self.addEventListener("fetch", event => {
     const pathname = new URL(event.request.url).pathname;
     const cacheTarget = pathname.endsWith("/about.html")
       ? "./about.html"
-      : pathname.endsWith("/repertoire.html")
-        ? "./repertoire.html"
-        : "./index.html";
+      : pathname.endsWith("/august-music.html")
+        ? "./august-music.html"
+        : pathname.endsWith("/repertoire.html")
+          ? "./repertoire.html"
+          : "./index.html";
     event.respondWith(
       fetch(event.request)
         .then(response => {

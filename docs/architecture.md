@@ -37,6 +37,15 @@ server between the browser and Supabase.
 - `repertoire.html` is the public browser and editor surface for both the choir
   repertoire and the distinct extended library.
 - `about.html` contains help, provenance, and limitations.
+- `august-music.html` is a public, hand-maintained shortlist page for the music-choosing
+  meeting of 2 August 2026. It carries no plan data; choices are held in `localStorage`
+  only and are entered in the planner separately. **Delete this page, its `about.html`
+  link, and its entries in `scripts/stage-pages.js`, `src/service-worker-assets.json`,
+  `src/service-worker.js`, and `tests/pages-deployment.test.js` after that meeting.**
+  It is a deliberate, time-boxed exception to the rule that public pages never carry
+  lyrics: it quotes one identifying line per song so the people choosing can recognise
+  it. Do not treat the exception as a precedent for the planner, the repertoire page, or
+  any successor shortlist — those still carry no lyrics.
 - `vendor/supabase.js`, export libraries, and the optional `vendor/sentry.js` are built
   locally from exact pinned npm dependencies. Export libraries and Sentry are outside
   the install shell and load only when their features are requested or configured;
