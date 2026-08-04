@@ -328,6 +328,12 @@
     });
   }
 
+  function prepareAssignments(parts, songs, detailsById, weeklyByPart = {}) {
+    const assignments = selectedAssignments(parts, songs, detailsById, weeklyByPart);
+    const missingTitles = [...new Set(missingLyrics(assignments).map(song => song.title))];
+    return { assignments, missingTitles };
+  }
+
   function attributionLine(assignment) {
     const authors = String(assignment?.authors || "").trim();
     const owner = String(assignment?.copyrightOwner || "").trim();
@@ -606,6 +612,7 @@
     missingLyrics,
     normalizeLyrics,
     pdfFileName,
+    prepareAssignments,
     projectionChunks,
     projectionTextStyle,
     selectedAssignments,

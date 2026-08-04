@@ -46,16 +46,18 @@ function setup({
       { key: "communion", label: "Communion" },
     ],
     presentation: {
-      selectedAssignments(parts, songs, detailsById) {
-        return parts.flatMap(part => {
+      prepareAssignments(parts, songs, detailsById) {
+        const assignments = parts.flatMap(part => {
           const selected = songs[part.key];
           if (!selected?.id) return [];
           const detail = detailsById.get(selected.id) || selected;
           return [{ partKey: part.key, partLabel: part.label, songId: selected.id, ...detail }];
         });
-      },
-      missingLyrics(assignments) {
-        return assignments.filter(assignment => !assignment.lyrics);
+        return {
+          assignments,
+          missingTitles: [...new Set(assignments.filter(assignment => !assignment.lyrics)
+            .map(assignment => assignment.title))],
+        };
       },
       buildPdfDoc(JsPDF, values) {
         built.push({ JsPDF, assignments: values.assignments.length });

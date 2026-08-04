@@ -9,6 +9,15 @@
       .then(module => module.jsPDF);
   }
 
+  function buildDocument({ JsPDF, booklet, date, values, assignments }) {
+    return booklet.buildPdf(JsPDF, {
+      date,
+      celebration: values.day,
+      meta: values.meta,
+      assignments,
+    });
+  }
+
   function create({
     button,
     status,
@@ -44,10 +53,11 @@
       async build({ assignments, values, date, setStatus }) {
         setStatus("Building booklet PDF…");
         const JsPDF = await loadJsPdf();
-        const doc = booklet.buildPdf(JsPDF, {
+        const doc = buildDocument({
+          JsPDF,
+          booklet,
           date,
-          celebration: values.day,
-          meta: values.meta,
+          values,
           assignments,
         });
         doc.save(booklet.fileName(date));
@@ -66,7 +76,7 @@
     });
   }
 
-  const api = Object.freeze({ create });
+  const api = Object.freeze({ buildDocument, create });
   global.LyricsBookletController = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window === "undefined" ? globalThis : window);

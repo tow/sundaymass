@@ -2,6 +2,23 @@
 (function (global) {
   "use strict";
 
+  function summaryValues({
+    sunday,
+    celebration,
+    celebrationOverride = false,
+    formatLong,
+    cycleName,
+  }) {
+    const baseMeta = celebrationOverride
+      ? `${celebration.rank || "Celebration"} · normally ${formatLong(celebration.sourceDate)}`
+      : `${sunday.s} · ${cycleName(sunday.c)}`;
+    return {
+      day: celebration.name,
+      meta: `${formatLong(sunday.d)}  ·  ${baseMeta}`,
+      date: sunday.d,
+    };
+  }
+
   function create({
     initialSunday,
     readingSlots,
@@ -52,17 +69,18 @@
       const sunday = current();
       const celebration = baseCelebration();
       const citationFor = slot => displayedCitation(slot);
-      const baseMeta = selectedCelebration
-        ? `${celebration.rank || "Celebration"} · normally ${formatLong(celebration.sourceDate)}`
-        : `${sunday.s} · ${cycleName(sunday.c)}`;
       return {
-        day: celebration.name,
-        meta: `${formatLong(sunday.d)}  ·  ${baseMeta}`,
+        ...summaryValues({
+          sunday,
+          celebration,
+          celebrationOverride: Boolean(selectedCelebration),
+          formatLong,
+          cycleName,
+        }),
         first: citationFor(readingSlots[0]),
         psalm: citationFor(readingSlots[1]),
         second: citationFor(readingSlots[2]),
         gospel: citationFor(readingSlots[3]),
-        date: sunday.d,
       };
     }
 
@@ -133,7 +151,7 @@
     });
   }
 
-  const api = Object.freeze({ create });
+  const api = Object.freeze({ create, summaryValues });
   global.PlannerState = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window === "undefined" ? globalThis : window);

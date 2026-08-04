@@ -41,6 +41,7 @@ const HELP = `Sundaymass production maintenance
 Usage:
   sundaymass list_songs [--query TEXT] [--limit N] [--json]
   sundaymass show_song SONG_ID [--lyrics] [--json]
+  sundaymass booklet YYYY-MM-DD [--output PATH] [--json]
   sundaymass create_song --title TITLE [metadata options] [--apply]
   sundaymass update_song SONG_ID [metadata options] [--apply]
   sundaymass add_lyrics SONG_ID --file PATH [--apply]
@@ -372,6 +373,130 @@ select id::text, title, authors, in_repertoire, suggestion_parts,
 from selected;`;
 }
 
+function bookletPlanSql(sunday) {
+  return `${payloadSql({ sunday })},
+selected as (
+  select
+    plan.sunday,
+    plan.celebration_override,
+    assignment.part,
+    to_jsonb(song) as song,
+    canonical.lyrics,
+    weekly.lyrics as weekly_lyrics
+  from public.plans plan
+  join public.plan_songs assignment on assignment.sunday = plan.sunday
+  join public.songs song on song.id = assignment.song_id
+  left join public.song_lyrics canonical on canonical.song_id = song.id
+  left join public.plan_song_lyrics weekly
+    on weekly.sunday = assignment.sunday
+   and weekly.part = assignment.part
+   and weekly.song_id = assignment.song_id
+  cross join input
+  where plan.sunday = (p->>'sunday')::date
+)
+select
+  sunday::text,
+  celebration_override,
+  part,
+  song,
+  lyrics,
+  weekly_lyrics
+from selected
+order by array_position(
+  array[
+    'entrance', 'kyrie', 'gloria', 'psalm', 'acclamation', 'offertory',
+    'sanctus', 'memorial', 'amen', 'lordPrayer', 'agnus',
+    'communion', 'communion2', 'recessional'
+  ]::text[],
+  part
+);`;
+}
+
+function formatLong(iso) {
+  return new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function buildBooklet({ sunday, rows, output }) {
+  require("../src/domain/liturgical-calendar.js");
+  require("../src/app/planner-state.js");
+  require("../src/domain/plan-music-data.js");
+  require("../src/domain/music-parts.js");
+  require("../src/domain/weekly-lyrics.js");
+  require("../src/domain/lyrics-presentation.js");
+  require("../src/domain/lyrics-booklet.js");
+  require("../src/app/lyrics-booklet-controller.js");
+  const { jsPDF } = require("jspdf");
+
+  const resolvedSunday = global.LiturgicalCalendar.resolveSunday(sunday);
+  if (!resolvedSunday) throw new Error(`${sunday} is not a Sunday`);
+  const celebrationOverride = rows[0].celebration_override || null;
+  const values = global.PlannerState.summaryValues({
+    sunday: resolvedSunday,
+    celebration: celebrationOverride || { name: resolvedSunday.n },
+    celebrationOverride: Boolean(celebrationOverride),
+    formatLong,
+    cycleName: cycle => `Year ${cycle}`,
+  });
+
+  const songs = {};
+  const detailsById = new Map();
+  const weeklyLyrics = {};
+  rows.forEach(row => {
+    const song = global.PlanMusicData.songFromRow({
+      ...row.song,
+      song_lyrics: { lyrics: row.lyrics },
+    });
+    songs[row.part] = song;
+    detailsById.set(song.id, song);
+    if (row.weekly_lyrics) {
+      weeklyLyrics[row.part] = { songId: song.id, lyrics: row.weekly_lyrics };
+    }
+  });
+  const prepared = global.LyricsPresentation.prepareAssignments(
+    global.MassMusicParts.parts,
+    songs,
+    detailsById,
+    weeklyLyrics,
+  );
+  if (prepared.missingTitles.length) {
+    throw new Error(`Add lyrics for: ${prepared.missingTitles.join(", ")}`);
+  }
+  const doc = global.LyricsBookletController.buildDocument({
+    JsPDF: jsPDF,
+    booklet: global.LyricsBooklet,
+    date: sunday,
+    values,
+    assignments: prepared.assignments,
+  });
+  const outputPath = path.resolve(output || path.join(
+    ROOT,
+    "output/pdf",
+    global.LyricsBooklet.fileName(sunday),
+  ));
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, Buffer.from(doc.output("arraybuffer")));
+  const pagination = global.LyricsBooklet.paginateLyrics(prepared.assignments);
+  return {
+    sunday,
+    output: outputPath,
+    songs: prepared.assignments.length,
+    logical_pages: global.LyricsBooklet.logicalPages({
+      date: sunday,
+      celebration: values.day,
+      meta: values.meta,
+      assignments: prepared.assignments,
+    }).length,
+    imposed_pdf_pages: doc.getNumberOfPages(),
+    lyric_font_size: pagination.fontSize || 8.5,
+  };
+}
+
 function auditPsalmsSql() {
   return `select
   id::text,
@@ -553,6 +678,23 @@ function execute(argv, dependencies = {}) {
       break;
     }
 
+    case "booklet": {
+      assertKnownFlags(parsed.flags, new Set(["output", "json", "local"]));
+      if (parsed.positionals.length !== 1) throw new Error("booklet requires YYYY-MM-DD");
+      const sunday = assertDate(parsed.positionals[0]);
+      const planRows = requireRows(
+        query(bookletPlanSql(sunday), { local }),
+        `No songs selected for ${sunday}`,
+      );
+      const builder = dependencies.buildBooklet || buildBooklet;
+      rows = [builder({
+        sunday,
+        rows: planRows,
+        output: parsed.flags.get("output"),
+      })];
+      break;
+    }
+
     case "audit_psalms": {
       assertKnownFlags(parsed.flags, new Set(["json", "local"]));
       if (parsed.positionals.length) throw new Error("audit_psalms takes no positional arguments");
@@ -656,6 +798,8 @@ module.exports = {
   MUSIC_PARTS,
   addLyricsSql,
   auditPsalmsSql,
+  bookletPlanSql,
+  buildBooklet,
   assertDate,
   assertPart,
   assertUuid,

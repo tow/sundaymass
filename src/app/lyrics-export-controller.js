@@ -73,21 +73,19 @@
         const weeklyLyrics = typeof store.getWeeklyLyrics === "function"
           ? await store.getWeeklyLyrics(date)
           : {};
-        const assignments = presentation.selectedAssignments(
+        const prepared = presentation.prepareAssignments(
           parts,
           songs,
           detailsById,
           weeklyLyrics,
         );
-        const missing = presentation.missingLyrics(assignments);
-        if (missing.length) {
-          const titles = [...new Set(missing.map(song => song.title))];
-          setStatus(`Add lyrics for: ${titles.join(", ")}.`, "error");
+        if (prepared.missingTitles.length) {
+          setStatus(`Add lyrics for: ${prepared.missingTitles.join(", ")}.`, "error");
           return;
         }
 
         await build({
-          assignments,
+          assignments: prepared.assignments,
           values,
           date,
           setStatus,

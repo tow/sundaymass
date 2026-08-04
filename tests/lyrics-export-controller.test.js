@@ -41,8 +41,8 @@ function setup({
       { key: "communion", label: "Communion" },
     ],
     presentation: {
-      selectedAssignments(parts, songs, detailsById, weeklyByPart) {
-        return parts.flatMap(part => {
+      prepareAssignments(parts, songs, detailsById, weeklyByPart) {
+        const assignments = parts.flatMap(part => {
           const selected = songs[part.key];
           if (!selected?.id) return [];
           const detail = detailsById.get(selected.id) || selected;
@@ -54,9 +54,12 @@ function setup({
             lyrics: weeklyByPart?.[part.key]?.lyrics || detail.lyrics,
           }];
         });
-      },
-      missingLyrics(assignments) {
-        return assignments.filter(assignment => !assignment.lyrics);
+        return {
+          assignments,
+          missingTitles: [...new Set(assignments
+            .filter(assignment => !assignment.lyrics)
+            .map(assignment => assignment.title))],
+        };
       },
     },
     getStore: () => store,
@@ -212,8 +215,10 @@ test("the action waits for the store to connect", async () => {
     status,
     parts: [{ key: "entrance", label: "Entrance" }],
     presentation: {
-      selectedAssignments: () => [{ partLabel: "Entrance", title: "Song A", lyrics: "A lyric" }],
-      missingLyrics: () => [],
+      prepareAssignments: () => ({
+        assignments: [{ partLabel: "Entrance", title: "Song A", lyrics: "A lyric" }],
+        missingTitles: [],
+      }),
     },
     getStore: () => null,
     getSongs: () => ({ entrance: { id: "song-a" } }),
@@ -244,8 +249,7 @@ test("the action requires at least one selected song", async () => {
     status,
     parts: [{ key: "entrance", label: "Entrance" }],
     presentation: {
-      selectedAssignments: () => [],
-      missingLyrics: () => [],
+      prepareAssignments: () => ({ assignments: [], missingTitles: [] }),
     },
     getStore: () => ({ async getSong() { return {}; } }),
     getSongs: () => ({}),
@@ -279,8 +283,10 @@ test("a run in progress ignores a second concurrent click", async () => {
     status,
     parts: [{ key: "entrance", label: "Entrance" }],
     presentation: {
-      selectedAssignments: () => [{ partLabel: "Entrance", title: "Song A", lyrics: "A lyric" }],
-      missingLyrics: () => [],
+      prepareAssignments: () => ({
+        assignments: [{ partLabel: "Entrance", title: "Song A", lyrics: "A lyric" }],
+        missingTitles: [],
+      }),
     },
     getStore: () => ({ async getSong(id) { return { id, lyrics: "A lyric" }; } }),
     getSongs: () => ({ entrance: { id: "song-a" } }),
@@ -328,8 +334,10 @@ test("build errors are logged and surfaced as the configured error message", asy
     status,
     parts: [{ key: "entrance", label: "Entrance" }],
     presentation: {
-      selectedAssignments: () => [{ partLabel: "Entrance", title: "Song A", lyrics: "A lyric" }],
-      missingLyrics: () => [],
+      prepareAssignments: () => ({
+        assignments: [{ partLabel: "Entrance", title: "Song A", lyrics: "A lyric" }],
+        missingTitles: [],
+      }),
     },
     getStore: () => ({ async getSong(id) { return { id, lyrics: "A lyric" }; } }),
     getSongs: () => ({ entrance: { id: "song-a" } }),

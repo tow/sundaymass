@@ -191,6 +191,10 @@ test("selected assignments retain Mass order and repeated songs", () => {
   assert.equal(assignments[0].copyrightOwner, "Test Publisher");
   assert.equal(assignments[0].copyrightYear, "2026");
   assert.deepEqual(LyricsPresentation.missingLyrics(assignments).map(item => item.title), ["Song B"]);
+  assert.deepEqual(
+    LyricsPresentation.prepareAssignments(parts, songs, details).missingTitles,
+    ["Song B"],
+  );
 });
 
 test("PowerPoint attribution includes authors and normalized copyright", () => {

@@ -5,6 +5,10 @@
   const BOOKLET_PAGES = 8;
   const PAGE_CAPACITY = 48;
   const LINE_LENGTH = 68;
+  const NARROW_LINE_LENGTH = 38;
+  const FONT_CANDIDATES = Object.freeze([11.5, 11, 10.5, 10, 9.5, 9, 8.5]);
+  const STANZA_GAP = 0.45;
+  const SONG_GAP = 0.8;
   const LABEL_PATTERN = /^(?:all|cantor|refrain|response|chorus|bridge|verse(?:\s+\d+)?|coda|repeat)(?::|\b)/i;
 
   const MM_PER_POINT = 25.4 / 72;
@@ -40,9 +44,9 @@
     return lines;
   }
 
-  function wrap(value) {
+  function wrap(value, maxLength = LINE_LENGTH) {
     const wrapLine = global.LyricsPresentation?.wrapLine || fallbackWrap;
-    return wrapLine(value, LINE_LENGTH);
+    return wrapLine(value, maxLength);
   }
 
   function attribution(assignment) {
@@ -58,14 +62,14 @@
     return [author, copyright].filter(Boolean).join(" · ");
   }
 
-  function stanzaUnits(value) {
+  function stanzaUnits(value, maxLength = LINE_LENGTH) {
     return String(value || "").split("\n")
       .map(line => line.trim())
       .filter(Boolean)
       .map(line => ({
         raw: line,
         label: LABEL_PATTERN.test(line),
-        lines: wrap(line),
+        lines: wrap(line, maxLength),
       }));
   }
 
@@ -79,13 +83,13 @@
     return String(assignment?.lyrics || "").trim();
   }
 
-  function bookletStanzas(assignment) {
+  function bookletStanzas(assignment, maxLength = LINE_LENGTH) {
     const blocks = assignment?.lyricBlocks?.length
       ? assignment.lyricBlocks
       : [{ text: bookletLyrics(assignment), audienceLabel: "" }];
     return blocks.flatMap(block => String(block.text || "")
       .split(/\n{2,}/)
-      .map(stanzaUnits)
+      .map(value => stanzaUnits(value, maxLength))
       .filter(units => units.length)
       .map((units, index) => {
         if (!block.audienceLabel || index > 0) return units;
@@ -101,7 +105,7 @@
     return { kind: "lyrics", used: 0, items: [] };
   }
 
-  function paginateLyrics(assignments) {
+  function paginateLyricsLegacy(assignments, pageCapacity = PAGE_CAPACITY) {
     const pages = [];
     const contents = [];
     let page = null;
@@ -111,7 +115,7 @@
       pages.push(page);
       return page;
     };
-    const remaining = () => PAGE_CAPACITY - page.used;
+    const remaining = () => pageCapacity - page.used;
     const addHeader = (assignment, continued = false) => {
       const cost = continued ? 2.1 : 3.1;
       page.items.push({
@@ -173,6 +177,181 @@
     });
 
     return { pages, contents };
+  }
+
+  function flowTokens(stanzas) {
+    return stanzas.flatMap(stanza => stanza.map((unit, index) => ({
+      unit,
+      gapAfter: index === stanza.length - 1 ? STANZA_GAP : 0,
+      cost: unit.lines.length + (index === stanza.length - 1 ? STANZA_GAP : 0),
+    })));
+  }
+
+  function tokensHeight(tokens) {
+    return tokens.reduce((sum, token) => sum + token.cost, 0);
+  }
+
+  function splitTokens(tokens) {
+    if (tokens.length < 2) return [tokens, []];
+    let best = null;
+    for (let index = 1; index < tokens.length; index += 1) {
+      if (tokens[index - 1].unit.label) continue;
+      const left = tokens.slice(0, index);
+      const right = tokens.slice(index);
+      const heights = [tokensHeight(left), tokensHeight(right)];
+      const score = Math.max(...heights) * 10 + Math.abs(heights[0] - heights[1]);
+      if (!best || score < best.score) best = { left, right, score };
+    }
+    return best ? [best.left, best.right] : [tokens, []];
+  }
+
+  function layoutHeader(assignment, fontSize) {
+    const titleSize = fontSize + 3;
+    const labelSize = Math.max(7, fontSize - 3.5);
+    const attributionSize = Math.max(7, fontSize - 3);
+    const titleLength = Math.max(36, Math.floor(58 * 12 / titleSize));
+    const attributionLength = Math.max(60, Math.floor(92 * 7 / attributionSize));
+    const titleLines = wrap(assignment.title, titleLength);
+    const attributionLines = wrap(attribution(assignment), attributionLength);
+    const height = (
+      labelSize * 1.25
+      + titleLines.length * titleSize * 1.06
+      + attributionLines.length * attributionSize * 1.15
+    ) / (fontSize * 1.15) + 1;
+    return {
+      type: "song-header",
+      partLabel: assignment.partLabel,
+      title: assignment.title,
+      attribution: attributionLines.join(" "),
+      attributionLines,
+      titleLines,
+      continued: false,
+      height,
+    };
+  }
+
+  function songLayout(assignment, fontSize, columns) {
+    const baseLength = columns === 1 ? LINE_LENGTH : NARROW_LINE_LENGTH;
+    const maxLength = Math.max(24, Math.floor(baseLength * 8.5 / fontSize));
+    const stanzas = bookletStanzas(assignment, maxLength);
+    const tokens = flowTokens(stanzas);
+    const bodyColumns = columns === 1 ? [tokens] : splitTokens(tokens);
+    const bodyHeight = Math.max(...bodyColumns.map(tokensHeight));
+    const header = layoutHeader(assignment, fontSize);
+    return {
+      assignment,
+      columns,
+      bodyColumns,
+      bodyHeight,
+      fontSize,
+      header,
+      height: header.height + bodyHeight,
+    };
+  }
+
+  function columnPenalty(layout, singleColumnLayout) {
+    if (layout.columns === 1) return 0;
+    const savings = singleColumnLayout.height - layout.height;
+    const shortSongPenalty = Math.max(0, 14 - singleColumnLayout.bodyHeight) * 2;
+    const weakSavingsPenalty = Math.max(0, 3 - savings) * 4;
+    return 3 + shortSongPenalty + weakSavingsPenalty;
+  }
+
+  function appendCandidate(state, layout, startNewPage, capacity, penalty) {
+    const pages = state.pages.map(page => ({ ...page, blocks: page.blocks.slice() }));
+    let score = state.score + penalty;
+    if (startNewPage || !pages.length) {
+      if (pages.length) {
+        const leftover = capacity - pages.at(-1).used;
+        score += leftover * leftover * 0.035;
+      }
+      pages.push({ kind: "lyrics", layout: "adaptive", used: 0, blocks: [], items: [] });
+    }
+    const page = pages.at(-1);
+    const gap = page.blocks.length ? SONG_GAP : 0;
+    page.blocks.push(layout);
+    page.items.push(layout.header);
+    page.used += gap + layout.height;
+    return { pages, score };
+  }
+
+  function chooseCandidate(assignments, fontSize) {
+    const songs = assignments.filter(assignment => bookletStanzas(assignment).length);
+    if (!songs.length) return { pages: [], contents: [] };
+    const targetPages = Math.min(BOOKLET_PAGES - 1, songs.length);
+    const capacity = PAGE_CAPACITY * 8.5 / fontSize;
+    let states = [{ pages: [], score: 0 }];
+
+    songs.forEach(assignment => {
+      const single = songLayout(assignment, fontSize, 1);
+      const double = songLayout(assignment, fontSize, 2);
+      const layouts = double.bodyColumns[1].length ? [single, double] : [single];
+      const next = [];
+      states.forEach(state => {
+        layouts.forEach(layout => {
+          if (layout.height > capacity) return;
+          const penalty = columnPenalty(layout, single);
+          const current = state.pages.at(-1);
+          const gap = current?.blocks.length ? SONG_GAP : 0;
+          if (current && current.used + gap + layout.height <= capacity) {
+            next.push(appendCandidate(state, layout, false, capacity, penalty));
+          }
+          if (!current || state.pages.length < targetPages) {
+            next.push(appendCandidate(state, layout, true, capacity, penalty));
+          }
+        });
+      });
+
+      const bestByShape = new Map();
+      next.forEach(state => {
+        const key = `${state.pages.length}:${Math.round(state.pages.at(-1).used * 2)}`;
+        if (!bestByShape.has(key) || bestByShape.get(key).score > state.score) {
+          bestByShape.set(key, state);
+        }
+      });
+      states = [...bestByShape.values()]
+        .sort((left, right) => left.score - right.score)
+        .slice(0, 400);
+    });
+
+    const complete = states.filter(state => state.pages.length === targetPages);
+    if (!complete.length) return null;
+    complete.forEach(state => {
+      const leftover = capacity - state.pages.at(-1).used;
+      state.score += leftover * leftover * 0.035;
+    });
+    const chosen = complete.sort((left, right) => left.score - right.score)[0];
+    const contents = [];
+    chosen.pages.forEach((page, pageIndex) => {
+      page.blocks.forEach(block => contents.push({
+        partLabel: block.assignment.partLabel,
+        title: block.assignment.title,
+        page: pageIndex + 2,
+      }));
+    });
+    return { pages: chosen.pages, contents, fontSize, score: chosen.score };
+  }
+
+  function paginateLyrics(assignments) {
+    for (const fontSize of FONT_CANDIDATES) {
+      const candidate = chooseCandidate(assignments, fontSize);
+      if (candidate) return candidate;
+    }
+    const legacy = paginateLyricsLegacy(assignments);
+    const songCount = assignments.filter(assignment => bookletStanzas(assignment).length).length;
+    const targetPages = Math.min(BOOKLET_PAGES - 1, songCount);
+    if (songCount < BOOKLET_PAGES - 1 || legacy.pages.length >= targetPages) return legacy;
+
+    // If one unusually long song forced the whole-song candidates to fail, the
+    // old paginator can otherwise leave blank pages. Tighten its capacity until
+    // it fills the seven lyric pages; this only adds page breaks and never risks
+    // overflow because the rendered page capacity remains the original 48 units.
+    for (let capacity = PAGE_CAPACITY - 0.5; capacity >= 12; capacity -= 0.5) {
+      const candidate = paginateLyricsLegacy(assignments, capacity);
+      if (candidate.pages.length === targetPages) return candidate;
+      if (candidate.pages.length > targetPages) break;
+    }
+    return legacy;
   }
 
   function logicalPages({ date, celebration, meta, assignments }) {
@@ -328,6 +507,70 @@
     return y + (item.continued ? 1.5 : 1.7);
   }
 
+  function paintAdaptiveHeader(doc, block, left, width, y) {
+    const { fontSize, header } = block;
+    const labelSize = Math.max(7, fontSize - 3.5);
+    const titleSize = fontSize + 3;
+    const attributionSize = Math.max(7, fontSize - 3);
+    y = writeLines(doc, [String(header.partLabel || "").toUpperCase()], left, y, {
+      style: "bold", size: labelSize, color: COLORS.label,
+      charSpace: 0.5 * MM_PER_POINT,
+    });
+    y += 0.7;
+    y = writeLines(doc, header.titleLines, left, y, {
+      font: "times", style: "bold", size: titleSize,
+      color: COLORS.heading, lineHeight: 1.06,
+    });
+    if (header.attributionLines.length) {
+      y += 0.6;
+      y = writeLines(doc, header.attributionLines, left, y, {
+        size: attributionSize, color: COLORS.muted, lineHeight: 1.15,
+      });
+    }
+    y += 1.2;
+    doc.setDrawColor(COLORS.rule);
+    doc.setLineWidth(1 * MM_PER_POINT);
+    doc.line(left, y, left + width, y);
+    return y + 1.7;
+  }
+
+  function paintAdaptiveLyricsPage(doc, page, x0) {
+    const left = x0 + PAGE_PADDING.side;
+    const width = SHEET.half - 2 * PAGE_PADDING.side;
+    const columnGap = 7;
+    let blockTop = PAGE_PADDING.top;
+
+    page.blocks.forEach((block, blockIndex) => {
+      if (blockIndex) blockTop += lineStep(block.fontSize, 1.15) * SONG_GAP;
+      const contentTop = paintAdaptiveHeader(doc, block, left, width, blockTop);
+      const columnWidth = block.columns === 1 ? width : (width - columnGap) / 2;
+      let blockBottom = contentTop;
+      block.bodyColumns.forEach((tokens, column) => {
+        const columnLeft = left + column * (columnWidth + columnGap);
+        let y = contentTop;
+        tokens.forEach(token => {
+          token.unit.lines.forEach((line, wrapIndex) => {
+            const labelSize = Math.max(8, block.fontSize - 1.5);
+            const size = token.unit.label ? labelSize : block.fontSize;
+            const indent = wrapIndex ? 1.2 * block.fontSize * MM_PER_POINT : 0;
+            writeLines(doc, [line], columnLeft + indent, y, token.unit.label
+              ? { style: "bolditalic", size, color: COLORS.label, lineHeight: 1.15 }
+              : { font: "times", size, color: COLORS.ink, lineHeight: 1.15 });
+            y += lineStep(size, 1.15);
+          });
+          y += lineStep(block.fontSize, 1.15) * token.gapAfter;
+        });
+        blockBottom = Math.max(blockBottom, y);
+      });
+      blockTop = blockBottom;
+    });
+
+    writeLines(doc, [String(page.number)], x0 + SHEET.half / 2,
+      SHEET.h - 5 - lineStep(7.5, 1.25), {
+        size: 7.5, color: COLORS.footer, align: "center",
+      });
+  }
+
   function paintLyricsPage(doc, page, x0) {
     const left = x0 + PAGE_PADDING.side;
     const width = SHEET.half - 2 * PAGE_PADDING.side;
@@ -359,6 +602,7 @@
     if (page.kind === "cover") return paintCover(doc, page, x0);
     if (page.kind === "back-cover") return paintBackCover(doc, page, x0);
     if (page.kind === "blank") return undefined;
+    if (page.layout === "adaptive") return paintAdaptiveLyricsPage(doc, page, x0);
     return paintLyricsPage(doc, page, x0);
   }
 

@@ -62,6 +62,19 @@ test("planner state resolves the selected Sunday and effective readings", () => 
   });
 });
 
+test("summary values are shared by stateful and command-line booklet exports", () => {
+  assert.deepEqual(PlannerState.summaryValues({
+    sunday: { d: "2026-08-30", s: "Ordinary Time", c: "A" },
+    celebration: { name: "22nd Sunday in Ordinary Time" },
+    formatLong: value => `Long ${value}`,
+    cycleName: value => `Year ${value}`,
+  }), {
+    day: "22nd Sunday in Ordinary Time",
+    meta: "Long 2026-08-30  ·  Ordinary Time · Year A",
+    date: "2026-08-30",
+  });
+});
+
 test("celebration replacement atomically clears individual reading overrides", () => {
   const value = state();
   value.applyPlan({

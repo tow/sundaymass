@@ -165,3 +165,108 @@ test("long lyrics continue on later logical pages without overflowing capacity",
     result.pages.length - 1,
   );
 });
+
+test("candidate scoring keeps fourteen varied songs whole across seven lyric pages", () => {
+  const assignments = Array.from({ length: 14 }, (_, index) => assignment({
+    partLabel: `Part ${index + 1}`,
+    title: `Song ${index + 1}`,
+    authors: "",
+    copyrightOwner: "",
+    copyrightYear: "",
+    lyrics: index === 4
+      ? Array.from(
+        { length: 40 },
+        (__, line) => `Unique song ${index + 1} long lyric line ${line + 1}`,
+      ).join("\n")
+      : `Refrain:\nUnique song ${index + 1} refrain\n\nVerse 1\nUnique song ${index + 1} verse`,
+  }));
+  const result = LyricsBooklet.paginateLyrics(assignments);
+
+  assert.equal(result.pages.length, 7);
+  assert.ok(result.fontSize > 8.5);
+  assert.ok(result.pages.every(page => page.blocks.length > 0));
+  result.pages.forEach(page => {
+    assert.ok(page.used <= 48 * 8.5 / result.fontSize);
+  });
+  assert.deepEqual(
+    result.pages.flatMap(page => page.blocks.map(block => block.assignment.title)),
+    assignments.map(item => item.title),
+  );
+  assert.equal(
+    result.pages.flatMap(page => page.items)
+      .some(item => item.type === "song-header" && item.continued),
+    false,
+  );
+  const modes = result.pages.flatMap(page => page.blocks.map(block => block.columns));
+  assert.ok(modes.includes(1));
+  assert.ok(modes.includes(2));
+  result.pages.flatMap(page => page.blocks)
+    .filter(block => block.columns === 2)
+    .forEach(block => assert.ok(block.bodyColumns.every(column => column.length)));
+
+  const logical = LyricsBooklet.logicalPages({
+    date: "2026-08-02",
+    celebration: "Sunday Mass",
+    meta: "Sunday · Year A",
+    assignments,
+  });
+  assert.deepEqual(logical.map(page => page.kind), [
+    "cover",
+    "lyrics", "lyrics", "lyrics", "lyrics", "lyrics", "lyrics", "lyrics",
+  ]);
+
+  const source = pdfSource(LyricsBooklet.buildPdf(jsPDF, {
+    date: "2026-08-02",
+    celebration: "Sunday Mass",
+    meta: "Sunday · Year A",
+    assignments,
+  }));
+  assignments.forEach((__, index) => {
+    assert.ok(source.includes(`Song ${index + 1}`));
+    assert.ok(source.includes(`Unique song ${index + 1}`));
+  });
+});
+
+test("short songs remain single-column", () => {
+  const result = LyricsBooklet.paginateLyrics([assignment()]);
+
+  assert.equal(result.pages[0].layout, "adaptive");
+  assert.equal(result.pages[0].blocks[0].columns, 1);
+});
+
+test("fourteen songs still fill seven lyric pages when an oversized song must continue", () => {
+  const assignments = Array.from({ length: 14 }, (_, index) => assignment({
+    partLabel: `Part ${index + 1}`,
+    title: `Song ${index + 1}`,
+    authors: "",
+    copyrightOwner: "",
+    copyrightYear: "",
+    lyrics: index === 4
+      ? Array.from(
+        { length: 90 },
+        (__, line) => `Oversized song lyric line ${line + 1} for the assembly`,
+      ).join("\n")
+      : `Refrain:\nShort refrain ${index + 1}\n\nVerse 1\nShort verse ${index + 1}`,
+  }));
+  const result = LyricsBooklet.paginateLyrics(assignments);
+
+  assert.equal(result.pages.length, 7);
+  assert.ok(result.pages.every(page => page.items.length > 0));
+  assert.ok(result.pages.flatMap(page => page.items)
+    .some(item => item.type === "song-header" && item.continued));
+  assert.deepEqual(
+    LyricsBooklet.logicalPages({ assignments }).map(page => page.kind),
+    ["cover", "lyrics", "lyrics", "lyrics", "lyrics", "lyrics", "lyrics", "lyrics"],
+  );
+});
+
+test("the selected candidate uses its larger lyric font in the PDF", () => {
+  const doc = LyricsBooklet.buildPdf(jsPDF, {
+    date: "2026-08-02",
+    celebration: "Sunday Mass",
+    meta: "Sunday · Year A",
+    assignments: [assignment()],
+  });
+
+  assert.match(pdfSource(doc), /11\.5 Tf/);
+});

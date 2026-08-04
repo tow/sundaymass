@@ -168,6 +168,52 @@ test("lyrics are read from a file, hidden from previews, and encoded in SQL", ()
   }
 });
 
+test("booklet export loads one Sunday and delegates to the website PDF builder", () => {
+  let sql = "";
+  let buildOptions = null;
+  const result = cli.execute([
+    "booklet", "2026-08-30", "--output", "output/pdf/example.pdf", "--json",
+  ], {
+    runQuery(value) {
+      sql = value;
+      return [{
+        sunday: "2026-08-30",
+        part: "entrance",
+        song: { id: SONG_ID, title: "Table of Plenty" },
+        lyrics: "Come to the feast",
+        reading_overrides: {},
+        celebration_override: null,
+      }];
+    },
+    buildBooklet(options) {
+      buildOptions = options;
+      return {
+        sunday: options.sunday,
+        output: "/tmp/example.pdf",
+        songs: options.rows.length,
+        logical_pages: 8,
+        imposed_pdf_pages: 4,
+        lyric_font_size: 9.5,
+      };
+    },
+  });
+
+  assert.match(sql, /from public\.plans plan/i);
+  assert.match(sql, /public\.plan_song_lyrics weekly/i);
+  assert.doesNotMatch(sql, /2026-08-30/);
+  assert.equal(buildOptions.sunday, "2026-08-30");
+  assert.equal(buildOptions.output, "output/pdf/example.pdf");
+  assert.equal(buildOptions.rows[0].song.title, "Table of Plenty");
+  assert.deepEqual(result.rows, [{
+    sunday: "2026-08-30",
+    output: "/tmp/example.pdf",
+    songs: 1,
+    logical_pages: 8,
+    imposed_pdf_pages: 4,
+    lyric_font_size: 9.5,
+  }]);
+});
+
 test("plan assignment validates dates, parts, and song UUIDs before querying", () => {
   const preview = cli.execute([
     "assign_song", "2026-08-02", "psalm", SONG_ID, "--json",
