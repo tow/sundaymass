@@ -64,7 +64,12 @@ test("local repertoire mutations require an editor and retain canonical songs", 
     /Editor access required/,
   );
 
-  await store.signIn();
+  await store.signInChoir();
+  await assert.rejects(
+    store.createSong({ title: "Creator Alme Poderoso" }),
+    /Editor access required/,
+  );
+  await store.signInEditor();
   await assert.rejects(
     store.updateSong("missing", { title: "Missing song" }),
     /Song not found/,
@@ -92,8 +97,13 @@ test("local repertoire mutations require an editor and retain canonical songs", 
   assert.equal((await store.browseSongs())[0].id, "song-1");
 
   await store.signOut();
-  await assert.rejects(store.getSong("song-1"), /Editor access required/);
-  assert.deepEqual(authStates.map(state => state.isEditor), [false, true, false]);
+  await assert.rejects(store.getSong("song-1"), /Choir member access required/);
+  await store.signInChoir();
+  assert.equal((await store.getSong("song-1")).id, "song-1");
+  assert.deepEqual(
+    authStates.map(state => state.accessLevel),
+    ["public", "choir", "editor", "public", "choir"],
+  );
 });
 
 function supabaseFixture() {
@@ -211,14 +221,16 @@ test("Supabase repertoire mutation failures reach the caller", async () => {
 test("repertoire auth ignores a stale editor lookup after sign-out", async () => {
   const sessionResult = deferred();
   const editorResult = deferred();
+  const choirResult = deferred();
   let authCallback;
   const supabase = {
     from(table) {
-      assert.equal(table, "editors");
       const query = {
         select() { return query; },
         eq() { return query; },
-        maybeSingle() { return editorResult.promise; },
+        maybeSingle() {
+          return table === "editors" ? editorResult.promise : choirResult.promise;
+        },
       };
       return query;
     },
@@ -250,8 +262,9 @@ test("repertoire auth ignores a stale editor lookup after sign-out", async () =>
   await new Promise(resolve => setImmediate(resolve));
   authCallback("SIGNED_OUT", null);
   editorResult.resolve({ data: { user_id: "old-user" }, error: null });
+  choirResult.resolve({ data: null, error: null });
   await new Promise(resolve => setImmediate(resolve));
   unsubscribe();
 
-  assert.deepEqual(states, [{ user: null, isEditor: false }]);
+  assert.deepEqual(states, [storeModule.authState(null)]);
 });

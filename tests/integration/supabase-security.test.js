@@ -74,12 +74,17 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
   }
 
   const nonEditor = await createUser("non-editor");
+  const choir = await createUser("choir");
   const editor = await createUser("editor");
 
   try {
     await expectOk(await service("/rest/v1/editors", {
       method: "POST",
       body: { user_id: editor.id },
+    }));
+    await expectOk(await service("/rest/v1/choir_members", {
+      method: "POST",
+      body: { user_id: choir.id },
     }));
 
     const [fixtureSong] = await expectOk(await service("/rest/v1/songs", {
@@ -157,6 +162,21 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
 
       const vectors = await nonEditor.request("/rest/v1/song_embeddings?select=song_id");
       assert.ok([401, 403].includes(vectors.response.status));
+    });
+
+    await t.test("choir members can read any lyrics but cannot mutate songs", async () => {
+      const lyrics = await choir.request(
+        `/rest/v1/song_lyrics?song_id=eq.${fixtureSong.id}&select=lyrics`,
+      );
+      assert.equal(lyrics.response.status, 200);
+      assert.deepEqual(lyrics.data, [{ lyrics: "Private test lyrics" }]);
+
+      const mutation = await choir.request("/rest/v1/rpc/create_song", {
+        method: "POST",
+        body: { p_title: "Forbidden choir mutation" },
+      });
+      assert.ok(!mutation.response.ok);
+      assert.match(JSON.stringify(mutation.data), /Editor access required/i);
     });
 
     await t.test("editors can read lyrics and preserve an empty suggestion list", async () => {
@@ -294,6 +314,13 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       );
       assert.equal(nonEditorLyrics.response.status, 200);
       assert.deepEqual(nonEditorLyrics.data, []);
+      const choirLyrics = await expectOk(await choir.request(
+        `/rest/v1/plan_song_lyrics?sunday=eq.${sunday}&select=song_id,lyrics`,
+      ));
+      assert.deepEqual(choirLyrics, [{
+        song_id: exactPsalmId,
+        lyrics: "Response:\nEdited response\n\n1. Included cantor verse",
+      }]);
       const editorLyrics = await expectOk(await editor.request(
         `/rest/v1/plan_song_lyrics?sunday=eq.${sunday}&select=song_id,lyrics`,
       ));
@@ -535,6 +562,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       await service(`/rest/v1/songs?id=eq.${songId}`, { method: "DELETE" });
     }
     await service(`/rest/v1/editors?user_id=eq.${editor.id}`, { method: "DELETE" });
+    await service(`/rest/v1/choir_members?user_id=eq.${choir.id}`, { method: "DELETE" });
     for (const userId of userIds) {
       await service(`/auth/v1/admin/users/${userId}`, { method: "DELETE" });
     }

@@ -80,17 +80,27 @@
         <label for="songResponsorialCitations">Exact citations — one per line</label>
         <textarea id="songResponsorialCitations" rows="3"></textarea>
       </fieldset>
-      <details><summary>Lyrics (editors only)</summary><textarea id="songLyrics" rows="14"></textarea></details>
+      <details><summary>Lyrics (editable by editors)</summary><textarea id="songLyrics" rows="14"></textarea></details>
       <p class="error" id="songEditorError"></p>
     </div>
     <div class="dialog-actions"><button id="songEditorCancel" type="button">Cancel</button><button class="primary" id="saveSong" type="submit">Save song</button></div>
   </form>
 </dialog>
+<dialog class="lyrics-viewer-dialog" id="lyricsViewerDialog">
+  <div class="lyrics-viewer">
+    <div class="dialog-head"><h2 id="lyricsViewerTitle">Lyrics</h2><button id="lyricsViewerClose" type="button" aria-label="Close">×</button></div>
+    <div class="dialog-body">
+      <pre id="lyricsViewerText"></pre>
+      <p class="empty-state" id="lyricsViewerEmpty" hidden>No lyrics have been added for this song.</p>
+    </div>
+  </div>
+</dialog>
 <dialog class="login-dialog" id="loginDialog"><form id="loginForm">
-  <h2>Editor sign in</h2><p>Sign in to edit the repertoire.</p>
-  <label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" required>
+  <h2 id="loginTitle">Choir member sign in</h2><p id="loginDescription">Enter the shared choir password to view and download lyrics.</p>
+  <div id="loginEmailField" hidden><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username"></div>
   <label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required>
   <p class="error" id="loginError"></p>
+  <button class="login-mode" type="button" id="loginMode">Editor sign in</button>
   <div class="dialog-actions"><button id="loginCancel" type="button">Cancel</button><button class="primary" id="loginSubmit" type="submit">Sign in</button></div>
 </form></dialog>
 <script>@@APP_SCRIPT@@</script>

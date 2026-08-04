@@ -49,13 +49,24 @@ const draftParams = (draft, songCatalog = globalThis.window?.SongCatalog) => {
   };
 };
 
+const authState = (user, { isChoirMember = false, isEditor = false } = {}) => {
+  const accessLevel = isEditor ? "editor" : isChoirMember ? "choir" : "public";
+  return Object.freeze({
+    user: user || null,
+    isChoirMember: accessLevel === "choir",
+    isEditor: accessLevel === "editor",
+    canReadLyrics: accessLevel === "choir" || accessLevel === "editor",
+    accessLevel,
+  });
+};
+
 function localStore({
   storage = globalThis.localStorage,
   songCatalog = globalThis.window?.SongCatalog,
   randomUUID = () => globalThis.crypto.randomUUID(),
 } = {}) {
   const key = "st-james-song-catalog-v1";
-  let editor = false;
+  let accessLevel = "public";
   let notifyAuth = () => {};
   const read = () => {
     try {
@@ -69,18 +80,18 @@ function localStore({
   return {
     async browseSongs() { return read(); },
     async getSong(songId) {
-      if (!editor) throw new Error("Editor access required");
+      if (accessLevel === "public") throw new Error("Choir member access required");
       return read().find(song => song.id === songId);
     },
     async createSong(draft) {
-      if (!editor) throw new Error("Editor access required");
+      if (accessLevel !== "editor") throw new Error("Editor access required");
       const value = draftParams(draft, songCatalog).value;
       const song = { id: randomUUID(), ...value };
       write([...read(), song]);
       return song;
     },
     async updateSong(songId, draft) {
-      if (!editor) throw new Error("Editor access required");
+      if (accessLevel !== "editor") throw new Error("Editor access required");
       const value = draftParams(draft, songCatalog).value;
       const songs = read();
       if (!songs.some(song => song.id === songId)) throw new Error("Song not found");
@@ -88,15 +99,20 @@ function localStore({
       return { id: songId, ...value };
     },
     subscribeAuth(callback) {
-      notifyAuth = () => callback({
-        user: editor ? { email: "Local editor" } : null,
-        isEditor: editor,
-      });
+      notifyAuth = () => callback(authState(
+        accessLevel === "public" ? null : { email: `Local ${accessLevel}` },
+        {
+          isChoirMember: accessLevel === "choir",
+          isEditor: accessLevel === "editor",
+        },
+      ));
       notifyAuth();
       return () => {};
     },
-    async signIn() { editor = true; notifyAuth(); },
-    async signOut() { editor = false; notifyAuth(); },
+    async signInChoir() { accessLevel = "choir"; notifyAuth(); },
+    async signInEditor() { accessLevel = "editor"; notifyAuth(); },
+    async signIn() { accessLevel = "editor"; notifyAuth(); },
+    async signOut() { accessLevel = "public"; notifyAuth(); },
     async semanticStatus() {
       return { songs: read().length, embeddedSongs: 0, embeddedReadings: 0, staleSongIds: [] };
     },
@@ -111,6 +127,7 @@ function createSupabaseStore(
     songCatalog = globalThis.window?.SongCatalog,
     defer = setTimeout,
     logger = globalThis.AppLogger || console,
+    choirEmail = "",
   } = {},
 ) {
   const invoke = async body => {
@@ -155,18 +172,29 @@ function createSupabaseStore(
       const resolve = async (session, requestGeneration) => {
         const user = session?.user || null;
         let isEditor = false;
+        let isChoirMember = false;
         if (user) {
-          const { data, error } = await supabase
-            .from("editors")
+          const membership = table => supabase
+            .from(table)
             .select("user_id")
             .eq("user_id", user.id)
             .maybeSingle();
-          if (error && active && requestGeneration === generation) {
-            logger.warn("Could not verify editor access", error);
+          const [editorResult, choirResult] = await Promise.all([
+            membership("editors"),
+            membership("choir_members"),
+          ]);
+          if (editorResult.error && active && requestGeneration === generation) {
+            logger.warn("Could not verify editor access", editorResult.error);
           }
-          isEditor = Boolean(data);
+          if (choirResult.error && active && requestGeneration === generation) {
+            logger.warn("Could not verify choir access", choirResult.error);
+          }
+          isEditor = Boolean(editorResult.data);
+          isChoirMember = !isEditor && Boolean(choirResult.data);
         }
-        if (active && requestGeneration === generation) callback({ user, isEditor });
+        if (active && requestGeneration === generation) {
+          callback(authState(user, { isChoirMember, isEditor }));
+        }
       };
       const initialGeneration = ++generation;
       supabase.auth.getSession()
@@ -179,7 +207,7 @@ function createSupabaseStore(
         .catch(error => {
           if (active && initialGeneration === generation) {
             logger.warn("Could not read authentication session", error);
-            callback({ user: null, isEditor: false });
+            callback(authState(null));
           }
         });
       const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -188,9 +216,20 @@ function createSupabaseStore(
       });
       return () => { active = false; listener.subscription.unsubscribe(); };
     },
-    async signIn(email, password) {
+    async signInChoir(password) {
+      if (!choirEmail) throw new Error("Choir sign-in is not configured");
+      const { error } = await supabase.auth.signInWithPassword({
+        email: choirEmail,
+        password,
+      });
+      if (error) throw error;
+    },
+    async signInEditor(email, password) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+    },
+    async signIn(email, password) {
+      return this.signInEditor(email, password);
     },
     async signOut() {
       const { error } = await supabase.auth.signOut();
@@ -206,7 +245,7 @@ async function supabaseStore(config) {
   const createClient = globalThis.MassPlannerSupabaseClient?.create;
   if (!createClient) throw new Error("Shared Supabase client bootstrap is unavailable");
   const supabase = await createClient(config);
-  return createSupabaseStore(supabase);
+  return createSupabaseStore(supabase, { choirEmail: config.choirEmail || "" });
 }
 
 async function start() {
@@ -218,7 +257,7 @@ async function start() {
 }
 
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { mapSong, draftParams, localStore, createSupabaseStore };
+  module.exports = { authState, mapSong, draftParams, localStore, createSupabaseStore };
 }
 
 if (typeof window !== "undefined" && window.repertoireApp) {

@@ -83,6 +83,18 @@ Authentication and authorization are separate. A valid Supabase session identifi
 user; a matching `editors` row authorizes writes. An authenticated user can select only
 their own membership row.
 
+### `choir_members`
+
+| Field | Meaning |
+|---|---|
+| `user_id` | Auth user permitted to read private lyrics without editing |
+| `created_at` | Membership creation time |
+
+Production uses one administrator-managed shared Auth user in this table. Choir
+members enter only its shared password; the browser supplies its fixed configured
+email. The identifier is not secret. A choir membership grants lyric reads but never
+authorizes a shared mutation.
+
 ### `songs`
 
 | Field | Meaning |
@@ -196,16 +208,16 @@ staleness.
 
 ## Access matrix
 
-| Resource or operation | Anonymous | Signed-in non-editor | Editor browser | Service role |
-|---|---:|---:|---:|---:|
-| Read plans, assignments, song metadata | Yes | Yes | Yes | Yes |
-| Read song lyrics | No | No | Yes | Yes |
-| Read weekly lyric overrides | No | No | Yes | Yes |
-| Read audit user UUIDs directly | No | No | No | Yes |
-| Read own editor membership | No | Yes, if present | Yes | Yes |
-| Change plans, assignments, songs, lyrics | No | No | Yes | Yes |
-| Read or write raw vector tables | No | No | No | Yes |
-| Request bounded song or Psalm suggestions | Yes | Yes | Yes | Yes |
+| Resource or operation | Anonymous | Unrelated authenticated | Choir member | Editor browser | Service role |
+|---|---:|---:|---:|---:|---:|
+| Read plans, assignments, song metadata | Yes | Yes | Yes | Yes | Yes |
+| Read song lyrics | No | No | Yes | Yes | Yes |
+| Read weekly lyric overrides | No | No | Yes | Yes | Yes |
+| Read audit user UUIDs directly | No | No | No | No | Yes |
+| Read own role membership | No | If present | Yes | Yes | Yes |
+| Change plans, assignments, songs, lyrics | No | No | No | Yes | Yes |
+| Read or write raw vector tables | No | No | No | No | Yes |
+| Request bounded song or Psalm suggestions | Yes | Yes | Yes | Yes | Yes |
 
 Table privileges and Row Level Security are both intentional. RLS is not a substitute
 for revoking broad table access to lyrics and vectors, and hiding editor controls is not

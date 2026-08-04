@@ -130,6 +130,7 @@ function fmtPicker(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDa
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 let planStore = null;
 let isEditor = false;
+let canReadLyrics = false;
 let signedIn = false;
 let weeklyLyricsParts = new Set();
 let readingLoadGeneration = 0;
@@ -208,7 +209,8 @@ function renderMusicPlan(){
     isEditor,
     customizedParts:weeklyLyricsParts,
   });
-  editorHelp.hidden=view.editorHelpHidden;
+  lyricsTools.hidden=!canReadLyrics;
+  editorLiveHint.hidden=!isEditor;
   musicIntro.textContent=view.intro;
   musicList.innerHTML=view.html;
   musicList.dataset.mode=view.mode;
@@ -347,6 +349,7 @@ const planSessionController=PlanSessionController.create({
   },
   onAuth:(auth)=>{
     isEditor=!!auth.isEditor;
+    canReadLyrics=!!auth.canReadLyrics;
     signedIn=!!auth.user;
     authButton.textContent=signedIn ? "Sign out" : "Sign in";
     if(!isEditor){
@@ -485,15 +488,19 @@ AuthController.create({
   dialog:loginDialog,
   form:loginForm,
   cancelButton:loginCancel,
+  titleElement:loginTitle,
+  descriptionElement:loginDescription,
+  emailField:loginEmailField,
   emailInput:loginEmail,
   passwordInput:loginPassword,
+  modeButton:loginMode,
   submitButton:loginSubmit,
   errorElement:loginError,
   getStore:()=>planStore,
   isSignedIn:()=>signedIn,
   openDialog:openModal,
   scheduleFocus:callback=>setTimeout(callback,0),
-  onUnavailable:()=>setSyncStatus("Editor sign-in unavailable","error"),
+  onUnavailable:()=>setSyncStatus("Sign-in unavailable","error"),
   onActionFailure:()=>setSyncStatus("Sign-in failed","error"),
   logger:appLogger,
 }).start();
@@ -553,7 +560,7 @@ const lyricsPptxController=LyricsPptxController.create({
   getSongs:plannerState.songs,
   getDate:()=>current().d,
   getValues:vals,
-  isEditor:()=>isEditor,
+  canReadLyrics:()=>canReadLyrics,
   isOnline:()=>navigator.onLine,
   logger:appLogger,
 });
@@ -569,7 +576,7 @@ const lyricsSlidesController=LyricsSlidesController.create({
   getSongs:plannerState.songs,
   getDate:()=>current().d,
   getValues:vals,
-  isEditor:()=>isEditor,
+  canReadLyrics:()=>canReadLyrics,
   isOnline:()=>navigator.onLine,
   logger:appLogger,
 });
@@ -586,7 +593,7 @@ const lyricsBookletController=LyricsBookletController.create({
   getSongs:plannerState.songs,
   getDate:()=>current().d,
   getValues:vals,
-  isEditor:()=>isEditor,
+  canReadLyrics:()=>canReadLyrics,
   isOnline:()=>navigator.onLine,
   logger:appLogger,
 });

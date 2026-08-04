@@ -63,7 +63,7 @@ function setup({
     getSongs: () => currentSongs,
     getDate: () => currentDate,
     getValues: () => currentValues,
-    isEditor: () => editor,
+    canReadLyrics: () => editor,
     isOnline: () => online,
     preparingMessage: "Preparing…",
     errorMessage: "Could not build. Try again.",
@@ -188,12 +188,12 @@ test("missing lyrics block the build and identify only the affected song", async
   assert.equal(status.dataset.state, "error");
 });
 
-test("the action is hidden and rejected without editor access", async () => {
+test("the action is hidden and rejected without choir access", async () => {
   const { builds, button, controller, status } = setup({ editor: false });
   assert.equal(button.hidden, true);
   await controller.run();
   assert.equal(builds.length, 0);
-  assert.equal(status.textContent, "Editor access required.");
+  assert.equal(status.textContent, "Choir member access required.");
 });
 
 test("the action is rejected while offline", async () => {
@@ -219,7 +219,7 @@ test("the action waits for the store to connect", async () => {
     getSongs: () => ({ entrance: { id: "song-a" } }),
     getDate: () => "2026-08-02",
     getValues: () => ({ day: "18th Sunday", meta: "" }),
-    isEditor: () => true,
+    canReadLyrics: () => true,
     isOnline: () => true,
     preparingMessage: "Preparing…",
     errorMessage: "Could not build. Try again.",
@@ -251,7 +251,7 @@ test("the action requires at least one selected song", async () => {
     getSongs: () => ({}),
     getDate: () => "2026-08-02",
     getValues: () => ({ day: "18th Sunday", meta: "" }),
-    isEditor: () => true,
+    canReadLyrics: () => true,
     isOnline: () => true,
     preparingMessage: "Preparing…",
     errorMessage: "Could not build. Try again.",
@@ -286,7 +286,7 @@ test("a run in progress ignores a second concurrent click", async () => {
     getSongs: () => ({ entrance: { id: "song-a" } }),
     getDate: () => "2026-08-02",
     getValues: () => ({ day: "18th Sunday", meta: "" }),
-    isEditor: () => true,
+    canReadLyrics: () => true,
     isOnline: () => true,
     preparingMessage: "Preparing…",
     errorMessage: "Could not build. Try again.",
@@ -335,7 +335,7 @@ test("build errors are logged and surfaced as the configured error message", asy
     getSongs: () => ({ entrance: { id: "song-a" } }),
     getDate: () => "2026-08-02",
     getValues: () => ({ day: "18th Sunday", meta: "" }),
-    isEditor: () => true,
+    canReadLyrics: () => true,
     isOnline: () => true,
     preparingMessage: "Preparing…",
     errorMessage: "Could not build. Try again.",

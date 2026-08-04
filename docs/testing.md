@@ -24,7 +24,7 @@ integration test, or incompatible backend contract cannot deploy the frontend.
 - `npm run test:unit` runs the fast Node suite in `tests/*.test.js`. These tests cover
   domain rules, controller state, rendering, store adapters, privacy projections,
   generated-data invariants, source/build contracts, deterministic lyric pagination,
-  editor-only export preflight, lazy reading assets, versioned browser URLs, optional
+  authorized lyric-export preflight, lazy reading assets, versioned browser URLs, optional
   error monitoring, and the structure of a generated `.pptx`.
 - `npm run test:e2e` serves the repository on an ephemeral localhost port and controls
   installed Chrome through pinned `playwright-core`. It does not download or bundle a

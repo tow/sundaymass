@@ -14,6 +14,7 @@ const appLogger=AppLogger;
 let store;
 let songs=[];
 let isEditor=false;
+let canReadLyrics=false;
 let signedIn=false;
 let editingSong=null;
 let repairingIndex=false;
@@ -58,7 +59,10 @@ function render(){
       +(link?` <a href="${esc(link)}" target="_blank" rel="noopener">Listen ↗</a>`:"")
       +`</h2>`
       +details(song).map(line=>`<p>${esc(line)}</p>`).join("")
-      +`</div>${isEditor?`<button type="button" data-edit-song="${song.id}">Edit details</button>`:""}</article>`;
+      +`</div><div class="song-card-actions">`
+      +(canReadLyrics?`<button type="button" data-view-lyrics="${song.id}">View lyrics</button>`:"")
+      +(isEditor?`<button type="button" data-edit-song="${song.id}">Edit details</button>`:"")
+      +`</div></article>`;
   }).join("") || `<p class="empty-state">No songs match that search.</p>`;
   repertoireEditorActions.hidden=!isEditor;
   semanticPanel.hidden=!isEditor;
@@ -160,6 +164,7 @@ window.repertoireApp={
     store=value;
     store.subscribeAuth(auth=>{
       signedIn=Boolean(auth.user); isEditor=Boolean(auth.isEditor);
+      canReadLyrics=Boolean(auth.canReadLyrics);
       render(); if(isEditor)loadIndexStatus();
     });
     loadSongs();
@@ -191,9 +196,29 @@ window.addEventListener("popstate",()=>{
   render();
 });
 repertoireList.addEventListener("click",event=>{
+  const lyricsButton=event.target.closest("[data-view-lyrics]");
+  if(lyricsButton&&canReadLyrics){loadLyrics(lyricsButton.dataset.viewLyrics);return;}
   const button=event.target.closest("[data-edit-song]");
   if(button&&isEditor)loadForEditing(button.dataset.editSong);
 });
+async function loadLyrics(id){
+  repertoireStatus.textContent="Loading lyrics…";
+  try{
+    const song=await store.getSong(id);
+    lyricsViewerTitle.textContent=song.title||"Lyrics";
+    lyricsViewerText.textContent=song.lyrics||"";
+    lyricsViewerText.hidden=!song.lyrics;
+    lyricsViewerEmpty.hidden=Boolean(song.lyrics);
+    lyricsViewerDialog.showModal();
+    repertoireStatus.textContent="Up to date";
+  }catch(error){
+    appLogger.error(error);
+    repertoireStatus.textContent="Could not load lyrics";
+  }
+}
+function closeLyricsViewer(){lyricsViewerDialog.close();}
+lyricsViewerClose.addEventListener("click",closeLyricsViewer);
+lyricsViewerDialog.addEventListener("click",event=>{if(event.target===lyricsViewerDialog)closeLyricsViewer();});
 addRepertoireSong.addEventListener("click",()=>openEditor(null));
 songEditorClose.addEventListener("click",()=>songEditorDialog.close());
 songEditorCancel.addEventListener("click",()=>songEditorDialog.close());
@@ -222,15 +247,19 @@ AuthController.create({
   dialog:loginDialog,
   form:loginForm,
   cancelButton:loginCancel,
+  titleElement:loginTitle,
+  descriptionElement:loginDescription,
+  emailField:loginEmailField,
   emailInput:loginEmail,
   passwordInput:loginPassword,
+  modeButton:loginMode,
   submitButton:loginSubmit,
   errorElement:loginError,
   getStore:()=>store,
   isSignedIn:()=>signedIn,
   openDialog:dialog=>dialog.showModal(),
   scheduleFocus:callback=>setTimeout(callback,0),
-  onUnavailable:()=>{repertoireStatus.textContent="Editor sign-in unavailable";},
+  onUnavailable:()=>{repertoireStatus.textContent="Sign-in unavailable";},
   onActionFailure:()=>{repertoireStatus.textContent="Sign-in failed";},
   logger:appLogger,
 }).start();

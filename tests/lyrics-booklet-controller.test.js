@@ -69,7 +69,7 @@ function setup({
     }),
     getDate: () => "2026-08-02",
     getValues: () => ({ day: "18th Sunday", meta: "Sunday · Year A" }),
-    isEditor: () => editor,
+    canReadLyrics: () => editor,
     isOnline: () => online,
     logger: { error() {} },
   });
@@ -100,10 +100,10 @@ test("booklet export blocks when selected lyrics are missing", async () => {
   assert.equal(status.dataset.state, "error");
 });
 
-test("booklet action is hidden and rejected without editor access", async () => {
+test("booklet action is hidden and rejected without choir access", async () => {
   const { button, controller, built, status } = setup({ editor: false });
   assert.equal(button.hidden, true);
   await controller.download();
   assert.equal(built.length, 0);
-  assert.equal(status.textContent, "Editor access required.");
+  assert.equal(status.textContent, "Choir member access required.");
 });

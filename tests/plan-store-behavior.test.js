@@ -65,6 +65,42 @@ function createStore(storage = memoryStorage()) {
   });
 }
 
+test("auth state gives editor membership precedence over choir membership", () => {
+  assert.deepEqual(
+    storeModule.authState({ id: "user-1" }, { isChoirMember: true, isEditor: true }),
+    {
+      user: { id: "user-1" },
+      isChoirMember: false,
+      isEditor: true,
+      canReadLyrics: true,
+      accessLevel: "editor",
+    },
+  );
+});
+
+test("Supabase choir sign-in supplies the configured identity behind the password-only UI", async () => {
+  const credentials = [];
+  const store = storeModule.createSupabaseStore({
+    auth: {
+      async signInWithPassword(value) {
+        credentials.push(value);
+        return { error: null };
+      },
+    },
+  }, {
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+    choirEmail: "shared-choir@example.test",
+  });
+
+  await store.signInChoir("shared password");
+  assert.deepEqual(credentials, [{
+    email: "shared-choir@example.test",
+    password: "shared password",
+  }]);
+});
+
 test("local plan subscriptions tolerate corrupted cached records", () => {
   const store = createStore(memoryStorage({
     "st-james-plan-v2-2026-08-02": "{bad plan",
@@ -89,10 +125,15 @@ test("local plan mutations enforce editor access and never publish lyrics", asyn
 
   await assert.rejects(
     store.createAndAssignSong("2026-08-02", "entrance", { title: "Gather Us In" }),
-    /Sign in before editing/,
+    /Editor access required/,
   );
 
-  await store.signIn();
+  await store.signInChoir();
+  await assert.rejects(
+    store.createAndAssignSong("2026-08-02", "entrance", { title: "Gather Us In" }),
+    /Editor access required/,
+  );
+  await store.signInEditor();
   await assert.rejects(
     store.assignSong("2026-08-02", "entrance", "missing"),
     /Song not found/,
@@ -149,9 +190,9 @@ test("local plan mutations enforce editor access and never publish lyrics", asyn
   assert.equal(plans.at(-1).celebrationOverride.key, "saint-example");
 
   await store.signOut();
-  await assert.rejects(store.getPlan("2026-08-02"), /Sign in before editing/);
-  await assert.rejects(store.clearSong("2026-08-02", "entrance"), /Sign in before editing/);
-  assert.deepEqual(authStates.map(state => state.isEditor), [false, true, false]);
+  await assert.rejects(store.getPlan("2026-08-02"), /Editor access required/);
+  await assert.rejects(store.clearSong("2026-08-02", "entrance"), /Editor access required/);
+  assert.deepEqual(authStates.map(state => state.accessLevel), ["public", "choir", "editor", "public"]);
 });
 
 test("local weekly lyrics keep canonical text and offer the newest earlier copy", async () => {
@@ -467,14 +508,16 @@ test("Supabase weekly lyric reuse chooses the newest date and same-part ties", a
 test("Supabase auth ignores a stale editor lookup after a newer auth event", async () => {
   const sessionResult = deferred();
   const editorResult = deferred();
+  const choirResult = deferred();
   let authCallback;
   const supabase = {
     from(table) {
-      assert.equal(table, "editors");
       const query = {
         select() { return query; },
         eq() { return query; },
-        maybeSingle() { return editorResult.promise; },
+        maybeSingle() {
+          return table === "editors" ? editorResult.promise : choirResult.promise;
+        },
       };
       return query;
     },
@@ -507,10 +550,11 @@ test("Supabase auth ignores a stale editor lookup after a newer auth event", asy
   await new Promise(resolve => setImmediate(resolve));
   authCallback("SIGNED_OUT", null);
   editorResult.resolve({ data: { user_id: "old-user" }, error: null });
+  choirResult.resolve({ data: null, error: null });
   await new Promise(resolve => setImmediate(resolve));
   unsubscribe();
 
-  assert.deepEqual(states, [{ user: null, isEditor: false }]);
+  assert.deepEqual(states, [storeModule.authState(null)]);
 });
 
 test("Supabase weekly reset includes the song identity", async () => {

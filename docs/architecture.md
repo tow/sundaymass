@@ -169,6 +169,18 @@ planner code must never contain lyrics.
 The UI check is convenience, not authorization. A mutation is secure only when the
 database rejects an unauthorized direct request.
 
+### Choir lyric access
+
+1. The password-first dialog authenticates the administrator-managed shared choir
+   identity without asking the singer for its fixed email.
+2. The application checks `choir_members` and `editors` membership to expose read-only
+   lyric actions.
+3. Repertoire lyrics load on demand, while Sunday exports fetch canonical lyrics plus
+   any selected-Sunday overrides.
+4. Postgres independently permits reads to either membership and continues to reject
+   every choir mutation.
+5. Private text remains outside public plans, rendered public pages, and offline caches.
+
 ### Song selection and editing
 
 An empty public plan slot offers a read-only “See suggestions” action. It opens only
@@ -224,7 +236,7 @@ The output includes public song attribution but never private lyrics.
 
 ### Lyrics PowerPoint export
 
-The editor-only export controller derives the selected songs in canonical Mass order,
+The authorized export controller derives the selected songs in canonical Mass order,
 deduplicates IDs only for private fetching, calls `getSong` for each distinct song, and
 loads the selected Sunday's private lyric overrides.
 That existing store operation is independently protected by editor membership and

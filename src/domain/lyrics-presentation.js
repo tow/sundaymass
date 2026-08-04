@@ -1,4 +1,4 @@
-// Plans and builds large-type PowerPoint and PDF slide decks from editor-only song lyrics.
+// Plans and builds large-type PowerPoint and PDF slide decks from authorized song lyrics.
 (function (global) {
   "use strict";
 

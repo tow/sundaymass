@@ -32,6 +32,9 @@ service-role key, lyric export, or backup in the repository.
   run from another branch cannot publish.
 - The browser's Supabase URL and publishable key are intentionally public. Security
   comes from grants, RLS, RPC checks, and editor membership.
+- Choir members use one confirmed Supabase Auth identity whose fixed email is configured
+  in the browser and whose shared password is distributed out of band. Its
+  `public.choir_members` row grants lyric reads only.
 - No service-role key belongs in a GitHub Pages file. The Edge Function receives its
   platform-provided server environment inside Supabase.
 
@@ -49,6 +52,21 @@ The examples use the pinned CLI without installing it globally:
 ```bash
 npx --yes supabase@2.109.1 --version
 ```
+
+## Choir credential lifecycle
+
+Create one confirmed email/password user in Supabase Authentication. The email need not
+receive mail, but it must exactly match `choirEmail` in `supabase-config.js`. Insert the
+user UUID into `public.choir_members`; never add the shared identity to `public.editors`.
+The email and publishable key are safe in the static site. Never commit or log the
+password.
+
+To rotate access, change that Auth user's password in the Supabase dashboard and
+distribute the new password out of band. When immediate revocation is required,
+explicitly revoke the user's sessions as part of the same operation rather than
+assuming password rotation alone has ended every existing session. To disable choir
+access independently of authentication, delete its `public.choir_members` row; RLS then
+denies lyric reads on the next request.
 
 ## Song maintenance CLI
 

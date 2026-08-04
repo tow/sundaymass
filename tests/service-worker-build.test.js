@@ -80,7 +80,7 @@ test("the full reading catalogue is not downloaded in the offline app shell", ()
   assert.match(template, /cache\.put\(event\.request, copy\)/);
 });
 
-test("editor-only export and monitoring bundles are fetched only when requested", () => {
+test("authorized export and monitoring bundles are fetched only when requested", () => {
   const assets = JSON.parse(read("src/service-worker-assets.json"));
 
   [

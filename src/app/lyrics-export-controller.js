@@ -12,7 +12,7 @@
     getSongs,
     getDate,
     getValues,
-    isEditor,
+    canReadLyrics,
     isOnline,
     preparingMessage,
     errorMessage,
@@ -29,14 +29,14 @@
     }
 
     function render() {
-      button.hidden = !isEditor();
+      button.hidden = !canReadLyrics();
       button.disabled = exporting;
     }
 
     async function run() {
       if (exporting) return;
-      if (!isEditor()) {
-        setStatus("Editor access required.", "error");
+      if (!canReadLyrics()) {
+        setStatus("Choir member access required.", "error");
         return;
       }
       if (!isOnline()) {

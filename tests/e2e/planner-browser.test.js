@@ -76,7 +76,7 @@ async function plannerPage(browser, server, viewport) {
       body: "window.MASS_PLANNER_SUPABASE_CONFIG = null;",
     }),
   );
-  await page.goto(`${server.origin}/index.html`);
+  await page.goto(`${server.origin}/index.html?date=2026-08-02`);
   try {
     await page.waitForFunction(() =>
       !["", "Connecting…", "Loading…"].includes(
@@ -103,6 +103,7 @@ async function repertoirePage(browser, server, viewport) {
         id: "repertoire-city",
         title: "City of God",
         authors: "Dan Schutte",
+        lyrics: "CHOIR-ONLY CITY LYRIC",
         inRepertoire: true,
       },
       {
@@ -687,6 +688,29 @@ test("repertoire collection and search state survive reload and browser history"
   await context.close();
 });
 
+test("choir password reveals read-only repertoire lyrics without editor controls", async () => {
+  const { context, page } = await repertoirePage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+  assert.equal(await page.getByText("CHOIR-ONLY CITY LYRIC").count(), 0);
+
+  await page.locator("#authButton").click();
+  await assert.doesNotReject(() => page.locator("#loginDialog").waitFor({ state: "visible" }));
+  assert.equal(await page.locator("#loginEmailField").isHidden(), true);
+  await page.locator("#loginPassword").fill("shared password");
+  await page.locator("#loginSubmit").click();
+  await page.waitForFunction(() => document.querySelector("#authButton")?.textContent === "Sign out");
+
+  assert.equal(await page.locator('[data-edit-song="repertoire-city"]').count(), 0);
+  await page.locator('[data-view-lyrics="repertoire-city"]').click();
+  await assert.doesNotReject(() => page.locator("#lyricsViewerDialog").waitFor({ state: "visible" }));
+  assert.equal(await page.locator("#lyricsViewerTitle").textContent(), "City of God");
+  assert.equal(await page.locator("#lyricsViewerText").textContent(), "CHOIR-ONLY CITY LYRIC");
+  await context.close();
+});
+
 test("editor song picker preserves the page and supports keyboard selection of duplicate titles", async () => {
   const { context, page } = await plannerPage(
     browser,
@@ -710,7 +734,7 @@ test("editor song picker preserves the page and supports keyboard selection of d
     ];
     window.massPlanApp.connect({
       subscribeAuth(callback) {
-        callback({ user: { id: "editor" }, isEditor: true });
+        callback({ user: { id: "editor" }, isEditor: true, canReadLyrics: true });
         return () => {};
       },
       subscribePlan(date, onValue) {
@@ -803,7 +827,7 @@ test("editor can reuse the matching song from the previous Sunday in one tap", a
   await page.evaluate(() => {
     window.massPlanApp.connect({
       subscribeAuth(callback) {
-        callback({ user: { id: "editor" }, isEditor: true });
+        callback({ user: { id: "editor" }, isEditor: true, canReadLyrics: true });
         return () => {};
       },
       subscribePlan(date, onValue) {
@@ -878,7 +902,7 @@ test("editor can create a private-lyric song with explicit suggestion positions"
   await page.evaluate(() => {
     window.massPlanApp.connect({
       subscribeAuth(callback) {
-        callback({ user: { id: "editor" }, isEditor: true });
+        callback({ user: { id: "editor" }, isEditor: true, canReadLyrics: true });
         return () => {};
       },
       subscribePlan(date, onValue) {
@@ -953,7 +977,7 @@ test("editor can create a private-lyric song with explicit suggestion positions"
   await context.close();
 });
 
-test("editor downloads a complete private-lyrics PowerPoint in Mass order", async () => {
+test("choir member downloads a complete private-lyrics PowerPoint in Mass order", async () => {
   const { context, page } = await plannerPage(
     browser,
     server,
@@ -978,7 +1002,7 @@ test("editor downloads a complete private-lyrics PowerPoint in Mass order", asyn
     window.__pptxPrivateFetches = [];
     window.massPlanApp.connect({
       subscribeAuth(callback) {
-        callback({ user: { id: "editor" }, isEditor: true });
+        callback({ user: { id: "choir" }, isEditor: false, canReadLyrics: true });
         return () => {};
       },
       subscribePlan(date, onValue) {
@@ -994,6 +1018,7 @@ test("editor downloads a complete private-lyrics PowerPoint in Mass order", asyn
 
   const button = page.locator("#downloadLyricsPptx");
   await assert.doesNotReject(() => button.waitFor({ state: "visible" }));
+  assert.equal(await page.locator(".music-edit-row").count(), 0);
   assert.equal(await page.getByText("ENTRANCE PRIVATE LINE ONE").count(), 0);
   const [download] = await Promise.all([
     page.waitForEvent("download"),
@@ -1051,7 +1076,7 @@ test("editor downloads a widescreen lyrics PDF matching the PowerPoint paginatio
     window.__slidesPrivateFetches = [];
     window.massPlanApp.connect({
       subscribeAuth(callback) {
-        callback({ user: { id: "editor" }, isEditor: true });
+        callback({ user: { id: "editor" }, isEditor: true, canReadLyrics: true });
         return () => {};
       },
       subscribePlan(date, onValue) {
@@ -1129,7 +1154,7 @@ test("editor downloads private lyrics as an imposed landscape A4 booklet PDF", a
     window.__bookletPrivateFetches = [];
     window.massPlanApp.connect({
       subscribeAuth(callback) {
-        callback({ user: { id: "editor" }, isEditor: true });
+        callback({ user: { id: "editor" }, isEditor: true, canReadLyrics: true });
         return () => {};
       },
       subscribePlan(date, onValue) {

@@ -54,8 +54,8 @@
       </button>
     </div>
     <span class="sync-status music-sync-status" id="syncStatus" role="status">Connecting…</span>
-    <div class="editor-help" id="editorHelp" hidden>
-      <span>Changes are live.</span>
+    <div class="editor-help" id="lyricsTools" hidden>
+      <span id="editorLiveHint" hidden>Changes are live.</span>
       <button type="button" id="downloadLyricsPptx">Download lyrics PowerPoint</button>
       <button type="button" id="downloadLyricsSlidesPdf">Download lyrics slides (PDF)</button>
       <button type="button" id="printLyricsBooklet">Download folded lyrics booklet (PDF)</button>
@@ -310,7 +310,7 @@
       </fieldset>
       <details class="song-lyrics-section">
         <summary id="songLyricsSummary">Add lyrics now (optional)</summary>
-        <p>Lyrics are restricted to signed-in editors and are never included in the public plan.</p>
+        <p>Choir members and editors can read lyrics; only editors can change them. Lyrics are never included in the public plan.</p>
         <label for="songLyrics">Lyrics</label>
         <textarea id="songLyrics" rows="12"></textarea>
       </details>
@@ -385,13 +385,16 @@
 
 <dialog class="login-dialog" id="loginDialog">
   <form class="login-form" id="loginForm">
-    <h2>Editor sign in</h2>
-    <p>Sign in to edit music choices. Your session stays signed in on this device.</p>
-    <label for="loginEmail">Email</label>
-    <input id="loginEmail" name="email" type="email" autocomplete="username" required>
+    <h2 id="loginTitle">Choir member sign in</h2>
+    <p id="loginDescription">Enter the shared choir password to view and download lyrics.</p>
+    <div id="loginEmailField" hidden>
+      <label for="loginEmail">Email</label>
+      <input id="loginEmail" name="email" type="email" autocomplete="username">
+    </div>
     <label for="loginPassword">Password</label>
     <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
     <p class="login-error" id="loginError" role="alert"></p>
+    <button class="login-mode" type="button" id="loginMode">Editor sign in</button>
     <div class="login-actions">
       <button type="button" id="loginCancel">Cancel</button>
       <button class="primary" type="submit" id="loginSubmit">Sign in</button>

@@ -46,6 +46,25 @@ test("public repertoire loading never requests private lyrics", () => {
   assert.match(editorQuery, /song_lyrics/);
 });
 
+test("choir members can open lazily loaded read-only lyrics", () => {
+  const app = read("src/app/repertoire.js");
+  const html = read("src/repertoire.html");
+
+  assert.match(app, /canReadLyrics\?`<button type="button" data-view-lyrics=/);
+  assert.match(app, /const song=await store\.getSong\(id\)/);
+  assert.match(app, /lyricsViewerText\.textContent=song\.lyrics/);
+  assert.match(html, /id="lyricsViewerDialog"/);
+  assert.match(html, /id="lyricsViewerText"/);
+  assert.doesNotMatch(html, /id="lyricsViewerText"[^>]*contenteditable/);
+});
+
+test("sign-in defaults to a choir password and offers secondary editor credentials", () => {
+  const html = read("src/repertoire.html");
+  assert.match(html, /id="loginTitle">Choir member sign in/);
+  assert.match(html, /id="loginEmailField" hidden/);
+  assert.match(html, /id="loginMode">Editor sign in/);
+});
+
 test("repertoire editors can create and update canonical songs without assigning a Mass", () => {
   const store = read("src/services/repertoire-store.js");
   const app = read("src/app/repertoire.js");

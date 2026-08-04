@@ -22,7 +22,7 @@ test("the planner has a dedicated A4 print document with reliable break rules", 
   assert.match(app, /printController\.print\("music-readings"\)/);
 });
 
-test("the editor can download an imposed folded lyrics booklet PDF", () => {
+test("authorized choir members can download an imposed folded lyrics booklet PDF", () => {
   const html = read("src/planner.html");
   const styles = read("src/styles/planner.css");
   const app = read("src/app/planner.js");
@@ -33,6 +33,7 @@ test("the editor can download an imposed folded lyrics booklet PDF", () => {
   assert.doesNotMatch(styles, /@page booklet|booklet-sheet|data-print-mode/);
   assert.match(app, /LyricsBookletController\.create/);
   assert.match(app, /LyricsBooklet,/);
+  assert.match(app, /canReadLyrics:\(\)=>canReadLyrics/);
 });
 
 test("DOCX generation and its build dependency are removed", () => {

@@ -4,8 +4,8 @@ A mobile-first tool for planning the sung parts of the 6pm Sunday Mass at St Jam
 Apostle. Pick any Sunday, review the liturgical day and full text of all four readings,
 choose the music, and print or save an A4 PDF planning sheet with or
 without the readings. Music choices are publicly viewable and authorized editors save
-changes live. Editors can also download the selected songs' lyrics as a 16:9
-PowerPoint deck for projection.
+changes live. Choir members and editors can also view lyrics and download the selected
+songs as a 16:9 PowerPoint, widescreen PDF, or folded booklet.
 
 Live site: <https://tow.github.io/sundaymass/>
 
@@ -75,11 +75,13 @@ HTTPS, the planner can be installed to a phone's home screen.
   year; entering `Public domain` as the owner allows the year to be blank.
 - Recording attribution does not itself grant permission to reproduce or project
   lyrics. That warning belongs in the help page.
-- Full lyrics are hard-private: public and signed-in non-editor clients must never be
-  able to retrieve them. `song_lyrics` is physically separate from public song metadata
+- Full lyrics are private: public and unrelated signed-in clients must never be able to
+  retrieve them. Authorized choir members and editors may read them. `song_lyrics` is
+  physically separate from public song metadata
   solely to enforce that database permission boundary; it is not a separate domain
   concept. Without this requirement, the extra table would not be justified.
-- The lyrics PowerPoint and folded-booklet actions are editor-only and online-only.
+- The lyrics PowerPoint, slides PDF, and folded-booklet actions are available to choir
+  members and editors, and remain online-only.
   They fetch each selected song through the existing private-song read and refuse to
   create incomplete output. The `.pptx` is generated entirely in the browser. The
   booklet imposes A5 pages on landscape A4 sheets; print double-sided, flip on the
@@ -147,7 +149,7 @@ appropriate source file:
 - `src/domain/songs.js` — song validation and phase-one title search
 - `src/domain/plan-music-data.js` — database-row to browser-plan conversion
 - `src/app/print-controller.js` — print-only A4 document rendering and browser print lifecycle
-- `src/app/lyrics-pptx-controller.js` — editor-only lyric preflight and PowerPoint download
+- `src/app/lyrics-pptx-controller.js` — authorized lyric preflight and PowerPoint download
 - `src/services/plan-store.js` — Supabase/local persistence adapter
 - `src/repertoire.html` — repertoire page structure
 - `src/styles/repertoire.css` — repertoire layout
@@ -190,7 +192,8 @@ Live data uses Supabase Auth, Postgres, Realtime, Row Level Security, and an edi
 Edge Function using Supabase's built-in embedding model. Plans reference canonical song
 entities; public clients receive song metadata but never lyrics or vector data.
 
-Authenticated users can write only when their user ID is in `public.editors`. The
+Authenticated users can write only when their user ID is in `public.editors`. A user in
+`public.choir_members` can read canonical and weekly lyrics but cannot mutate data. The
 database enforces this independently of the interface. Successful actions are
 immediately live—there is no draft or publish workflow.
 
@@ -225,20 +228,26 @@ To connect a Supabase project:
 5. Under Authentication → Users, create each editor with an initial password and mark
    the account confirmed.
 6. Add each editor's Auth user ID to `public.editors`.
-7. Sign in on the repertoire page and press “Update suggestion index” once after the
+7. Create one confirmed Auth user for the choir, add its ID to `public.choir_members`,
+   and set its fixed email as `choirEmail` in `supabase-config.js`. Distribute only its
+   password.
+8. Sign in on the repertoire page and press “Update suggestion index” once after the
    first deployment. The operation can safely be repeated or resumed after interruption.
 
 The publishable browser key in `supabase-config.js` is public by design. Security comes
 from RLS and editor membership, never from hiding that key. Never put a service-role key
 in a browser file.
 
-### Future authentication
+### Editor authentication
 
-Replace password entry with Supabase email magic-link login. Keep public signup disabled
+Editors may eventually replace password entry with Supabase email magic-link login. Keep public signup disabled
 and retain `public.editors` as the authorization check: possession of a valid login link
 authenticates the user, but editor membership still decides whether they may write.
 
-Magic links introduce an email-delivery dependency that phase 1 intentionally avoids.
+The shared choir identity remains password-based: magic links would reintroduce the
+per-member distribution and account-management burden this design avoids.
+
+Magic links for editors introduce an email-delivery dependency that phase 1 intentionally avoids.
 Before switching, configure the production Site URL and exact allowed redirect URLs,
 use a suitable production SMTP sender, and test the installed-PWA return flow as well as
 normal Safari/Chrome login. Email templates, expiry, resend/rate-limit behavior, and the

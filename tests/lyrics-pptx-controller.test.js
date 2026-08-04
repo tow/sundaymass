@@ -67,7 +67,7 @@ function setup({
     getSongs: () => songs,
     getDate: () => "2026-08-02",
     getValues: () => ({ day: "18th Sunday", meta: "Sunday · Year A" }),
-    isEditor: () => editor,
+    canReadLyrics: () => editor,
     isOnline: () => online,
     loadPptx: async () => FakePptx,
     logger: { error() {} },
@@ -76,7 +76,7 @@ function setup({
   return { button, controller, fetched, status, writes };
 }
 
-test("editor export fetches each private song once and preserves repeated assignments", async () => {
+test("authorized lyric export fetches each private song once and preserves repeated assignments", async () => {
   const { button, fetched, status, writes } = setup();
   await button.click();
 
@@ -100,10 +100,10 @@ test("missing lyrics block the deck and identify only the affected song", async 
   assert.equal(status.dataset.state, "error");
 });
 
-test("the export action is hidden and rejected without editor access", async () => {
+test("the export action is hidden and rejected without choir access", async () => {
   const { button, controller, status, writes } = setup({ editor: false });
   assert.equal(button.hidden, true);
   await controller.download();
   assert.equal(writes.length, 0);
-  assert.equal(status.textContent, "Editor access required.");
+  assert.equal(status.textContent, "Choir member access required.");
 });

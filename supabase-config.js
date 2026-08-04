@@ -2,6 +2,9 @@
 window.MASS_PLANNER_SUPABASE_CONFIG = {
   url: "https://igeeigohcupcxakmlxno.supabase.co",
   publishableKey: "sb_publishable_MxbC3dYMK1nM2TUxd7axOA_1RBzIQIo",
+  // Public implementation identifier for the shared choir Auth account. The
+  // password remains only in Supabase and is distributed out of band.
+  choirEmail: "choir-member@sundaymass.invalid",
 };
 
 // Optional error and structured-log monitoring. The public Sentry DSN is safe to expose here.

@@ -27,6 +27,17 @@ function emptyPlan() {
   return planData().emptyPlan();
 }
 
+function authState(user, { isChoirMember = false, isEditor = false } = {}) {
+  const accessLevel = isEditor ? "editor" : isChoirMember ? "choir" : "public";
+  return Object.freeze({
+    user: user || null,
+    isChoirMember: accessLevel === "choir",
+    isEditor: accessLevel === "editor",
+    canReadLyrics: accessLevel === "choir" || accessLevel === "editor",
+    accessLevel,
+  });
+}
+
 function localStore({
   storage = globalThis.localStorage,
   planData: planDataApi = planData(),
@@ -36,7 +47,7 @@ function localStore({
   logger = globalThis.AppLogger || console,
 } = {}) {
   const listeners = new Map();
-  let editor = false;
+  let accessLevel = "public";
   let notifyAuth = () => {};
   const planKey = date => "st-james-plan-v2-" + date;
   const songsKey = "st-james-song-catalog-v1";
@@ -103,7 +114,10 @@ function localStore({
     };
   };
   const requireEditor = () => {
-    if (!editor) throw new Error("Sign in before editing");
+    if (accessLevel !== "editor") throw new Error("Editor access required");
+  };
+  const requireLyricsAccess = () => {
+    if (accessLevel === "public") throw new Error("Choir member access required");
   };
   const readWeeklyLyrics = () => {
     try {
@@ -125,10 +139,13 @@ function localStore({
       return () => listeners.delete(date);
     },
     subscribeAuth(onValue) {
-      notifyAuth = () => onValue({
-        user: editor ? { displayName: "Local editor" } : null,
-        isEditor: editor,
-      });
+      notifyAuth = () => onValue(authState(
+        accessLevel === "public" ? null : { displayName: `Local ${accessLevel}` },
+        {
+          isChoirMember: accessLevel === "choir",
+          isEditor: accessLevel === "editor",
+        },
+      ));
       notifyAuth();
       return () => {};
     },
@@ -147,7 +164,7 @@ function localStore({
       requireEditor();
     },
     async getSong(songId) {
-      requireEditor();
+      requireLyricsAccess();
       const song = readSongs().find(value => value.id === songId);
       if (!song) throw new Error("Song not found");
       return song;
@@ -201,7 +218,7 @@ function localStore({
       emit(date);
     },
     async getWeeklyLyrics(date) {
-      requireEditor();
+      requireLyricsAccess();
       return Object.fromEntries(readWeeklyLyrics()
         .filter(item => item.sunday === date)
         .map(item => [item.part, item]));
@@ -271,12 +288,20 @@ function localStore({
       writePlanRecord(date, plan);
       emit(date);
     },
+    async signInChoir() {
+      accessLevel = "choir";
+      notifyAuth();
+    },
+    async signInEditor() {
+      accessLevel = "editor";
+      notifyAuth();
+    },
     async signIn() {
-      editor = true;
+      accessLevel = "editor";
       notifyAuth();
     },
     async signOut() {
-      editor = false;
+      accessLevel = "public";
       notifyAuth();
     },
   };
@@ -298,7 +323,7 @@ function unavailableStore({
       return () => {};
     },
     subscribeAuth(onValue) {
-      onValue({ user: null, isEditor: false });
+      onValue(authState(null));
       return () => {};
     },
     getPlan: unavailable,
@@ -319,6 +344,8 @@ function unavailableStore({
     clearReadingOverride: unavailable,
     saveCelebrationOverride: unavailable,
     clearCelebrationOverride: unavailable,
+    signInChoir: unavailable,
+    signInEditor: unavailable,
     signIn: unavailable,
     async signOut() {},
   };
@@ -334,6 +361,7 @@ function createSupabaseStore(
     defer = setTimeout,
     logger = globalThis.AppLogger || console,
     isOnline = () => globalThis.navigator?.onLine !== false,
+    choirEmail = "",
   } = {},
 ) {
   const requireOnline = () => {
@@ -462,21 +490,32 @@ function createSupabaseStore(
     subscribeAuth(onValue) {
       let active = true;
       let generation = 0;
-      const resolveEditor = async (session, requestGeneration) => {
+      const resolveAccess = async (session, requestGeneration) => {
         const user = session?.user || null;
         let isEditor = false;
+        let isChoirMember = false;
         if (user) {
-          const { data, error } = await supabase
-            .from("editors")
+          const membership = table => supabase
+            .from(table)
             .select("user_id")
             .eq("user_id", user.id)
             .maybeSingle();
-          if (error && active && requestGeneration === generation) {
-            logger.warn("Could not verify editor access", error);
+          const [editorResult, choirResult] = await Promise.all([
+            membership("editors"),
+            membership("choir_members"),
+          ]);
+          if (editorResult.error && active && requestGeneration === generation) {
+            logger.warn("Could not verify editor access", editorResult.error);
           }
-          isEditor = Boolean(data);
+          if (choirResult.error && active && requestGeneration === generation) {
+            logger.warn("Could not verify choir access", choirResult.error);
+          }
+          isEditor = Boolean(editorResult.data);
+          isChoirMember = !isEditor && Boolean(choirResult.data);
         }
-        if (active && requestGeneration === generation) onValue({ user, isEditor });
+        if (active && requestGeneration === generation) {
+          onValue(authState(user, { isChoirMember, isEditor }));
+        }
       };
 
       const initialGeneration = ++generation;
@@ -485,17 +524,17 @@ function createSupabaseStore(
           if (error && active && initialGeneration === generation) {
             logger.warn("Could not read authentication session", error);
           }
-          return resolveEditor(data?.session, initialGeneration);
+          return resolveAccess(data?.session, initialGeneration);
         })
         .catch(error => {
           if (active && initialGeneration === generation) {
             logger.warn("Could not read authentication session", error);
-            onValue({ user: null, isEditor: false });
+            onValue(authState(null));
           }
         });
       const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
         const requestGeneration = ++generation;
-        defer(() => resolveEditor(session, requestGeneration), 0);
+        defer(() => resolveAccess(session, requestGeneration), 0);
       });
       return () => {
         active = false;
@@ -727,10 +766,22 @@ function createSupabaseStore(
       });
       if (error) throw error;
     },
-    async signIn(email, password) {
+    async signInChoir(password) {
+      requireOnline();
+      if (!choirEmail) throw new Error("Choir sign-in is not configured");
+      const { error } = await supabase.auth.signInWithPassword({
+        email: choirEmail,
+        password,
+      });
+      if (error) throw error;
+    },
+    async signInEditor(email, password) {
       requireOnline();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+    },
+    async signIn(email, password) {
+      return this.signInEditor(email, password);
     },
     async signOut() {
       const { error } = await supabase.auth.signOut();
@@ -743,7 +794,7 @@ async function supabaseStore(config) {
   const createClient = globalThis.MassPlannerSupabaseClient?.create;
   if (!createClient) throw new Error("Shared Supabase client bootstrap is unavailable");
   const supabase = await createClient(config);
-  return createSupabaseStore(supabase);
+  return createSupabaseStore(supabase, { choirEmail: config.choirEmail || "" });
 }
 
 async function start() {
@@ -765,7 +816,13 @@ async function start() {
 }
 
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { emptyPlan, localStore, unavailableStore, createSupabaseStore };
+  module.exports = {
+    authState,
+    emptyPlan,
+    localStore,
+    unavailableStore,
+    createSupabaseStore,
+  };
 }
 
 if (typeof window !== "undefined" && window.massPlanApp) start();
