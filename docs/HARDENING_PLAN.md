@@ -479,7 +479,7 @@ Acceptance:
 - 2026-07-27: Phase 9 completed locally. A fresh clone passed `npm ci` and the full
   verification suite without committed deployment outputs. The redundant planner URL
   alias was removed, `index.html` is now the sole planner entry point, no binary
-  artifacts remain tracked, and the repository explicitly records Datamediate Oy's
+  artifacts remain tracked, and the repository explicitly records [Datamediate Oy](https://www.datamediate.com)'s
   proprietary source-code status.
 - 2026-07-27: Phase 7 browser coverage now exercises the editor's 390 px song-picker
   workflow end to end: opening at a scrolled position, bounded suggestions, explicit

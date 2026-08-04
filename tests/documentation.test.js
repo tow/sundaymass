@@ -22,7 +22,7 @@ const requiredDocs = [
 
 test("the repository states its proprietary source-code status", () => {
   const notice = fs.readFileSync(path.join(root, "LICENSE.md"), "utf8");
-  assert.match(notice, /Copyright © 2026 Datamediate Oy/);
+  assert.match(notice, /Copyright © 2026 \[Datamediate Oy\]\(https:\/\/www\.datamediate\.com\)/);
   assert.match(notice, /All rights reserved/);
   assert.match(notice, /does not grant/i);
 });
