@@ -103,7 +103,7 @@ session and feature workflows.
 
 Controllers own one interaction or lifecycle, such as the song picker, plan
 subscription, song mutation, celebration replacement, reading override, authentication,
-printing, modal behavior, or PWA installation. Views turn already-decided state into
+modal behavior, or PWA installation. Views turn already-decided state into
 escaped markup or update one bounded part of the DOM.
 
 `song-workflow.js` is the feature-level composition boundary for the picker and editor.
@@ -228,12 +228,6 @@ Individual overrides remain available for fine-tuning. Domain validation constra
 each slot to its sane book family and requires an explicit confirmation for another
 valid passage outside the offered Ordo options.
 
-### Printing
-
-Print actions construct a dedicated escaped A4 document rather than printing the
-mobile interface. Music-only and music-plus-readings modes share the same renderer.
-The output includes public song attribution but never private lyrics.
-
 ### Lyrics PowerPoint export
 
 The authorized export controller derives the selected songs in canonical Mass order,
@@ -273,7 +267,7 @@ The service worker caches the static application shell. Selected reading-text re
 are cached on demand rather than placing the complete full-text catalogue in the
 install payload. The plan store preserves the last public plan cached for a previously
 visited Sunday. That plan and the readings fetched during its online visit remain
-viewable and printable offline.
+viewable offline.
 
 Shared editing is online-only. Offline mutations are refused before a request and must
 not be presented as saved. Local-storage persistence is a development adapter, not a
@@ -306,8 +300,7 @@ These are hard constraints:
 4. Browser roles cannot read or write `song_embeddings` or `reading_embeddings`.
 5. The semantic Edge Function returns public song metadata only; service-role secrets,
    lyrics, and raw vectors never reach browser assets.
-6. Public plan projections, cached plans, rendered music rows, and print documents
-   contain no lyrics.
+6. Public plan projections, cached plans, and rendered music rows contain no lyrics.
 7. Lyrics PowerPoint export fetches private lyrics only after editor authorization and
    creates a local download without publishing or persisting the result.
 8. HTML and user-entered URLs are escaped or validated at presentation boundaries.

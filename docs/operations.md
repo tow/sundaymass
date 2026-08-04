@@ -336,7 +336,6 @@ In a public/private browser session:
 - follow all four reading-summary links;
 - open the repertoire without signing in;
 - confirm no editor controls or lyrics are visible;
-- print music only and music plus readings; and
 - reload once offline after a successful online visit.
 
 With an editor account:
@@ -581,7 +580,7 @@ An unvisited Sunday cannot have a shared plan offline. The expected message is
 1. Protect private lyrics and credentials.
 2. Stop unauthorized or destructive writes.
 3. Preserve/backup canonical songs, plans, and editor membership.
-4. Restore public viewing and printing.
+4. Restore public viewing.
 5. Rebuild derived vectors and offline caches last.
 
 Record the affected commit, migration versions, project, time window, observed behavior,

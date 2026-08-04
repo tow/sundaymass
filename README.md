@@ -2,8 +2,7 @@
 
 A mobile-first tool for planning the sung parts of the 6pm Sunday Mass at St James the
 Apostle. Pick any Sunday, review the liturgical day and full text of all four readings,
-choose the music, and print or save an A4 PDF planning sheet with or
-without the readings. Music choices are publicly viewable and authorized editors save
+and choose the music. Music choices are publicly viewable and authorized editors save
 changes live. Choir members and editors can also view lyrics and download the selected
 songs as a 16:9 PowerPoint, widescreen PDF, or folded booklet.
 
@@ -29,10 +28,9 @@ HTTPS, the planner can be installed to a phone's home screen.
 
 ## Product decisions to preserve
 
-- The primary job is to choose a Sunday and quickly print its music plan. Editing
-  readings is deliberately secondary.
-- Full reading texts are always visible on the page. The two print actions generate
-  either music only or music plus readings; there is no separate print-settings panel.
+- The primary job is to choose a Sunday and review its music plan. Editing readings is
+  deliberately secondary.
+- Full reading texts are always visible on the page.
 - Reading citations near the top link to their corresponding full text.
 - Public visitors see the live music plan. Authorized editors change it directly:
   there is no draft/publish workflow and every successful save is immediately live.
@@ -148,7 +146,6 @@ appropriate source file:
 - `src/domain/lyrics-presentation.js` — deterministic lyric splitting and projection-deck layout
 - `src/domain/songs.js` — song validation and phase-one title search
 - `src/domain/plan-music-data.js` — database-row to browser-plan conversion
-- `src/app/print-controller.js` — print-only A4 document rendering and browser print lifecycle
 - `src/app/lyrics-pptx-controller.js` — authorized lyric preflight and PowerPoint download
 - `src/services/plan-store.js` — Supabase/local persistence adapter
 - `src/repertoire.html` — repertoire page structure
@@ -168,9 +165,8 @@ overwrites them, tests rebuild them first, and the Pages workflow creates a fres
 deployment artifact.
 
 `about.html`, `august-music.html`, and the manifest are maintained directly.
-`service-worker.js` is generated
-from the source template and asset manifest; do not hand-edit it. The print/PDF layout
-is the final `@media print` block in `src/styles/planner.css`.
+`service-worker.js` is generated from the source template and asset manifest; do not
+hand-edit it.
 
 ### Repository layout
 
@@ -259,7 +255,7 @@ defaults.
 GitHub Pages publishes an explicit artifact from the verified `main` workflow.
 External scripts use build-generated content versions, and the service worker caches
 the application shell. Only the selected Sunday's small reading files are requested;
-those files and previously visited public plans remain viewable and printable offline.
+those files and previously visited public plans remain viewable offline.
 Shared editing is always online-only.
 
 The first deployment, normal release order, editor lifecycle, backup/export, restore,
@@ -292,12 +288,10 @@ viewport (390 × 844 is the established baseline) and at a desktop width:
 - The planner and About top bars are both 48 px high. Their CSS is duplicated between
   `src/styles/planner.css` and `about.html`; keep the padding and inner minimum heights
   aligned.
-- The first screen keeps Sunday selection, both print actions, and the reading summary
-  compact and usable.
+- The first screen keeps Sunday selection and the reading summary compact and usable.
 - The visible date stays vertically centered. The native date input is an invisible
   full-size overlay inside `.date-slot`; its separate `.date-display` avoids Safari's
   inconsistent native date formatting.
-- Both print buttons remain equal-width columns on mobile.
 - Song forms save only when submitted; typing does not move focus or dismiss the
   keyboard.
 - The song picker opens as a tall single-scroller sheet over the plan on mobile. Its

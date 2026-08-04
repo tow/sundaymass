@@ -148,17 +148,6 @@ function pdfPageGeometry(pdf) {
   };
 }
 
-function assertA4Pages(pdf, minimumPages) {
-  const geometry = pdfPageGeometry(pdf);
-  assert.ok(geometry.pageCount >= minimumPages);
-  assert.ok(geometry.boxes.length >= minimumPages);
-  geometry.boxes.forEach(({ width, height }) => {
-    assert.ok(Math.abs(width - 595.28) < 2, `unexpected PDF width ${width}`);
-    assert.ok(Math.abs(height - 841.89) < 2, `unexpected PDF height ${height}`);
-  });
-  return geometry.pageCount;
-}
-
 function assertA4LandscapePages(pdf, expectedPages) {
   const geometry = pdfPageGeometry(pdf);
   assert.equal(geometry.pageCount, expectedPages);
@@ -546,7 +535,7 @@ test("mobile reading links reveal unobscured text without orphaning verse number
   await context.close();
 });
 
-test("public reading, navigation, and print workflow excludes private lyrics", async () => {
+test("public reading and navigation workflow excludes private lyrics", async () => {
   const { context, page } = await plannerPage(
     browser,
     server,
@@ -582,7 +571,6 @@ test("public reading, navigation, and print workflow excludes private lyrics", a
         return () => {};
       },
     });
-    window.print = () => {};
   });
 
   const anchors = page.locator('#readingSummary a[href^="#reading-"]');
@@ -612,13 +600,6 @@ test("public reading, navigation, and print workflow excludes private lyrics", a
     await page.getByText("PRIVATE LYRICS MUST NEVER RENDER").count(),
     0,
   );
-  await page.locator("#printMusicReadings").click();
-  const printText = await page.locator("#printSheet").innerText();
-  assert.match(printText, /Public Test Hymn/);
-  assert.match(printText, /First Reading/);
-  assert.doesNotMatch(printText, /PRIVATE LYRICS MUST NEVER RENDER/);
-  await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
-
   assert.deepEqual(consoleProblems, []);
   await context.close();
 });
@@ -1212,109 +1193,7 @@ test("editor downloads private lyrics as an imposed landscape A4 booklet PDF", a
   await context.close();
 });
 
-test("Chrome produces dedicated A4 music and readings PDFs without private lyrics", async () => {
-  const { context, page } = await plannerPage(
-    browser,
-    server,
-    { width: 390, height: 844 },
-  );
-  await page.evaluate(() => {
-    const keys = [
-      "entrance", "kyrie", "gloria", "psalm", "acclamation", "offertory",
-      "sanctus", "memorial", "amen", "lordPrayer", "agnus", "communion",
-      "communion2", "recessional",
-    ];
-    const songs = Object.fromEntries(keys.map((key, index) => [key, {
-      id: `print-song-${index}`,
-      title: key === "entrance" ? "<Unsafe & hymn>" : `Print song ${index + 1}`,
-      authors: key === "recessional" ? "" : `Author ${index + 1}`,
-      copyrightYear: key === "recessional" ? "" : "2026",
-      copyrightOwner: key === "recessional" ? "" : "Test Publisher",
-      source: "",
-      lyrics: `PRIVATE PRINT LYRIC ${index + 1}`,
-    }]));
-    const celebrationOverride = {
-      name: "Saint James the Apostle — print override",
-      rank: "Solemnity",
-      sourceDate: "2026-07-25",
-      readings: {
-        first: "Acts 11:19-21; 12:1-2, 24",
-        psalm: "Psalm 67:2-3, 5, 7-8",
-        second: "2 Corinthians 4:7-15",
-        gospel: "Matthew 20:20-28",
-      },
-    };
-    window.massPlanApp.connect({
-      subscribeAuth(callback) {
-        callback({ user: null, isEditor: false });
-        return () => {};
-      },
-      subscribePlan(date, onValue) {
-        onValue({
-          songs,
-          celebrationOverride,
-          readingOverrides: {
-            gospel: {
-              citation: "John 6:1-15",
-              confirmedAgainstOrdo: true,
-            },
-          },
-        });
-        return () => {};
-      },
-    });
-    window.print = () => {};
-  });
-
-  await page.locator("#printMusic").click();
-  await page.emulateMedia({ media: "print" });
-  const printState = await page.evaluate(() => ({
-    appDisplay: getComputedStyle(document.querySelector(".wrap")).display,
-    sheetDisplay: getComputedStyle(document.querySelector("#printSheet")).display,
-    html: document.querySelector("#printSheet").innerHTML,
-    text: document.querySelector("#printSheet").innerText,
-  }));
-  assert.equal(printState.appDisplay, "none");
-  assert.equal(printState.sheetDisplay, "block");
-  assert.match(printState.html, /&lt;Unsafe &amp; hymn&gt;/);
-  assert.doesNotMatch(printState.html, /<unsafe/i);
-  assert.match(printState.text, /Communion 1[\s\S]*Print song 12/i);
-  assert.match(printState.text, /Communion 2[\s\S]*Print song 13/i);
-  assert.match(printState.text, /Copyright information incomplete/);
-  assert.doesNotMatch(printState.text, /PRIVATE PRINT LYRIC/);
-
-  const musicPdf = await page.pdf({
-    preferCSSPageSize: true,
-    printBackground: true,
-  });
-  const musicPages = assertA4Pages(musicPdf, 1);
-
-  await page.emulateMedia({ media: "screen" });
-  await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
-  await page.locator("#printMusicReadings").click();
-  await page.emulateMedia({ media: "print" });
-  const readingText = await page.locator("#printSheet").innerText();
-  assert.match(readingText, /Saint James the Apostle — print override/);
-  assert.match(readingText, /Solemnity · normally Saturday, 25 July 2026/);
-  assert.match(readingText, /Second Reading[\s\S]*2 Corinthians 4:7-15/);
-  assert.match(readingText, /Gospel[\s\S]*John 6:1-15/);
-  assert.match(readingText, /After these things, Jesus went away/);
-  assert.match(readingText, /Mass readings/);
-  assert.match(readingText, /First Reading/);
-  assert.match(readingText, /Gospel/);
-  assert.doesNotMatch(readingText, /PRIVATE PRINT LYRIC/);
-
-  const readingsPdf = await page.pdf({
-    preferCSSPageSize: true,
-    printBackground: true,
-  });
-  const readingPages = assertA4Pages(readingsPdf, 2);
-  assert.ok(readingPages > musicPages);
-
-  await context.close();
-});
-
-test("a service-worker-controlled offline reload shows and prints the saved public plan", async () => {
+test("a service-worker-controlled offline reload shows the saved public plan", async () => {
   const { context, page } = await plannerPage(
     browser,
     server,
@@ -1369,15 +1248,6 @@ test("a service-worker-controlled offline reload shows and prints the saved publ
     ),
   );
   assert.match(await page.locator("#musicList").innerText(), /Offline Processional/);
-
-  await page.evaluate(() => {
-    window.print = () => {};
-  });
-  await page.locator("#printMusicReadings").click();
-  const printText = await page.locator("#printSheet").innerText();
-  assert.match(printText, /Offline Processional/);
-  assert.match(printText, /Mass readings/);
-  await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
 
   await page.locator("#next").click();
   await page.waitForFunction(() =>

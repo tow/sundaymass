@@ -10,6 +10,7 @@ complex:
 - [ADR 005: Support offline public use but require online editing](005-offline-public-online-editing.md)
 - [ADR 006: Keep weekly lyrics as explicit full-text copies](006-weekly-lyrics-copies.md)
 - [ADR 007: Use one shared choir identity for read-only lyric access](007-shared-choir-lyric-access.md)
+- [ADR 008: Remove planner-sheet print exports](008-remove-planner-print-exports.md)
 
 An accepted decision may be superseded by a later ADR, but should not be silently
 rewritten after the implementation or its tradeoffs change.

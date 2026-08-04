@@ -10,7 +10,6 @@
 @@PLAN_SESSION_CONTROLLER_JS@@
 @@PLANNER_STATE_JS@@
 @@SONG_FORM_JS@@
-@@PRINT_CONTROLLER_JS@@
 @@LYRICS_PRESENTATION_JS@@
 @@LYRICS_BOOKLET_JS@@
 @@LYRICS_EXPORT_CONTROLLER_JS@@
@@ -179,7 +178,6 @@ async function loadDisplayedReadings(){
   const sunday=current().d;
   const citations=selectedReadingCitations();
   const missing=citations.filter(citation=>!readingTextStore.has(citation));
-  printMusicReadings.disabled=missing.length>0;
   if(!missing.length)return;
   missing.forEach(citation=>failedReadingTexts.delete(citation));
   const results=await Promise.allSettled(missing.map(citation=>readingTextStore.load(citation)));
@@ -194,14 +192,11 @@ async function loadDisplayedReadings(){
       failures[0].result.reason,
     );
   }
-  printMusicReadings.disabled=selectedReadingCitations()
-    .some(citation=>!readingTextStore.has(citation));
   renderReadingPlan();
 }
 async function prepareReadingLibrary(){
   await readingTextStore.loadAll();
 }
-function choiceFor(key){ return musicPlanView.choiceFor(plannerState.songs(),key); }
 function renderMusicPlan(){
   const view=musicPlanView.render({
     parts:MUSIC_PARTS,
@@ -526,29 +521,6 @@ function goToDate(iso,{updateUrl=true,replaceUrl=false}={}){
   selectSunday(selection.sunday,{updateUrl,replaceUrl});
 }
 
-const printController=PrintController.create({
-  window,
-  root:printSheet,
-  render:mode=>{
-    const value=vals();
-    return PrintController.renderSheet({
-      mode,
-      celebration:value.day,
-      meta:value.meta,
-      musicParts:MUSIC_PARTS,
-      readings:[
-        {key:"first",label:"First Reading",citation:value.first,text:textFor(value.first)},
-        {key:"psalm",label:"Responsorial Psalm",citation:value.psalm,text:textFor(value.psalm)},
-        {key:"second",label:"Second Reading",citation:value.second,text:textFor(value.second)},
-        {key:"gospel",label:"Gospel",citation:value.gospel,text:textFor(value.gospel)},
-      ],
-      choiceFor,
-      attributionLine,
-      copyrightComplete,
-    });
-  },
-});
-printController.start();
 const lyricsPptxController=LyricsPptxController.create({
   button:downloadLyricsPptx,
   status:lyricsPptxStatus,
@@ -617,9 +589,6 @@ window.addEventListener("popstate",()=>{
   const urlDate=DateUrlState.read(location);
   goToDate(urlDate || upcomingSunday().d,{updateUrl:false});
 });
-printMusic.addEventListener("click", ()=>printController.print("music"));
-printMusicReadings.addEventListener("click", ()=>printController.print("music-readings"));
-
 refresh();
 renderMusicPlan();
 if(initialUrlDate && initialUrlDate!==current().d){

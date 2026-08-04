@@ -20,6 +20,10 @@ incremental, behavior-preserving, and covered by executable tests before code mo
 
 ## Status
 
+The phases below record the hardening work as completed at the time. ADR 008 later
+removed the planner-sheet print feature and its dedicated tests; lyric PDF exports are
+unchanged.
+
 | Phase | State | Outcome |
 |---|---|---|
 | 1. Correctness defects | Complete and deployed | Hash-based embedding staleness and truly empty suggestion positions |

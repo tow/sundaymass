@@ -6,20 +6,15 @@ const path = require("path");
 const ROOT = path.resolve(__dirname, "..");
 const read = relativePath => fs.readFileSync(path.join(ROOT, relativePath), "utf8");
 
-test("the planner has a dedicated A4 print document with reliable break rules", () => {
+test("the planner no longer offers music-plan print actions", () => {
   const html = read("src/planner.html");
   const styles = read("src/styles/planner.css");
   const app = read("src/app/planner.js");
 
-  assert.match(html, /id="printSheet"/);
-  assert.match(styles, /@media print/);
-  assert.match(styles, /@page\{ size:A4;/);
-  assert.match(styles, /body > :not\(#printSheet\)\{ display:none!important;/);
-  assert.match(styles, /\.print-music-row\{[^}]*break-inside:avoid/);
-  assert.match(styles, /\.print-reading-pages\{[^}]*break-before:page/);
-  assert.match(app, /PrintController\.create/);
-  assert.match(app, /printController\.print\("music"\)/);
-  assert.match(app, /printController\.print\("music-readings"\)/);
+  assert.doesNotMatch(html, /id="printMusic(?:Readings)?"/);
+  assert.doesNotMatch(html, /id="printSheet"/);
+  assert.doesNotMatch(styles, /@media print/);
+  assert.doesNotMatch(app, /PrintController|@@PRINT_CONTROLLER_JS@@/);
 });
 
 test("authorized choir members can download an imposed folded lyrics booklet PDF", () => {

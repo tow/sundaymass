@@ -29,7 +29,7 @@ integration test, or incompatible backend contract cannot deploy the frontend.
 - `npm run test:e2e` serves the repository on an ephemeral localhost port and controls
   installed Chrome through pinned `playwright-core`. It does not download or bundle a
   second browser. The suite currently checks 320 px, 390 px, and desktop overflow plus
-  the public reading-anchor, Sunday-navigation, print, and lyric-privacy workflow. At
+  the public reading-anchor, Sunday-navigation, and lyric-privacy workflow. At
   320 px it also measures the linked reading target, confirms every visible verse
   marker remains on the same rendered line as the following word, and checks visible
   `[...]` elisions. Its editor flow covers the mobile song picker's page-scroll lock and
@@ -37,14 +37,11 @@ integration test, or incompatible backend contract cannot deploy the frontend.
   disambiguation, private lyric exclusion, and keyboard activation of the selected
   song. A second editor workflow creates a song from Communion 2, changes its soft
   suggestion positions, enters private lyrics, submits by keyboard, verifies the exact
-  mutation, and confirms those lyrics never enter the plan DOM. Chrome also renders
-  both print modes to real PDF buffers; the suite verifies A4 media boxes, separate
-  reading pages, every music slot including both Communion songs, HTML escaping,
-  attribution warnings, celebration and individual-reading overrides, and lyric
-  exclusion. The editor export workflow downloads and opens the `.pptx` package,
+  mutation, and confirms those lyrics never enter the plan DOM. The editor export
+  workflow downloads and opens the `.pptx` package,
   checks private lyric fetch deduplication, and verifies slide order while confirming
   those lyrics never enter the DOM. A service-worker-controlled workflow then goes
-  offline, reloads and prints a cached Sunday, and distinguishes an uncached Sunday
+  offline, reloads a cached Sunday, and distinguishes an uncached Sunday
   without contacting production.
 - `npm run test:integration` tests the authorization, RLS, RPC, privacy, and
   semantic-suggestion contract of an already-running, migrated local Supabase project.

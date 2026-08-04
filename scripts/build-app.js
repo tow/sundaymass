@@ -40,7 +40,6 @@ const appValues = {
   "@@PLAN_SESSION_CONTROLLER_JS@@": read("src/app/plan-session-controller.js"),
   "@@PLANNER_STATE_JS@@": read("src/app/planner-state.js"),
   "@@SONG_FORM_JS@@": read("src/app/song-form.js"),
-  "@@PRINT_CONTROLLER_JS@@": read("src/app/print-controller.js"),
   "@@LYRICS_PRESENTATION_JS@@": read("src/domain/lyrics-presentation.js"),
   "@@LYRICS_BOOKLET_JS@@": read("src/domain/lyrics-booklet.js"),
   "@@LYRICS_EXPORT_CONTROLLER_JS@@": read("src/app/lyrics-export-controller.js"),

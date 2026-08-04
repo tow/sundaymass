@@ -1,4 +1,4 @@
-// Canonical ordered Mass music parts shared by the UI, suggestions and print view.
+// Canonical ordered Mass music parts shared by the UI and suggestions.
 (function (global) {
   "use strict";
 

@@ -1,4 +1,5 @@
 const { execFileSync, spawnSync } = require("node:child_process");
+const fs = require("node:fs");
 const path = require("node:path");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -6,7 +7,7 @@ const files = execFileSync(
   "git",
   ["ls-files", "-z", "*.js", "*.mjs"],
   { cwd: ROOT, encoding: "utf8" },
-).split("\0").filter(Boolean);
+).split("\0").filter(Boolean).filter(file => fs.existsSync(path.join(ROOT, file)));
 const buildTemplates = new Set([
   "src/app/planner.js",
   "src/app/repertoire.js",
