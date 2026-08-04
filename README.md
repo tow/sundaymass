@@ -17,6 +17,7 @@ Developer documentation:
 - [Operations and deployment](docs/operations.md)
 - [Testing guide](docs/testing.md)
 - [Current hardening plan](docs/HARDENING_PLAN.md)
+- [Multi-parish and internationalization plan](docs/MULTITENANT_PLAN.md)
 - [Proprietary software notice](LICENSE.md)
 
 This is an independent planning aid, not an official parish or Diocese of Helsinki
