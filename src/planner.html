@@ -51,7 +51,6 @@
     <span class="sync-status music-sync-status" id="syncStatus" role="status">Connecting…</span>
     <div class="editor-help" id="lyricsTools" hidden>
       <span id="editorLiveHint" hidden>Changes are live.</span>
-      <button type="button" id="songRequestsLaunch" hidden>Song requests (0)</button>
       <button type="button" id="downloadLyricsPptx">Download lyrics PowerPoint</button>
       <button type="button" id="downloadLyricsSlidesPdf">Download lyrics slides (PDF)</button>
       <button type="button" id="printLyricsBooklet">Download folded lyrics booklet (PDF)</button>
@@ -59,6 +58,7 @@
       <span class="lyrics-pptx-status" id="lyricsPptxStatus" role="status" aria-live="polite"></span>
     </div>
     <div class="music-list" id="musicList"></div>
+    <div class="song-requests-entry"><button type="button" id="songRequestsLaunch" hidden>Song requests (0)</button></div>
   </section>
 
   <section class="card readings-card" id="fullReadings" aria-labelledby="readingsTitle">
@@ -392,7 +392,7 @@
       <div>
         <div class="eyebrow">From the choir</div>
         <h2>Song requests</h2>
-        <p>Suggestions from signed-in choir members. Accepting a library song with a target slot also assigns it.</p>
+        <p>Pending suggestions from choir members, awaiting review.</p>
       </div>
       <button class="reading-dialog-close" id="songRequestsClose" type="button" aria-label="Close">×</button>
     </div>

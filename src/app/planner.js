@@ -357,7 +357,6 @@ const planSessionController=PlanSessionController.create({
       readingWorkflow.closeAll();
       songWorkflow.closeAll();
       weeklyLyricsController.close();
-      songRequestReviewController.close();
       weeklyLyricsParts=new Set();
     }
     if(!canSuggest) songRequestController.close();
@@ -512,6 +511,7 @@ const songRequestController=SongRequestController.create({
   formatDate:fmtLong,
   openModal,
   onStatus:setSyncStatus,
+  onCreated:()=>songRequestReviewController.refresh(),
   logger:appLogger,
 });
 songRequestController.start();

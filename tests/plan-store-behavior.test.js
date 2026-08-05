@@ -760,7 +760,7 @@ test("local song requests need membership to create and an editor to resolve", a
     store.createSongRequest({ title: "New Hymn" }),
     /Choir member access required/,
   );
-  await assert.rejects(store.listSongRequests(), /Choir member access required/);
+  assert.deepEqual(await store.listSongRequests(), []);
 
   await store.signInChoir();
   await assert.rejects(
@@ -782,6 +782,9 @@ test("local song requests need membership to create and an editor to resolve", a
     store.resolveSongRequest(pending[0].id, "accepted"),
     /Editor access required/,
   );
+
+  await store.signOut();
+  assert.equal((await store.listSongRequests()).length, 1);
 
   await store.signInEditor();
   await assert.rejects(

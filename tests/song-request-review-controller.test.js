@@ -110,10 +110,33 @@ function actionsOf(item) {
   return item.children.find(child => child.className === "song-request-actions");
 }
 
-test("the launch button is hidden without editor access", async () => {
+test("everyone sees the pending queue read-only; only empty hides it from non-editors", async () => {
   const { controller, elements } = fixture({ isEditor: () => false });
   await controller.refresh();
-  assert.equal(elements.launch.hidden, true);
+  assert.equal(elements.launch.hidden, false);
+  assert.equal(elements.launch.textContent, "Song requests (2)");
+  await controller.open();
+  assert.equal(elements.list.children.length, 2);
+  assert.equal(elements.list.children[0].children[0].textContent, "Gather Us In");
+  elements.list.children.forEach(item => {
+    assert.equal(actionsOf(item), undefined);
+  });
+});
+
+test("an empty public queue hides the launch button, but editors keep it", async () => {
+  const publicView = fixture({
+    isEditor: () => false,
+    getStore: () => ({ async listSongRequests() { return []; } }),
+  });
+  await publicView.controller.refresh();
+  assert.equal(publicView.elements.launch.hidden, true);
+
+  const editorView = fixture({
+    getStore: () => ({ async listSongRequests() { return []; } }),
+  });
+  await editorView.controller.refresh();
+  assert.equal(editorView.elements.launch.hidden, false);
+  assert.equal(editorView.elements.launch.textContent, "Song requests (0)");
 });
 
 test("refresh counts pending requests on the launch button", async () => {

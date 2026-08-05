@@ -118,9 +118,11 @@ changes canonical songs, plans, or assignments by itself; accepting a library
 song with a target slot goes through the normal `assign_plan_song` path, and a
 free-text request only records the decision.
 
-Requests are choir-internal. Anonymous and unrelated authenticated users can
-neither read nor create them, and the Auth user UUID audit columns remain
-readable only by the service role.
+The request queue is public information: anyone, including anonymous visitors,
+can read it, and the planner lists pending requests for everyone. It carries
+song titles, target slots, notes, and YouTube video IDs — never lyrics. Only
+choir members and editors can create requests, only editors resolve them, and
+the Auth user UUID audit columns remain readable only by the service role.
 
 ### `songs`
 
@@ -243,7 +245,8 @@ staleness.
 | Read audit user UUIDs directly | No | No | No | No | Yes |
 | Read own role membership | No | If present | Yes | Yes | Yes |
 | Change plans, assignments, songs, lyrics | No | No | No | Yes | Yes |
-| Read or create song requests | No | No | Yes | Yes | Yes |
+| Read song requests | Yes | Yes | Yes | Yes | Yes |
+| Create song requests | No | No | Yes | Yes | Yes |
 | Resolve song requests | No | No | No | Yes | Yes |
 | Read or write raw vector tables | No | No | No | No | Yes |
 | Request bounded song or Psalm suggestions | Yes | Yes | Yes | Yes | Yes |

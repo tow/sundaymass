@@ -139,6 +139,8 @@
   .music-sync-status{ display:block; padding:7px 22px; border-bottom:1px solid #eee6d5; background:#fcfaf6; }
   .music-sync-status[data-state="saved"]{ display:none; }
   .music-list{ margin:0; }
+  .song-requests-entry{ padding:12px 22px 0; }
+  .song-requests-entry button{ min-height:32px; padding:4px 10px; font-size:10.5px; }
   .music-view-row{ display:grid; grid-template-columns:minmax(150px,38%) minmax(0,1fr); gap:14px; padding:12px 22px; border-bottom:1px solid #eee6d5; }
   .music-view-row:last-child{ border-bottom:none; }
   .music-part-label{ color:var(--muted); font-size:11.5px; font-weight:700; line-height:1.35; text-transform:uppercase; letter-spacing:.25px; }
@@ -374,6 +376,7 @@
     .practice-availability{ font-size:9.5px; }
     #musicIntro{ display:none; }
     .music-view-row{ grid-template-columns:112px minmax(0,1fr); gap:10px; padding:10px 16px; }
+    .song-requests-entry{ padding:10px 16px 0; }
     .music-part-label{ font-size:10px; }
     .music-choice{ font-size:13.5px; }
     .music-edit-row{ grid-template-columns:104px minmax(0,1fr); gap:7px 10px; padding:11px 16px; }

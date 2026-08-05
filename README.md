@@ -196,10 +196,11 @@ immediately live—there is no draft or publish workflow.
 
 Choir members can additionally suggest songs for a Mass slot with the “Suggest a song”
 button on any plan row: an existing library song or a free-text title with an optional
-YouTube link and note. Suggestions queue as pending requests that only choir members
-and editors can see; editors review them from the planner (“Song requests”) and accept
-or decline. Accepting a library song with a target slot assigns it; nothing else about
-a request touches canonical data.
+YouTube link and note. Suggestions queue as pending requests. The pending queue is
+public — anyone can open “Song requests” under the music list and read it (titles,
+slots, notes, and video links, never lyrics) — but only choir members and editors can
+add to it, and only editors accept or decline. Accepting a library song with a target
+slot assigns it; nothing else about a request touches canonical data.
 
 The schema, JSON snapshot shapes, access matrix, RPC contracts, public projection, and
 Realtime behavior are documented in

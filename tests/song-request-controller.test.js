@@ -62,6 +62,7 @@ function fixture(overrides = {}) {
   const opened = [];
   const statuses = [];
   const created = [];
+  const createdEvents = [];
   const store = {
     async searchPublicSongs() {
       return [{ id: "song-9", title: "Gather Us In", authors: "Marty Haugen" }];
@@ -85,11 +86,12 @@ function fixture(overrides = {}) {
       opened.push(dialog);
     },
     onStatus: (text, state) => statuses.push([text, state]),
+    onCreated: () => createdEvents.push(true),
     logger: { warn() {}, error() {} },
     ...overrides,
   });
   controller.start();
-  return { controller, elements, opened, statuses, created, store };
+  return { controller, elements, opened, statuses, created, createdEvents, store };
 }
 
 function openFromRow(elements, part = "offertory") {
@@ -121,7 +123,7 @@ test("an empty submission reports validation instead of sending", async () => {
 });
 
 test("selecting a search result sends an existing-song request", async () => {
-  const { elements, created, statuses } = fixture();
+  const { elements, created, statuses, createdEvents } = fixture();
   openFromRow(elements);
   elements.search.value = "gather";
   await elements.search.dispatch("input");
@@ -145,6 +147,7 @@ test("selecting a search result sends an existing-song request", async () => {
   }]);
   assert.equal(elements.dialog.open, false);
   assert.deepEqual(statuses, [["Suggestion sent", "saved"]]);
+  assert.equal(createdEvents.length, 1);
 });
 
 test("a free-text request validates its link before sending the video ID", async () => {

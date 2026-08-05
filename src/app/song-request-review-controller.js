@@ -1,4 +1,4 @@
-// Editors review pending choir song requests and accept or decline them.
+// Shows the public pending song-request queue; editors accept or decline.
 (function (global) {
   "use strict";
 
@@ -65,37 +65,35 @@
           item.append(note);
         }
 
-        const actions = document.createElement("div");
-        actions.className = "song-request-actions";
-        const accept = document.createElement("button");
-        accept.type = "button";
-        accept.className = "primary";
-        accept.textContent = canAssign(request) ? "Accept and assign" : "Mark accepted";
-        accept.addEventListener("click", () => resolve(request, "accepted"));
-        const decline = document.createElement("button");
-        decline.type = "button";
-        decline.textContent = "Decline";
-        decline.addEventListener("click", () => resolve(request, "declined"));
-        actions.append(accept, decline);
-        item.append(actions);
+        if (isEditor()) {
+          const actions = document.createElement("div");
+          actions.className = "song-request-actions";
+          const accept = document.createElement("button");
+          accept.type = "button";
+          accept.className = "primary";
+          accept.textContent = canAssign(request) ? "Accept and assign" : "Mark accepted";
+          accept.addEventListener("click", () => resolve(request, "accepted"));
+          const decline = document.createElement("button");
+          decline.type = "button";
+          decline.textContent = "Decline";
+          decline.addEventListener("click", () => resolve(request, "declined"));
+          actions.append(accept, decline);
+          item.append(actions);
+        }
         return item;
       }));
     }
 
     async function refresh() {
-      if (!isEditor()) {
-        elements.launch.hidden = true;
-        pending = [];
-        return;
-      }
-      elements.launch.hidden = false;
+      const store = getStore();
       try {
-        pending = await getStore().listSongRequests();
+        pending = store?.listSongRequests ? await store.listSongRequests() : [];
       } catch (error) {
         pending = [];
         logger.warn("Could not load song requests", error);
       }
       elements.launch.textContent = `Song requests (${pending.length})`;
+      elements.launch.hidden = !isEditor() && pending.length === 0;
       if (elements.dialog.open) renderList();
     }
 

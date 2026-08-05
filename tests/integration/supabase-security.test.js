@@ -179,9 +179,9 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       assert.match(JSON.stringify(mutation.data), /Editor access required/i);
     });
 
-    await t.test("song requests are choir-created, choir-readable, and editor-resolved", async () => {
+    await t.test("song requests are choir-created, publicly readable, and editor-resolved", async () => {
       const anonymousRead = await anonymous("/rest/v1/song_requests?select=id");
-      assert.ok([401, 403].includes(anonymousRead.response.status));
+      assert.equal(anonymousRead.response.status, 200);
       const anonymousCreate = await anonymous("/rest/v1/rpc/create_song_request", {
         method: "POST",
         body: { p_title: "Anonymous request" },
@@ -194,9 +194,6 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       });
       assert.ok(!outsiderCreate.response.ok);
       assert.match(JSON.stringify(outsiderCreate.data), /Choir member access required/i);
-      const outsiderRead = await nonEditor.request("/rest/v1/song_requests?select=id");
-      assert.equal(outsiderRead.response.status, 200);
-      assert.deepEqual(outsiderRead.data, []);
 
       const requestId = await expectOk(await choir.request("/rest/v1/rpc/create_song_request", {
         method: "POST",
@@ -226,7 +223,12 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       });
       assert.ok(!badPart.response.ok);
 
-      for (const [role, request] of [["choir", choir.request], ["editor", editor.request]]) {
+      for (const [role, request] of [
+        ["anonymous", anonymous],
+        ["outsider", nonEditor.request],
+        ["choir", choir.request],
+        ["editor", editor.request],
+      ]) {
         const audit = await request(
           `/rest/v1/song_requests?id=eq.${requestId}&select=id,created_by`,
         );
@@ -236,12 +238,16 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
         );
       }
 
-      const pending = await expectOk(await choir.request(
-        "/rest/v1/song_requests?status=eq.pending&select=id,song_id,title,status",
+      const pending = await expectOk(await anonymous(
+        "/rest/v1/song_requests?status=eq.pending&select=id,song_id,title,note,status",
       ));
       assert.ok(pending.some(row => row.id === requestId && row.song_id === fixtureSong.id));
       assert.ok(pending.some(row => row.id === freeTextId
         && row.title === `Requested new song ${suffix}`));
+      const outsiderPending = await expectOk(await nonEditor.request(
+        "/rest/v1/song_requests?status=eq.pending&select=id",
+      ));
+      assert.ok(outsiderPending.some(row => row.id === requestId));
 
       const choirResolve = await choir.request("/rest/v1/rpc/resolve_song_request", {
         method: "POST",

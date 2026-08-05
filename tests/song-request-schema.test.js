@@ -7,8 +7,21 @@ const sql = fs.readFileSync(path.resolve(
   __dirname,
   "../supabase/migrations/20260805120000_song_requests.sql",
 ), "utf8");
+const publicReadsSql = fs.readFileSync(path.resolve(
+  __dirname,
+  "../supabase/migrations/20260806090000_public_song_request_reads.sql",
+), "utf8");
 
-test("song requests are choir-created, editor-resolved, and never anonymous", () => {
+test("the pending request queue is publicly readable but never publicly writable", () => {
+  assert.match(publicReadsSql, /Song requests are public/i);
+  assert.match(publicReadsSql, /for select\s+to anon, authenticated\s+using \(true\)/i);
+  const anonGrant = publicReadsSql.match(/grant select \(([^)]+)\) on public\.song_requests\s+to anon/i);
+  assert.ok(anonGrant, "anon needs an explicit column select grant");
+  assert.doesNotMatch(anonGrant[1], /created_by|resolved_by/);
+  assert.doesNotMatch(publicReadsSql, /grant (?:insert|update|delete)/i);
+});
+
+test("song requests are choir-created, editor-resolved, and never anonymously written", () => {
   assert.match(sql, /create table public\.song_requests/i);
   assert.match(sql, /status in \('pending', 'accepted', 'declined'\)/i);
   assert.match(sql, /song_id is not null or length\(btrim\(title\)\) > 0/i);

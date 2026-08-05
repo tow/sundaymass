@@ -290,7 +290,6 @@ function localStore({
       return record.id;
     },
     async listSongRequests() {
-      requireLyricsAccess();
       const songsById = Object.fromEntries(readSongs().map(song => [song.id, song]));
       return readSongRequests()
         .filter(request => request.status === "pending")

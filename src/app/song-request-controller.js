@@ -13,6 +13,7 @@
     formatDate,
     openModal,
     onStatus,
+    onCreated,
     logger,
   }) {
     let targetPart = null;
@@ -86,7 +87,7 @@
       syncNewSongFields();
       elements.context.textContent =
         `For the ${partLabel(part)} on ${formatDate(getDate())}. `
-        + "The music planners will see your suggestion.";
+        + "Suggestions and notes are publicly listed until reviewed.";
       openModal(elements.dialog);
     }
 
@@ -114,6 +115,7 @@
         await getStore().createSongRequest(validation.value);
         elements.dialog.close();
         onStatus("Suggestion sent", "saved");
+        onCreated?.();
       } catch (error) {
         logger.error("Could not send song suggestion", error);
         elements.error.textContent = "Could not send the suggestion. Please try again.";
