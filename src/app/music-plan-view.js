@@ -73,7 +73,7 @@
         + "</div>";
     }
 
-    function renderPublicRow(part, songs) {
+    function renderPublicRow(part, songs, canSuggest) {
       const choice = choiceFor(songs, part.key);
       const attribution = publicAttribution(choice);
       return '<div class="music-view-row">'
@@ -86,15 +86,18 @@
           ? `<span class="music-attribution">${escapeHtml(attribution)}</span>`
           : "")
         + copyrightWarning(choice)
+        + (canSuggest
+          ? `<button class="music-request-launch" type="button" data-song-action="request" data-part="${escapeHtml(part.key)}">Suggest a song</button>`
+          : "")
         + "</div></div>";
     }
 
-    function render({ parts, songs, isEditor, customizedParts = new Set() }) {
+    function render({ parts, songs, isEditor, canSuggest = false, customizedParts = new Set() }) {
       return Object.freeze({
         html: parts
           .map(part => isEditor
             ? renderEditorRow(part, songs, customizedParts)
-            : renderPublicRow(part, songs))
+            : renderPublicRow(part, songs, canSuggest))
           .join(""),
         mode: isEditor ? "edit" : "view",
         intro: isEditor

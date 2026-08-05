@@ -12,11 +12,15 @@ test("plan stores expose canonical song operations", () => {
   [
     "getPlan",
     "searchSongs",
+    "searchPublicSongs",
     "getSong",
     "assignSong",
     "createAndAssignSong",
     "updateSong",
     "clearSong",
+    "createSongRequest",
+    "listSongRequests",
+    "resolveSongRequest",
   ].forEach(method => assert.match(source, new RegExp(`async ${method}\\(`)));
 });
 

@@ -72,6 +72,22 @@ test("public rendering includes safe metadata but never private lyrics", () => {
   assert.doesNotMatch(result.html, /\blyrics\b/i);
 });
 
+test("choir members may suggest a song on every public row, others never", () => {
+  const choirResult = view.render({ parts, songs, isEditor: false, canSuggest: true });
+  assert.equal((choirResult.html.match(/data-song-action="request"/g) || []).length, 2);
+  assert.match(
+    choirResult.html,
+    /data-song-action="request" data-part="entrance">Suggest a song<\/button>/,
+  );
+  assert.match(choirResult.html, /See suggestions/);
+
+  const publicResult = view.render({ parts, songs, isEditor: false });
+  assert.doesNotMatch(publicResult.html, /data-song-action="request"/);
+
+  const editorResult = view.render({ parts, songs, isEditor: true, canSuggest: true });
+  assert.doesNotMatch(editorResult.html, /data-song-action="request"/);
+});
+
 test("editor rendering offers weekly lyrics only for selected slots", () => {
   const result = view.render({ parts, songs, isEditor: true });
 

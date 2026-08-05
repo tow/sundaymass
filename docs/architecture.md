@@ -181,6 +181,21 @@ database rejects an unauthorized direct request.
    every choir mutation.
 5. Private text remains outside public plans, rendered public pages, and offline caches.
 
+### Choir song requests
+
+1. A signed-in choir member uses “Suggest a song” on any public plan row.
+2. The dialog searches public song metadata, or captures a free-text title with
+   an optional YouTube link; domain validation reduces links to video IDs before
+   persistence. An optional note travels with the request.
+3. One RPC records a pending request. Postgres re-checks choir or editor
+   membership; anonymous users can neither read nor create requests.
+4. Editors review pending requests from the planner. Accepting a library song
+   with a target slot assigns it through the normal assignment RPC; a free-text
+   request only records the decision, and creating the song stays in the normal
+   editor flow.
+5. Requests are choir-internal, carry no lyrics, and never appear in public
+   plans or rendered public pages.
+
 ### Song selection and editing
 
 An empty public plan slot offers a read-only “See suggestions” action. It opens only
@@ -294,7 +309,9 @@ These are hard constraints:
 
 1. Anonymous and authenticated non-editor users can read public plans and song
    metadata.
-2. Only users listed in `public.editors` can mutate shared data.
+2. Only users listed in `public.editors` can mutate shared plan and song data.
+   The choir-internal song-request queue is the one exception: choir members may
+   add to it, and only editors resolve it.
 3. `song_lyrics` is a separate table so public roles cannot retrieve lyrics, even by
    bypassing the UI.
 4. Browser roles cannot read or write `song_embeddings` or `reading_embeddings`.

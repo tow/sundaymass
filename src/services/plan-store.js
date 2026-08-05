@@ -52,6 +52,7 @@ function localStore({
   const planKey = date => "st-james-plan-v2-" + date;
   const songsKey = "st-james-song-catalog-v1";
   const weeklyLyricsKey = "st-james-weekly-lyrics-v1";
+  const songRequestsKey = "st-james-song-requests-v1";
 
   const readSongs = () => {
     try {
@@ -84,10 +85,7 @@ function localStore({
     }
   };
   const writePlanRecord = (date, plan) => storage.setItem(planKey(date), JSON.stringify(plan));
-  const read = date => {
-    const record = readPlanRecord(date);
-    const songsById = Object.fromEntries(readSongs().map(song => [song.id, song]));
-    const publicSong = song => ({
+  const publicSong = song => ({
       id: song.id,
       title: song.title,
       youtubeVideoId: song.youtubeVideoId || "",
@@ -103,6 +101,9 @@ function localStore({
         : [],
       suggestionParts: Array.isArray(song.suggestionParts) ? song.suggestionParts : [],
     });
+  const read = date => {
+    const record = readPlanRecord(date);
+    const songsById = Object.fromEntries(readSongs().map(song => [song.id, song]));
     return {
       songs: Object.fromEntries(
         Object.entries(record.songs)
@@ -128,6 +129,15 @@ function localStore({
     }
   };
   const writeWeeklyLyrics = value => storage.setItem(weeklyLyricsKey, JSON.stringify(value));
+  const readSongRequests = () => {
+    try {
+      const value = JSON.parse(storage.getItem(songRequestsKey) || "[]");
+      return Array.isArray(value) ? value : [];
+    } catch {
+      return [];
+    }
+  };
+  const writeSongRequests = value => storage.setItem(songRequestsKey, JSON.stringify(value));
   const emit = date => {
     const callback = listeners.get(date);
     if (callback) callback(read(date), { offline: true });
@@ -156,6 +166,9 @@ function localStore({
     async searchSongs(query) {
       requireEditor();
       return songCatalogApi.search(readSongs(), query);
+    },
+    async searchPublicSongs(query) {
+      return songCatalogApi.search(readSongs().map(publicSong), query);
     },
     async suggestSongs(citations, part) {
       return [];
@@ -257,6 +270,49 @@ function localStore({
         .filter(item =>
           item.sunday !== date || item.part !== part || item.songId !== songId));
     },
+    async createSongRequest(request) {
+      requireLyricsAccess();
+      if (request.songId && !readSongs().some(song => song.id === request.songId)) {
+        throw new Error("Song not found");
+      }
+      const record = {
+        id: randomUUID(),
+        songId: request.songId || null,
+        title: request.title || "",
+        youtubeVideoId: request.youtubeVideoId || "",
+        note: request.note || "",
+        sunday: request.sunday || null,
+        part: request.part || null,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      };
+      writeSongRequests([...readSongRequests(), record]);
+      return record.id;
+    },
+    async listSongRequests() {
+      requireLyricsAccess();
+      const songsById = Object.fromEntries(readSongs().map(song => [song.id, song]));
+      return readSongRequests()
+        .filter(request => request.status === "pending")
+        .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+        .map(request => ({
+          ...request,
+          songTitle: songsById[request.songId]?.title || "",
+          songAuthors: songsById[request.songId]?.authors || "",
+        }));
+    },
+    async resolveSongRequest(requestId, status) {
+      requireEditor();
+      if (!["accepted", "declined"].includes(status)) {
+        throw new Error("Invalid request status");
+      }
+      const requests = readSongRequests();
+      const index = requests.findIndex(request =>
+        request.id === requestId && request.status === "pending");
+      if (index < 0) throw new Error("Request not found");
+      requests[index] = { ...requests[index], status };
+      writeSongRequests(requests);
+    },
     async saveReadingOverride(date, slot, readingOverride) {
       requireEditor();
       const plan = readPlanRecord(date);
@@ -328,6 +384,10 @@ function unavailableStore({
     },
     getPlan: unavailable,
     searchSongs: unavailable,
+    searchPublicSongs: unavailable,
+    createSongRequest: unavailable,
+    listSongRequests: unavailable,
+    resolveSongRequest: unavailable,
     suggestSongs: unavailable,
     syncSongEmbedding: unavailable,
     getSong: unavailable,
@@ -567,6 +627,82 @@ function createSupabaseStore(
         .order("title");
       if (error) throw error;
       return songCatalogApi.search((data || []).map(planDataApi.songFromRow), query);
+    },
+    async searchPublicSongs(query) {
+      requireOnline();
+      const { data, error } = await supabase
+        .from("songs")
+        .select(`
+          id,
+          title,
+          youtube_video_id,
+          authors,
+          copyright_owner,
+          copyright_year,
+          source,
+          responsorial_book,
+          responsorial_number,
+          responsorial_citations,
+          in_repertoire,
+          suggestion_parts
+        `)
+        .order("title");
+      if (error) throw error;
+      return songCatalogApi.search((data || []).map(planDataApi.songFromRow), query);
+    },
+    async createSongRequest(request) {
+      requireOnline();
+      const { data, error } = await supabase.rpc("create_song_request", {
+        p_song_id: request.songId || null,
+        p_title: request.title || "",
+        p_youtube_video_id: request.youtubeVideoId || "",
+        p_note: request.note || "",
+        p_sunday: request.sunday || null,
+        p_part: request.part || null,
+      });
+      if (error) throw error;
+      return data;
+    },
+    async listSongRequests() {
+      requireOnline();
+      const { data, error } = await supabase
+        .from("song_requests")
+        .select(`
+          id,
+          song_id,
+          title,
+          youtube_video_id,
+          note,
+          sunday,
+          part,
+          status,
+          created_at,
+          song:songs (id, title, authors)
+        `)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data || []).map(row => ({
+        id: row.id,
+        songId: row.song_id || null,
+        songTitle: row.song?.title || "",
+        songAuthors: row.song?.authors || "",
+        title: row.title || "",
+        youtubeVideoId: row.youtube_video_id || "",
+        note: row.note || "",
+        sunday: row.sunday || null,
+        part: row.part || null,
+        status: row.status,
+        createdAt: row.created_at,
+      }));
+    },
+    async resolveSongRequest(requestId, status) {
+      requireOnline();
+      const { error } = await supabase.rpc("resolve_song_request", {
+        p_request_id: requestId,
+        p_status: status,
+      });
+      if (error) throw error;
     },
     async suggestSongs(citations, part, psalmCitation = "") {
       requireOnline();

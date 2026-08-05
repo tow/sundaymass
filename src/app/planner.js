@@ -20,6 +20,9 @@
 @@WEEKLY_LYRICS_CONTROLLER_JS@@
 @@MUSIC_PARTS_JS@@
 @@SONG_PRESENTATION_JS@@
+@@SONG_REQUESTS_JS@@
+@@SONG_REQUEST_CONTROLLER_JS@@
+@@SONG_REQUEST_REVIEW_CONTROLLER_JS@@
 @@PRACTICE_QUEUE_JS@@
 @@PRACTICE_QUEUE_CONTROLLER_JS@@
 @@MUSIC_PLAN_VIEW_JS@@
@@ -129,6 +132,7 @@ function fmtPicker(iso){ const d=new Date(iso+"T12:00:00Z"); return d.toLocaleDa
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 let planStore = null;
 let isEditor = false;
+let canSuggest = false;
 let canReadLyrics = false;
 let signedIn = false;
 let weeklyLyricsParts = new Set();
@@ -202,6 +206,7 @@ function renderMusicPlan(){
     parts:MUSIC_PARTS,
     songs:plannerState.songs(),
     isEditor,
+    canSuggest,
     customizedParts:weeklyLyricsParts,
   });
   lyricsTools.hidden=!canReadLyrics;
@@ -344,6 +349,7 @@ const planSessionController=PlanSessionController.create({
   },
   onAuth:(auth)=>{
     isEditor=!!auth.isEditor;
+    canSuggest=!!auth.isChoirMember;
     canReadLyrics=!!auth.canReadLyrics;
     signedIn=!!auth.user;
     authButton.textContent=signedIn ? "Sign out" : "Sign in";
@@ -351,11 +357,14 @@ const planSessionController=PlanSessionController.create({
       readingWorkflow.closeAll();
       songWorkflow.closeAll();
       weeklyLyricsController.close();
+      songRequestReviewController.close();
       weeklyLyricsParts=new Set();
     }
+    if(!canSuggest) songRequestController.close();
     renderMusicPlan();
     readingWorkflow.renderEditor();
     weeklyLyricsController.refreshSummary();
+    songRequestReviewController.refresh();
   },
   onStatus:setSyncStatus,
   logger:appLogger,
@@ -478,6 +487,54 @@ const weeklyLyricsController=WeeklyLyricsController.create({
   logger:appLogger,
 });
 weeklyLyricsController.start();
+const songRequestController=SongRequestController.create({
+  elements:{
+    musicList,
+    dialog:songRequestDialog,
+    form:songRequestForm,
+    context:songRequestContext,
+    close:songRequestClose,
+    cancel:songRequestCancel,
+    search:songRequestSearch,
+    results:songRequestResults,
+    title:songRequestTitle,
+    youtube:songRequestYoutube,
+    note:songRequestNote,
+    error:songRequestError,
+    submit:songRequestSubmit,
+  },
+  parts:MUSIC_PARTS,
+  songRequests:SongRequests,
+  getStore:()=>planStore,
+  canSuggest:()=>canSuggest,
+  isOnline:()=>navigator.onLine,
+  getDate:()=>current().d,
+  formatDate:fmtLong,
+  openModal,
+  onStatus:setSyncStatus,
+  logger:appLogger,
+});
+songRequestController.start();
+const songRequestReviewController=SongRequestReviewController.create({
+  elements:{
+    launch:songRequestsLaunch,
+    dialog:songRequestsDialog,
+    close:songRequestsClose,
+    list:songRequestsList,
+    empty:songRequestsEmpty,
+    error:songRequestsError,
+  },
+  parts:MUSIC_PARTS,
+  getStore:()=>planStore,
+  isEditor:()=>isEditor,
+  isOnline:()=>navigator.onLine,
+  openModal,
+  onStatus:setSyncStatus,
+  formatDate:fmtPicker,
+  youtubeWatchUrl:SongPresentation.youtubeWatchUrl,
+  logger:appLogger,
+});
+songRequestReviewController.start();
 AuthController.create({
   button:authButton,
   dialog:loginDialog,

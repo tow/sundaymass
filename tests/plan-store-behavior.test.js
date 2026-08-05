@@ -746,6 +746,118 @@ test("an unavailable shared store preserves the last cached public plan", async 
   );
 });
 
+test("local song requests need membership to create and an editor to resolve", async () => {
+  let uuidCount = 0;
+  const store = storeModule.localStore({
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+    randomUUID: () => `id-${++uuidCount}`,
+    logger: { warn() {} },
+  });
+
+  await assert.rejects(
+    store.createSongRequest({ title: "New Hymn" }),
+    /Choir member access required/,
+  );
+  await assert.rejects(store.listSongRequests(), /Choir member access required/);
+
+  await store.signInChoir();
+  await assert.rejects(
+    store.createSongRequest({ songId: "missing" }),
+    /Song not found/,
+  );
+  await store.createSongRequest({
+    title: "New Hymn",
+    youtubeVideoId: "AAAAAAAAAAA",
+    note: "For the feast",
+    sunday: "2026-08-09",
+    part: "entrance",
+  });
+  const pending = await store.listSongRequests();
+  assert.equal(pending.length, 1);
+  assert.equal(pending[0].title, "New Hymn");
+  assert.equal(pending[0].status, "pending");
+  await assert.rejects(
+    store.resolveSongRequest(pending[0].id, "accepted"),
+    /Editor access required/,
+  );
+
+  await store.signInEditor();
+  await assert.rejects(
+    store.resolveSongRequest(pending[0].id, "bogus"),
+    /Invalid request status/,
+  );
+  await store.resolveSongRequest(pending[0].id, "accepted");
+  assert.deepEqual(await store.listSongRequests(), []);
+  await assert.rejects(
+    store.resolveSongRequest(pending[0].id, "declined"),
+    /Request not found/,
+  );
+});
+
+test("local public song search works signed out and never returns lyrics", async () => {
+  const store = createStore();
+  await store.signInEditor();
+  await store.createAndAssignSong("2026-08-02", "entrance", {
+    title: "Gather Us In",
+    lyrics: "Private lyric text",
+  });
+  await store.signOut();
+
+  const results = await store.searchPublicSongs("gather");
+  assert.equal(results.length, 1);
+  assert.equal(results[0].title, "Gather Us In");
+  assert.equal("lyrics" in results[0], false);
+});
+
+test("Supabase song requests call the bounded request RPCs", async () => {
+  const rpcs = [];
+  const store = storeModule.createSupabaseStore({
+    rpc(name, params) {
+      rpcs.push({ name, params });
+      return Promise.resolve({
+        data: name === "create_song_request" ? "request-1" : null,
+        error: null,
+      });
+    },
+    auth: {},
+  }, {
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+    isOnline: () => true,
+  });
+
+  const id = await store.createSongRequest({
+    songId: "",
+    title: "New Hymn",
+    youtubeVideoId: "AAAAAAAAAAA",
+    note: "For the feast",
+    sunday: "2026-08-09",
+    part: "entrance",
+  });
+  assert.equal(id, "request-1");
+  await store.resolveSongRequest("request-1", "declined");
+  assert.deepEqual(rpcs, [
+    {
+      name: "create_song_request",
+      params: {
+        p_song_id: null,
+        p_title: "New Hymn",
+        p_youtube_video_id: "AAAAAAAAAAA",
+        p_note: "For the feast",
+        p_sunday: "2026-08-09",
+        p_part: "entrance",
+      },
+    },
+    {
+      name: "resolve_song_request",
+      params: { p_request_id: "request-1", p_status: "declined" },
+    },
+  ]);
+});
+
 test("Supabase editor mutations stop before making requests while offline", async () => {
   const { calls, supabase } = supabaseFixture(Promise.resolve({ data: null, error: null }));
   const store = storeModule.createSupabaseStore(supabase, {

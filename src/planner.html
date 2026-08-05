@@ -51,6 +51,7 @@
     <span class="sync-status music-sync-status" id="syncStatus" role="status">Connecting…</span>
     <div class="editor-help" id="lyricsTools" hidden>
       <span id="editorLiveHint" hidden>Changes are live.</span>
+      <button type="button" id="songRequestsLaunch" hidden>Song requests (0)</button>
       <button type="button" id="downloadLyricsPptx">Download lyrics PowerPoint</button>
       <button type="button" id="downloadLyricsSlidesPdf">Download lyrics slides (PDF)</button>
       <button type="button" id="printLyricsBooklet">Download folded lyrics booklet (PDF)</button>
@@ -349,6 +350,58 @@
       <button class="primary" type="submit" id="weeklyLyricsSave">Save for this Sunday</button>
     </div>
   </form>
+</dialog>
+
+<dialog class="reading-dialog song-request-dialog" id="songRequestDialog">
+  <form class="reading-dialog-form" id="songRequestForm">
+    <div class="reading-dialog-head">
+      <div>
+        <div class="eyebrow">From the choir</div>
+        <h2>Suggest a song</h2>
+        <p id="songRequestContext"></p>
+      </div>
+      <button class="reading-dialog-close" id="songRequestClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="reading-dialog-body">
+      <div class="reading-search">
+        <label for="songRequestSearch">Find a song in the library</label>
+        <input id="songRequestSearch" type="search" autocomplete="off" placeholder="Start typing a song title">
+      </div>
+      <div class="song-request-results" id="songRequestResults"></div>
+      <div class="song-request-new">
+        <p class="song-request-new-help">Or suggest a song that is not in the library:</p>
+        <label for="songRequestTitle">Song title</label>
+        <input id="songRequestTitle" type="text" maxlength="200">
+        <label for="songRequestYoutube">YouTube link <span>Optional</span></label>
+        <input id="songRequestYoutube" type="url" inputmode="url" maxlength="2000" placeholder="https://youtube.com/…">
+      </div>
+      <label for="songRequestNote">Note for the music planners <span>Optional</span></label>
+      <textarea id="songRequestNote" rows="3" maxlength="2000"></textarea>
+      <p class="reading-validation" id="songRequestError" role="alert"></p>
+    </div>
+    <div class="reading-dialog-actions">
+      <button type="button" id="songRequestCancel">Cancel</button>
+      <button class="primary" type="submit" id="songRequestSubmit">Send suggestion</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="reading-dialog song-request-review-dialog" id="songRequestsDialog">
+  <div class="reading-dialog-form">
+    <div class="reading-dialog-head">
+      <div>
+        <div class="eyebrow">From the choir</div>
+        <h2>Song requests</h2>
+        <p>Suggestions from signed-in choir members. Accepting a library song with a target slot also assigns it.</p>
+      </div>
+      <button class="reading-dialog-close" id="songRequestsClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="reading-dialog-body">
+      <p id="songRequestsEmpty" hidden>No pending requests.</p>
+      <div class="song-request-list" id="songRequestsList"></div>
+      <p class="reading-validation" id="songRequestsError" role="alert"></p>
+    </div>
+  </div>
 </dialog>
 
 <dialog class="reading-dialog practice-dialog" id="practiceDialog">

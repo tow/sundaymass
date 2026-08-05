@@ -21,6 +21,8 @@ plans (one row per Sunday with shared data)
             |
             +--0..1-- plan_song_lyrics
 
+song_requests (pending choir suggestions) --0..1--> songs
+
 reading_embeddings (one row per canonical citation)
 ```
 
@@ -94,6 +96,31 @@ Production uses one administrator-managed shared Auth user in this table. Choir
 members enter only its shared password; the browser supplies its fixed configured
 email. The identifier is not secret. A choir membership grants lyric reads but never
 authorizes a shared mutation.
+
+### `song_requests`
+
+| Field | Meaning |
+|---|---|
+| `id` | UUID identity |
+| `song_id` | Optional reference to an existing canonical song |
+| `title` | Free-text title when no existing song is referenced |
+| `youtube_video_id` | Optional validated 11-character YouTube video identifier |
+| `note` | Optional message for the editors |
+| `sunday`, `part` | Optional target Mass slot |
+| `status` | `pending`, `accepted`, or `declined` |
+| `created_at`, `created_by` | Private creation audit data |
+| `resolved_at`, `resolved_by` | Private resolution audit data |
+
+Signed-in choir members suggest a song for a Mass slot: an existing canonical
+song, or a free-text title with an optional YouTube link for a song outside the
+library. Editors accept or decline pending requests. A request never creates or
+changes canonical songs, plans, or assignments by itself; accepting a library
+song with a target slot goes through the normal `assign_plan_song` path, and a
+free-text request only records the decision.
+
+Requests are choir-internal. Anonymous and unrelated authenticated users can
+neither read nor create them, and the Auth user UUID audit columns remain
+readable only by the service role.
 
 ### `songs`
 
@@ -216,6 +243,8 @@ staleness.
 | Read audit user UUIDs directly | No | No | No | No | Yes |
 | Read own role membership | No | If present | Yes | Yes | Yes |
 | Change plans, assignments, songs, lyrics | No | No | No | Yes | Yes |
+| Read or create song requests | No | No | Yes | Yes | Yes |
+| Resolve song requests | No | No | No | Yes | Yes |
 | Read or write raw vector tables | No | No | No | No | Yes |
 | Request bounded song or Psalm suggestions | Yes | Yes | Yes | Yes | Yes |
 
@@ -229,6 +258,7 @@ database. When permissions change, update the migration and the matrix test toge
 ## Mutation contracts
 
 All shared browser mutations require an authenticated member of `public.editors`.
+The one exception is `create_song_request`, which also accepts a choir member.
 Security-invoker RPCs repeat the membership check when a policy-only denial could look
 like a successful no-op.
 
@@ -245,10 +275,14 @@ like a successful no-op.
 | `clear_reading_override` | Clear one slot or all individual reading overrides |
 | `save_celebration_override` | Save one complete snapshot and clear individual overrides |
 | `clear_celebration_override` | Restore computed celebration and clear individual overrides |
+| `create_song_request` | Record one pending choir suggestion: an existing song or free-text details |
+| `resolve_song_request` | Editor-only: mark one pending request accepted or declined |
 | `suggest_songs_for_readings` | Rank classified songs, reserving two places for repertoire songs and one for an extended-library candidate |
 | `suggest_psalms_for_reading` | Match Psalm/canticle settings by structured book and number, prioritizing exact citations |
 
-Successful writes are live immediately. There is no draft/publish table or status.
+Successful writes are live immediately. There is no draft/publish state for plans
+or songs; a song request's `pending` status queues an editor decision without
+gating any canonical data.
 
 ## Public projections and caching
 

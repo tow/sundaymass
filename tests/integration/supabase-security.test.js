@@ -179,6 +179,98 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       assert.match(JSON.stringify(mutation.data), /Editor access required/i);
     });
 
+    await t.test("song requests are choir-created, choir-readable, and editor-resolved", async () => {
+      const anonymousRead = await anonymous("/rest/v1/song_requests?select=id");
+      assert.ok([401, 403].includes(anonymousRead.response.status));
+      const anonymousCreate = await anonymous("/rest/v1/rpc/create_song_request", {
+        method: "POST",
+        body: { p_title: "Anonymous request" },
+      });
+      assert.ok(!anonymousCreate.response.ok);
+
+      const outsiderCreate = await nonEditor.request("/rest/v1/rpc/create_song_request", {
+        method: "POST",
+        body: { p_title: "Outsider request" },
+      });
+      assert.ok(!outsiderCreate.response.ok);
+      assert.match(JSON.stringify(outsiderCreate.data), /Choir member access required/i);
+      const outsiderRead = await nonEditor.request("/rest/v1/song_requests?select=id");
+      assert.equal(outsiderRead.response.status, 200);
+      assert.deepEqual(outsiderRead.data, []);
+
+      const requestId = await expectOk(await choir.request("/rest/v1/rpc/create_song_request", {
+        method: "POST",
+        body: {
+          p_song_id: fixtureSong.id,
+          p_note: "Please sing this again",
+          p_sunday: sunday,
+          p_part: "offertory",
+        },
+      }));
+      const freeTextId = await expectOk(await choir.request("/rest/v1/rpc/create_song_request", {
+        method: "POST",
+        body: {
+          p_title: `Requested new song ${suffix}`,
+          p_youtube_video_id: "AAAAAAAAAAA",
+        },
+      }));
+
+      const missingDetails = await choir.request("/rest/v1/rpc/create_song_request", {
+        method: "POST",
+        body: { p_note: "No song and no title" },
+      });
+      assert.ok(!missingDetails.response.ok);
+      const badPart = await choir.request("/rest/v1/rpc/create_song_request", {
+        method: "POST",
+        body: { p_title: "Bad part", p_part: "not-a-part" },
+      });
+      assert.ok(!badPart.response.ok);
+
+      for (const [role, request] of [["choir", choir.request], ["editor", editor.request]]) {
+        const audit = await request(
+          `/rest/v1/song_requests?id=eq.${requestId}&select=id,created_by`,
+        );
+        assert.ok(
+          [401, 403].includes(audit.response.status),
+          `${role} song_requests audit columns returned ${audit.response.status}`,
+        );
+      }
+
+      const pending = await expectOk(await choir.request(
+        "/rest/v1/song_requests?status=eq.pending&select=id,song_id,title,status",
+      ));
+      assert.ok(pending.some(row => row.id === requestId && row.song_id === fixtureSong.id));
+      assert.ok(pending.some(row => row.id === freeTextId
+        && row.title === `Requested new song ${suffix}`));
+
+      const choirResolve = await choir.request("/rest/v1/rpc/resolve_song_request", {
+        method: "POST",
+        body: { p_request_id: requestId, p_status: "accepted" },
+      });
+      assert.ok(!choirResolve.response.ok);
+      assert.match(JSON.stringify(choirResolve.data), /Editor access required/i);
+
+      await expectOk(await editor.request("/rest/v1/rpc/resolve_song_request", {
+        method: "POST",
+        body: { p_request_id: requestId, p_status: "accepted" },
+      }));
+      await expectOk(await editor.request("/rest/v1/rpc/resolve_song_request", {
+        method: "POST",
+        body: { p_request_id: freeTextId, p_status: "declined" },
+      }));
+      const repeatedResolve = await editor.request("/rest/v1/rpc/resolve_song_request", {
+        method: "POST",
+        body: { p_request_id: requestId, p_status: "declined" },
+      });
+      assert.ok(!repeatedResolve.response.ok);
+      assert.match(JSON.stringify(repeatedResolve.data), /Request not found/i);
+
+      const resolved = await expectOk(await service(
+        `/rest/v1/song_requests?id=eq.${requestId}&select=status,resolved_by`,
+      ));
+      assert.deepEqual(resolved, [{ status: "accepted", resolved_by: editor.id }]);
+    });
+
     await t.test("editors can read lyrics and preserve an empty suggestion list", async () => {
       const lyrics = await editor.request(
         `/rest/v1/song_lyrics?song_id=eq.${fixtureSong.id}&select=lyrics`,
@@ -548,6 +640,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       assert.equal(Object.hasOwn(suggestions[0], "embedding"), false);
     });
   } finally {
+    await service(`/rest/v1/song_requests?created_by=eq.${choir.id}`, { method: "DELETE" });
     await service(`/rest/v1/plan_songs?sunday=eq.${sunday}`, { method: "DELETE" });
     await service(`/rest/v1/plans?sunday=eq.${sunday}`, { method: "DELETE" });
     for (const citation of readingCitations) {

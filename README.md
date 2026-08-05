@@ -194,6 +194,13 @@ Authenticated users can write only when their user ID is in `public.editors`. A 
 database enforces this independently of the interface. Successful actions are
 immediately live—there is no draft or publish workflow.
 
+Choir members can additionally suggest songs for a Mass slot with the “Suggest a song”
+button on any plan row: an existing library song or a free-text title with an optional
+YouTube link and note. Suggestions queue as pending requests that only choir members
+and editors can see; editors review them from the planner (“Song requests”) and accept
+or decline. Accepting a library song with a target slot assigns it; nothing else about
+a request touches canonical data.
+
 The schema, JSON snapshot shapes, access matrix, RPC contracts, public projection, and
 Realtime behavior are documented in
 [`docs/data-model.md`](docs/data-model.md). The underlying forward migrations and local
