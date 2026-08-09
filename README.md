@@ -199,7 +199,9 @@ button on any plan row: an existing library song or a free-text title with an op
 YouTube link and note. Suggestions queue as pending requests. The pending queue is
 public — anyone can open “Song requests” under the music list and read it (titles,
 slots, notes, and video links, never lyrics) — but only choir members and editors can
-add to it, and only editors accept or decline. Accepting a library song with a target
+add to it, and only editors accept or decline. The queue is live: a suggestion sent by
+one choir member shows up for the rest of the choir, and a reviewed request drops off
+the list, without anyone reloading the page. Accepting a library song with a target
 slot assigns it; nothing else about a request touches canonical data.
 
 The schema, JSON snapshot shapes, access matrix, RPC contracts, public projection, and

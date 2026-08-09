@@ -799,6 +799,32 @@ test("local song requests need membership to create and an editor to resolve", a
   );
 });
 
+test("song request subscribers hear about creations and resolutions until they stop", async () => {
+  let uuidCount = 0;
+  const store = storeModule.localStore({
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+    randomUUID: () => `id-${++uuidCount}`,
+    logger: { warn() {} },
+  });
+  let events = 0;
+  const stop = store.subscribeSongRequests(() => { events += 1; });
+
+  await store.signInChoir();
+  await store.createSongRequest({ title: "New Hymn" });
+  assert.equal(events, 1);
+
+  const [request] = await store.listSongRequests();
+  await store.signInEditor();
+  await store.resolveSongRequest(request.id, "declined");
+  assert.equal(events, 2);
+
+  stop();
+  await store.createSongRequest({ title: "Another Hymn" });
+  assert.equal(events, 2);
+});
+
 test("local public song search works signed out and never returns lyrics", async () => {
   const store = createStore();
   await store.signInEditor();

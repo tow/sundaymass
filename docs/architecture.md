@@ -194,7 +194,10 @@ database rejects an unauthorized direct request.
    target slot assigns it through the normal assignment RPC; a free-text
    request only records the decision, and creating the song stays in the normal
    editor flow.
-5. Requests carry titles, target slots, notes, and video links, never lyrics.
+5. The queue is live. A Realtime subscription on `song_requests` reloads it in
+   every open planner, so one choir member's suggestion appears to the rest of
+   the choir, and an editor's decision removes it for them, without a reload.
+6. Requests carry titles, target slots, notes, and video links, never lyrics.
 
 ### Song selection and editing
 

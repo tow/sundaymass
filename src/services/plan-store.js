@@ -47,6 +47,7 @@ function localStore({
   logger = globalThis.AppLogger || console,
 } = {}) {
   const listeners = new Map();
+  const songRequestListeners = new Set();
   let accessLevel = "public";
   let notifyAuth = () => {};
   const planKey = date => "st-james-plan-v2-" + date;
@@ -142,11 +143,18 @@ function localStore({
     const callback = listeners.get(date);
     if (callback) callback(read(date), { offline: true });
   };
+  const emitSongRequests = () => {
+    songRequestListeners.forEach(callback => callback());
+  };
   return {
     subscribePlan(date, onValue) {
       listeners.set(date, onValue);
       onValue(read(date), { offline: true });
       return () => listeners.delete(date);
+    },
+    subscribeSongRequests(onChange) {
+      songRequestListeners.add(onChange);
+      return () => songRequestListeners.delete(onChange);
     },
     subscribeAuth(onValue) {
       notifyAuth = () => onValue(authState(
@@ -287,6 +295,7 @@ function localStore({
         createdAt: new Date().toISOString(),
       };
       writeSongRequests([...readSongRequests(), record]);
+      emitSongRequests();
       return record.id;
     },
     async listSongRequests() {
@@ -311,6 +320,7 @@ function localStore({
       if (index < 0) throw new Error("Request not found");
       requests[index] = { ...requests[index], status };
       writeSongRequests(requests);
+      emitSongRequests();
     },
     async saveReadingOverride(date, slot, readingOverride) {
       requireEditor();
@@ -375,6 +385,9 @@ function unavailableStore({
       const cached = readSharedPlanCache(storage, date);
       onValue(cached || planDataApi.emptyPlan(), { offline: true, cached: Boolean(cached) });
       if (onError) onError(reason, { offline: true, cached: Boolean(cached) });
+      return () => {};
+    },
+    subscribeSongRequests() {
       return () => {};
     },
     subscribeAuth(onValue) {
@@ -543,6 +556,20 @@ function createSupabaseStore(
 
       return () => {
         active = false;
+        supabase.removeChannel(channel);
+      };
+    },
+    subscribeSongRequests(onChange) {
+      const channel = supabase
+        .channel("song-requests-" + random().toString(36).slice(2))
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "song_requests" },
+          () => onChange(),
+        )
+        .subscribe();
+
+      return () => {
         supabase.removeChannel(channel);
       };
     },

@@ -11,6 +11,19 @@ const publicReadsSql = fs.readFileSync(path.resolve(
   __dirname,
   "../supabase/migrations/20260806090000_public_song_request_reads.sql",
 ), "utf8");
+const liveRequestsSql = fs.readFileSync(path.resolve(
+  __dirname,
+  "../supabase/migrations/20260809120000_live_song_requests.sql",
+), "utf8");
+
+test("the request queue is published over Realtime without widening access", () => {
+  assert.match(
+    liveRequestsSql,
+    /alter publication supabase_realtime add table public\.song_requests/i,
+  );
+  assert.match(liveRequestsSql, /if not exists \(\s*select 1\s*from pg_publication_tables/i);
+  assert.doesNotMatch(liveRequestsSql, /create policy|drop policy|\bgrant\b/i);
+});
 
 test("the pending request queue is publicly readable but never publicly writable", () => {
   assert.match(publicReadsSql, /Song requests are public/i);

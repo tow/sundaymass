@@ -1,4 +1,4 @@
-// Shows the public pending song-request queue; editors accept or decline.
+// Shows the live pending song-request queue; editors accept or decline.
 (function (global) {
   "use strict";
 
@@ -15,6 +15,8 @@
     logger,
   }) {
     let pending = [];
+    let watchedStore = null;
+    let stopWatching = null;
 
     function partLabel(key) {
       return parts.find(part => part.key === key)?.label || key;
@@ -84,8 +86,22 @@
       }));
     }
 
+    // One live subscription per connected store keeps every reader's queue current
+    // when someone else adds or resolves a request.
+    function watch(store) {
+      const next = store?.subscribeSongRequests ? store : null;
+      if (next === watchedStore) return;
+      stop();
+      watchedStore = next;
+      if (!watchedStore) return;
+      stopWatching = watchedStore.subscribeSongRequests(() => {
+        refresh().catch(error => logger.warn("Could not refresh song requests", error));
+      });
+    }
+
     async function refresh() {
       const store = getStore();
+      watch(store);
       try {
         pending = store?.listSongRequests ? await store.listSongRequests() : [];
       } catch (error) {
@@ -133,7 +149,14 @@
       elements.close.addEventListener("click", close);
     }
 
-    return Object.freeze({ start, open, close, refresh });
+    function stop() {
+      watchedStore = null;
+      if (!stopWatching) return;
+      stopWatching();
+      stopWatching = null;
+    }
+
+    return Object.freeze({ start, stop, open, close, refresh });
   }
 
   const api = Object.freeze({ create });

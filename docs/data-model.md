@@ -308,6 +308,12 @@ and for canonical `songs` updates. An event invalidates and reloads the public p
 rather than attempting to patch several representations independently. Changing Sunday
 unsubscribes the previous date before subscribing to the next.
 
+A separate date-independent subscription watches `song_requests`. Any insert, update, or
+delete reloads the pending queue, so a suggestion one choir member sends appears in every
+other open planner — and an accepted or declined request disappears from it — without a
+reload. Subscribers receive only what the select policy already allows them to read, so
+publishing the table does not widen access.
+
 ## Schema changes
 
 - Add every production change as a forward migration under `supabase/migrations/`.

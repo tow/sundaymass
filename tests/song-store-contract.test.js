@@ -24,6 +24,11 @@ test("plan stores expose canonical song operations", () => {
   ].forEach(method => assert.match(source, new RegExp(`async ${method}\\(`)));
 });
 
+test("every plan store subscribes to song requests as well as to the plan", () => {
+  const count = name => (source.match(new RegExp(`\\b${name}\\(`, "g")) || []).length;
+  assert.equal(count("subscribeSongRequests"), count("subscribePlan"));
+});
+
 test("Supabase plan loading joins current song metadata without lyric text", () => {
   const publicPlanQuery = source.slice(
     source.indexOf("const loadPlan"),
