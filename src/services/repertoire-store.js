@@ -22,6 +22,12 @@ const mapSong = row => {
       : [],
     inRepertoire: row.in_repertoire !== false,
     suggestionParts: Array.isArray(row.suggestion_parts) ? row.suggestion_parts : [],
+    suggestionProposedParts: Array.isArray(row.suggestion_proposed_parts)
+      ? row.suggestion_proposed_parts
+      : [],
+    suggestionProposalConfidence: row.suggestion_proposal_confidence || "",
+    suggestionProposalReason: row.suggestion_proposal_reason || "",
+    suggestionReviewStatus: row.suggestion_review_status || "reviewed",
     lyrics: Array.isArray(row.song_lyrics)
       ? row.song_lyrics[0]?.lyrics || ""
       : row.song_lyrics?.lyrics || "",
@@ -98,6 +104,22 @@ function localStore({
       write(songs.map(song => song.id === songId ? { id: songId, ...value } : song));
       return { id: songId, ...value };
     },
+    async reviewSongSuggestionParts(songId, suggestionParts) {
+      if (accessLevel !== "editor") throw new Error("Editor access required");
+      const songs = read();
+      const song = songs.find(value => value.id === songId);
+      if (!song) throw new Error("Song not found");
+      const reviewed = {
+        ...song,
+        suggestionParts: suggestionParts || [],
+        suggestionProposedParts: [],
+        suggestionProposalConfidence: "",
+        suggestionProposalReason: "",
+        suggestionReviewStatus: "reviewed",
+      };
+      write(songs.map(value => value.id === songId ? reviewed : value));
+      return reviewed;
+    },
     subscribeAuth(callback) {
       notifyAuth = () => callback(authState(
         accessLevel === "public" ? null : { email: `Local ${accessLevel}` },
@@ -140,7 +162,7 @@ function createSupabaseStore(
     async browseSongs() {
       const { data, error } = await supabase
         .from("songs")
-        .select("id,title,youtube_video_id,authors,copyright_owner,copyright_year,source,responsorial_book,responsorial_number,responsorial_citations,in_repertoire,suggestion_parts")
+        .select("id,title,youtube_video_id,authors,copyright_owner,copyright_year,source,responsorial_book,responsorial_number,responsorial_citations,in_repertoire,suggestion_parts,suggestion_proposed_parts,suggestion_proposal_confidence,suggestion_proposal_reason,suggestion_review_status")
         .order("title");
       if (error) throw error;
       return (data || []).map(mapSong);
@@ -148,7 +170,7 @@ function createSupabaseStore(
     async getSong(songId) {
       const { data, error } = await supabase
         .from("songs")
-        .select("id,title,youtube_video_id,authors,copyright_owner,copyright_year,source,responsorial_book,responsorial_number,responsorial_citations,in_repertoire,suggestion_parts,song_lyrics(lyrics)")
+        .select("id,title,youtube_video_id,authors,copyright_owner,copyright_year,source,responsorial_book,responsorial_number,responsorial_citations,in_repertoire,suggestion_parts,suggestion_proposed_parts,suggestion_proposal_confidence,suggestion_proposal_reason,suggestion_review_status,song_lyrics(lyrics)")
         .eq("id", songId)
         .single();
       if (error) throw error;
@@ -165,6 +187,13 @@ function createSupabaseStore(
       const { error } = await supabase.rpc("update_song", { p_song_id: songId, ...song.params });
       if (error) throw error;
       return { id: songId, ...song.value };
+    },
+    async reviewSongSuggestionParts(songId, suggestionParts) {
+      const { error } = await supabase.rpc("review_song_suggestion_parts", {
+        p_song_id: songId,
+        p_suggestion_parts: suggestionParts || [],
+      });
+      if (error) throw error;
     },
     subscribeAuth(callback) {
       let active = true;

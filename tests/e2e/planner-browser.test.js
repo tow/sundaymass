@@ -118,6 +118,17 @@ async function repertoirePage(browser, server, viewport) {
         authors: "Guest Composer",
         inRepertoire: false,
       },
+      {
+        id: "review-song",
+        title: "Uncertain Song",
+        authors: "Unknown Composer",
+        inRepertoire: true,
+        suggestionParts: [],
+        suggestionProposedParts: ["offertory", "communion"],
+        suggestionProposalConfidence: "low",
+        suggestionProposalReason: "No direct liturgical-position evidence was found.",
+        suggestionReviewStatus: "needs-review",
+      },
     ]));
   });
   const page = await context.newPage();
@@ -689,6 +700,56 @@ test("choir password reveals read-only repertoire lyrics without editor controls
   await assert.doesNotReject(() => page.locator("#lyricsViewerDialog").waitFor({ state: "visible" }));
   assert.equal(await page.locator("#lyricsViewerTitle").textContent(), "City of God");
   assert.equal(await page.locator("#lyricsViewerText").textContent(), "CHOIR-ONLY CITY LYRIC");
+  await context.close();
+});
+
+test("editors can resolve uncertain song categories from the review queue", async () => {
+  const { context, page } = await repertoirePage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+
+  assert.equal(await page.locator('[data-repertoire-scope="review"]').isHidden(), true);
+  await page.locator("#authButton").click();
+  await page.locator("#loginMode").click();
+  await page.locator("#loginEmail").fill("editor@example.org");
+  await page.locator("#loginPassword").fill("editor password");
+  await page.locator("#loginSubmit").click();
+  try {
+    await page.waitForFunction(
+      () => document.querySelector("#authButton")?.textContent === "Sign out",
+      null,
+      { timeout: 5000 },
+    );
+  } catch (error) {
+    const state = await page.evaluate(() => ({
+      authButton: document.querySelector("#authButton")?.textContent,
+      loginError: document.querySelector("#loginError")?.textContent,
+      loginOpen: document.querySelector("#loginDialog")?.open,
+      loginTitle: document.querySelector("#loginTitle")?.textContent,
+    }));
+    throw new Error(`Editor sign-in did not complete: ${JSON.stringify(state)} (${error.message})`);
+  }
+
+  await page.locator('[data-repertoire-scope="review"]').click();
+  assert.match(await page.locator("#repertoireList").innerText(), /Uncertain Song/);
+  assert.match(await page.locator("#repertoireList").innerText(), /low confidence/i);
+  assert.match(await page.locator("#repertoireList").innerText(), /No direct liturgical-position evidence/);
+
+  await page.locator('[data-review-song="review-song"]').click();
+  await assert.doesNotReject(() => page.locator("#songEditorDialog").waitFor({ state: "visible" }));
+  await page.locator('#songSuggestionParts input[value="communion"]').uncheck();
+  await page.locator("#saveSong").click();
+  await page.waitForFunction(() => document.querySelector("#repertoireStatus")?.textContent === "Up to date");
+  assert.doesNotMatch(await page.locator("#repertoireList").innerText(), /Uncertain Song/);
+
+  const reviewed = await page.evaluate(() => JSON.parse(
+    localStorage.getItem("st-james-song-catalog-v1") || "[]",
+  ).find(song => song.id === "review-song"));
+  assert.deepEqual(reviewed.suggestionParts, ["offertory"]);
+  assert.equal(reviewed.suggestionReviewStatus, "reviewed");
+  assert.deepEqual(reviewed.suggestionProposedParts, []);
   await context.close();
 });
 

@@ -118,6 +118,10 @@ function supabaseFixture() {
     source: "",
     in_repertoire: false,
     suggestion_parts: ["entrance"],
+    suggestion_proposed_parts: ["offertory"],
+    suggestion_proposal_confidence: "medium",
+    suggestion_proposal_reason: "Needs a human review.",
+    suggestion_review_status: "needs-review",
   };
   const privateRow = {
     ...publicRow,
@@ -171,9 +175,27 @@ test("Supabase repertoire projections keep public browsing separate from editor 
 
   assert.equal(publicSong.lyrics, "");
   assert.equal(publicSong.inRepertoire, false);
+  assert.deepEqual(publicSong.suggestionProposedParts, ["offertory"]);
+  assert.equal(publicSong.suggestionProposalConfidence, "medium");
+  assert.equal(publicSong.suggestionReviewStatus, "needs-review");
   assert.equal(privateSong.lyrics, "Come to the feast");
   assert.doesNotMatch(calls.selects[0].columns, /song_lyrics/);
   assert.match(calls.selects[1].columns, /song_lyrics/);
+});
+
+test("Supabase category review records an explicit human decision", async () => {
+  const { calls, supabase } = supabaseFixture();
+  const store = storeModule.createSupabaseStore(supabase, { songCatalog });
+
+  await store.reviewSongSuggestionParts("song-1", ["offertory", "communion"]);
+
+  assert.deepEqual(calls.rpcs[0], {
+    name: "review_song_suggestion_parts",
+    params: {
+      p_song_id: "song-1",
+      p_suggestion_parts: ["offertory", "communion"],
+    },
+  });
 });
 
 test("Supabase repertoire mutations send validated canonical RPC parameters", async () => {

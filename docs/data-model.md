@@ -140,6 +140,10 @@ the Auth user UUID audit columns remain readable only by the service role.
 | `responsorial_citations` | Known exact lectionary citations for this setting |
 | `in_repertoire` | Whether the song has a legacy/manual repertoire flag or has ever appeared in a Mass |
 | `suggestion_parts` | Soft allow-list for automatic recommendations |
+| `suggestion_proposed_parts` | Inactive position proposals awaiting human review |
+| `suggestion_proposal_confidence` | `low`, `medium`, or `high` confidence for the proposal |
+| `suggestion_proposal_reason` | Short, lyric-free explanation of the proposal's evidence or uncertainty |
+| `suggestion_review_status` | `reviewed`, `evidence-backed`, or `needs-review` |
 | audit fields | Private creator and last-editor/time data |
 
 Only `title` is required. Duplicate titles represent distinct UUID records and are
@@ -161,6 +165,13 @@ The suggestion array accepts the normal classes `entrance`, `kyrie`, `gloria`, `
 `communion`, and `recessional`. Both Communion plan slots use the single `communion`
 class. An empty array means that the song remains searchable and assignable but is not
 automatically suggested.
+
+Only `suggestion_parts` participates in ranking. Uncertain catalogue-wide results are
+stored separately in `suggestion_proposed_parts` with a confidence and reason. The
+repertoire editor exposes these songs as a review queue; approving or changing the
+positions clears the proposal and records `suggestion_review_status = reviewed`.
+Evidence-backed positions come from actual Mass use, exact Responsorial identity,
+functional Mass texts, or unmistakable positional titles.
 
 A song offered for the `psalm` slot must have a responsorial book and number. Psalms
 with dual Grail/modern numbering use the greater number (for example `84(85)` is
@@ -275,6 +286,7 @@ like a successful no-op.
 | `create_song` | Create an unassigned canonical song and optional private lyric row |
 | `create_and_assign_song` | Atomically create a song and assign it to one plan slot |
 | `update_song` | Replace canonical public fields, suggestion parts, and optional lyric row |
+| `review_song_suggestion_parts` | Record an editor's explicit decision for a category-review queue item |
 | `save_plan_song_lyrics` | Save one private edited lyric copy for the currently assigned slot |
 | `clear_plan_song_lyrics` | Return one slot to canonical lyrics |
 | `save_reading_override` | Add or replace one structured slot override |

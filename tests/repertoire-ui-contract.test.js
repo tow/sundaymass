@@ -21,6 +21,7 @@ test("the public repertoire is a first-class mobile page linked from the app", (
   assert.match(repertoire, /id="repertoireScope"/);
   assert.match(repertoire, /data-repertoire-scope="repertoire"/);
   assert.match(repertoire, /data-repertoire-scope="library"/);
+  assert.match(repertoire, /data-repertoire-scope="review"/);
   assert.match(repertoire, /id="repertoireEditorActions"/);
   assert.match(repertoire, /id="addRepertoireSong"/);
 });
@@ -74,13 +75,17 @@ test("repertoire editors can create and update canonical songs without assigning
   assert.match(store, /\.rpc\("create_song"/);
   assert.match(store, /async updateSong\(/);
   assert.match(store, /\.rpc\("update_song"/);
+  assert.match(store, /async reviewSongSuggestionParts\(/);
+  assert.match(store, /\.rpc\("review_song_suggestion_parts"/);
   assert.match(html, /id="songSuggestionParts"/);
   assert.match(html, /id="songInRepertoire"/);
   assert.match(html, /leave blank to exclude it from suggestions/);
   assert.match(app, /const songForm=SongForm\.create/);
-  assert.match(app, /songForm\.write\(song\)/);
+  assert.match(app, /songForm\.write\(formSong\)/);
   assert.match(app, /song\.inRepertoire/);
   assert.match(app, /Extended library/);
+  assert.match(app, /Needs category review/);
+  assert.match(app, /suggestionProposalConfidence/);
   assert.match(html, /Only authorised editors can change song details/);
   assert.match(app, /status\.staleSongIds/);
   assert.match(app, /EmbeddingRepair\.repairStaleSongsOnce/);

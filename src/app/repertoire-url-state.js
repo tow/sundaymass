@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
 
-  const scopes = new Set(["repertoire", "library"]);
+  const scopes = new Set(["repertoire", "library", "review"]);
   const maxQueryLength = 200;
 
   function normalize(state = {}) {

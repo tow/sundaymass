@@ -24,6 +24,7 @@
     <div class="repertoire-scope" id="repertoireScope" role="group" aria-label="Song collection">
       <button class="selected" type="button" data-repertoire-scope="repertoire" aria-pressed="true">Choir repertoire</button>
       <button type="button" data-repertoire-scope="library" aria-pressed="false">Extended library</button>
+      <button type="button" data-repertoire-scope="review" aria-pressed="false" hidden>Needs review</button>
     </div>
     <label for="repertoireSearch">Search title or author</label>
     <input id="repertoireSearch" type="search" autocomplete="off" placeholder="Search the repertoire">
@@ -70,6 +71,12 @@
           <label><input type="checkbox" value="recessional"> Recessional</label>
         </div>
       </fieldset>
+      <section class="song-category-review" id="songCategoryReview" hidden>
+        <strong>Category review</strong>
+        <p id="songCategoryReviewProposal"></p>
+        <p id="songCategoryReviewReason"></p>
+        <p>Adjust the checked positions above and save to record the human review.</p>
+      </section>
       <fieldset class="responsorial-fields" id="songResponsorialFields" hidden>
         <legend>Responsorial scripture reference</legend>
         <p>Required for Psalm suggestions. Use the planner’s lectionary numbering.</p>

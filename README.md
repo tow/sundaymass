@@ -52,6 +52,11 @@ HTTPS, the planner can be installed to a phone's home screen.
   and choosing either song elsewhere. `communion` and `communion2` share one suggestion
   class. Unclassified songs are omitted from suggestions rather than guessed into
   several positions.
+- Automatic catalogue classification is conservative. Active suggestion positions
+  require Mass-use history, exact Responsorial metadata, a functional Mass text, or an
+  unmistakable positional title. Less certain labels are kept as attributed proposals
+  with confidence and a reason in the repertoire's editor-only “Needs review” queue;
+  they do not influence suggestions until a person reviews them.
 - Only a title is required when creating a song. YouTube, attribution, and lyrics can
   all be added later. Repertoire search is deliberately limited to alphabetical title
   and author matching. Semantic suggestions are shown separately in the song picker

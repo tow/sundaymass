@@ -346,6 +346,20 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
         `/rest/v1/songs?id=eq.${memorialId}&select=in_repertoire`,
       ));
       assert.deepEqual(promoted, [{ in_repertoire: true }]);
+      await expectOk(await editor.request("/rest/v1/rpc/review_song_suggestion_parts", {
+        method: "POST",
+        body: { p_song_id: memorialId, p_suggestion_parts: ["memorial"] },
+      }));
+      const reviewed = await expectOk(await anonymous(
+        `/rest/v1/songs?id=eq.${memorialId}&select=suggestion_parts,suggestion_proposed_parts,suggestion_proposal_confidence,suggestion_proposal_reason,suggestion_review_status`,
+      ));
+      assert.deepEqual(reviewed, [{
+        suggestion_parts: ["memorial"],
+        suggestion_proposed_parts: [],
+        suggestion_proposal_confidence: "",
+        suggestion_proposal_reason: "",
+        suggestion_review_status: "reviewed",
+      }]);
 
       const invalid = await editor.request("/rest/v1/rpc/assign_plan_song", {
         method: "POST",
@@ -543,6 +557,10 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
           p_title: "Forbidden assigned song",
         }],
         ["update_song", { p_song_id: fixtureSong.id, p_title: "Forbidden title" }],
+        ["review_song_suggestion_parts", {
+          p_song_id: fixtureSong.id,
+          p_suggestion_parts: ["entrance"],
+        }],
         ["save_plan_song_lyrics", {
           p_sunday: sunday,
           p_part: "entrance",

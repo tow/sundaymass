@@ -36,6 +36,12 @@ test("repertoire state reads a valid collection and bounded search query", () =>
     RepertoireUrlState.read({ href: "not a URL" }),
     { scope: "repertoire", query: "" },
   );
+  assert.deepEqual(
+    RepertoireUrlState.read({
+      href: "https://example.test/repertoire.html?scope=review",
+    }),
+    { scope: "review", query: "" },
+  );
 });
 
 test("collection navigation pushes a shareable URL with the current query", () => {

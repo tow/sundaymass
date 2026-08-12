@@ -18,12 +18,14 @@ let canReadLyrics=false;
 let signedIn=false;
 let editingSong=null;
 let repairingIndex=false;
+let reviewingCategories=false;
 const initialUrlState=RepertoireUrlState.read(location);
 let repertoireScopeValue=initialUrlState.scope;
 
 const esc=value=>(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const safeYoutube=SongPresentation.safeYoutubeUrl;
 const details=SongPresentation.repertoireDetails;
+const partLabel=key=>MassMusicParts.byKey(key)?.label?.replace(/ 1$/,"")||key;
 const songForm=SongForm.create({
   title:songTitle,
   youtubeUrl:songYoutube,
@@ -42,25 +44,38 @@ const songForm=SongForm.create({
 
 function render(){
   const query=repertoireSearch.value.trim().toLocaleLowerCase();
-  const scoped=songs.filter(song=>repertoireScopeValue==="library"
-    ? song.inRepertoire===false
-    : song.inRepertoire!==false);
+  const scoped=songs.filter(song=>repertoireScopeValue==="review"
+    ? isEditor&&song.suggestionReviewStatus==="needs-review"
+    : repertoireScopeValue==="library"
+      ? song.inRepertoire===false
+      : song.inRepertoire!==false);
   const visible=scoped.filter(song=>!query || `${song.title} ${song.authors}`.toLocaleLowerCase().includes(query));
-  repertoireCount.textContent=`${visible.length} ${repertoireScopeValue==="library"?"extended library":"repertoire"} ${visible.length===1?"song":"songs"}`;
+  const scopeLabel=repertoireScopeValue==="review"?"needing review"
+    : repertoireScopeValue==="library"?"extended library":"repertoire";
+  repertoireCount.textContent=`${visible.length} ${scopeLabel} ${visible.length===1?"song":"songs"}`;
   repertoireScope.querySelectorAll("[data-repertoire-scope]").forEach(button=>{
     const selected=button.dataset.repertoireScope===repertoireScopeValue;
+    if(button.dataset.repertoireScope==="review")button.hidden=!isEditor;
     button.classList.toggle("selected",selected);
     button.setAttribute("aria-pressed",String(selected));
   });
   repertoireList.innerHTML=visible.map(song=>{
     const link=safeYoutube(song.youtubeUrl);
     const badge=song.inRepertoire===false?`<span class="song-library-badge">Extended library</span>`:"";
-    return `<article class="song-card"><div class="song-card-copy">${badge}<h2>${esc(song.title)}`
+    const review=song.suggestionReviewStatus==="needs-review";
+    const reviewBadge=review&&isEditor?`<span class="song-review-badge">Needs category review</span>`:"";
+    const proposed=(song.suggestionProposedParts||[]).map(partLabel).join(", ")||"No position proposed";
+    const reviewDetail=review&&isEditor
+      ? `<p class="song-review-detail"><strong>Proposed (${esc(song.suggestionProposalConfidence||"unrated")} confidence):</strong> ${esc(proposed)}<br>${esc(song.suggestionProposalReason)}</p>`
+      : "";
+    return `<article class="song-card"><div class="song-card-copy">${badge}${reviewBadge}<h2>${esc(song.title)}`
       +(link?` <a href="${esc(link)}" target="_blank" rel="noopener">Listen ↗</a>`:"")
       +`</h2>`
       +details(song).map(line=>`<p>${esc(line)}</p>`).join("")
+      +reviewDetail
       +`</div><div class="song-card-actions">`
       +(canReadLyrics?`<button type="button" data-view-lyrics="${song.id}">View lyrics</button>`:"")
+      +(isEditor&&review?`<button type="button" data-review-song="${song.id}">Review categories</button>`:"")
       +(isEditor?`<button type="button" data-edit-song="${song.id}">Edit details</button>`:"")
       +`</div></article>`;
   }).join("") || `<p class="empty-state">No songs match that search.</p>`;
@@ -84,16 +99,30 @@ async function loadSongs(){
 function draft(){
   return songForm.read();
 }
-function openEditor(song){
+function openEditor(song,{review=false}={}){
   editingSong=song||null;
-  editorTitle.textContent=song?"Edit song details":"Add a song";
-  songForm.write(song);
+  reviewingCategories=Boolean(song&&review);
+  editorTitle.textContent=reviewingCategories?"Review suggestion categories"
+    :song?"Edit song details":"Add a song";
+  const formSong=reviewingCategories?{
+    ...song,
+    suggestionParts:[...new Set([
+      ...(song.suggestionParts||[]),
+      ...(song.suggestionProposedParts||[]),
+    ])],
+  }:song;
+  songForm.write(formSong);
+  songCategoryReview.hidden=!reviewingCategories;
+  songCategoryReviewProposal.textContent=reviewingCategories
+    ? `Proposal: ${(song.suggestionProposedParts||[]).map(partLabel).join(", ")||"No position"} · ${song.suggestionProposalConfidence||"unrated"} confidence.`
+    :"";
+  songCategoryReviewReason.textContent=reviewingCategories?song.suggestionProposalReason||"":"";
   songEditorError.textContent="";
   songEditorDialog.showModal();
 }
-async function loadForEditing(id){
+async function loadForEditing(id,{review=false}={}){
   repertoireStatus.textContent="Loading song…";
-  try{ openEditor(await store.getSong(id)); repertoireStatus.textContent="Up to date"; }
+  try{ openEditor(await store.getSong(id),{review}); repertoireStatus.textContent="Up to date"; }
   catch(error){ appLogger.error(error); repertoireStatus.textContent="Could not load song"; }
 }
 async function refreshIndex(){
@@ -198,6 +227,8 @@ window.addEventListener("popstate",()=>{
 repertoireList.addEventListener("click",event=>{
   const lyricsButton=event.target.closest("[data-view-lyrics]");
   if(lyricsButton&&canReadLyrics){loadLyrics(lyricsButton.dataset.viewLyrics);return;}
+  const reviewButton=event.target.closest("[data-review-song]");
+  if(reviewButton&&isEditor){loadForEditing(reviewButton.dataset.reviewSong,{review:true});return;}
   const button=event.target.closest("[data-edit-song]");
   if(button&&isEditor)loadForEditing(button.dataset.editSong);
 });
@@ -232,6 +263,9 @@ songEditorForm.addEventListener("submit",async event=>{
     const saved=editingSong
       ? await store.updateSong(editingSong.id,validation.value)
       : await store.createSong(validation.value);
+    if(editingSong&&reviewingCategories){
+      await store.reviewSongSuggestionParts(editingSong.id,validation.value.suggestionParts);
+    }
     await store.syncSongs([saved.id])
       .catch(error=>appLogger.warn("Song indexing failed",error));
     songEditorDialog.close();

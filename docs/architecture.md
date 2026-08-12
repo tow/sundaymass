@@ -213,6 +213,12 @@ Candidate membership affects presentation and ranking, not song identity or
 eligibility. Assigning a candidate records that the choir has now used it and promotes
 it permanently into repertoire; existing Mass history is backfilled the same way.
 
+The repertoire page has a separate editor-only category-review collection. Broad or
+uncertain catalogue labels live there as inactive proposals with a confidence and
+reason. Only evidence-backed or human-reviewed `suggestion_parts` reach semantic
+ranking; opening a review item lets an editor accept, change, or clear the proposed
+positions explicitly.
+
 Creating a song and assigning it use one atomic RPC. Editing updates the canonical song,
 so every Mass referencing its UUID sees the new metadata. Lyrics are loaded only for
 an authorised editor editing song details.
