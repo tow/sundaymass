@@ -16,6 +16,14 @@
   const PAGE_PADDING = Object.freeze({ top: 10, side: 10, bottom: 11 });
   // Deliberately monochrome — the booklet is photocopied in bulk, so it must
   // not spend colour ink (no cover flood-fill, greyscale accents only).
+  // Page one carries a compact masthead and then runs straight into lyrics, so
+  // every logical page can hold songs.
+  const MASTHEAD = Object.freeze({
+    eyebrow: "ST JAMES THE APOSTLE · 6PM MASS",
+    eyebrowSize: 7,
+    titleSize: 15,
+    metaSize: 8.5,
+  });
   const COLORS = Object.freeze({
     ink: "#111111",
     heading: "#111111",
@@ -101,17 +109,34 @@
       }));
   }
 
+  // Wrapped by character budget rather than measured width so that the space
+  // reserved during pagination matches what the painter later draws.
+  function layoutMasthead({ celebration, meta, date } = {}) {
+    const titleLines = wrap(
+      celebration || "Sunday Mass",
+      Math.floor(58 * 12 / MASTHEAD.titleSize),
+    );
+    const metaLines = wrap(meta || date || "", Math.floor(92 * 7 / MASTHEAD.metaSize))
+      .filter(Boolean);
+    const height = lineStep(MASTHEAD.eyebrowSize, 1.25) + 1.4
+      + titleLines.length * lineStep(MASTHEAD.titleSize, 1.08)
+      + (metaLines.length ? 1.2 + metaLines.length * lineStep(MASTHEAD.metaSize, 1.3) : 0)
+      + 2.4 + 3;
+    return Object.freeze({ titleLines, metaLines, height });
+  }
+
   function newLyricsPage() {
     return { kind: "lyrics", used: 0, items: [] };
   }
 
-  function paginateLyricsLegacy(assignments, pageCapacity = PAGE_CAPACITY) {
+  function paginateLyricsLegacy(assignments, pageCapacity = PAGE_CAPACITY, mastheadCost = 0) {
     const pages = [];
     const contents = [];
     let page = null;
 
     const startPage = () => {
       page = newLyricsPage();
+      if (!pages.length) page.used = mastheadCost;
       pages.push(page);
       return page;
     };
@@ -142,7 +167,7 @@
       contents.push({
         partLabel: assignment.partLabel,
         title: assignment.title,
-        page: pages.length + 1,
+        page: pages.length,
       });
       addHeader(assignment);
 
@@ -257,7 +282,7 @@
     return 3 + shortSongPenalty + weakSavingsPenalty;
   }
 
-  function appendCandidate(state, layout, startNewPage, capacity, penalty) {
+  function appendCandidate(state, layout, startNewPage, capacity, penalty, mastheadCost) {
     const pages = state.pages.map(page => ({ ...page, blocks: page.blocks.slice() }));
     let score = state.score + penalty;
     if (startNewPage || !pages.length) {
@@ -265,7 +290,13 @@
         const leftover = capacity - pages.at(-1).used;
         score += leftover * leftover * 0.035;
       }
-      pages.push({ kind: "lyrics", layout: "adaptive", used: 0, blocks: [], items: [] });
+      pages.push({
+        kind: "lyrics",
+        layout: "adaptive",
+        used: pages.length ? 0 : mastheadCost,
+        blocks: [],
+        items: [],
+      });
     }
     const page = pages.at(-1);
     const gap = page.blocks.length ? SONG_GAP : 0;
@@ -275,11 +306,12 @@
     return { pages, score };
   }
 
-  function chooseCandidate(assignments, fontSize) {
+  function chooseCandidate(assignments, fontSize, masthead) {
     const songs = assignments.filter(assignment => bookletStanzas(assignment).length);
     if (!songs.length) return { pages: [], contents: [] };
-    const targetPages = Math.min(BOOKLET_PAGES - 1, songs.length);
+    const targetPages = Math.min(BOOKLET_PAGES, songs.length);
     const capacity = PAGE_CAPACITY * 8.5 / fontSize;
+    const mastheadCost = masthead.height / lineStep(fontSize, 1.15);
     let states = [{ pages: [], score: 0 }];
 
     songs.forEach(assignment => {
@@ -294,10 +326,12 @@
           const current = state.pages.at(-1);
           const gap = current?.blocks.length ? SONG_GAP : 0;
           if (current && current.used + gap + layout.height <= capacity) {
-            next.push(appendCandidate(state, layout, false, capacity, penalty));
+            next.push(appendCandidate(state, layout, false, capacity, penalty, mastheadCost));
           }
-          if (!current || state.pages.length < targetPages) {
-            next.push(appendCandidate(state, layout, true, capacity, penalty));
+          const opening = state.pages.length ? 0 : mastheadCost;
+          if ((!current || state.pages.length < targetPages)
+            && opening + layout.height <= capacity) {
+            next.push(appendCandidate(state, layout, true, capacity, penalty, mastheadCost));
           }
         });
       });
@@ -326,28 +360,29 @@
       page.blocks.forEach(block => contents.push({
         partLabel: block.assignment.partLabel,
         title: block.assignment.title,
-        page: pageIndex + 2,
+        page: pageIndex + 1,
       }));
     });
     return { pages: chosen.pages, contents, fontSize, score: chosen.score };
   }
 
-  function paginateLyrics(assignments) {
+  function paginateLyrics(assignments, masthead = layoutMasthead()) {
     for (const fontSize of FONT_CANDIDATES) {
-      const candidate = chooseCandidate(assignments, fontSize);
+      const candidate = chooseCandidate(assignments, fontSize, masthead);
       if (candidate) return candidate;
     }
-    const legacy = paginateLyricsLegacy(assignments);
+    const mastheadCost = masthead.height / lineStep(8.5, 1.15);
+    const legacy = paginateLyricsLegacy(assignments, PAGE_CAPACITY, mastheadCost);
     const songCount = assignments.filter(assignment => bookletStanzas(assignment).length).length;
-    const targetPages = Math.min(BOOKLET_PAGES - 1, songCount);
-    if (songCount < BOOKLET_PAGES - 1 || legacy.pages.length >= targetPages) return legacy;
+    const targetPages = Math.min(BOOKLET_PAGES, songCount);
+    if (songCount < BOOKLET_PAGES || legacy.pages.length >= targetPages) return legacy;
 
     // If one unusually long song forced the whole-song candidates to fail, the
     // old paginator can otherwise leave blank pages. Tighten its capacity until
-    // it fills the seven lyric pages; this only adds page breaks and never risks
+    // it fills every lyric page; this only adds page breaks and never risks
     // overflow because the rendered page capacity remains the original 48 units.
     for (let capacity = PAGE_CAPACITY - 0.5; capacity >= 12; capacity -= 0.5) {
-      const candidate = paginateLyricsLegacy(assignments, capacity);
+      const candidate = paginateLyricsLegacy(assignments, capacity, mastheadCost);
       if (candidate.pages.length === targetPages) return candidate;
       if (candidate.pages.length > targetPages) break;
     }
@@ -355,11 +390,10 @@
   }
 
   function logicalPages({ date, celebration, meta, assignments }) {
-    const { pages: lyricPages } = paginateLyrics(assignments);
-    const pages = [
-      { kind: "cover", date, celebration, meta },
-      ...lyricPages,
-    ];
+    const masthead = layoutMasthead({ date, celebration, meta });
+    const { pages: lyricPages } = paginateLyrics(assignments, masthead);
+    const pages = (lyricPages.length ? lyricPages : [newLyricsPage()])
+      .map((page, index) => (index ? page : { ...page, masthead }));
     if (pages.length > BOOKLET_PAGES) {
       throw new Error(
         `Booklet needs ${pages.length} logical pages; the maximum is ${BOOKLET_PAGES}`,
@@ -426,39 +460,27 @@
     return doc.splitTextToSize(String(text || ""), maxWidth);
   }
 
-  function paintCover(doc, page, x0) {
-    const left = x0 + 14;
-    const width = SHEET.half - 28;
-    const titleLines = splitToWidth(doc, page.celebration || "Sunday Mass", {
-      font: "times", style: "bold", size: 25, maxWidth: width,
+  function paintMasthead(doc, masthead, left, width, top) {
+    let y = writeLines(doc, [MASTHEAD.eyebrow], left, top, {
+      style: "bold", size: MASTHEAD.eyebrowSize, color: COLORS.label,
+      charSpace: 0.9 * MM_PER_POINT,
     });
-    const metaLines = splitToWidth(doc, page.meta || page.date || "", {
-      font: "helvetica", style: "normal", size: 11, maxWidth: width,
+    y += 1.4;
+    y = writeLines(doc, masthead.titleLines, left, y, {
+      font: "times", style: "bold", size: MASTHEAD.titleSize,
+      color: COLORS.heading, lineHeight: 1.08,
     });
-    const total = lineStep(8, 1.25) + 10
-      + titleLines.length * lineStep(25, 1.08) + 4
-      + 4 + metaLines.length * lineStep(11, 1.35) + 10
-      + lineStep(9, 1.25);
-    let y = (SHEET.h - total) / 2;
-    y = writeLines(doc, ["ST JAMES THE APOSTLE · 6PM MASS"], left, y, {
-      style: "bold", size: 8, color: COLORS.label, charSpace: 1.1 * MM_PER_POINT,
-    });
-    y += 10;
-    y = writeLines(doc, titleLines, left, y, {
-      font: "times", style: "bold", size: 25, color: COLORS.heading, lineHeight: 1.08,
-    });
-    y += 4;
+    if (masthead.metaLines.length) {
+      y += 1.2;
+      y = writeLines(doc, masthead.metaLines, left, y, {
+        size: MASTHEAD.metaSize, color: COLORS.muted, lineHeight: 1.3,
+      });
+    }
+    y += 2.4;
     doc.setDrawColor(COLORS.rule);
-    doc.setLineWidth(1.5 * MM_PER_POINT);
-    doc.line(left, y, left + 22, y);
-    y += 4;
-    y = writeLines(doc, metaLines, left, y, {
-      size: 11, color: COLORS.muted, lineHeight: 1.35,
-    });
-    y += 10;
-    writeLines(doc, ["CONGREGATIONAL SONG BOOKLET"], left, y, {
-      style: "bold", size: 9, color: COLORS.label, charSpace: 0.7 * MM_PER_POINT,
-    });
+    doc.setLineWidth(1.2 * MM_PER_POINT);
+    doc.line(left, y, left + width, y);
+    return top + masthead.height;
   }
 
   function paintBackCover(doc, page, x0) {
@@ -538,7 +560,9 @@
     const left = x0 + PAGE_PADDING.side;
     const width = SHEET.half - 2 * PAGE_PADDING.side;
     const columnGap = 7;
-    let blockTop = PAGE_PADDING.top;
+    let blockTop = page.masthead
+      ? paintMasthead(doc, page.masthead, left, width, PAGE_PADDING.top)
+      : PAGE_PADDING.top;
 
     page.blocks.forEach((block, blockIndex) => {
       if (blockIndex) blockTop += lineStep(block.fontSize, 1.15) * SONG_GAP;
@@ -574,7 +598,9 @@
   function paintLyricsPage(doc, page, x0) {
     const left = x0 + PAGE_PADDING.side;
     const width = SHEET.half - 2 * PAGE_PADDING.side;
-    let y = PAGE_PADDING.top;
+    let y = page.masthead
+      ? paintMasthead(doc, page.masthead, left, width, PAGE_PADDING.top)
+      : PAGE_PADDING.top;
     page.items.forEach((item, index) => {
       if (item.type === "song-header") {
         if (index) y += 2.7;
@@ -599,7 +625,6 @@
   }
 
   function paintPage(doc, page, x0) {
-    if (page.kind === "cover") return paintCover(doc, page, x0);
     if (page.kind === "back-cover") return paintBackCover(doc, page, x0);
     if (page.kind === "blank") return undefined;
     if (page.layout === "adaptive") return paintAdaptiveLyricsPage(doc, page, x0);

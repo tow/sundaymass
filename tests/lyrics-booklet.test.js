@@ -32,11 +32,45 @@ test("logical booklet pages are fixed to an eight-page, two-sheet signature", ()
     assignments: [assignment()],
   });
 
-  assert.equal(pages[0].kind, "cover");
+  assert.equal(pages[0].kind, "lyrics");
   assert.equal(pages.some(page => page.kind === "contents"), false);
   assert.equal(pages.at(-1).kind, "back-cover");
   assert.equal(pages.length, 8);
   assert.deepEqual(pages.map(page => page.number), [1, 2, 3, 4, 5, 6, 7, 8]);
+});
+
+test("the masthead sits on page one only, above that page's lyrics", () => {
+  const pages = LyricsBooklet.logicalPages({
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "Sunday · Year A",
+    assignments: [assignment()],
+  });
+
+  assert.deepEqual(pages[0].masthead.titleLines, ["18th Sunday in Ordinary Time"]);
+  assert.deepEqual(pages[0].masthead.metaLines, ["Sunday · Year A"]);
+  assert.ok(pages[0].masthead.height < 30, "the masthead must stay compact");
+  assert.equal(pages[0].blocks.length, 1);
+  assert.equal(pages.slice(1).some(page => page.masthead), false);
+});
+
+test("a mastheaded page one still leaves room for eight pages of lyrics", () => {
+  const assignments = Array.from({ length: 8 }, (__, index) => assignment({
+    partLabel: `Part ${index + 1}`,
+    title: `Song ${index + 1}`,
+  }));
+  const pages = LyricsBooklet.logicalPages({
+    date: "2026-08-02",
+    celebration: "Sunday Mass",
+    meta: "Sunday · Year A",
+    assignments,
+  });
+
+  assert.deepEqual(pages.map(page => page.kind), Array(8).fill("lyrics"));
+  assert.deepEqual(
+    pages.flatMap(page => page.blocks.map(block => block.assignment.title)),
+    assignments.map(item => item.title),
+  );
 });
 
 test("the booklet never grows beyond two sheets", () => {
@@ -103,7 +137,7 @@ test("the booklet PDF has one A4 landscape page per imposed sheet with every lyr
     "Test Author · © 2026 Test Publisher",
     "Come to the feast",
     "Refrain:",
-    "CONGREGATIONAL SONG BOOKLET",
+    "ST JAMES THE APOSTLE",
   ].forEach(text => assert.ok(source.includes(text), `PDF should contain "${text}"`));
 });
 
@@ -166,7 +200,7 @@ test("long lyrics continue on later logical pages without overflowing capacity",
   );
 });
 
-test("candidate scoring keeps fourteen varied songs whole across seven lyric pages", () => {
+test("candidate scoring keeps fourteen varied songs whole across every lyric page", () => {
   const assignments = Array.from({ length: 14 }, (_, index) => assignment({
     partLabel: `Part ${index + 1}`,
     title: `Song ${index + 1}`,
@@ -182,7 +216,7 @@ test("candidate scoring keeps fourteen varied songs whole across seven lyric pag
   }));
   const result = LyricsBooklet.paginateLyrics(assignments);
 
-  assert.equal(result.pages.length, 7);
+  assert.equal(result.pages.length, 8);
   assert.ok(result.fontSize > 8.5);
   assert.ok(result.pages.every(page => page.blocks.length > 0));
   result.pages.forEach(page => {
@@ -210,10 +244,7 @@ test("candidate scoring keeps fourteen varied songs whole across seven lyric pag
     meta: "Sunday · Year A",
     assignments,
   });
-  assert.deepEqual(logical.map(page => page.kind), [
-    "cover",
-    "lyrics", "lyrics", "lyrics", "lyrics", "lyrics", "lyrics", "lyrics",
-  ]);
+  assert.deepEqual(logical.map(page => page.kind), Array(8).fill("lyrics"));
 
   const source = pdfSource(LyricsBooklet.buildPdf(jsPDF, {
     date: "2026-08-02",
@@ -234,7 +265,7 @@ test("short songs remain single-column", () => {
   assert.equal(result.pages[0].blocks[0].columns, 1);
 });
 
-test("fourteen songs still fill seven lyric pages when an oversized song must continue", () => {
+test("fourteen songs still fill every lyric page when an oversized song must continue", () => {
   const assignments = Array.from({ length: 14 }, (_, index) => assignment({
     partLabel: `Part ${index + 1}`,
     title: `Song ${index + 1}`,
@@ -250,14 +281,59 @@ test("fourteen songs still fill seven lyric pages when an oversized song must co
   }));
   const result = LyricsBooklet.paginateLyrics(assignments);
 
-  assert.equal(result.pages.length, 7);
+  assert.equal(result.pages.length, 8);
   assert.ok(result.pages.every(page => page.items.length > 0));
   assert.ok(result.pages.flatMap(page => page.items)
     .some(item => item.type === "song-header" && item.continued));
   assert.deepEqual(
     LyricsBooklet.logicalPages({ assignments }).map(page => page.kind),
-    ["cover", "lyrics", "lyrics", "lyrics", "lyrics", "lyrics", "lyrics", "lyrics"],
+    Array(8).fill("lyrics"),
   );
+});
+
+// Page one now carries both the masthead and lyrics, so its content is the most
+// likely to run off the bottom of the folded A5 page.
+function recordingPdf(marks) {
+  let sheet = 0;
+  let size = 10;
+  const doc = {
+    setProperties() {},
+    addPage() { sheet += 1; },
+    setFont() {},
+    setTextColor() {},
+    setDrawColor() {},
+    setLineWidth() {},
+    setFontSize(value) { size = value; },
+    text(value, x, y) { marks.push({ sheet, value: String(value), x, y, size }); },
+    line(x1, y1, x2, y2) { marks.push({ sheet, value: "", x: x1, y: Math.max(y1, y2), size: 0 }); },
+    splitTextToSize(value) { return [String(value)]; },
+    getTextWidth(value) { return String(value).length * size * 0.5 * 25.4 / 72; },
+  };
+  return function StubPdf() { return doc; };
+}
+
+test("page one keeps its masthead and lyrics inside the printable area", () => {
+  const marks = [];
+  LyricsBooklet.buildPdf(recordingPdf(marks), {
+    date: "2026-08-02",
+    celebration: "The Nativity of Our Lord Jesus Christ at Midnight",
+    meta: "Sunday · Year A",
+    assignments: Array.from({ length: 8 }, (__, index) => assignment({
+      partLabel: `Part ${index + 1}`,
+      title: `Song ${index + 1}`,
+      lyrics: Array.from({ length: 24 }, (___, line) =>
+        `Song ${index + 1} congregational lyric line ${line + 1}`).join("\n"),
+    })),
+  });
+
+  // Logical page one is imposed on the right half of the first sheet.
+  const pageOne = marks.filter(mark => mark.sheet === 0 && mark.x >= 148.5);
+  assert.ok(pageOne.some(mark => mark.value.startsWith("ST JAMES")));
+  assert.ok(pageOne.some(mark => mark.value.includes("congregational lyric line")));
+  const bottom = Math.max(...pageOne
+    .filter(mark => mark.value && !/^\d+$/.test(mark.value))
+    .map(mark => mark.y + mark.size * 1.15 * 25.4 / 72));
+  assert.ok(bottom <= 199, `page one content reaches ${bottom.toFixed(1)}mm of 199mm`);
 });
 
 test("the selected candidate uses its larger lyric font in the PDF", () => {
