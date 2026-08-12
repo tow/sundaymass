@@ -307,12 +307,14 @@ test("logged-out users can browse suggestions for an empty slot without editing"
             title: "Bread of Life",
             authors: "Composer One",
             youtubeUrl: "https://youtu.be/AAAAAAAAAAA",
+            matchingCitation: "Isaiah 55:1-3",
           },
           {
             id: "public-2",
             title: "One Bread",
             authors: "Composer Two",
             youtubeUrl: "https://example.com/not-youtube",
+            matchingCitation: "Matthew 14:13-21",
           },
         ]);
       },
@@ -337,6 +339,10 @@ test("logged-out users can browse suggestions for an empty slot without editing"
   assert.deepEqual(
     await page.locator("#songSuggestionResults .song-suggestion").allTextContents(),
     ["Bread of Life Listen ↗Composer One", "One BreadComposer Two"],
+  );
+  assert.deepEqual(
+    await page.locator("#songSuggestionResults .song-suggestion-group h3").allTextContents(),
+    ["First Reading: Isaiah 55:1-3", "Gospel: Matthew 14:13-21"],
   );
   const listen = page.locator("#songSuggestionResults .song-suggestion-listen");
   assert.equal(await listen.count(), 1);

@@ -112,6 +112,30 @@ test("semantic suggestions are grouped by the reading matched independently", ()
   assert.match(result.html, /data-song-suggestion-index="1"/);
 });
 
+test("grouped suggestions name the reading slot they matched", () => {
+  const result = view.renderSuggestions({
+    songs: [
+      {
+        ...songs[0],
+        matchingCitation: "Isaiah 55:1-3",
+        matchingReadingLabel: "First Reading",
+      },
+      {
+        ...songs[1],
+        matchingCitation: "John 6:24-35",
+        matchingReadingLabel: "Gospel",
+      },
+    ],
+    selectedSong: null,
+  });
+
+  assert.match(result.html, /<h3>First Reading: Isaiah 55:1-3<\/h3>/);
+  assert.match(result.html, /<h3>Gospel: John 6:24-35<\/h3>/);
+  assert.equal((result.html.match(/song-suggestion-group/g) || []).length, 2);
+  assert.match(result.html, /data-song-suggestion-index="0"/);
+  assert.match(result.html, /data-song-suggestion-index="1"/);
+});
+
 test("read-only suggestions cannot be selected or assigned", () => {
   const result = view.renderSuggestions({
     songs: [{

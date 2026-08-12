@@ -221,6 +221,12 @@ function renderMusicPlan(){
 }
 function computedCitation(slot){ return plannerState.computedCitation(slot); }
 function displayedCitation(slot){ return plannerState.displayedCitation(slot); }
+function readingSlotLabel(citation){
+  const wanted=String(citation||"").trim();
+  if(!wanted) return "";
+  const slot=READING_SLOTS.find(value=>String(displayedCitation(value)||"").trim()===wanted);
+  return slot?slot.label:"";
+}
 const readingWorkflow=ReadingWorkflow.create({
   elements:{
     launch:liturgicalEditLaunch,
@@ -427,6 +433,7 @@ const songWorkflow=SongWorkflow.create({
   getPreviousDate:()=>calendarNavigation.previousSunday(current()).d,
   getReadingCitations:()=>READING_SLOTS.map(slot=>displayedCitation(slot)).filter(Boolean),
   getPsalmCitation:()=>displayedCitation(READING_SLOTS.find(slot=>slot.key==="psalm")),
+  readingLabelFor:citation=>readingSlotLabel(citation),
   getSongs:plannerState.songs,
   openModal,
   onStatus:setSyncStatus,

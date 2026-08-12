@@ -81,6 +81,37 @@ test("opening keeps independently ranked suggestions for every reading", async (
   assert.equal(state.states[0].suggestionStatus, "loading");
 });
 
+test("suggestions carry the label of the reading they matched", async () => {
+  const controller = SongPickerController.create({
+    getStore: () => ({
+      async suggestSongs() {
+        return [
+          { id: "one", title: "One", matchingCitation: "Isaiah 55:1-3" },
+          { id: "two", title: "Two", matchingCitation: " John 6:24-35 " },
+          { id: "three", title: "Three", matchingCitation: "Sirach 3:2-6" },
+          { id: "four", title: "Four" },
+        ];
+      },
+    }),
+    isEditor: () => true,
+    getPreviousDate: () => "",
+    getReadingCitations: () => ["Isaiah 55:1-3", "John 6:24-35"],
+    readingLabelFor: citation => ({
+      "Isaiah 55:1-3": "First Reading",
+      "John 6:24-35": "Gospel",
+    })[citation] || "",
+    suggestionPartFor: part => part,
+    onChange: () => {},
+  });
+
+  await controller.open("communion");
+
+  assert.deepEqual(
+    controller.state().suggestions.map(song => song.matchingReadingLabel),
+    ["First Reading", "Gospel", undefined, undefined],
+  );
+});
+
 test("opening loads the matching part from the previous Sunday", async () => {
   const state = harness();
   const planCalls = [];

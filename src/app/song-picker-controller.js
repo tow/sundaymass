@@ -8,6 +8,7 @@
     getPreviousDate,
     getReadingCitations,
     getPsalmCitation = () => "",
+    readingLabelFor = () => "",
     suggestionPartFor,
     onChange,
     logger = console,
@@ -29,6 +30,12 @@
         suggestions: [],
         suggestionStatus: "idle",
       };
+    }
+
+    function tagged(song) {
+      const citation = String(song?.matchingCitation || "").trim();
+      const label = citation ? String(readingLabelFor(citation) || "").trim() : "";
+      return label ? { ...song, matchingReadingLabel: label } : song;
     }
 
     function snapshot() {
@@ -89,7 +96,7 @@
             getPsalmCitation(),
           );
           if (generation !== requestGeneration || !value.open) return;
-          value.suggestions = suggestions.slice(0, maxSuggestions);
+          value.suggestions = suggestions.slice(0, maxSuggestions).map(tagged);
           value.suggestionStatus = value.suggestions.length ? "ready" : "empty";
         } catch (error) {
           if (generation !== requestGeneration || !value.open) return;

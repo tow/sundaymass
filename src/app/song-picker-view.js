@@ -36,22 +36,32 @@
       });
     }
 
+    function groupHeading({ label, citation }) {
+      if (label && citation) return `${label}: ${citation}`;
+      if (label) return label;
+      if (citation) return `Reading: ${citation}`;
+      return "";
+    }
+
     function renderSuggestions({ songs, selectedSong, interactive = true }) {
       const groups = [];
       songs.forEach((song, index) => {
         const citation = String(song.matchingCitation || "").trim();
         let group = groups.find(value => value.citation === citation);
         if (!group) {
-          group = { citation, songs: [] };
+          group = {
+            citation,
+            label: String(song.matchingReadingLabel || "").trim(),
+            songs: [],
+          };
           groups.push(group);
         }
         group.songs.push({ song, index });
       });
       return Object.freeze({
         html: groups.map(group => {
-          const heading = group.citation
-            ? `<h3>Reading: ${escapeHtml(group.citation)}</h3>`
-            : "";
+          const title = groupHeading(group);
+          const heading = title ? `<h3>${escapeHtml(title)}</h3>` : "";
           const items = group.songs.map(({ song, index }) => {
             const selected = selectedSong?.id === song.id;
             const listenUrl = interactive ? "" : safeYoutubeUrl(song.youtubeUrl);

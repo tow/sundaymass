@@ -16,6 +16,7 @@
     getPreviousDate,
     getReadingCitations,
     getPsalmCitation,
+    readingLabelFor,
     getSongs,
     onAssigned,
     onCleared,
@@ -47,6 +48,7 @@
       getPreviousDate,
       getReadingCitations,
       getPsalmCitation,
+      readingLabelFor,
       suggestionPartFor,
       onChange: state => {
         pickerState = state;
