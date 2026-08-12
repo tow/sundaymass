@@ -6,7 +6,11 @@
   const PAGE_CAPACITY = 48;
   const LINE_LENGTH = 68;
   const NARROW_LINE_LENGTH = 38;
-  const FONT_CANDIDATES = Object.freeze([11.5, 11, 10.5, 10, 9.5, 9, 8.5]);
+  // Largest first: the booklet is sung from at arm's length in poor light, so
+  // spare space is spent on type size rather than left as margin.
+  const FONT_CANDIDATES = Object.freeze([
+    14, 13.5, 13, 12.5, 12, 11.5, 11, 10.5, 10, 9.5, 9, 8.5,
+  ]);
   const STANZA_GAP = 0.45;
   const SONG_GAP = 0.8;
   const LABEL_PATTERN = /^(?:all|cantor|refrain|response|chorus|bridge|verse(?:\s+\d+)?|coda|repeat)(?::|\b)/i;
@@ -306,13 +310,19 @@
     return { pages, score };
   }
 
-  function chooseCandidate(assignments, fontSize, masthead) {
+  function chooseCandidate(assignments, fontSize, masthead, mastheadOnlyFirstPage = false) {
     const songs = assignments.filter(assignment => bookletStanzas(assignment).length);
     if (!songs.length) return { pages: [], contents: [] };
-    const targetPages = Math.min(BOOKLET_PAGES, songs.length);
     const capacity = PAGE_CAPACITY * 8.5 / fontSize;
     const mastheadCost = masthead.height / lineStep(fontSize, 1.15);
-    let states = [{ pages: [], score: 0 }];
+    // Giving the masthead a page of its own costs a page of lyrics but frees the
+    // first song from having to fit beneath it, which can buy a larger font for
+    // the whole booklet.
+    const reserved = mastheadOnlyFirstPage
+      ? [{ kind: "lyrics", layout: "adaptive", used: capacity, blocks: [], items: [] }]
+      : [];
+    const targetPages = Math.min(BOOKLET_PAGES, songs.length + reserved.length);
+    let states = [{ pages: reserved, score: 0 }];
 
     songs.forEach(assignment => {
       const single = songLayout(assignment, fontSize, 1);
@@ -368,7 +378,11 @@
 
   function paginateLyrics(assignments, masthead = layoutMasthead()) {
     for (const fontSize of FONT_CANDIDATES) {
-      const candidate = chooseCandidate(assignments, fontSize, masthead);
+      // Lyrics beneath the masthead are worth a page, but never worth shrinking
+      // the type, so a masthead-only first page is tried at the same size before
+      // moving down the font ladder.
+      const candidate = chooseCandidate(assignments, fontSize, masthead)
+        || chooseCandidate(assignments, fontSize, masthead, true);
       if (candidate) return candidate;
     }
     const mastheadCost = masthead.height / lineStep(8.5, 1.15);

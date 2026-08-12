@@ -344,5 +344,5 @@ test("the selected candidate uses its larger lyric font in the PDF", () => {
     assignments: [assignment()],
   });
 
-  assert.match(pdfSource(doc), /11\.5 Tf/);
+  assert.match(pdfSource(doc), /14 Tf/);
 });
