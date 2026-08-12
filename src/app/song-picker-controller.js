@@ -11,7 +11,7 @@
     suggestionPartFor,
     onChange,
     logger = console,
-    maxSuggestions = 3,
+    maxSuggestions = 24,
   }) {
     let generation = 0;
     let searchRequest = 0;

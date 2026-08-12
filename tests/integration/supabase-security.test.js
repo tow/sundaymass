@@ -330,6 +330,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
         body: {
           p_title: `Memorial-only ${suffix}`,
           p_suggestion_parts: ["memorial"],
+          p_in_repertoire: false,
         },
       }));
       songIds.push(memorialId);
@@ -341,6 +342,10 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
         `/rest/v1/plan_songs?sunday=eq.${sunday}&part=eq.communion&select=song_id`,
       ));
       assert.deepEqual(assignment, [{ song_id: memorialId }]);
+      const promoted = await expectOk(await service(
+        `/rest/v1/songs?id=eq.${memorialId}&select=in_repertoire`,
+      ));
+      assert.deepEqual(promoted, [{ in_repertoire: true }]);
 
       const invalid = await editor.request("/rest/v1/rpc/assign_plan_song", {
         method: "POST",
@@ -594,19 +599,36 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
           p_in_repertoire: false,
         },
       }));
-      songIds.push(entranceId, communionId, libraryEntranceId);
-
-      const citation = `Test Reading ${suffix}`;
-      readingCitations.push(citation);
-      const embedding = new Array(384).fill(0);
-      embedding[0] = 1;
-      await expectOk(await service("/rest/v1/reading_embeddings", {
+      const gospelEntranceId = await expectOk(await editor.request("/rest/v1/rpc/create_song", {
         method: "POST",
         body: {
-          citation,
-          content_hash: `reading-${suffix}`,
-          embedding,
+          p_title: `Gospel entrance ${suffix}`,
+          p_suggestion_parts: ["entrance"],
         },
+      }));
+      songIds.push(entranceId, communionId, libraryEntranceId, gospelEntranceId);
+
+      const citation = `Test Reading ${suffix}`;
+      const gospelCitation = `Test Gospel ${suffix}`;
+      readingCitations.push(citation, gospelCitation);
+      const embedding = new Array(384).fill(0);
+      embedding[0] = 1;
+      const gospelEmbedding = new Array(384).fill(0);
+      gospelEmbedding[1] = 1;
+      await expectOk(await service("/rest/v1/reading_embeddings", {
+        method: "POST",
+        body: [
+          {
+            citation,
+            content_hash: `reading-${suffix}`,
+            embedding,
+          },
+          {
+            citation: gospelCitation,
+            content_hash: `gospel-${suffix}`,
+            embedding: gospelEmbedding,
+          },
+        ],
       }));
       await expectOk(await service("/rest/v1/song_embeddings", {
         method: "POST",
@@ -626,6 +648,11 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
             content_hash: `library-entrance-${suffix}`,
             embedding,
           },
+          {
+            song_id: gospelEntranceId,
+            content_hash: `gospel-entrance-${suffix}`,
+            embedding: gospelEmbedding,
+          },
         ],
       }));
 
@@ -634,14 +661,21 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
         {
           method: "POST",
           body: {
-            p_citations: [citation],
+            p_citations: [citation, gospelCitation],
             p_part: "entrance",
             p_limit: 3,
           },
         },
       ));
-      assert.deepEqual(suggestions.map(song => song.id), [entranceId, libraryEntranceId]);
-      assert.deepEqual(suggestions.map(song => song.in_repertoire), [true, false]);
+      assert.equal(
+        suggestions.find(song => song.reading_citation === citation)?.id,
+        entranceId,
+      );
+      assert.equal(
+        suggestions.find(song => song.reading_citation === gospelCitation)?.id,
+        gospelEntranceId,
+      );
+      assert.ok(suggestions.some(song => song.in_repertoire === false));
       assert.equal(Object.hasOwn(suggestions[0], "lyrics"), false);
       assert.equal(Object.hasOwn(suggestions[0], "embedding"), false);
     });

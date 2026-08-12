@@ -198,6 +198,8 @@
   .song-suggestions{ margin:0; padding:12px; border:1px solid #d7e1e4; background:#f7fbfc; }
   .song-suggestions p{ margin:7px 0 0; color:var(--muted); font-size:11px; }
   .song-suggestion-results{ display:grid; gap:6px; }
+  .song-suggestion-group{ display:grid; gap:6px; }
+  .song-suggestion-group h3{ margin:5px 0 1px; color:var(--accent-dark); font-size:11px; letter-spacing:.04em; text-transform:uppercase; }
   .song-suggestion{ width:100%; min-height:0; padding:9px 10px; border-color:#b9cdd4; background:#fff; text-align:left; }
   .song-suggestion-readonly{ border:1px solid #b9cdd4; border-radius:2px; }
   .song-suggestion strong{ display:block; color:var(--ink); font-size:13px; line-height:1.3; }

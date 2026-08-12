@@ -77,12 +77,12 @@ test("the planner requests suggestions only from effective reading citations", (
   assert.match(store, /\.rpc\("suggest_songs_for_readings"/);
 });
 
-test("the song picker keeps a mobile-sized suggestion set visible before search", () => {
+test("the song picker keeps bounded per-reading groups visible before search", () => {
   const workflow = read("src/app/song-workflow.js");
   const picker = read("src/app/song-picker-controller.js");
   const edgeFunction = read("supabase/functions/semantic-songs/index.ts");
 
-  assert.match(picker, /maxSuggestions = 3/);
+  assert.match(picker, /maxSuggestions = 24/);
   assert.match(picker, /suggestions\.slice\(0, maxSuggestions\)/);
   assert.match(workflow, /elements\.dialog\.querySelector\("\.reading-dialog-body"\)\.scrollTop = 0/);
   assert.match(workflow, /matchMedia\("\(min-width:701px\)"\)\.matches/);

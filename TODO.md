@@ -9,9 +9,8 @@ to be decided.
   breaks, punctuation, and line endings.
 - Evaluate the quality of automatic song suggestions with real Sundays and repertoire
   choices; define examples of good and bad recommendations before tuning the ranking.
-- do a separate semantic match against each reading, might give different results
 - automatically prepopulate psalm based on the OCP series
-- assign psalm settings based exactly on psalm number.
+- do a run through to get youtube links for as many songs as possible.
 
 ## Authentication
 

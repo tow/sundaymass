@@ -201,15 +201,17 @@ database rejects an unauthorized direct request.
 An empty public plan slot offers a read-only “See suggestions” action. It opens only
 the Suggested view: no previous-Sunday choice, search, creation, selection, or save
 controls are shown. Suggestions are filtered by the slot's soft
-`suggestion_parts` classification before semantic ranking. The result is deliberately
-bounded to two known repertoire songs plus one extended-library candidate. The public
-security-definer RPC bounds citation input and returns only safe song metadata; lyrics
-and the underlying song/reading vectors remain private.
+`suggestion_parts` classification before semantic ranking. Each reading is matched
+independently and shown as its own group, deliberately bounded to two known repertoire
+songs plus one extended-library candidate. The public security-definer RPC bounds
+citation input and returns only safe song metadata; lyrics and the underlying
+song/reading vectors remain private.
 
 For editors, the same picker also provides Search and Add modes. Search can return
 every public song, and manual assignment to any Mass slot remains unrestricted.
 Candidate membership affects presentation and ranking, not song identity or
-eligibility.
+eligibility. Assigning a candidate records that the choir has now used it and promotes
+it permanently into repertoire; existing Mass history is backfilled the same way.
 
 Creating a song and assigning it use one atomic RPC. Editing updates the canonical song,
 so every Mass referencing its UUID sees the new metadata. Lyrics are loaded only for

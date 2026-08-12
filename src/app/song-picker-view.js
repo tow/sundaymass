@@ -37,24 +37,40 @@
     }
 
     function renderSuggestions({ songs, selectedSong, interactive = true }) {
+      const groups = [];
+      songs.forEach((song, index) => {
+        const citation = String(song.matchingCitation || "").trim();
+        let group = groups.find(value => value.citation === citation);
+        if (!group) {
+          group = { citation, songs: [] };
+          groups.push(group);
+        }
+        group.songs.push({ song, index });
+      });
       return Object.freeze({
-        html: songs.map((song, index) => {
-          const selected = selectedSong?.id === song.id;
-          const listenUrl = interactive ? "" : safeYoutubeUrl(song.youtubeUrl);
-          const listenLink = listenUrl
-            ? ` <a class="song-suggestion-listen" href="${escapeHtml(listenUrl)}" target="_blank" rel="noopener">Listen ↗</a>`
+        html: groups.map(group => {
+          const heading = group.citation
+            ? `<h3>Reading: ${escapeHtml(group.citation)}</h3>`
             : "";
-          const opening = interactive
-            ? `<button class="song-suggestion${selected ? " selected" : ""}" type="button" data-song-suggestion-index="${index}">`
-            : '<article class="song-suggestion song-suggestion-readonly">';
-          return opening
-            + `<strong>${escapeHtml(song.title)}${listenLink}</strong>`
-            + `<span>${escapeHtml([
-              song.suggestionReason,
-              song.authors || "Author not recorded",
-              song.inRepertoire === false ? "Extended library" : "",
-            ].filter(Boolean).join(" · "))}</span>`
-            + (interactive ? "</button>" : "</article>");
+          const items = group.songs.map(({ song, index }) => {
+            const selected = selectedSong?.id === song.id;
+            const listenUrl = interactive ? "" : safeYoutubeUrl(song.youtubeUrl);
+            const listenLink = listenUrl
+              ? ` <a class="song-suggestion-listen" href="${escapeHtml(listenUrl)}" target="_blank" rel="noopener">Listen ↗</a>`
+              : "";
+            const opening = interactive
+              ? `<button class="song-suggestion${selected ? " selected" : ""}" type="button" data-song-suggestion-index="${index}">`
+              : '<article class="song-suggestion song-suggestion-readonly">';
+            return opening
+              + `<strong>${escapeHtml(song.title)}${listenLink}</strong>`
+              + `<span>${escapeHtml([
+                song.suggestionReason,
+                song.authors || "Author not recorded",
+                song.inRepertoire === false ? "Extended library" : "",
+              ].filter(Boolean).join(" · "))}</span>`
+              + (interactive ? "</button>" : "</article>");
+          }).join("");
+          return `<section class="song-suggestion-group">${heading}${items}</section>`;
         }).join(""),
         hasSuggestions: songs.length > 0,
       });

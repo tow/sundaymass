@@ -99,6 +99,7 @@ function localStore({
       responsorialCitations: Array.isArray(song.responsorialCitations)
         ? song.responsorialCitations
         : [],
+      inRepertoire: song.inRepertoire !== false,
       suggestionParts: Array.isArray(song.suggestionParts) ? song.suggestionParts : [],
     });
   const read = date => {
@@ -184,7 +185,13 @@ function localStore({
     },
     async assignSong(date, part, songId) {
       requireEditor();
-      if (!readSongs().some(song => song.id === songId)) throw new Error("Song not found");
+      const songs = readSongs();
+      const songIndex = songs.findIndex(song => song.id === songId);
+      if (songIndex < 0) throw new Error("Song not found");
+      if (songs[songIndex].inRepertoire === false) {
+        songs[songIndex] = { ...songs[songIndex], inRepertoire: true };
+        writeSongs(songs);
+      }
       const plan = readPlanRecord(date);
       const previousSongId = plan.songs[part];
       plan.songs[part] = songId;
@@ -199,7 +206,7 @@ function localStore({
       requireEditor();
       const validation = songCatalogApi.validateDraft(draft);
       if (!validation.valid) throw new Error(validation.error);
-      const song = { id: randomUUID(), ...validation.value };
+      const song = { id: randomUUID(), ...validation.value, inRepertoire: true };
       writeSongs([...readSongs(), song]);
       const plan = readPlanRecord(date);
       plan.songs[part] = song.id;

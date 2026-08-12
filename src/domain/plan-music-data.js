@@ -39,6 +39,7 @@
       responsorialCitations: Array.isArray(source.responsorial_citations)
         ? source.responsorial_citations.filter(value => typeof value === "string")
         : [],
+      matchingCitation: string(source.reading_citation),
       suggestionReason: string(source.suggestion_reason),
       inRepertoire: source.in_repertoire !== false,
       lyrics,

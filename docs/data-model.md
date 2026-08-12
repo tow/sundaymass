@@ -138,7 +138,7 @@ the Auth user UUID audit columns remain readable only by the service role.
 | `responsorial_book` | Scripture book for a Psalm or canticle, otherwise empty |
 | `responsorial_number` | Lectionary Psalm/canticle number, otherwise null |
 | `responsorial_citations` | Known exact lectionary citations for this setting |
-| `in_repertoire` | Whether the choir currently knows and uses the song |
+| `in_repertoire` | Whether the song has a legacy/manual repertoire flag or has ever appeared in a Mass |
 | `suggestion_parts` | Soft allow-list for automatic recommendations |
 | audit fields | Private creator and last-editor/time data |
 
@@ -152,8 +152,9 @@ and tracking parameters are not persisted.
 Songs with `in_repertoire = false` are complete canonical song records in the extended
 library, not drafts or a second entity type. They can be searched and assigned normally,
 but the distinction prevents a candidate from being presented as a song already known
-to the choir. Assigning one to a Mass does not silently promote it into the repertoire;
-an editor changes the membership flag explicitly.
+to the choir. Assigning one to a Mass promotes it into the repertoire permanently;
+historic assignments were backfilled, and an assigned song cannot be demoted while its
+Mass history remains.
 
 The suggestion array accepts the normal classes `entrance`, `kyrie`, `gloria`, `psalm`,
 `acclamation`, `offertory`, `sanctus`, `memorial`, `amen`, `lordPrayer`, `agnus`,
@@ -170,9 +171,11 @@ reading embeddings.
 
 Anonymous and authenticated users may execute the bounded
 `suggest_songs_for_readings` function. It is a security-definer boundary over the
-private embedding tables and returns at most three rows containing public song
-metadata only. Song search, assignment, creation, editing, lyrics, and direct vector
-access retain their existing editor-only permissions.
+private embedding tables and returns at most three public-metadata rows per reading.
+Each reading is ranked independently and returned with its citation, so a song that
+matches the Gospel does not dilute or replace the best match for the First Reading.
+Song search, assignment, creation, editing, lyrics, and direct vector access retain
+their existing editor-only permissions.
 
 ### `song_lyrics`
 
@@ -280,7 +283,7 @@ like a successful no-op.
 | `clear_celebration_override` | Restore computed celebration and clear individual overrides |
 | `create_song_request` | Record one pending choir suggestion: an existing song or free-text details |
 | `resolve_song_request` | Editor-only: mark one pending request accepted or declined |
-| `suggest_songs_for_readings` | Rank classified songs, reserving two places for repertoire songs and one for an extended-library candidate |
+| `suggest_songs_for_readings` | Rank classified songs separately for every reading, reserving two places for repertoire songs and one extended-library candidate in each reading group |
 | `suggest_psalms_for_reading` | Match Psalm/canticle settings by structured book and number, prioritizing exact citations |
 
 Successful writes are live immediately. There is no draft/publish state for plans

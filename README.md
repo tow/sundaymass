@@ -57,9 +57,11 @@ HTTPS, the planner can be installed to a phone's home screen.
   and author matching. Semantic suggestions are shown separately in the song picker
   and never restrict which song can be chosen.
 - `in_repertoire` distinguishes songs the choir knows from complete candidate records
-  in the extended library. Both are canonical songs and both remain searchable. The
-  semantic result reserves two places for repertoire songs and one for a candidate, so
-  unfamiliar material can be discovered without displacing familiar choices.
+  in the extended library. A song is repertoire when it carries the legacy/manual flag
+  or has appeared in any Mass plan; assignment promotes it permanently. Both kinds of
+  song remain searchable. For each reading, semantic results reserve two places for
+  repertoire songs and one for a candidate, so unfamiliar material can be discovered
+  without displacing familiar choices.
 - Editing a canonical song immediately changes every Sunday which references it. This
   is an explicit product decision: the current small data set does not require weekly
   snapshots or immutable history.
@@ -93,9 +95,9 @@ HTTPS, the planner can be installed to a phone's home screen.
   output is uploaded or cached.
 - Song and reading embeddings are also private. Logged-out users may view suggestions
   for an empty Mass slot, but the bounded database function returns only public song
-  metadata. It may include one clearly labelled extended-library candidate alongside
-  known repertoire songs. Searching, assigning, creating, and editing remain
-  editor-only.
+  metadata. It ranks and labels results independently for each reading, and each group
+  may include one clearly labelled extended-library candidate alongside known
+  repertoire songs. Searching, assigning, creating, and editing remain editor-only.
 - The initial extended library was loaded on 2026-07-27 from a user-supplied, 244-page
   historic hymn list. Of 575 usable full-lyric entries, 12 were exact matches to
   existing canonical songs and 563 became candidates. Title-only placeholders were not

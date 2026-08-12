@@ -96,6 +96,22 @@ test("Psalm suggestions explain exact structured citation matches", () => {
   assert.match(result.html, /Exact Psalm 85:9, 10, 11-12, 13-14 · Owen Alstott/);
 });
 
+test("semantic suggestions are grouped by the reading matched independently", () => {
+  const result = view.renderSuggestions({
+    songs: [
+      { ...songs[0], matchingCitation: "Isaiah 55:1-3" },
+      { ...songs[1], matchingCitation: "John 6:24-35" },
+    ],
+    selectedSong: null,
+  });
+
+  assert.match(result.html, /Reading: Isaiah 55:1-3/);
+  assert.match(result.html, /Reading: John 6:24-35/);
+  assert.equal((result.html.match(/song-suggestion-group/g) || []).length, 2);
+  assert.match(result.html, /data-song-suggestion-index="0"/);
+  assert.match(result.html, /data-song-suggestion-index="1"/);
+});
+
 test("read-only suggestions cannot be selected or assigned", () => {
   const result = view.renderSuggestions({
     songs: [{

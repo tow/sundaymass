@@ -41,7 +41,7 @@ function harness() {
   };
 }
 
-test("opening resets picker state and requests three position-filtered suggestions", async () => {
+test("opening keeps independently ranked suggestions for every reading", async () => {
   const state = harness();
   const suggestionCalls = [];
   state.setStore({
@@ -74,6 +74,7 @@ test("opening resets picker state and requests three position-filtered suggestio
       { id: "one", title: "One" },
       { id: "two", title: "Two" },
       { id: "three", title: "Three" },
+      { id: "four", title: "Four" },
     ],
     suggestionStatus: "ready",
   });

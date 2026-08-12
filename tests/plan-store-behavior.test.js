@@ -158,6 +158,7 @@ test("local plan mutations enforce editor access and never publish lyrics", asyn
     responsorialBook: "",
     responsorialNumber: null,
     responsorialCitations: [],
+    inRepertoire: true,
     suggestionParts: ["entrance"],
   });
   assert.equal(Object.hasOwn(plans.at(-1).songs.entrance, "lyrics"), false);
@@ -173,6 +174,7 @@ test("local plan mutations enforce editor access and never publish lyrics", asyn
     responsorialBook: "",
     responsorialNumber: null,
     responsorialCitations: [],
+    inRepertoire: true,
     suggestionParts: ["entrance"],
   });
 
