@@ -274,7 +274,6 @@
   .lyrics-pptx-status{ flex:1 1 210px; }
   .lyrics-pptx-status[data-state="success"]{ color:#38704b; }
   .lyrics-pptx-status[data-state="error"]{ color:#9a3b22; }
-  .booklet-print-hint{ flex:1 1 100%; color:#667078; font-size:11px; }
   .practice-dialog{ width:min(720px,calc(100% - 28px)); }
   .practice-dialog-body{ display:flex; min-height:0; flex-direction:column; gap:14px; }
   .practice-player-shell{ flex:none; width:100%; aspect-ratio:16 / 9; overflow:hidden; border-radius:5px; background:#071116; }

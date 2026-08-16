@@ -1225,13 +1225,11 @@ test("editor downloads private lyrics as an imposed landscape A4 booklet PDF", a
       documentWidth: document.documentElement.scrollWidth,
       actionLeft: action.left,
       actionRight: action.right,
-      hintVisible: Boolean(document.querySelector(".booklet-print-hint")?.offsetParent),
     };
   });
   assert.equal(mobileLayout.documentWidth, mobileLayout.innerWidth);
   assert.ok(mobileLayout.actionLeft >= 0);
   assert.ok(mobileLayout.actionRight <= mobileLayout.innerWidth);
-  assert.equal(mobileLayout.hintVisible, true);
   assert.equal(await page.getByText("ENTRANCE PRIVATE LINE ONE").count(), 0);
   const [download] = await Promise.all([
     page.waitForEvent("download"),
