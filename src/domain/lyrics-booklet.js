@@ -230,9 +230,10 @@
     return tokens.reduce((sum, token) => sum + token.cost, 0);
   }
 
-  // Deviates from spec §5: divides at any line boundary and rewards equal columns, so
-  // stanzas are cut mid-verse. The specified rule divides only between stanzas and
-  // minimises the taller column alone.
+  // Deviates from spec §5: considers a division before every line rather than only
+  // between stanzas, so verses are cut in half. The scoring below is not the cause —
+  // over this candidate set every reasonable objective picks the same mid-verse point.
+  // Restricting the candidates to stanza boundaries is the fix.
   function splitTokens(tokens) {
     if (tokens.length < 2) return [tokens, []];
     let best = null;

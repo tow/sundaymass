@@ -138,12 +138,21 @@ column**, since a block's height is the taller of its two columns and that is th
 column cost the page actually pays. Break ties in favour of the fuller left column, so
 that a song reads down the left and finishes on the right.
 
-**Column heights are not equalised.** Equal columns are a frequent side effect of
-minimising the taller column; they are not a goal, and no term in the objective may
-reward equality for its own sake. A balance term adds nothing that minimising the
-maximum does not already provide, and it buys exact equality at the price of cutting
-wherever the arithmetic lands — which, on a song with uneven stanzas, is in the middle
-of a verse.
+This objective balances the columns, and that is intended. As the division point moves
+down the song the left column only grows and the right only shrinks, so the taller
+column is shortest where the two heights meet: minimising the maximum and equalising
+the heights are the same operation, differing only in how they break ties. The
+specification asks for the taller column because that is the quantity the page pays
+for, not because balance is to be avoided.
+
+**The constraint that matters is the candidate set, not the objective.** Balancing is
+harmless when the only places a division may fall are stanza boundaries, and harmful
+when it may fall between any two lines — in the second case the arithmetic lands
+wherever it lands, and on a song with uneven stanzas that is the middle of a verse.
+A reader tempted to repair the current behaviour by adjusting the scoring should not:
+over a line-boundary candidate set, minimising the taller column, minimising the
+difference, and the two combined all select the same mid-verse division. Restricting
+the candidates to stanza boundaries is the whole of the fix.
 
 **Mid-stanza division is a last resort.** A stanza may be divided across columns only
 when that single stanza is by itself taller than the available column, so that no
@@ -235,7 +244,9 @@ item is a defect against this specification, not a permitted variation.
 | 3 | Label lines reserve a full lyric line but paint at `max(8, size - 1.5)`; wrapped continuation lines are indented but budgeted at full width. |
 | 3 | Header height reserves one lyric line for 4.2 mm of fixed gaps, under-reserving below about 10.4 pt and over-reserving above it. |
 | 3 | The continuation paginator budgets header titles by character count but repaints them with measured `splitTextToSize`, so the two can disagree. |
-| 5 | `splitTokens` divides at any line boundary and scores `max(heights) * 10 + abs(difference)`, explicitly rewarding equal columns. Stanza boundaries carry no weight, so verses are routinely cut in half. |
+| 5 | `splitTokens` considers a division before every line, not only between stanzas, so verses are routinely cut in half. Its `max(heights) * 10 + abs(difference)` scoring is not the fault and changing it changes nothing; the candidate set is. |
 
 Section 5 is the user-visible fault and should be corrected first; sections 1.1 and 3
-together are what will buy back type size across the whole booklet.
+together are what will buy back type size across the whole booklet, and by making songs
+measure their true height they should also reduce how often a second column is reached
+for at all.
