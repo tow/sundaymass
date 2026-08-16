@@ -6,24 +6,29 @@ wrong unless this document is amended first. Physical printing instructions belo
 the README; the private-lyrics boundary governing *which* text may reach an export
 belongs in [ADR 001](decisions/001-private-song-lyrics.md).
 
-The booklet is sung from, in a pew, at arm's length, in poor light. Three principles
-order every rule below, and where they conflict the earlier one wins:
+The booklet is sung from, in a pew, at arm's length, in poor light. Legibility is the
+only thing the layout optimises, and it optimises within a fixed budget: **the booklet
+is always eight pages**, padded with blank pages and a back cover whenever the songs
+need fewer.
 
-1. **The structure of the song survives.** A stanza sits in one column, and a printed
-   line carries one sung phrase as far as the measure allows.
-2. **Type is as large as it will go.** Spare space is spent on size, not margin.
-3. **Pages are filled evenly.** Content is distributed rather than crammed early.
+Pages are therefore never saved and never spent. Page count is not an objective
+anywhere in this document, and a rule that looks like it trades against page count is
+really trading against the capacity those eight pages provide.
 
-The two halves of the first principle have different force, and the distinction runs
-through the whole document. Keeping a stanza whole is a **rule**, with one stated
-escape for a stanza too tall for any column (§4.3). Keeping a phrase on one line is a
-**price** (§5), because a long enough line fits no column at any size — wrapping cannot
-be forbidden, only made expensive enough that it happens when the alternative is worse
-and not otherwise.
+One rule stands outside the optimisation:
 
-So: spending a page to keep the type large is correct. Dividing a stanza to save a page
-is not. Wrapping a phrase to save a page is a judgement, and the search makes it on
-price.
+> **A stanza sits in one column.** The only escape is a stanza taller than any column at
+> any permitted type size (§4.3).
+
+Everything else is a single trade, and both sides of it serve legibility:
+
+- **larger type** helps every line in the booklet;
+- **an unwrapped phrase** keeps one printed line matching one phrase of the tune.
+
+These compete directly, because narrow columns wrap phrases but buy height, and height
+buys type size. Neither wins by precedence. §5 resolves the trade by price, because a
+long enough line fits no column at any size: wrapping cannot be forbidden, only made
+expensive enough that it happens when the alternative is worse and not otherwise.
 
 ## 1. Geometry
 
@@ -118,9 +123,9 @@ from the body size: label `max(7, size - 3.5)`, title `size + 3`, attribution
 ### 4.2 Column count
 
 Narrowing the measure wraps lines, and a wrapped line reads as a continuation —
-precisely what a singer must not confuse with the start of the next phrase (principle
-1). Every additional column buys height by risking that confusion, and the size of the
-risk is measurable. With `N` logical lines, `S` stanzas, stanza gap `g`, and `a(c)` the
+precisely what a singer must not confuse with the start of the next phrase. This is one
+side of the trade set out in the preamble; the height an extra column buys, and the type
+size that height admits, is the other. The cost of the first side is measurable. With `N` logical lines, `S` stanzas, stanza gap `g`, and `a(c)` the
 mean printed lines per logical line at column width `w(c)`, so that `a(1)` is normally
 1:
 
@@ -203,8 +208,14 @@ Two costs are accumulated, and **no others are permitted**:
   for wrapping that was unavoidable. Counting wrapped lines rather than added visual
   lines would lose this: it would charge the same for a line broken in two as for one
   broken in four, and would let a 200-character line hide the difference entirely.
-- **Page-fill cost** — for each completed page, quadratic in the unused height, so that
-  content is distributed rather than crammed onto early pages above a gaping last one.
+- **Page-fill cost** — for each completed page, quadratic in the unused height.
+
+  This is a tie-break, not a value the booklet holds. Type size is settled by the ladder
+  below before this cost is consulted, and many layouts at that size have identical wrap
+  cost; without something to separate them the choice among them is arbitrary and tends
+  to pile content onto early pages above a nearly empty last one. Even filling is not
+  itself worth anything — at a fixed type size the recovered white space cannot be spent
+  on anything — so this cost must never grow large enough to outrank the wrap cost.
 
 Ties are broken toward fewer columns. There is deliberately no threshold on song
 length, no minimum height saving, and no standing charge per column: each is a proxy for
@@ -215,12 +226,21 @@ Only layouts occupying exactly the target page count are accepted, the target be
 pages here — a song that will not fit one page whole at the current size disqualifies
 that size.
 
+That target is **maximum spread, not evenness**. Since a song is never divided across
+pages, `S` songs can occupy at most `S` pages, so `min(8, S)` is simply every page the
+lyrics can reach. Spreading to all of them gives each song the most room, and more room
+is what admits a larger type size. It can never cost type size either: a song that fits
+a shared page at a given size certainly fits a page of its own, so requiring the spread
+never rejects a size that would otherwise have succeeded.
+
 Type size is chosen by descending ladder from 14 pt to 8.5 pt in half-point steps, the
 first size admitting a complete layout winning. At each size the layout is attempted
 twice before the size is abandoned: first with lyrics flowing beneath the masthead on
-page one, then with page one given over to the masthead alone. A masthead-only page
-costs a page of lyrics but frees the first song from fitting beneath the masthead, and
-by principle 2 that trade is worth making before shrinking the type.
+page one, then with page one given over to the masthead alone. Giving the masthead its
+own page is not a page saved or lost — the booklet is eight pages either way — but one
+fewer page carrying lyrics, in exchange for the first song no longer having to fit
+beneath the masthead. Where the songs have the capacity to spare, that buys type size,
+so it is tried at each size before the ladder descends.
 
 The masthead itself is a spaced eyebrow line, the celebration title, a meta line, and a
 rule.
