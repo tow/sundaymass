@@ -174,11 +174,14 @@ Two costs, and nothing else, separate the candidates:
   The weight is the only tuning constant in this document. Its meaning is *how many
   lines of saved height one wrapped phrase is worth*.
 
-  The one-column baseline is what makes this fair to a long line. A line too long for
-  the full measure wraps at every column count, so it enters every candidate equally and
-  cannot move the ranking; a layout pays only for the wrapping its own narrowness
-  caused. Measuring added visual lines rather than counting wrapped lines keeps the cost
-  proportionate, so a line broken in four costs more than one broken in two.
+  The one-column baseline charges a layout only for the wrapping its own narrowness
+  caused. A line already too long for the full measure still counts, but only for the
+  breaks the narrower measure adds to it, not for the ones it would suffer anywhere.
+  Since a narrower measure never yields fewer visual lines, the baseline subtracts a
+  per-line constant and leaves the ranking unchanged; it is there to make the number
+  mean *the lines this layout cost*. Measuring added visual lines rather than counting
+  wrapped lines keeps the cost proportionate, so a line broken into four costs more than
+  one broken into two.
 
 - **Page-fill cost** — for each completed page, quadratic in the unused height.
 
@@ -230,8 +233,9 @@ Properties worth asserting in `tests/lyrics-booklet.test.js`:
    column height.
 5. No column ends with a label, and no division leaves a single line alone in a column.
 6. Column count never exceeds the stanza count, and every column receives content.
-7. A line too long for the full measure adds no wrap cost at any column count, so a song
-   containing one is not thereby forced into a single column.
+7. A line too long for the full measure adds no wrap cost at one column, and at narrower
+   measures adds only the breaks those measures introduce, so a song containing one is
+   neither forced into a single column nor charged for wrapping it could never avoid.
 8. The chosen partition minimises the tallest column, verified against brute force on
    small inputs.
 9. Songs appear in Mass order, and the contents list agrees with each song's page.
