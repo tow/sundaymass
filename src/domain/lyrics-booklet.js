@@ -3,14 +3,14 @@
 // docs/booklet-layout.md is the normative specification for everything in this file:
 // geometry, the stanza content model, measurement, column division, page packing, and
 // type-size selection. Read it before changing layout behaviour, and amend it before
-// changing a rule — where the two disagree, this file is wrong. Section 10 of that
-// document lists the known deviations of the current implementation, including the
-// column division rule (§5) that splits stanzas in order to equalise column heights.
+// changing a rule — where the two disagree, this file is wrong. Appendix A of that
+// document lists where this implementation still deviates, including the column
+// division rule (§4.3) that cuts stanzas in half.
 (function (global) {
   "use strict";
 
   const BOOKLET_PAGES = 8;
-  // Deviates from spec §1.1 and §3: capacity should be derived from the usable text
+  // Deviates from spec §1 and §3: capacity should be derived from the usable text
   // height, and line breaking should measure text rather than count characters. Both
   // constants run conservative, which costs type size on every page.
   const PAGE_CAPACITY = 48;
@@ -230,7 +230,7 @@
     return tokens.reduce((sum, token) => sum + token.cost, 0);
   }
 
-  // Deviates from spec §5: considers a division before every line rather than only
+  // Deviates from spec §4.3: considers a division before every line rather than only
   // between stanzas, so verses are cut in half. The scoring below cannot be the cause.
   // The heights sum to a constant T, so max(L,R) = (T + |L-R|)/2 and this score is
   // 5T + 6|L-R| — the same ranking as any other balance measure. Restricting the
