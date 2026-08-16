@@ -481,7 +481,12 @@ function buildBooklet({ sunday, rows, output }) {
   ));
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, Buffer.from(doc.output("arraybuffer")));
-  const pagination = global.LyricsBooklet.paginateLyrics(prepared.assignments);
+  // Layout measures text through the PDF engine, so reporting needs its own
+  // document to measure against (docs/booklet-layout.md §3).
+  const measure = global.LyricsBooklet.measurer(
+    new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" }),
+  );
+  const pagination = global.LyricsBooklet.paginateLyrics(prepared.assignments, { measure });
   return {
     sunday,
     output: outputPath,
@@ -491,6 +496,7 @@ function buildBooklet({ sunday, rows, output }) {
       celebration: values.day,
       meta: values.meta,
       assignments: prepared.assignments,
+      measure,
     }).length,
     imposed_pdf_pages: doc.getNumberOfPages(),
     lyric_font_size: pagination.fontSize || 8.5,

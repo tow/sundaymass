@@ -14,6 +14,7 @@ Developer documentation:
 - [Architecture decisions](docs/decisions/)
 - [Data model and authorization](docs/data-model.md)
 - [Calendar and lectionary](docs/lectionary.md)
+- [Booklet layout specification](docs/booklet-layout.md)
 - [Operations and deployment](docs/operations.md)
 - [Testing guide](docs/testing.md)
 - [Current hardening plan](docs/HARDENING_PLAN.md)
