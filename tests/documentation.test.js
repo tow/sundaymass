@@ -10,6 +10,7 @@ const requiredDocs = [
   "docs/architecture.md",
   "docs/data-model.md",
   "docs/lectionary.md",
+  "docs/booklet-layout.md",
   "docs/testing.md",
   "docs/operations.md",
   "docs/decisions/README.md",

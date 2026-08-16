@@ -1,8 +1,18 @@
 // Builds an imposed A5 lyrics booklet PDF for duplex printing on landscape A4 paper.
+//
+// docs/booklet-layout.md is the normative specification for everything in this file:
+// geometry, the stanza content model, measurement, column division, page packing, and
+// type-size selection. Read it before changing layout behaviour, and amend it before
+// changing a rule — where the two disagree, this file is wrong. Section 10 of that
+// document lists the known deviations of the current implementation, including the
+// column division rule (§5) that splits stanzas in order to equalise column heights.
 (function (global) {
   "use strict";
 
   const BOOKLET_PAGES = 8;
+  // Deviates from spec §1.1 and §3: capacity should be derived from the usable text
+  // height, and line breaking should measure text rather than count characters. Both
+  // constants run conservative, which costs type size on every page.
   const PAGE_CAPACITY = 48;
   const LINE_LENGTH = 68;
   const NARROW_LINE_LENGTH = 38;
@@ -220,6 +230,9 @@
     return tokens.reduce((sum, token) => sum + token.cost, 0);
   }
 
+  // Deviates from spec §5: divides at any line boundary and rewards equal columns, so
+  // stanzas are cut mid-verse. The specified rule divides only between stanzas and
+  // minimises the taller column alone.
   function splitTokens(tokens) {
     if (tokens.length < 2) return [tokens, []];
     let best = null;

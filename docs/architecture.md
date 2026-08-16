@@ -3,8 +3,9 @@
 This document is the starting point for changing the St James Mass Planner. It
 describes the runtime boundaries, the direction of dependencies, and the guarantees
 that must survive refactoring. Product behavior belongs in the README; database detail
-belongs in `data-model.md`; liturgical rules belong in `lectionary.md`; commands and
-release procedures belong in `operations.md`.
+belongs in `data-model.md`; liturgical rules belong in `lectionary.md`; booklet
+pagination and column rules belong in `booklet-layout.md`; commands and release
+procedures belong in `operations.md`.
 
 ## System context
 
@@ -268,6 +269,19 @@ in the browser; neither lyrics nor the generated deck enter the public plan, DOM
 service-worker data cache, application storage, or an application server. The static
 generator library itself is part of the offline shell, but exporting private content
 remains online-only because it must fetch authorised current lyrics.
+
+### Folded lyrics booklet
+
+`src/domain/lyrics-booklet.js` is a pure domain module that turns the same authorized
+assignments into eight A5 logical pages imposed on two duplex landscape A4 sheets. It
+owns the content model, measurement, column division, page packing, and type-size
+selection; the controller supplies data and the PDF engine, and the module decides
+every position. Its rules are specified in [booklet-layout.md](booklet-layout.md),
+which is normative — the module implements that document rather than the reverse.
+
+The module must stay free of DOM and network access so that layout remains testable
+without a browser. Text measurement is therefore injected rather than imported, which
+also keeps the reserve-equals-paint guarantee checkable in tests.
 
 ### YouTube practice queue
 
