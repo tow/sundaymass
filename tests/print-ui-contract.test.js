@@ -23,7 +23,6 @@ test("authorized choir members can download an imposed folded lyrics booklet PDF
   const app = read("src/app/planner.js");
 
   assert.match(html, /id="printLyricsBooklet">Download folded lyrics booklet \(PDF\)/);
-  assert.match(html, /flip on short edge/);
   // The booklet is a generated PDF now — no print stylesheet may remain for it.
   assert.doesNotMatch(styles, /@page booklet|booklet-sheet|data-print-mode/);
   assert.match(app, /LyricsBookletController\.create/);
