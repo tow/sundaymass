@@ -21,9 +21,10 @@ All internal measurements are millimetres unless stated. Point sizes convert at
 | Sheet | A4 landscape, 297 × 210 |
 | Logical page | A5 portrait, 148.5 × 210 |
 | Page padding | top 10, side 10, bottom 11 |
-| Column gutter (two-column body) | 7 |
+| Column gutter | 7 at two columns, 5 at three |
 | Text width, one column | 128.5 |
 | Text width, two columns | 60.75 each |
+| Text width, three columns | 39.5 each |
 | Usable text height | 189 |
 | Lyric line height | 1.15 × type size |
 | Logical pages | exactly 8 |
@@ -109,45 +110,91 @@ Sizes derive from the body type size: label `max(7, size - 3.5)`, title `size + 
 attribution `max(7, size - 3)`. Header text spans the full page width even when the body
 is set in two columns.
 
-### 4.2 Body columns
+### 4.2 Column count
 
-The body is set in one column by default. Two columns are permitted only when all of the
-following hold:
+A body may be set in one, two, or three columns. Column width follows from the gutters
+in §1: 128.5, 60.75, and 39.5 mm.
 
-1. The song's single-column body is at least 14 lines tall. Short songs stay in one
-   column; two short columns read as a mistake.
-2. Two columns save at least 3 lines of height over one column.
-3. Both columns receive content.
+**A printed line should carry one sung phrase.** This is the reason the layout leans
+towards fewer columns, and it is a structural reason rather than a matter of taste. A
+line of a hymn is a phrase of the tune. Narrowing the measure makes lines wrap, and a
+wrapped line is read as a continuation — precisely the distinction a singer must not
+confuse with the start of the next phrase. Every additional column buys height by
+risking that confusion.
 
-Two columns carry a standing cost in the page-packing score, so a song that merely
-*could* be split is not split. Splitting is a response to a page that would otherwise
-not hold the song, not a default treatment.
+The size of the risk is measurable. Let a song have `N` logical lines and `S` stanzas,
+let `g` be the stanza gap, and let `a(c)` be the mean number of printed lines a logical
+line occupies at column width `w(c)`, so that `a(1)` is normally 1:
+
+```
+height(c) ~= (N * a(c) + S * g) / c
+```
+
+`c` columns therefore reduce height only while `a(c) < c`. The limiting case governs
+the rule: if halving the measure wraps every line, `a(2) = 2` and two columns save
+nothing but the halved stanza gaps — a fraction of a line per stanza — while breaking a
+phrase on every line in the song. That trade must never be taken.
+
+Column count is not fixed per song by a threshold. Every permitted count is offered to
+the page packer (§6), which pays for each in its score:
+
+- **the wrap cost**: the number of logical lines that wrap at `c` columns but do not
+  wrap at one, weighted by a single tuning constant whose meaning is *how many lines of
+  saved height one broken phrase is worth*;
+- **a small standing cost per additional column**, for the eye's return journey to the
+  top of the page.
+
+No other penalty is permitted. In particular there must be no threshold on song length
+and no minimum height saving: both are proxies for the wrap cost, and a proxy computed
+from anything other than measured width (§3) will misfire.
+
+Three structural rules bound the choice:
+
+1. `c` may not exceed the number of stanzas, since stanzas are atomic (§5).
+2. Every column must receive content.
+3. Every column must be at least as tall as the block's own header. A body shorter than
+   the header above it reads as a mistake at any column count.
+
+Three columns will in practice be reached only by songs whose lines are naturally short
+— litanies, ostinati, short-metre chants, psalm responses. Nothing special-cases them;
+the wrap cost admits them and excludes ordinary hymn metres on its own.
 
 ## 5. Column division
 
 This section is the heart of the specification.
 
-**Stanzas are atomic.** A two-column body is formed by partitioning the song's stanzas,
-in order, into a left group and a right group. Candidate division points are the
-boundaries *between* stanzas, and no others. A label belongs to the stanza it
+**Stanzas are atomic.** A `c`-column body is formed by partitioning the song's stanzas,
+in reading order, into `c` contiguous non-empty groups. Candidate division points are
+the boundaries *between* stanzas, and no others. A label belongs to the stanza it
 introduces and moves with it; a division may never leave a label as the last element of
 a column.
 
-Among candidate divisions, choose the one that **minimises the height of the taller
-column**, since a block's height is the taller of its two columns and that is the only
-column cost the page actually pays. Break ties in favour of the fuller left column, so
-that a song reads down the left and finishes on the right.
+Among candidate partitions, choose the one that **minimises the height of the tallest
+column**, since a block occupies its header plus its tallest column and that is the
+only column cost the page actually pays. Break ties in favour of fuller earlier
+columns, so that a song reads down the page and finishes in the last column.
 
-This objective balances the columns, and that is intended. The two columns hold the
-whole song between them, so their heights sum to a constant `T` wherever the division
-falls, and `max(L, R) = (T + |L - R|) / 2`. Minimising the taller column is an
+This is the linear partition problem — divide an ordered sequence into `c` contiguous
+parts minimising the largest part sum — and it has an exact solution by dynamic
+programming in `O(S^2 * c)` for `S` stanzas. No heuristic or greedy fill is permitted;
+at the sizes involved, a handful of stanzas and at most three columns, the exact
+solution is free.
+
+At `c = 2` this objective balances the columns, and that is intended. The two columns
+hold the whole song between them, so their heights sum to a constant `T` wherever the
+division falls, and `max(L, R) = (T + |L - R|) / 2`. Minimising the taller column is an
 increasing affine function of the difference between the columns: the two expressions
 rank every candidate division identically, ties included. They are not competing
 objectives that happen to agree, and no input distinguishes them.
 
-The specification names the taller column because that is the quantity the page pays
-for — a block occupies its header plus the taller of its columns — not because it
-differs in effect from naming the difference.
+That identity is particular to two parts and **must not be generalised**. For `c >= 3`
+the tallest column is not a function of the spread of the column heights, and the two
+objectives come apart. The tallest column is the one to keep, because it is the one the
+page pays for.
+
+The specification names the tallest column, at every `c`, because that is the quantity
+the page pays for — not because it differs in effect, at `c = 2`, from naming the
+difference.
 
 **The constraint that matters is therefore the candidate set, not the objective.**
 Balancing is harmless when the only places a division may fall are stanza boundaries,
@@ -225,16 +272,21 @@ These are the properties worth asserting in `tests/lyrics-booklet.test.js`:
 2. No painted element extends below the usable text height on any page.
 3. Reserved height equals painted height for every header, label line, lyric line, and
    inter-element gap, at every permitted type size.
-4. In a two-column song, every stanza lies wholly within one column, unless that stanza
-   alone exceeds the column height.
+4. In a multi-column song, every stanza lies wholly within one column, unless that
+   stanza alone exceeds the column height.
 5. No column ends with a label.
 6. No stanza division leaves a single line alone in a column.
-7. A song of fewer than 14 body lines is set in one column.
-8. Songs appear in Mass order, and the contents list agrees with the page each song was
-   placed on.
-9. Public plan requests and rendered pages never contain lyrics (ADR 001); the booklet
-   is generated in the browser from authorised text and never round-trips through a
-   public surface.
+7. Column count never exceeds the song's stanza count, every column receives content,
+   and no column is shorter than the block's header.
+8. A song whose every line wraps at `c` columns but not at one is never set in `c`
+   columns, since that division breaks a phrase on every line to save only stanza gaps.
+9. The chosen partition minimises the tallest column over all stanza-boundary
+   partitions, verified against a brute-force search on small inputs.
+10. Songs appear in Mass order, and the contents list agrees with the page each song was
+    placed on.
+11. Public plan requests and rendered pages never contain lyrics (ADR 001); the booklet
+    is generated in the browser from authorised text and never round-trips through a
+    public surface.
 
 ## 10. Known deviations
 
@@ -249,9 +301,14 @@ item is a defect against this specification, not a permitted variation.
 | 3 | Label lines reserve a full lyric line but paint at `max(8, size - 1.5)`; wrapped continuation lines are indented but budgeted at full width. |
 | 3 | Header height reserves one lyric line for 4.2 mm of fixed gaps, under-reserving below about 10.4 pt and over-reserving above it. |
 | 3 | The continuation paginator budgets header titles by character count but repaints them with measured `splitTextToSize`, so the two can disagree. |
+| 4.2 | Column count is limited to one or two; three columns are not implemented, so short-lined songs cannot use the width they have. |
+| 4.2 | The column-count decision is governed by three constants — a standing penalty of 3, a 14-line song floor, and a 3-line minimum saving — rather than by the wrap cost. All three are proxies for it, and all three are computed from character budgets, so they misfire in the same direction. |
 | 5 | `splitTokens` considers a division before every line, not only between stanzas, so verses are routinely cut in half. Its scoring cannot be the fault: column heights sum to a constant, so `max * 10 + abs(difference)` reduces to `5T + 6 * abs(difference)` and ranks divisions identically to any other balance measure. The candidate set is the fault. |
+| 5 | Division is a scan over split points rather than an exact linear partition, which does not generalise beyond two columns. |
 
 Section 5 is the user-visible fault and should be corrected first; sections 1.1 and 3
 together are what will buy back type size across the whole booklet, and by making songs
 measure their true height they should also reduce how often a second column is reached
-for at all.
+for at all. Section 4.2 depends on §3 and cannot be attempted before it: the wrap cost
+is meaningless without measured width, and three columns are unreachable while line
+breaking over-estimates by the margins recorded above.
