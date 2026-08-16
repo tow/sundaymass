@@ -11,16 +11,17 @@ in a pew, at arm's length, in poor light, so the layout has a single goal: make 
 songs as easy to read as possible in the space there is. Where the songs need fewer than
 eight pages the remainder are blank, with a back cover last.
 
-Two things make a page easy to sing from, and they compete:
+Two things make a page easy to sing from:
 
-- **larger type** helps every line in the booklet;
-- **an unwrapped line** carries a whole phrase of the tune, matching what the singer
-  hears and sings.
+- **larger type**, which helps every line in the booklet;
+- **unwrapped lines**, each carrying a whole phrase of the tune, so that what the singer
+  reads matches what they hear and sing.
 
-These compete because narrow columns shorten a song, and a shorter song can be set in
-larger type — but narrow columns also wrap lines. Nor can every line be kept unwrapped
-even in principle: a line may be too long for the full page width at the smallest type
-size on the ladder. §5 therefore settles the trade by price rather than by rule.
+They pull against each other. Narrower columns make a song shorter, and a shorter song
+can be set in larger type — but narrower columns also wrap more lines. And some lines
+cannot be kept unwrapped at all, being too long for the full page width even at the
+smallest type size. So §5 settles this with a cost that the search weighs, rather than
+with a rule.
 
 One thing is not traded: **a stanza sits in one column**, the only exception being a
 stanza taller than any column at any type size (§4.3).
@@ -40,10 +41,11 @@ Millimetres throughout. Points convert at `25.4 / 72`.
 | Lyric line height | 1.15 × type size |
 | Logical pages | exactly 8 |
 
-Pages are imposed on two duplex sheets. Numbering pages from one, sheet *i*
+Pages are imposed on two duplex sheets. Numbering the pages from one, sheet *i*
 (zero-based) carries `pages[7 - 2i] | pages[2i]` on the front and
-`pages[1 + 2i] | pages[6 - 2i]` on the back, which folds and nests into reading order.
-Page count stays divisible by four.
+`pages[1 + 2i] | pages[6 - 2i]` on the back. So the first sheet holds 8 and 1 on the
+front, 2 and 7 on the back; the second holds 6 and 3, then 4 and 5. Folded and nested,
+they read in order. Page count stays divisible by four.
 
 A page's capacity follows from the geometry — the usable height less any masthead, in
 lyric lines at the chosen size:
@@ -64,9 +66,10 @@ Song
            └── Line   (one source line; either a lyric line or a role label)
 ```
 
-A *line* is whatever the editor typed, of any length. Where it does not fit the column
-it is laid into, it is *rendered* as two or more visual lines — a property of that line
-in that column at that size, not a property of the song.
+A *line* is whatever the editor typed, of any length. A line that does not fit the
+column it is laid into is rendered as two or more *visual lines*. Whether it wraps
+depends on that column and that type size, so wrapping is a fact about a particular
+layout rather than about the song.
 
 A *label* is a line matching the role pattern (`Verse 2:`, `Refrain`, `Cantor:`,
 `Chorus`, `Bridge`, `Coda`, `Repeat`, `All`, `Response`). Labels are set smaller and
@@ -76,21 +79,26 @@ A *stanza* is the atomic unit of layout — the unit a singer's eye tracks.
 
 ## 3. Measurement
 
-Line breaking and height estimation use measured text width for the actual font, style,
-and size, from the PDF engine (`getTextWidth` / `splitTextToSize`). Times is
-proportional, so a character count is not a width. The measuring function is injected,
-keeping the domain module pure: production supplies the real document, tests a
-deterministic stub.
+Line breaking and height estimates come from the PDF engine's own text measurement
+(`getTextWidth` / `splitTextToSize`), for the exact font, style, and size being drawn.
+Times is proportional, so a character count is not a width. The measuring function is
+injected rather than imported, which keeps the domain module pure: production passes in
+the real document, tests pass in a deterministic stub.
 
-Two rules keep measurement honest:
+Layout works out how tall everything will be, and the painter then draws it. If the two
+disagree, text runs past the bottom of the page or leaves a gap in the middle of it. Two
+rules keep them in step:
 
-- **Reserve equals paint.** Height reserved during layout equals height consumed by the
-  painter, computed by the same code path. This binds label lines (set smaller than
-  lyric lines), wrapped continuation lines (indented `1.2 em`, so narrower than their
-  first line), and song headers (whose inter-element gaps are millimetre constants
-  rather than multiples of the line height).
-- **Break once.** The breaks decided during layout are the breaks painted. A second,
-  differently-measured break could disagree with the height already reserved.
+- **Measure once.** Layout decides where each line breaks, and the painter draws those
+  breaks as given, never re-breaking the text. A second measurement can come out
+  differently from the first, and then the space reserved no longer matches the space
+  used.
+- **Reserve what you paint.** The height layout reserves for an element comes from the
+  same code the painter uses to advance down the page. Three cases make this easy to get
+  wrong: label lines are set smaller than lyric lines; a wrapped continuation line is
+  indented by `1.2 em`, so it has less room than the line it continues; and the gaps
+  inside a song header are fixed millimetre values rather than multiples of the line
+  height.
 
 ## 4. Song blocks
 
@@ -104,11 +112,11 @@ from the body size: label `max(7, size - 3.5)`, title `size + 3`, attribution
 
 ### 4.2 Column count
 
-Each extra column narrows the measure, which makes more lines wrap, and shortens the
-body in exchange. The exchange rate can be calculated. Write `N` for the number of
-logical lines, `S` for the number of stanzas, `g` for the stanza gap, and `a(c)` for the
-mean number of visual lines each logical line needs at column width `w(c)`, so that
-`a(1)` is normally 1:
+Each extra column narrows the measure, so more lines wrap, and shortens the body in
+exchange. The exchange rate can be calculated. Write `N` for the number of logical
+lines, `S` for the number of stanzas, and `g` for the stanza gap. Write `a(c)` for the
+mean number of visual lines each logical line needs at column width `w(c)`, so `a(1)` is
+normally 1. Then:
 
 ```
 height(c) ~= (N * a(c) + S * g) / c
@@ -142,12 +150,12 @@ parts so that the largest part sum is as small as possible — and dynamic progr
 solves it exactly in `O(S^2 * c)`. With a handful of stanzas and at most three columns
 that is cheap, so the exact solution is used rather than a greedy fill.
 
-At `c = 2`, minimising the tallest column is the same thing as balancing the two. They
-hold the whole song between them, so their heights sum to a constant `T`, and
-`max(L, R) = (T + |L - R|) / 2` — an increasing function of the difference, so both
-expressions rank every partition identically. This equivalence holds only for two
-parts. At `c >= 3` the tallest column is no longer determined by how spread out the
-heights are, and it is the tallest column that governs.
+At `c = 2`, minimising the tallest column is the same thing as balancing the two
+columns. The pair holds the whole song, so their heights always sum to the same total
+`T`, which makes `max(L, R) = (T + |L - R|) / 2` — larger exactly when the difference
+between them is larger. Both rules therefore rank every partition the same way. This
+holds only for two parts: at `c >= 3` the tallest column is not fixed by how spread out
+the heights are, and it is the tallest column that governs.
 
 **Mid-stanza division is a last resort**, reached only when a single stanza is by itself
 taller than the column, so that no stanza-boundary partition fits it. Then: divide
@@ -192,30 +200,33 @@ Two costs, and nothing else, separate the candidates:
 
 Ties beyond that go to fewer columns.
 
-Only layouts occupying exactly the target page count are accepted, the target being
-`min(8, number of songs)` plus any reserved masthead page. Since a song is never divided
-across pages, `S` songs can occupy at most `S` pages, so the target is every page the
-lyrics can reach. Spreading to all of them gives each song the most room, and room is
-what admits a larger type size; it costs nothing, because a song that fits a shared page
-fits a page of its own. A song that will not fit one page whole at the current size
-disqualifies that size.
+Only layouts occupying exactly the target page count are accepted. The target is
+`min(8, number of songs)`, plus a masthead page where one is reserved.
 
-Type size is chosen by descending ladder from 14 pt to 8.5 pt in half-point steps, the
-first size admitting a complete layout winning. At each size the layout is attempted
-twice: first with lyrics flowing beneath the masthead on page one, then with page one
-given over to the masthead alone. The second leaves one fewer page carrying lyrics, in
-exchange for the first song no longer having to fit beneath the masthead — where the
-songs have capacity to spare, that buys type size, so it is tried before the ladder
-descends.
+Since a song is never divided across pages, `S` songs can fill at most `S` pages, so
+that target is simply every page the lyrics can reach. Using all of them gives each song
+the most room, and room is what allows a larger type size. It cannot cost anything: a
+song that fits on a shared page will also fit on a page of its own. A song that will not
+fit one page whole at the current size disqualifies that size.
+
+Type size is chosen by a descending ladder from 14 pt to 8.5 pt in half-point steps, and
+the first size that admits a complete layout wins.
+
+At each size the layout is attempted twice. The first attempt runs lyrics beneath the
+masthead on page one; the second gives page one over to the masthead alone. The second
+leaves one fewer page carrying lyrics, but frees the first song from having to fit
+underneath the masthead. Where the songs have capacity to spare that buys type size, so
+both are tried before the ladder descends.
 
 The masthead is a spaced eyebrow line, the celebration title, a meta line, and a rule.
 
 ## 6. Continuation fallback
 
-Where no type size admits a complete layout — normally one unusually long song that
-cannot fit a page whole — the booklet falls back to a fixed 8.5 pt, single-column,
-greedy paginator that may continue a song onto the next page under a `(continued)`
-header, so an over-long song degrades gracefully rather than failing the export.
+Sometimes no type size admits a complete layout, normally because one unusually long
+song cannot fit a page whole. The booklet then falls back to a fixed 8.5 pt,
+single-column, greedy paginator, which may continue a song onto the next page under a
+`(continued)` header. An over-long song degrades gracefully rather than failing the
+export.
 
 The fallback keeps a stanza whole where it fits, never breaks immediately after a label,
 and never leaves a single line of a divided stanza behind.
