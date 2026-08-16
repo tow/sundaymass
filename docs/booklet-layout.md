@@ -9,13 +9,21 @@ belongs in [ADR 001](decisions/001-private-song-lyrics.md).
 The booklet is sung from, in a pew, at arm's length, in poor light. Three principles
 order every rule below, and where they conflict the earlier one wins:
 
-1. **A printed line carries one sung phrase.** A line of a hymn is a phrase of the
-   tune. Nothing is worth breaking that correspondence.
+1. **The structure of the song survives.** A stanza sits in one column, and a printed
+   line carries one sung phrase as far as the measure allows.
 2. **Type is as large as it will go.** Spare space is spent on size, not margin.
 3. **Pages are filled evenly.** Content is distributed rather than crammed early.
 
-Spending a page to keep the type large is correct. Breaking a stanza or wrapping a
-phrase to save a page is not.
+The two halves of the first principle have different force, and the distinction runs
+through the whole document. Keeping a stanza whole is a **rule**, with one stated
+escape for a stanza too tall for any column (§4.3). Keeping a phrase on one line is a
+**price** (§5), because a long enough line fits no column at any size — wrapping cannot
+be forbidden, only made expensive enough that it happens when the alternative is worse
+and not otherwise.
+
+So: spending a page to keep the type large is correct. Dividing a stanza to save a page
+is not. Wrapping a phrase to save a page is a judgement, and the search makes it on
+price.
 
 ## 1. Geometry
 
@@ -120,10 +128,11 @@ mean printed lines per logical line at column width `w(c)`, so that `a(1)` is no
 height(c) ~= (N * a(c) + S * g) / c
 ```
 
-So `c` columns reduce height only while `a(c) < c`. The limiting case governs: if
-halving the measure wraps every line then `a(2) = 2`, and two columns save nothing but
-the halved stanza gaps — a fraction of a line per stanza — while breaking a phrase on
-every line in the song. That trade is never taken.
+So `c` columns reduce height only while `a(c) < c`. The limiting case shows what the
+price has to exclude: if halving the measure wraps every line then `a(2) = 2`, and two
+columns save nothing but the halved stanza gaps — a fraction of a line per stanza —
+while breaking a phrase on every line in the song. That trade should lose to every
+alternative, and it is excluded by its cost rather than by any prohibition.
 
 Column count is not fixed by a threshold. Every admissible count is offered to the
 search (§5), which prices it. Only two rules bound admissibility: `c` may not exceed
@@ -176,10 +185,24 @@ shape — page count and current fill — and the best retained.
 
 Two costs are accumulated, and **no others are permitted**:
 
-- **Wrap cost** — the number of logical lines that wrap at the chosen column count but
-  not at one column, times a single weight. This weight is the only tuning constant in
-  this document, and its meaning is *how many lines of saved height one broken phrase is
-  worth*.
+- **Wrap cost** — the visual lines a layout adds by wrapping, measured against the same
+  song set in one column, times a single weight:
+
+  ```
+  wrapCost = weight * sum over lines of max(0, visual(line, c) - visual(line, 1))
+  ```
+
+  The weight is the only tuning constant in this document, and its meaning is *how many
+  lines of saved height one broken phrase is worth*.
+
+  Wrapping is never forbidden, and the layout must be able to wrap any line it is
+  given: a phrase long enough fits no column at any type size. The one-column baseline
+  is what makes the cost fair in that case. A line too long for the full measure wraps
+  at every column count, so it enters every candidate equally and cannot shift the
+  ranking — the layout is charged only for the wrapping its own narrowness caused, never
+  for wrapping that was unavoidable. Counting wrapped lines rather than added visual
+  lines would lose this: it would charge the same for a line broken in two as for one
+  broken in four, and would let a 200-character line hide the difference entirely.
 - **Page-fill cost** — for each completed page, quadratic in the unused height, so that
   content is distributed rather than crammed onto early pages above a gaping last one.
 
@@ -225,12 +248,15 @@ Properties worth asserting in `tests/lyrics-booklet.test.js`:
    column height.
 5. No column ends with a label, and no division leaves a single line alone in a column.
 6. Column count never exceeds the stanza count, and every column receives content.
-7. A song whose every line wraps at `c` columns but not at one is never set in `c`
-   columns.
-8. The chosen partition minimises the tallest column, verified against brute force on
+7. A line too long for the full measure adds no wrap cost at any column count, so a
+   song containing one is not thereby forced into a single column.
+8. Under the configured weight, a song whose lines would all wrap at `c` columns is not
+   set in `c` columns, since that buys only the halved stanza gaps. This is a
+   calibration check on the weight, not a structural guarantee.
+9. The chosen partition minimises the tallest column, verified against brute force on
    small inputs.
-9. Songs appear in Mass order, and the contents list agrees with each song's page.
-10. Public plan requests and rendered pages never contain lyrics (ADR 001); the booklet
+10. Songs appear in Mass order, and the contents list agrees with each song's page.
+11. Public plan requests and rendered pages never contain lyrics (ADR 001); the booklet
     is generated in the browser from authorised text and never round-trips through a
     public surface.
 
