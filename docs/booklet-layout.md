@@ -166,32 +166,22 @@ shape — page count and current fill — and the best retained.
 
 Two costs, and nothing else, separate the candidates:
 
-- **Wrap cost** — the visual lines a layout adds by wrapping, measured against the same
-  song set in one column, times a single weight:
+- **Wrap cost** — the visual lines the body occupies at the chosen column count, times a
+  single weight:
 
   ```
-  wrapCost = weight * sum over lines of max(0, visual(line, c) - visual(line, 1))
+  wrapCost = weight * sum over lines of visual(line, c)
   ```
 
-  The weight is the only tuning constant in this document. Its meaning is *how many
+  A line that fits its column contributes 1; a line that wraps into four contributes 4.
+  The weight is the only tuning constant in this document, and its meaning is *how many
   lines of saved height one wrapped phrase is worth*.
 
-  Subtracting the one-column count leaves only the extra visual lines that the chosen
-  column width introduced.
-
-  Take a line long enough to wrap into 2 visual lines even across the full page width.
-  In two columns it might take 4, and in three columns 6. Its wrap cost is then 0, 2 and
-  4 respectively — the 2 lines it needs at full width are subtracted in every case, and
-  the layout pays for the rest.
-
-  A narrower column never needs fewer visual lines than a wider one, so the subtracted
-  amount is fixed for a given line. It lowers every candidate's total by the same
-  amount, which is why it does not change which candidate wins. Its purpose is to make
-  the number readable as *the extra lines this layout caused*.
-
-  Counting added visual lines, rather than counting how many lines wrap at all, keeps
-  the charge proportionate. An ordinary line that goes from 1 visual line to 2 costs 1;
-  one that goes from 1 to 4 costs 3.
+  Every candidate lays out the same songs, so only differences between candidates
+  matter, and those differences are exactly the extra visual lines a narrower measure
+  introduces. Wrapping that no layout could have avoided — a line too long for the full
+  page width — is therefore counted identically in every candidate and has no influence
+  on the choice.
 
 - **Page-fill cost** — for each completed page, quadratic in the unused height.
 
@@ -243,20 +233,16 @@ Properties worth asserting in `tests/lyrics-booklet.test.js`:
    column height.
 5. No column ends with a label, and no division leaves a single line alone in a column.
 6. Column count never exceeds the stanza count, and every column receives content.
-7. A line too long for the full page width costs nothing in one column, and in narrower
-   columns costs only the extra visual lines those columns add. A song containing such a
-   line is not pushed into a single column by it.
+7. A line too long for the full page width is laid out, wrapped, at every column count.
+   It never fails a song or sends one to the fallback.
 8. The chosen partition minimises the tallest column, verified against brute force on
    small inputs.
 9. Songs appear in Mass order, and the contents list agrees with each song's page.
-10. Public plan requests and rendered pages never contain lyrics (ADR 001); the booklet
-    is generated in the browser from authorised text and never round-trips through a
-    public surface.
 
-Invariants 1–6 and 9–10 hold at any wrap weight. One further property depends on the
-weight and is a calibration check rather than a structural guarantee: a song whose lines
-would all wrap at `c` columns should not be set in `c` columns, since that buys only the
-halved stanza gaps.
+All of these hold at any wrap weight. One further property depends on the weight and is
+a calibration check rather than a structural guarantee: a song whose lines would all
+wrap at `c` columns should not be set in `c` columns, since that buys only the halved
+stanza gaps.
 
 ## Appendix A: deviations in the current implementation
 
