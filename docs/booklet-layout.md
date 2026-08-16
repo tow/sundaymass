@@ -47,11 +47,11 @@ Pages are imposed on two duplex sheets. Numbering the pages from one, sheet *i*
 front, 2 and 7 on the back; the second holds 6 and 3, then 4 and 5. Folded and nested,
 they read in order. Page count stays divisible by four.
 
-A page's capacity follows from the geometry — the usable height less any masthead, in
-lyric lines at the chosen size:
+Heights are carried in millimetres, so a page's capacity is just the usable height less
+any masthead:
 
 ```
-capacity(size) = (189 - mastheadHeight) / (size * 1.15 * 25.4 / 72)
+capacity = 189 - mastheadHeight
 ```
 
 ## 2. Content model
@@ -79,11 +79,14 @@ A *stanza* is the atomic unit of layout — the unit a singer's eye tracks.
 
 ## 3. Measurement
 
-Line breaking and height estimates come from the PDF engine's own text measurement
-(`getTextWidth` / `splitTextToSize`), for the exact font, style, and size being drawn.
-Times is proportional, so a character count is not a width. The measuring function is
-injected rather than imported, which keeps the domain module pure: production passes in
-the real document, tests pass in a deterministic stub.
+Every width comes from the PDF engine's own `getTextWidth`, for the exact font, style,
+and size being drawn. Times is proportional, so a character count is not a width. The
+measuring function is injected rather than imported, which keeps the domain module pure:
+production passes in the real document, tests pass in a deterministic stub.
+
+Lines are broken here rather than by the engine's `splitTextToSize`, because a
+continuation line is indented and so has less room than the line it continues — a
+hanging indent the engine's own splitter cannot express.
 
 Layout works out how tall everything will be, and the painter then draws it. If the two
 disagree, text runs past the bottom of the page or leaves a gap in the middle of it. Two
@@ -127,9 +130,11 @@ worth anything: if halving the measure wraps every line, then `a(2) = 2`, and tw
 columns return only the halved stanza gaps — a fraction of a line per stanza — in
 exchange for a wrapped phrase on every line in the song.
 
-Every admissible count is offered to the search (§5), which prices it. A count is
-admissible when it does not exceed the stanza count, since stanzas are atomic, and when
-every column receives content.
+Every admissible count is offered to the search (§5), which prices it. One rule bounds
+the choice: **every column must receive content.** That is what limits the count in
+practice, since a body divides into as many pieces as it has stanzas — or slightly more,
+where an oversized stanza had to be divided (§4.3) — and no more columns than there are
+pieces can be filled.
 
 Three columns suit songs whose lines are naturally short — litanies, ostinati,
 short-metre chants, psalm responses. They need no special handling: the price admits
@@ -243,7 +248,8 @@ Properties worth asserting in `tests/lyrics-booklet.test.js`:
 4. Every stanza lies wholly within one column, unless that stanza alone exceeds the
    column height.
 5. No column ends with a label, and no division leaves a single line alone in a column.
-6. Column count never exceeds the stanza count, and every column receives content.
+6. Every column receives content, so the column count never exceeds the number of
+   pieces the body divides into.
 7. A line too long for the full page width is laid out, wrapped, at every column count.
    It never fails a song or sends one to the fallback.
 8. The chosen partition minimises the tallest column, verified against brute force on
@@ -254,27 +260,3 @@ All of these hold at any wrap weight. One further property depends on the weight
 a calibration check rather than a structural guarantee: a song whose lines would all
 wrap at `c` columns should not be set in `c` columns, since that buys only the halved
 stanza gaps.
-
-## Appendix A: deviations in the current implementation
-
-Temporary, and comparative by nature: each row is a defect against the sections above,
-and the appendix should shrink to nothing and then be deleted.
-
-| § | Deviation |
-| --- | --- |
-| 1 | Capacity is the constant `PAGE_CAPACITY = 48` lines at 8.5 pt (165.5 mm) against 189 mm usable, so about 12% of every page is unreachable. |
-| 2 | `bookletStanzas` wraps at parse time and `flowTokens` flattens stanzas into one token list, so stanza boundaries are gone before columns are chosen. |
-| 3 | Line breaking uses character budgets (`LINE_LENGTH`, `NARROW_LINE_LENGTH`, scaled by `8.5 / size`) rather than measured width. Against representative English hymn text a 68-character budget fills about 60% of a 128.5 mm column and a 38-character budget about 75% of a 60.75 mm column, so every song measures far taller than it sets. |
-| 3 | Label lines reserve a full lyric line but paint at `max(8, size - 1.5)`; continuation lines are indented but budgeted at full width. |
-| 3 | Header height reserves one lyric line for 4.2 mm of fixed gaps, under-reserving below about 10.4 pt and over-reserving above. |
-| 3 | The continuation paginator budgets header titles by character count but repaints them measured, so the two can disagree. |
-| 4.2 | Only one or two columns exist, so short-lined songs cannot use the width they have. |
-| 4.2 | Column count is governed by three constants — a standing penalty, a 14-line floor, a 3-line minimum saving — instead of the wrap cost, and all three are computed from character budgets, so they misfire together. |
-| 4.3 | `splitTokens` divides before any line rather than only between stanzas, so verses are cut in half. Its `max * 10 + abs(difference)` scoring reduces to `5T + 6 * abs(difference)`, which ranks partitions the same way §4.3 does; the candidate set is the whole of the defect. |
-| 4.3 | Division is a scan over split points, not an exact linear partition, and does not generalise past two columns. |
-
-Order of work: **§4.3 first** — stanza atomicity fixes the visible fault on its own.
-Then **§1 and §3**, which buy back type size across the booklet and, by measuring true
-heights, should reduce how often a second column is reached for at all. **§4.2 last**,
-since the wrap cost is meaningless without measured width and three columns are
-unreachable while line breaking over-estimates.

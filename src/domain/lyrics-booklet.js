@@ -3,35 +3,40 @@
 // docs/booklet-layout.md is the normative specification for everything in this file:
 // geometry, the stanza content model, measurement, column division, page packing, and
 // type-size selection. Read it before changing layout behaviour, and amend it before
-// changing a rule — where the two disagree, this file is wrong. Appendix A of that
-// document lists where this implementation still deviates, including the column
-// division rule (§4.3) that cuts stanzas in half.
+// changing a rule — where the two disagree, this file is wrong.
 (function (global) {
   "use strict";
 
   const BOOKLET_PAGES = 8;
-  // Deviates from spec §1 and §3: capacity should be derived from the usable text
-  // height, and line breaking should measure text rather than count characters. Both
-  // constants run conservative, which costs type size on every page.
-  const PAGE_CAPACITY = 48;
-  const LINE_LENGTH = 68;
-  const NARROW_LINE_LENGTH = 38;
+  const MM_PER_POINT = 25.4 / 72;
+  const SHEET = Object.freeze({ w: 297, h: 210, half: 148.5 });
+  const PAGE_PADDING = Object.freeze({ top: 10, side: 10, bottom: 11 });
+  const TEXT_WIDTH = SHEET.half - 2 * PAGE_PADDING.side;
+  const TEXT_HEIGHT = SHEET.h - PAGE_PADDING.top - PAGE_PADDING.bottom;
+  const COLUMN_GUTTER = Object.freeze({ 1: 0, 2: 7, 3: 5 });
+  const MAX_COLUMNS = 3;
+
+  const LINE_HEIGHT = 1.15;
+  const STANZA_GAP = 0.45;
+  const SONG_GAP = 0.8;
+  const CONTINUATION_INDENT = 1.2;
   // Largest first: the booklet is sung from at arm's length in poor light, so
   // spare space is spent on type size rather than left as margin.
   const FONT_CANDIDATES = Object.freeze([
     14, 13.5, 13, 12.5, 12, 11.5, 11, 10.5, 10, 9.5, 9, 8.5,
   ]);
-  const STANZA_GAP = 0.45;
-  const SONG_GAP = 0.8;
+  const FALLBACK_SIZE = 8.5;
+  // How many lines of saved height one wrapped phrase is worth (spec §5). The
+  // page-fill weight is held far below it so that it only separates layouts the
+  // wrap cost leaves tied.
+  const WRAP_WEIGHT = 1;
+  const PAGE_FILL_WEIGHT = 0.02;
+  const BEAM_WIDTH = 400;
+
   const LABEL_PATTERN = /^(?:all|cantor|refrain|response|chorus|bridge|verse(?:\s+\d+)?|coda|repeat)(?::|\b)/i;
 
-  const MM_PER_POINT = 25.4 / 72;
-  const SHEET = Object.freeze({ w: 297, h: 210, half: 148.5 });
-  const PAGE_PADDING = Object.freeze({ top: 10, side: 10, bottom: 11 });
   // Deliberately monochrome — the booklet is photocopied in bulk, so it must
   // not spend colour ink (no cover flood-fill, greyscale accents only).
-  // Page one carries a compact masthead and then runs straight into lyrics, so
-  // every logical page can hold songs.
   const MASTHEAD = Object.freeze({
     eyebrow: "ST JAMES THE APOSTLE · 6PM MASS",
     eyebrowSize: 7,
@@ -49,13 +54,50 @@
     foldMark: "#999999",
   });
 
-  function fallbackWrap(value, maxLength = LINE_LENGTH) {
-    const words = String(value || "").trim().split(/\s+/).filter(Boolean);
+  function lineStep(sizePt, lineHeight = LINE_HEIGHT) {
+    return sizePt * lineHeight * MM_PER_POINT;
+  }
+
+  function columnWidth(columns) {
+    const gutter = COLUMN_GUTTER[columns] || 0;
+    return (TEXT_WIDTH - gutter * (columns - 1)) / columns;
+  }
+
+  function labelSize(sizePt) {
+    return Math.max(8, sizePt - 1.5);
+  }
+
+  // Spec §3: every width comes from the PDF engine, for the exact font, style and
+  // size being drawn. Injected rather than imported so layout stays testable.
+  function measurer(doc) {
+    return {
+      width(text, { font = "helvetica", style = "normal", size }) {
+        doc.setFont(font, style);
+        doc.setFontSize(size);
+        return doc.getTextWidth(String(text || ""));
+      },
+    };
+  }
+
+  function requireMeasure(measure) {
+    if (!measure || typeof measure.width !== "function") {
+      throw new Error("Booklet layout needs a text measurer; see docs/booklet-layout.md §3");
+    }
+    return measure;
+  }
+
+  // Breaks one logical line to a column, hanging the continuation lines under an
+  // indent. Layout keeps the result and the painter draws it unchanged (spec §3,
+  // "measure once").
+  function wrapText(measure, text, { font, style, size, width, indent = 0 }) {
+    const words = String(text || "").trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return [];
     const lines = [];
     let line = "";
     words.forEach(word => {
       const candidate = line ? `${line} ${word}` : word;
-      if (line && candidate.length > maxLength) {
+      const available = lines.length ? width - indent : width;
+      if (line && measure.width(candidate, { font, style, size }) > available) {
         lines.push(line);
         line = word;
       } else {
@@ -64,11 +106,6 @@
     });
     if (line) lines.push(line);
     return lines;
-  }
-
-  function wrap(value, maxLength = LINE_LENGTH) {
-    const wrapLine = global.LyricsPresentation?.wrapLine || fallbackWrap;
-    return wrapLine(value, maxLength);
   }
 
   function attribution(assignment) {
@@ -84,17 +121,6 @@
     return [author, copyright].filter(Boolean).join(" · ");
   }
 
-  function stanzaUnits(value, maxLength = LINE_LENGTH) {
-    return String(value || "").split("\n")
-      .map(line => line.trim())
-      .filter(Boolean)
-      .map(line => ({
-        raw: line,
-        label: LABEL_PATTERN.test(line),
-        lines: wrap(line, maxLength),
-      }));
-  }
-
   function bookletLyrics(assignment) {
     if (global.LyricsPresentation?.congregationLyrics) {
       return global.LyricsPresentation.congregationLyrics(
@@ -105,33 +131,389 @@
     return String(assignment?.lyrics || "").trim();
   }
 
-  function bookletStanzas(assignment, maxLength = LINE_LENGTH) {
+  // Spec §2: lines keep whatever length the editor typed. Nothing is wrapped here,
+  // and stanza boundaries survive into column division.
+  function bookletStanzas(assignment) {
     const blocks = assignment?.lyricBlocks?.length
       ? assignment.lyricBlocks
       : [{ text: bookletLyrics(assignment), audienceLabel: "" }];
     return blocks.flatMap(block => String(block.text || "")
       .split(/\n{2,}/)
-      .map(value => stanzaUnits(value, maxLength))
-      .filter(units => units.length)
-      .map((units, index) => {
-        if (!block.audienceLabel || index > 0) return units;
-        return [{
-          raw: block.audienceLabel,
-          label: true,
-          lines: [block.audienceLabel],
-        }, ...units];
+      .map(value => String(value || "").split("\n")
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => ({ text: line, label: LABEL_PATTERN.test(line) })))
+      .filter(lines => lines.length)
+      .map((lines, index) => {
+        if (!block.audienceLabel || index > 0) return lines;
+        return [{ text: block.audienceLabel, label: true }, ...lines];
       }));
   }
 
-  // Wrapped by character budget rather than measured width so that the space
-  // reserved during pagination matches what the painter later draws.
-  function layoutMasthead({ celebration, meta, date } = {}) {
-    const titleLines = wrap(
-      celebration || "Sunday Mass",
-      Math.floor(58 * 12 / MASTHEAD.titleSize),
+  function layoutStanza(measure, stanza, { width, size }) {
+    const indent = CONTINUATION_INDENT * size * MM_PER_POINT;
+    const rows = [];
+    stanza.forEach(line => {
+      const font = line.label ? "helvetica" : "times";
+      const style = line.label ? "bolditalic" : "normal";
+      const rowSize = line.label ? labelSize(size) : size;
+      const color = line.label ? COLORS.label : COLORS.ink;
+      wrapText(measure, line.text, { font, style, size: rowSize, width, indent })
+        .forEach((text, index) => rows.push({
+          text, font, style, color,
+          size: rowSize,
+          indent: index ? indent : 0,
+          step: lineStep(rowSize),
+        }));
+    });
+    return {
+      rows,
+      height: rows.reduce((sum, row) => sum + row.step, 0),
+      visualLines: rows.length,
+      endsWithLabel: Boolean(stanza.length && stanza[stanza.length - 1].label),
+    };
+  }
+
+  function layoutHeader(measure, assignment, size, continued = false) {
+    const labelPt = Math.max(7, size - 3.5);
+    const titlePt = size + 3;
+    const attributionPt = Math.max(7, size - 3);
+    const titleLines = wrapText(measure, assignment.title, {
+      font: "times", style: "bold", size: titlePt, width: TEXT_WIDTH,
+    });
+    const attributionLines = wrapText(measure, attribution(assignment), {
+      font: "helvetica", style: "normal", size: attributionPt, width: TEXT_WIDTH,
+    });
+    const height = lineStep(labelPt, 1.25)
+      + 0.7
+      + titleLines.length * lineStep(titlePt, 1.06)
+      + (attributionLines.length ? 0.6 + attributionLines.length * lineStep(attributionPt, 1.15) : 0)
+      + 1.2
+      + 1.7;
+    return {
+      partLabel: assignment.partLabel,
+      title: assignment.title,
+      titleLines,
+      attributionLines,
+      attribution: attributionLines.join(" "),
+      labelPt,
+      titlePt,
+      attributionPt,
+      continued,
+      height,
+    };
+  }
+
+  // Spec §4.3: divide an ordered sequence into `parts` contiguous groups so that the
+  // largest group sum is as small as possible. Ties keep the later cut, which fills
+  // the earlier columns.
+  function linearPartition(costs, parts) {
+    const count = costs.length;
+    if (parts < 1 || parts > count) return null;
+    const prefix = [0];
+    costs.forEach(cost => prefix.push(prefix[prefix.length - 1] + cost));
+    const total = (from, to) => prefix[to] - prefix[from];
+    const best = Array.from({ length: count + 1 }, () => new Array(parts + 1).fill(Infinity));
+    const cut = Array.from({ length: count + 1 }, () => new Array(parts + 1).fill(0));
+    for (let end = 1; end <= count; end += 1) best[end][1] = total(0, end);
+    for (let part = 2; part <= parts; part += 1) {
+      for (let end = part; end <= count; end += 1) {
+        for (let split = part - 1; split < end; split += 1) {
+          const value = Math.max(best[split][part - 1], total(split, end));
+          if (value <= best[end][part]) {
+            best[end][part] = value;
+            cut[end][part] = split;
+          }
+        }
+      }
+    }
+    if (!Number.isFinite(best[count][parts])) return null;
+    const groups = [];
+    let end = count;
+    for (let part = parts; part >= 1; part -= 1) {
+      const start = part === 1 ? 0 : cut[end][part];
+      groups.unshift([start, end]);
+      end = start;
+    }
+    return groups;
+  }
+
+  function columnHeight(column, gap) {
+    return column.reduce((sum, stanza) => sum + stanza.height, 0)
+      + Math.max(0, column.length - 1) * gap;
+  }
+
+  // Spec §4.3: only a stanza that is by itself taller than the column is divided, and
+  // then only that stanza. The pieces stay adjacent, so the song still reads in order.
+  function divideOversized(stanzas, available) {
+    if (!(available > 0)) return stanzas;
+    const divided = [];
+    stanzas.forEach(stanza => {
+      let rest = stanza;
+      while (rest.height > available) {
+        const parts = splitStanza(rest, available);
+        if (!parts) break;
+        divided.push(parts[0]);
+        rest = parts[1];
+      }
+      divided.push(rest);
+    });
+    return divided;
+  }
+
+  function layoutBlock(measure, assignment, size, columns, stanzas) {
+    const width = columnWidth(columns);
+    const header = layoutHeader(measure, assignment, size);
+    const laid = divideOversized(
+      stanzas.map(stanza => layoutStanza(measure, stanza, { width, size })),
+      TEXT_HEIGHT - header.height,
     );
-    const metaLines = wrap(meta || date || "", Math.floor(92 * 7 / MASTHEAD.metaSize))
-      .filter(Boolean);
+    // Every column must receive content, which is what bounds the column count: a
+    // body of two pieces cannot fill three columns (spec §4.2).
+    if (columns > laid.length) return null;
+    const gap = STANZA_GAP * lineStep(size);
+    const groups = columns === 1
+      ? [[0, laid.length]]
+      : linearPartition(laid.map(stanza => stanza.height + gap), columns);
+    if (!groups) return null;
+    const bodyColumns = groups.map(([start, end]) => laid.slice(start, end));
+    if (bodyColumns.some(column => !column.length)) return null;
+    const bodyHeight = Math.max(...bodyColumns.map(column => columnHeight(column, gap)));
+    return {
+      assignment,
+      columns,
+      header,
+      bodyColumns,
+      gap,
+      size,
+      bodyHeight,
+      height: header.height + bodyHeight,
+      visualLines: laid.reduce((sum, stanza) => sum + stanza.visualLines, 0),
+    };
+  }
+
+  function blockLayouts(measure, assignment, size) {
+    const stanzas = bookletStanzas(assignment);
+    if (!stanzas.length) return [];
+    const layouts = [];
+    for (let columns = 1; columns <= MAX_COLUMNS; columns += 1) {
+      const layout = layoutBlock(measure, assignment, size, columns, stanzas);
+      if (layout) layouts.push(layout);
+    }
+    return layouts;
+  }
+
+  function newPage(capacity, masthead) {
+    return { kind: "lyrics", capacity, used: 0, blocks: [], items: [], masthead };
+  }
+
+  function appendCandidate(state, layout, startNewPage, capacities, mastheadHeight) {
+    const pages = state.pages.map(page => ({
+      ...page, blocks: page.blocks.slice(), items: page.items.slice(),
+    }));
+    let score = state.score + WRAP_WEIGHT * layout.visualLines;
+    if (startNewPage || !pages.length) {
+      if (pages.length) score += pageFillCost(pages[pages.length - 1], layout.size);
+      pages.push(newPage(capacities(pages.length, mastheadHeight)));
+    }
+    const page = pages[pages.length - 1];
+    const gap = page.blocks.length ? SONG_GAP * lineStep(layout.size) : 0;
+    page.blocks.push(layout);
+    page.items.push(layout.header);
+    page.used += gap + layout.height;
+    return { pages, score };
+  }
+
+  function pageFillCost(page, size) {
+    const unused = Math.max(0, page.capacity - page.used) / lineStep(size);
+    return PAGE_FILL_WEIGHT * unused * unused;
+  }
+
+  function chooseCandidate(measure, assignments, size, masthead, mastheadOwnPage = false) {
+    const songs = assignments.filter(assignment => bookletStanzas(assignment).length);
+    if (!songs.length) return null;
+    const mastheadHeight = masthead ? masthead.height : 0;
+    const capacities = (index, height) => TEXT_HEIGHT - (index === 0 ? height : 0);
+    const reserved = mastheadOwnPage
+      ? [{ ...newPage(TEXT_HEIGHT - mastheadHeight), used: TEXT_HEIGHT - mastheadHeight }]
+      : [];
+    const targetPages = Math.min(BOOKLET_PAGES, songs.length + reserved.length);
+    let states = [{ pages: reserved, score: 0 }];
+
+    for (const assignment of songs) {
+      const layouts = blockLayouts(measure, assignment, size);
+      if (!layouts.length) return null;
+      const next = [];
+      states.forEach(state => {
+        layouts.forEach(layout => {
+          const current = state.pages[state.pages.length - 1];
+          if (current) {
+            const gap = current.blocks.length ? SONG_GAP * lineStep(size) : 0;
+            if (current.used + gap + layout.height <= current.capacity) {
+              next.push(appendCandidate(state, layout, false, capacities, mastheadHeight));
+            }
+          }
+          const capacity = capacities(state.pages.length, mastheadHeight);
+          if ((!current || state.pages.length < targetPages) && layout.height <= capacity) {
+            next.push(appendCandidate(state, layout, true, capacities, mastheadHeight));
+          }
+        });
+      });
+      if (!next.length) return null;
+
+      const bestByShape = new Map();
+      next.forEach(state => {
+        const page = state.pages[state.pages.length - 1];
+        const key = `${state.pages.length}:${Math.round(page.used * 2)}`;
+        if (!bestByShape.has(key) || bestByShape.get(key).score > state.score) {
+          bestByShape.set(key, state);
+        }
+      });
+      states = [...bestByShape.values()]
+        .sort((left, right) => left.score - right.score)
+        .slice(0, BEAM_WIDTH);
+    }
+
+    const complete = states.filter(state => state.pages.length === targetPages);
+    if (!complete.length) return null;
+    complete.forEach(state => {
+      state.score += pageFillCost(state.pages[state.pages.length - 1], size);
+    });
+    const chosen = complete.sort((left, right) => left.score - right.score)[0];
+    return { pages: chosen.pages, contents: contentsOf(chosen.pages), fontSize: size, score: chosen.score };
+  }
+
+  function contentsOf(pages) {
+    const contents = [];
+    pages.forEach((page, index) => page.blocks.forEach(block => contents.push({
+      partLabel: block.assignment.partLabel,
+      title: block.assignment.title,
+      page: index + 1,
+    })));
+    return contents;
+  }
+
+  // Spec §4.3: a stanza is divided only when it alone is taller than the space it
+  // must fit. Prefer a couplet boundary, then an even split, and never leave one
+  // line behind.
+  function splitStanza(stanza, available) {
+    const rows = stanza.rows;
+    if (rows.length < 4) return null;
+    let take = 0;
+    let used = 0;
+    while (take < rows.length && used + rows[take].step <= available) {
+      used += rows[take].step;
+      take += 1;
+    }
+    if (take < 2 || rows.length - take < 2) return null;
+    if (take % 2 === 1 && rows.length - (take - 1) >= 2) take -= 1;
+    const head = rows.slice(0, take);
+    const tail = rows.slice(take);
+    const build = part => ({
+      rows: part,
+      height: part.reduce((sum, row) => sum + row.step, 0),
+      visualLines: part.length,
+      endsWithLabel: false,
+    });
+    return [build(head), build(tail)];
+  }
+
+  // Spec §6: reached when no type size lays every song out whole. Single column at a
+  // fixed size, continuing songs across pages under a "(continued)" header.
+  function fallbackPaginate(measure, assignments, masthead) {
+    const size = FALLBACK_SIZE;
+    const width = columnWidth(1);
+    const gap = STANZA_GAP * lineStep(size);
+    const songGap = SONG_GAP * lineStep(size);
+    const mastheadHeight = masthead ? masthead.height : 0;
+    const pages = [];
+    let page = null;
+
+    const capacity = () => TEXT_HEIGHT - (pages.length === 1 ? mastheadHeight : 0);
+    const startPage = () => {
+      page = newPage(TEXT_HEIGHT);
+      pages.push(page);
+      page.capacity = capacity();
+      return page;
+    };
+    const remaining = () => page.capacity - page.used;
+
+    assignments.forEach(assignment => {
+      const stanzas = bookletStanzas(assignment)
+        .map(stanza => layoutStanza(measure, stanza, { width, size }));
+      if (!stanzas.length) return;
+      let header = layoutHeader(measure, assignment, size, false);
+      let block = null;
+      const openBlock = () => {
+        if (!page || remaining() < header.height + lineStep(size) * 2) startPage();
+        const leading = page.blocks.length ? songGap : 0;
+        block = {
+          assignment, columns: 1, header, bodyColumns: [[]], gap, size,
+          bodyHeight: 0, height: header.height, visualLines: 0,
+        };
+        page.blocks.push(block);
+        page.items.push(header);
+        page.used += leading + header.height;
+        return block;
+      };
+      const push = stanza => {
+        const column = block.bodyColumns[0];
+        const leading = column.length ? gap : 0;
+        column.push(stanza);
+        block.bodyHeight += leading + stanza.height;
+        block.height += leading + stanza.height;
+        block.visualLines += stanza.visualLines;
+        page.used += leading + stanza.height;
+      };
+
+      openBlock();
+      let queue = stanzas.slice();
+      while (queue.length) {
+        const stanza = queue[0];
+        const leading = block.bodyColumns[0].length ? gap : 0;
+        if (leading + stanza.height <= remaining()) {
+          push(stanza);
+          queue = queue.slice(1);
+          continue;
+        }
+        const parts = splitStanza(stanza, remaining() - leading);
+        if (parts) {
+          push(parts[0]);
+          queue = [parts[1], ...queue.slice(1)];
+        }
+        if (!queue.length) break;
+        startPage();
+        header = layoutHeader(measure, assignment, size, true);
+        openBlock();
+      }
+    });
+
+    if (!pages.length) startPage();
+    return { pages, contents: contentsOf(pages), fontSize: size, score: 0 };
+  }
+
+  function paginateLyrics(assignments, options = {}) {
+    const measure = requireMeasure(options.measure);
+    const masthead = options.masthead || layoutMasthead(measure);
+    for (const size of FONT_CANDIDATES) {
+      // Lyrics beneath the masthead are worth a page of capacity, but never worth
+      // shrinking the type, so a masthead-only first page is tried at the same size
+      // before moving down the font ladder.
+      const candidate = chooseCandidate(measure, assignments, size, masthead)
+        || chooseCandidate(measure, assignments, size, masthead, true);
+      if (candidate) return candidate;
+    }
+    return fallbackPaginate(measure, assignments, masthead);
+  }
+
+  function layoutMasthead(measure, { celebration, meta, date } = {}) {
+    requireMeasure(measure);
+    const titleLines = wrapText(measure, celebration || "Sunday Mass", {
+      font: "times", style: "bold", size: MASTHEAD.titleSize, width: TEXT_WIDTH,
+    });
+    const metaLines = wrapText(measure, meta || date || "", {
+      font: "helvetica", style: "normal", size: MASTHEAD.metaSize, width: TEXT_WIDTH,
+    });
     const height = lineStep(MASTHEAD.eyebrowSize, 1.25) + 1.4
       + titleLines.length * lineStep(MASTHEAD.titleSize, 1.08)
       + (metaLines.length ? 1.2 + metaLines.length * lineStep(MASTHEAD.metaSize, 1.3) : 0)
@@ -139,289 +521,11 @@
     return Object.freeze({ titleLines, metaLines, height });
   }
 
-  function newLyricsPage() {
-    return { kind: "lyrics", used: 0, items: [] };
-  }
-
-  function paginateLyricsLegacy(assignments, pageCapacity = PAGE_CAPACITY, mastheadCost = 0) {
-    const pages = [];
-    const contents = [];
-    let page = null;
-
-    const startPage = () => {
-      page = newLyricsPage();
-      if (!pages.length) page.used = mastheadCost;
-      pages.push(page);
-      return page;
-    };
-    const remaining = () => pageCapacity - page.used;
-    const addHeader = (assignment, continued = false) => {
-      const cost = continued ? 2.1 : 3.1;
-      page.items.push({
-        type: "song-header",
-        partLabel: assignment.partLabel,
-        title: assignment.title,
-        attribution: attribution(assignment),
-        continued,
-      });
-      page.used += cost;
-    };
-    const addStanza = units => {
-      page.items.push({ type: "stanza", units });
-      page.used += units.reduce((sum, unit) => sum + unit.lines.length, 0) + 0.75;
-    };
-
-    assignments.forEach(assignment => {
-      const stanzas = bookletStanzas(assignment);
-      if (!stanzas.length) return;
-
-      const firstLines = stanzas[0].reduce((sum, unit) => sum + unit.lines.length, 0);
-      const required = 3.1 + Math.min(firstLines + 0.75, 4);
-      if (!page || remaining() < required) startPage();
-      contents.push({
-        partLabel: assignment.partLabel,
-        title: assignment.title,
-        page: pages.length,
-      });
-      addHeader(assignment);
-
-      stanzas.forEach(stanza => {
-        let units = stanza.slice();
-        while (units.length) {
-          const cost = units.reduce((sum, unit) => sum + unit.lines.length, 0) + 0.75;
-          if (cost <= remaining()) {
-            addStanza(units);
-            units = [];
-            continue;
-          }
-
-          const available = Math.floor(remaining() - 0.75);
-          let take = 0;
-          let used = 0;
-          while (take < units.length && used + units[take].lines.length <= available) {
-            used += units[take].lines.length;
-            take += 1;
-          }
-          if (units.length - take === 1 && take > 1) take -= 1;
-          if (take > 0) {
-            addStanza(units.slice(0, take));
-            units = units.slice(take);
-          }
-          if (units.length) {
-            startPage();
-            addHeader(assignment, true);
-          }
-        }
-      });
-    });
-
-    return { pages, contents };
-  }
-
-  function flowTokens(stanzas) {
-    return stanzas.flatMap(stanza => stanza.map((unit, index) => ({
-      unit,
-      gapAfter: index === stanza.length - 1 ? STANZA_GAP : 0,
-      cost: unit.lines.length + (index === stanza.length - 1 ? STANZA_GAP : 0),
-    })));
-  }
-
-  function tokensHeight(tokens) {
-    return tokens.reduce((sum, token) => sum + token.cost, 0);
-  }
-
-  // Deviates from spec §4.3: considers a division before every line rather than only
-  // between stanzas, so verses are cut in half. The scoring below cannot be the cause.
-  // The heights sum to a constant T, so max(L,R) = (T + |L-R|)/2 and this score is
-  // 5T + 6|L-R| — the same ranking as any other balance measure. Restricting the
-  // candidates to stanza boundaries is the fix.
-  function splitTokens(tokens) {
-    if (tokens.length < 2) return [tokens, []];
-    let best = null;
-    for (let index = 1; index < tokens.length; index += 1) {
-      if (tokens[index - 1].unit.label) continue;
-      const left = tokens.slice(0, index);
-      const right = tokens.slice(index);
-      const heights = [tokensHeight(left), tokensHeight(right)];
-      const score = Math.max(...heights) * 10 + Math.abs(heights[0] - heights[1]);
-      if (!best || score < best.score) best = { left, right, score };
-    }
-    return best ? [best.left, best.right] : [tokens, []];
-  }
-
-  function layoutHeader(assignment, fontSize) {
-    const titleSize = fontSize + 3;
-    const labelSize = Math.max(7, fontSize - 3.5);
-    const attributionSize = Math.max(7, fontSize - 3);
-    const titleLength = Math.max(36, Math.floor(58 * 12 / titleSize));
-    const attributionLength = Math.max(60, Math.floor(92 * 7 / attributionSize));
-    const titleLines = wrap(assignment.title, titleLength);
-    const attributionLines = wrap(attribution(assignment), attributionLength);
-    const height = (
-      labelSize * 1.25
-      + titleLines.length * titleSize * 1.06
-      + attributionLines.length * attributionSize * 1.15
-    ) / (fontSize * 1.15) + 1;
-    return {
-      type: "song-header",
-      partLabel: assignment.partLabel,
-      title: assignment.title,
-      attribution: attributionLines.join(" "),
-      attributionLines,
-      titleLines,
-      continued: false,
-      height,
-    };
-  }
-
-  function songLayout(assignment, fontSize, columns) {
-    const baseLength = columns === 1 ? LINE_LENGTH : NARROW_LINE_LENGTH;
-    const maxLength = Math.max(24, Math.floor(baseLength * 8.5 / fontSize));
-    const stanzas = bookletStanzas(assignment, maxLength);
-    const tokens = flowTokens(stanzas);
-    const bodyColumns = columns === 1 ? [tokens] : splitTokens(tokens);
-    const bodyHeight = Math.max(...bodyColumns.map(tokensHeight));
-    const header = layoutHeader(assignment, fontSize);
-    return {
-      assignment,
-      columns,
-      bodyColumns,
-      bodyHeight,
-      fontSize,
-      header,
-      height: header.height + bodyHeight,
-    };
-  }
-
-  function columnPenalty(layout, singleColumnLayout) {
-    if (layout.columns === 1) return 0;
-    const savings = singleColumnLayout.height - layout.height;
-    const shortSongPenalty = Math.max(0, 14 - singleColumnLayout.bodyHeight) * 2;
-    const weakSavingsPenalty = Math.max(0, 3 - savings) * 4;
-    return 3 + shortSongPenalty + weakSavingsPenalty;
-  }
-
-  function appendCandidate(state, layout, startNewPage, capacity, penalty, mastheadCost) {
-    const pages = state.pages.map(page => ({ ...page, blocks: page.blocks.slice() }));
-    let score = state.score + penalty;
-    if (startNewPage || !pages.length) {
-      if (pages.length) {
-        const leftover = capacity - pages.at(-1).used;
-        score += leftover * leftover * 0.035;
-      }
-      pages.push({
-        kind: "lyrics",
-        layout: "adaptive",
-        used: pages.length ? 0 : mastheadCost,
-        blocks: [],
-        items: [],
-      });
-    }
-    const page = pages.at(-1);
-    const gap = page.blocks.length ? SONG_GAP : 0;
-    page.blocks.push(layout);
-    page.items.push(layout.header);
-    page.used += gap + layout.height;
-    return { pages, score };
-  }
-
-  function chooseCandidate(assignments, fontSize, masthead, mastheadOnlyFirstPage = false) {
-    const songs = assignments.filter(assignment => bookletStanzas(assignment).length);
-    if (!songs.length) return { pages: [], contents: [] };
-    const capacity = PAGE_CAPACITY * 8.5 / fontSize;
-    const mastheadCost = masthead.height / lineStep(fontSize, 1.15);
-    // Giving the masthead a page of its own costs a page of lyrics but frees the
-    // first song from having to fit beneath it, which can buy a larger font for
-    // the whole booklet.
-    const reserved = mastheadOnlyFirstPage
-      ? [{ kind: "lyrics", layout: "adaptive", used: capacity, blocks: [], items: [] }]
-      : [];
-    const targetPages = Math.min(BOOKLET_PAGES, songs.length + reserved.length);
-    let states = [{ pages: reserved, score: 0 }];
-
-    songs.forEach(assignment => {
-      const single = songLayout(assignment, fontSize, 1);
-      const double = songLayout(assignment, fontSize, 2);
-      const layouts = double.bodyColumns[1].length ? [single, double] : [single];
-      const next = [];
-      states.forEach(state => {
-        layouts.forEach(layout => {
-          if (layout.height > capacity) return;
-          const penalty = columnPenalty(layout, single);
-          const current = state.pages.at(-1);
-          const gap = current?.blocks.length ? SONG_GAP : 0;
-          if (current && current.used + gap + layout.height <= capacity) {
-            next.push(appendCandidate(state, layout, false, capacity, penalty, mastheadCost));
-          }
-          const opening = state.pages.length ? 0 : mastheadCost;
-          if ((!current || state.pages.length < targetPages)
-            && opening + layout.height <= capacity) {
-            next.push(appendCandidate(state, layout, true, capacity, penalty, mastheadCost));
-          }
-        });
-      });
-
-      const bestByShape = new Map();
-      next.forEach(state => {
-        const key = `${state.pages.length}:${Math.round(state.pages.at(-1).used * 2)}`;
-        if (!bestByShape.has(key) || bestByShape.get(key).score > state.score) {
-          bestByShape.set(key, state);
-        }
-      });
-      states = [...bestByShape.values()]
-        .sort((left, right) => left.score - right.score)
-        .slice(0, 400);
-    });
-
-    const complete = states.filter(state => state.pages.length === targetPages);
-    if (!complete.length) return null;
-    complete.forEach(state => {
-      const leftover = capacity - state.pages.at(-1).used;
-      state.score += leftover * leftover * 0.035;
-    });
-    const chosen = complete.sort((left, right) => left.score - right.score)[0];
-    const contents = [];
-    chosen.pages.forEach((page, pageIndex) => {
-      page.blocks.forEach(block => contents.push({
-        partLabel: block.assignment.partLabel,
-        title: block.assignment.title,
-        page: pageIndex + 1,
-      }));
-    });
-    return { pages: chosen.pages, contents, fontSize, score: chosen.score };
-  }
-
-  function paginateLyrics(assignments, masthead = layoutMasthead()) {
-    for (const fontSize of FONT_CANDIDATES) {
-      // Lyrics beneath the masthead are worth a page, but never worth shrinking
-      // the type, so a masthead-only first page is tried at the same size before
-      // moving down the font ladder.
-      const candidate = chooseCandidate(assignments, fontSize, masthead)
-        || chooseCandidate(assignments, fontSize, masthead, true);
-      if (candidate) return candidate;
-    }
-    const mastheadCost = masthead.height / lineStep(8.5, 1.15);
-    const legacy = paginateLyricsLegacy(assignments, PAGE_CAPACITY, mastheadCost);
-    const songCount = assignments.filter(assignment => bookletStanzas(assignment).length).length;
-    const targetPages = Math.min(BOOKLET_PAGES, songCount);
-    if (songCount < BOOKLET_PAGES || legacy.pages.length >= targetPages) return legacy;
-
-    // If one unusually long song forced the whole-song candidates to fail, the
-    // old paginator can otherwise leave blank pages. Tighten its capacity until
-    // it fills every lyric page; this only adds page breaks and never risks
-    // overflow because the rendered page capacity remains the original 48 units.
-    for (let capacity = PAGE_CAPACITY - 0.5; capacity >= 12; capacity -= 0.5) {
-      const candidate = paginateLyricsLegacy(assignments, capacity, mastheadCost);
-      if (candidate.pages.length === targetPages) return candidate;
-      if (candidate.pages.length > targetPages) break;
-    }
-    return legacy;
-  }
-
-  function logicalPages({ date, celebration, meta, assignments }) {
-    const masthead = layoutMasthead({ date, celebration, meta });
-    const { pages: lyricPages } = paginateLyrics(assignments, masthead);
-    const pages = (lyricPages.length ? lyricPages : [newLyricsPage()])
+  function logicalPages({ date, celebration, meta, assignments, measure }) {
+    requireMeasure(measure);
+    const masthead = layoutMasthead(measure, { date, celebration, meta });
+    const { pages: lyricPages } = paginateLyrics(assignments, { measure, masthead });
+    const pages = (lyricPages.length ? lyricPages : [newPage(TEXT_HEIGHT)])
       .map((page, index) => (index ? page : { ...page, masthead }));
     if (pages.length > BOOKLET_PAGES) {
       throw new Error(
@@ -454,10 +558,6 @@
     return sheets;
   }
 
-  function lineStep(sizePt, lineHeight) {
-    return sizePt * lineHeight * MM_PER_POINT;
-  }
-
   // Draws pre-split lines top-aligned at (x, y) and returns the y below them.
   function writeLines(doc, lines, x, y, {
     font = "helvetica",
@@ -481,12 +581,6 @@
       });
     });
     return y + lines.length * step;
-  }
-
-  function splitToWidth(doc, text, { font, style, size, maxWidth }) {
-    doc.setFont(font, style);
-    doc.setFontSize(size);
-    return doc.splitTextToSize(String(text || ""), maxWidth);
   }
 
   function paintMasthead(doc, masthead, left, width, top) {
@@ -526,56 +620,30 @@
     });
   }
 
-  function paintSongHeader(doc, item, left, width, y) {
-    y = writeLines(doc, [String(item.partLabel || "").toUpperCase()], left, y, {
-      style: "bold", size: 6.5, color: COLORS.label, charSpace: 0.65 * MM_PER_POINT,
-    });
-    y += 0.7;
-    const titleLines = splitToWidth(doc, item.title, {
-      font: "times", style: "bold", size: 12, maxWidth: width,
-    });
-    const titleTop = y;
-    y = writeLines(doc, titleLines, left, y, {
-      font: "times", style: "bold", size: 12, color: COLORS.heading, lineHeight: 1.06,
-    });
-    if (item.continued) {
-      doc.setFont("times", "bold");
-      doc.setFontSize(12);
-      const lastLineTop = titleTop + (titleLines.length - 1) * lineStep(12, 1.06);
-      writeLines(doc, ["(continued)"], left + doc.getTextWidth(titleLines.at(-1)) + 1.5,
-        lastLineTop + lineStep(12 - 7, 1), { size: 7, color: COLORS.muted });
-    }
-    if (item.attribution) {
-      y += 0.6;
-      y = writeLines(doc, [item.attribution], left, y, {
-        size: 6.5, color: COLORS.muted, lineHeight: 1.15,
-      });
-    }
-    y += item.continued ? 0.8 : 1.2;
-    doc.setDrawColor(COLORS.rule);
-    doc.setLineWidth(1 * MM_PER_POINT);
-    doc.line(left, y, left + width, y);
-    return y + (item.continued ? 1.5 : 1.7);
-  }
-
-  function paintAdaptiveHeader(doc, block, left, width, y) {
-    const { fontSize, header } = block;
-    const labelSize = Math.max(7, fontSize - 3.5);
-    const titleSize = fontSize + 3;
-    const attributionSize = Math.max(7, fontSize - 3);
+  // Mirrors layoutHeader exactly; the two must stay in step (spec §3).
+  function paintHeader(doc, header, left, width, y) {
     y = writeLines(doc, [String(header.partLabel || "").toUpperCase()], left, y, {
-      style: "bold", size: labelSize, color: COLORS.label,
-      charSpace: 0.5 * MM_PER_POINT,
+      style: "bold", size: header.labelPt, color: COLORS.label,
+      charSpace: 0.5 * MM_PER_POINT, lineHeight: 1.25,
     });
     y += 0.7;
+    const titleTop = y;
     y = writeLines(doc, header.titleLines, left, y, {
-      font: "times", style: "bold", size: titleSize,
+      font: "times", style: "bold", size: header.titlePt,
       color: COLORS.heading, lineHeight: 1.06,
     });
+    if (header.continued && header.titleLines.length) {
+      doc.setFont("times", "bold");
+      doc.setFontSize(header.titlePt);
+      const lastTop = titleTop + (header.titleLines.length - 1) * lineStep(header.titlePt, 1.06);
+      writeLines(doc, ["(continued)"],
+        left + doc.getTextWidth(header.titleLines[header.titleLines.length - 1]) + 1.5,
+        lastTop + lineStep(header.titlePt - 7, 1), { size: 7, color: COLORS.muted });
+    }
     if (header.attributionLines.length) {
       y += 0.6;
       y = writeLines(doc, header.attributionLines, left, y, {
-        size: attributionSize, color: COLORS.muted, lineHeight: 1.15,
+        size: header.attributionPt, color: COLORS.muted, lineHeight: 1.15,
       });
     }
     y += 1.2;
@@ -585,68 +653,36 @@
     return y + 1.7;
   }
 
-  function paintAdaptiveLyricsPage(doc, page, x0) {
-    const left = x0 + PAGE_PADDING.side;
-    const width = SHEET.half - 2 * PAGE_PADDING.side;
-    const columnGap = 7;
-    let blockTop = page.masthead
-      ? paintMasthead(doc, page.masthead, left, width, PAGE_PADDING.top)
-      : PAGE_PADDING.top;
-
-    page.blocks.forEach((block, blockIndex) => {
-      if (blockIndex) blockTop += lineStep(block.fontSize, 1.15) * SONG_GAP;
-      const contentTop = paintAdaptiveHeader(doc, block, left, width, blockTop);
-      const columnWidth = block.columns === 1 ? width : (width - columnGap) / 2;
-      let blockBottom = contentTop;
-      block.bodyColumns.forEach((tokens, column) => {
-        const columnLeft = left + column * (columnWidth + columnGap);
-        let y = contentTop;
-        tokens.forEach(token => {
-          token.unit.lines.forEach((line, wrapIndex) => {
-            const labelSize = Math.max(8, block.fontSize - 1.5);
-            const size = token.unit.label ? labelSize : block.fontSize;
-            const indent = wrapIndex ? 1.2 * block.fontSize * MM_PER_POINT : 0;
-            writeLines(doc, [line], columnLeft + indent, y, token.unit.label
-              ? { style: "bolditalic", size, color: COLORS.label, lineHeight: 1.15 }
-              : { font: "times", size, color: COLORS.ink, lineHeight: 1.15 });
-            y += lineStep(size, 1.15);
-          });
-          y += lineStep(block.fontSize, 1.15) * token.gapAfter;
-        });
-        blockBottom = Math.max(blockBottom, y);
-      });
-      blockTop = blockBottom;
-    });
-
-    writeLines(doc, [String(page.number)], x0 + SHEET.half / 2,
-      SHEET.h - 5 - lineStep(7.5, 1.25), {
-        size: 7.5, color: COLORS.footer, align: "center",
-      });
-  }
-
   function paintLyricsPage(doc, page, x0) {
     const left = x0 + PAGE_PADDING.side;
-    const width = SHEET.half - 2 * PAGE_PADDING.side;
-    let y = page.masthead
-      ? paintMasthead(doc, page.masthead, left, width, PAGE_PADDING.top)
+    let blockTop = page.masthead
+      ? paintMasthead(doc, page.masthead, left, TEXT_WIDTH, PAGE_PADDING.top)
       : PAGE_PADDING.top;
-    page.items.forEach((item, index) => {
-      if (item.type === "song-header") {
-        if (index) y += 2.7;
-        y = paintSongHeader(doc, item, left, width, y);
-        return;
-      }
-      item.units.forEach(unit => {
-        unit.lines.forEach((line, wrapIndex) => {
-          const indent = wrapIndex ? 1.2 * 8.5 * MM_PER_POINT : 0;
-          writeLines(doc, [line], left + indent, y, unit.label
-            ? { style: "bolditalic", size: 7.5, color: COLORS.label, lineHeight: 1.15 }
-            : { font: "times", size: 8.5, color: COLORS.ink, lineHeight: 1.15 });
-          y += lineStep(unit.label ? 7.5 : 8.5, 1.15);
+
+    (page.blocks || []).forEach((block, index) => {
+      if (index) blockTop += SONG_GAP * lineStep(block.size);
+      const contentTop = paintHeader(doc, block.header, left, TEXT_WIDTH, blockTop);
+      const width = columnWidth(block.columns);
+      const gutter = COLUMN_GUTTER[block.columns] || 0;
+      let bottom = contentTop;
+      block.bodyColumns.forEach((column, columnIndex) => {
+        const columnLeft = left + columnIndex * (width + gutter);
+        let y = contentTop;
+        column.forEach((stanza, stanzaIndex) => {
+          stanza.rows.forEach(row => {
+            writeLines(doc, [row.text], columnLeft + row.indent, y, {
+              font: row.font, style: row.style, size: row.size,
+              color: row.color, lineHeight: LINE_HEIGHT,
+            });
+            y += row.step;
+          });
+          if (stanzaIndex < column.length - 1) y += block.gap;
         });
+        bottom = Math.max(bottom, y);
       });
-      y += 1.5;
+      blockTop = bottom;
     });
+
     writeLines(doc, [String(page.number)], x0 + SHEET.half / 2,
       SHEET.h - 5 - lineStep(7.5, 1.25), {
         size: 7.5, color: COLORS.footer, align: "center",
@@ -656,14 +692,13 @@
   function paintPage(doc, page, x0) {
     if (page.kind === "back-cover") return paintBackCover(doc, page, x0);
     if (page.kind === "blank") return undefined;
-    if (page.layout === "adaptive") return paintAdaptiveLyricsPage(doc, page, x0);
     return paintLyricsPage(doc, page, x0);
   }
 
   function buildPdf(JsPDF, options) {
     if (typeof JsPDF !== "function") throw new Error("PDF generator unavailable");
-    const sheets = impose(logicalPages(options));
     const doc = new JsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    const sheets = impose(logicalPages({ ...options, measure: measurer(doc) }));
     doc.setProperties({
       title: `${options.celebration || "Sunday Mass"} — congregational song booklet`,
       subject: "Congregational song booklet for the selected Sunday Mass",
@@ -693,10 +728,16 @@
     bookletLyrics,
     bookletStanzas,
     buildPdf,
+    columnWidth,
     fileName,
     impose,
+    layoutMasthead,
+    linearPartition,
     logicalPages,
+    measurer,
     paginateLyrics,
+    textHeight: TEXT_HEIGHT,
+    textWidth: TEXT_WIDTH,
   });
   global.LyricsBooklet = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
