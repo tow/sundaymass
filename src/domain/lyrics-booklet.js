@@ -231,9 +231,10 @@
   }
 
   // Deviates from spec §5: considers a division before every line rather than only
-  // between stanzas, so verses are cut in half. The scoring below is not the cause —
-  // over this candidate set every reasonable objective picks the same mid-verse point.
-  // Restricting the candidates to stanza boundaries is the fix.
+  // between stanzas, so verses are cut in half. The scoring below cannot be the cause.
+  // The heights sum to a constant T, so max(L,R) = (T + |L-R|)/2 and this score is
+  // 5T + 6|L-R| — the same ranking as any other balance measure. Restricting the
+  // candidates to stanza boundaries is the fix.
   function splitTokens(tokens) {
     if (tokens.length < 2) return [tokens, []];
     let best = null;

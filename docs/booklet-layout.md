@@ -138,21 +138,26 @@ column**, since a block's height is the taller of its two columns and that is th
 column cost the page actually pays. Break ties in favour of the fuller left column, so
 that a song reads down the left and finishes on the right.
 
-This objective balances the columns, and that is intended. As the division point moves
-down the song the left column only grows and the right only shrinks, so the taller
-column is shortest where the two heights meet: minimising the maximum and equalising
-the heights are the same operation, differing only in how they break ties. The
-specification asks for the taller column because that is the quantity the page pays
-for, not because balance is to be avoided.
+This objective balances the columns, and that is intended. The two columns hold the
+whole song between them, so their heights sum to a constant `T` wherever the division
+falls, and `max(L, R) = (T + |L - R|) / 2`. Minimising the taller column is an
+increasing affine function of the difference between the columns: the two expressions
+rank every candidate division identically, ties included. They are not competing
+objectives that happen to agree, and no input distinguishes them.
 
-**The constraint that matters is the candidate set, not the objective.** Balancing is
-harmless when the only places a division may fall are stanza boundaries, and harmful
-when it may fall between any two lines — in the second case the arithmetic lands
-wherever it lands, and on a song with uneven stanzas that is the middle of a verse.
-A reader tempted to repair the current behaviour by adjusting the scoring should not:
-over a line-boundary candidate set, minimising the taller column, minimising the
-difference, and the two combined all select the same mid-verse division. Restricting
-the candidates to stanza boundaries is the whole of the fix.
+The specification names the taller column because that is the quantity the page pays
+for — a block occupies its header plus the taller of its columns — not because it
+differs in effect from naming the difference.
+
+**The constraint that matters is therefore the candidate set, not the objective.**
+Balancing is harmless when the only places a division may fall are stanza boundaries,
+and harmful when it may fall between any two lines: in the second case the arithmetic
+lands wherever it lands, and on a song with uneven stanzas that is the middle of a
+verse. A reader tempted to repair the current behaviour by adjusting its scoring cannot
+succeed, and does not need to test the idea to know it — the current
+`max(L, R) * 10 + |L - R|` reduces to `5T + 6|L - R|`, so it already ranks divisions
+identically to every other balance measure. Restricting the candidates to stanza
+boundaries is the whole of the fix.
 
 **Mid-stanza division is a last resort.** A stanza may be divided across columns only
 when that single stanza is by itself taller than the available column, so that no
@@ -244,7 +249,7 @@ item is a defect against this specification, not a permitted variation.
 | 3 | Label lines reserve a full lyric line but paint at `max(8, size - 1.5)`; wrapped continuation lines are indented but budgeted at full width. |
 | 3 | Header height reserves one lyric line for 4.2 mm of fixed gaps, under-reserving below about 10.4 pt and over-reserving above it. |
 | 3 | The continuation paginator budgets header titles by character count but repaints them with measured `splitTextToSize`, so the two can disagree. |
-| 5 | `splitTokens` considers a division before every line, not only between stanzas, so verses are routinely cut in half. Its `max(heights) * 10 + abs(difference)` scoring is not the fault and changing it changes nothing; the candidate set is. |
+| 5 | `splitTokens` considers a division before every line, not only between stanzas, so verses are routinely cut in half. Its scoring cannot be the fault: column heights sum to a constant, so `max * 10 + abs(difference)` reduces to `5T + 6 * abs(difference)` and ranks divisions identically to any other balance measure. The candidate set is the fault. |
 
 Section 5 is the user-visible fault and should be corrected first; sections 1.1 and 3
 together are what will buy back type size across the whole booklet, and by making songs
