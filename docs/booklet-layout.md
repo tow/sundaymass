@@ -17,10 +17,10 @@ Two things make a page easy to sing from, and they compete:
 - **an unwrapped line** carries a whole phrase of the tune, matching what the singer
   hears and sings.
 
-Narrow columns buy height, and height buys type size, but they wrap lines. A line can
-also be longer than the full measure at the smallest type size, so an unwrapped line is
-not something the layout can guarantee. §5 therefore settles this trade by price rather
-than by rule.
+These compete because narrow columns shorten a song, and a shorter song can be set in
+larger type — but narrow columns also wrap lines. Nor can every line be kept unwrapped
+even in principle: a line may be too long for the full page width at the smallest type
+size on the ladder. §5 therefore settles the trade by price rather than by rule.
 
 One thing is not traded: **a stanza sits in one column**, the only exception being a
 stanza taller than any column at any type size (§4.3).
@@ -104,19 +104,20 @@ from the body size: label `max(7, size - 3.5)`, title `size + 3`, attribution
 
 ### 4.2 Column count
 
-An extra column halves the measure and so wraps lines, and buys height in exchange. The
-exchange rate is calculable. With `N` logical lines, `S` stanzas, stanza gap `g`, and
-`a(c)` the mean visual lines per logical line at column width `w(c)`, so that `a(1)` is
-normally 1:
+Each extra column narrows the measure, which makes more lines wrap, and shortens the
+body in exchange. The exchange rate can be calculated. Write `N` for the number of
+logical lines, `S` for the number of stanzas, `g` for the stanza gap, and `a(c)` for the
+mean number of visual lines each logical line needs at column width `w(c)`, so that
+`a(1)` is normally 1:
 
 ```
 height(c) ~= (N * a(c) + S * g) / c
 ```
 
-So `c` columns reduce height only while `a(c) < c`. The boundary case is worth seeing:
-if halving the measure wraps every line then `a(2) = 2`, and two columns return only the
-halved stanza gaps — a fraction of a line per stanza — for a wrapped phrase on every
-line in the song.
+So `c` columns shorten the body only while `a(c) < c`. At the boundary they stop being
+worth anything: if halving the measure wraps every line, then `a(2) = 2`, and two
+columns return only the halved stanza gaps — a fraction of a line per stanza — in
+exchange for a wrapped phrase on every line in the song.
 
 Every admissible count is offered to the search (§5), which prices it. A count is
 admissible when it does not exceed the stanza count, since stanzas are atomic, and when
@@ -132,20 +133,21 @@ A `c`-column body partitions the song's stanzas, in reading order, into `c` cont
 non-empty groups, dividing only at the boundaries between stanzas. A label moves with
 the stanza it introduces, so no column ends with one.
 
-The chosen partition **minimises the tallest column**, since a block occupies its header
-plus its tallest column, and that is what the page pays for it. Ties go to fuller
+The chosen partition **minimises the tallest column**. A block occupies its header plus
+its tallest column, so that is the height a page has to find for it. Ties go to fuller
 earlier columns, so a song reads down the page and finishes in the last column.
 
-This is the linear partition problem — an ordered sequence into `c` contiguous parts
-minimising the largest part sum — solved exactly by dynamic programming in
-`O(S^2 * c)`. At a handful of stanzas and at most three columns the exact solution is
-cheap enough to require.
+This is the linear partition problem — divide an ordered sequence into `c` contiguous
+parts so that the largest part sum is as small as possible — and dynamic programming
+solves it exactly in `O(S^2 * c)`. With a handful of stanzas and at most three columns
+that is cheap, so the exact solution is used rather than a greedy fill.
 
-At `c = 2` this is equivalent to balancing the columns: the two hold the whole song, so
-their heights sum to a constant `T` and `max(L, R) = (T + |L - R|) / 2`, making the two
-expressions rank every partition identically. The equivalence is particular to two
-parts. For `c >= 3` the tallest column is not a function of the spread, and the tallest
-column is what governs.
+At `c = 2`, minimising the tallest column is the same thing as balancing the two. They
+hold the whole song between them, so their heights sum to a constant `T`, and
+`max(L, R) = (T + |L - R|) / 2` — an increasing function of the difference, so both
+expressions rank every partition identically. This equivalence holds only for two
+parts. At `c >= 3` the tallest column is no longer determined by how spread out the
+heights are, and it is the tallest column that governs.
 
 **Mid-stanza division is a last resort**, reached only when a single stanza is by itself
 taller than the column, so that no stanza-boundary partition fits it. Then: divide
@@ -174,21 +176,29 @@ Two costs, and nothing else, separate the candidates:
   The weight is the only tuning constant in this document. Its meaning is *how many
   lines of saved height one wrapped phrase is worth*.
 
-  The one-column baseline charges a layout only for the wrapping its own narrowness
-  caused. A line already too long for the full measure still counts, but only for the
-  breaks the narrower measure adds to it, not for the ones it would suffer anywhere.
-  Since a narrower measure never yields fewer visual lines, the baseline subtracts a
-  per-line constant and leaves the ranking unchanged; it is there to make the number
-  mean *the lines this layout cost*. Measuring added visual lines rather than counting
-  wrapped lines keeps the cost proportionate, so a line broken into four costs more than
-  one broken into two.
+  Subtracting the one-column count leaves only the extra visual lines that the chosen
+  column width introduced.
+
+  Take a line long enough to wrap into 2 visual lines even across the full page width.
+  In two columns it might take 4, and in three columns 6. Its wrap cost is then 0, 2 and
+  4 respectively — the 2 lines it needs at full width are subtracted in every case, and
+  the layout pays for the rest.
+
+  A narrower column never needs fewer visual lines than a wider one, so the subtracted
+  amount is fixed for a given line. It lowers every candidate's total by the same
+  amount, which is why it does not change which candidate wins. Its purpose is to make
+  the number readable as *the extra lines this layout caused*.
+
+  Counting added visual lines, rather than counting how many lines wrap at all, keeps
+  the charge proportionate. An ordinary line that goes from 1 visual line to 2 costs 1;
+  one that goes from 1 to 4 costs 3.
 
 - **Page-fill cost** — for each completed page, quadratic in the unused height.
 
-  This separates layouts the wrap cost leaves tied. Type size is already settled by the
-  ladder below, so the white space it recovers cannot be spent on anything; its only job
-  is to keep content from piling onto early pages above a nearly empty last one. It
-  stays small enough that it never outranks the wrap cost.
+  Many layouts have the same wrap cost, and this separates them. The type size is
+  already fixed by the ladder below, so the white space this recovers cannot be spent on
+  anything; its only job is to stop content piling onto the early pages above a nearly
+  empty last one. It stays small enough that it never outweighs the wrap cost.
 
 Ties beyond that go to fewer columns.
 
@@ -233,9 +243,9 @@ Properties worth asserting in `tests/lyrics-booklet.test.js`:
    column height.
 5. No column ends with a label, and no division leaves a single line alone in a column.
 6. Column count never exceeds the stanza count, and every column receives content.
-7. A line too long for the full measure adds no wrap cost at one column, and at narrower
-   measures adds only the breaks those measures introduce, so a song containing one is
-   neither forced into a single column nor charged for wrapping it could never avoid.
+7. A line too long for the full page width costs nothing in one column, and in narrower
+   columns costs only the extra visual lines those columns add. A song containing such a
+   line is not pushed into a single column by it.
 8. The chosen partition minimises the tallest column, verified against brute force on
    small inputs.
 9. Songs appear in Mass order, and the contents list agrees with each song's page.
