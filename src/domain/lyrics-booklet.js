@@ -33,7 +33,9 @@
   const PAGE_FILL_WEIGHT = 0.02;
   const BEAM_WIDTH = 400;
 
-  const LABEL_PATTERN = /^(?:all|cantor|refrain|response|chorus|bridge|verse(?:\s+\d+)?|coda|repeat)(?::|\b)/i;
+  // The colon is required: bare keywords appear in real lyric lines
+  // ("All because of Me"), so a word boundary alone misfires.
+  const LABEL_PATTERN = /^(?:all|cantor|refrain|response|chorus|bridge|verse(?:\s+\d+)?|coda|repeat):/i;
 
   // Deliberately monochrome — the booklet is photocopied in bulk, so it must
   // not spend colour ink (no cover flood-fill, greyscale accents only).

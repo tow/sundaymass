@@ -472,6 +472,24 @@ test("the booklet PDF has one A4 landscape page per imposed sheet with every lyr
   ].forEach(text => assert.ok(source.includes(text), `PDF should contain "${text}"`));
 });
 
+test("section labels need a colon; lyric lines starting with a label word stay lyrics", () => {
+  const stanzas = LyricsBooklet.bookletStanzas(assignment({
+    lyrics: "Refrain:\nBe not afraid\n\nAnd if wicked tongues insult and hate you\nAll because of Me\nBlessed, blessed are you!",
+  }));
+  const lines = stanzas.flat();
+
+  assert.deepEqual(
+    lines.map(line => [line.text, line.label]),
+    [
+      ["Refrain:", true],
+      ["Be not afraid", false],
+      ["And if wicked tongues insult and hate you", false],
+      ["All because of Me", false],
+      ["Blessed, blessed are you!", false],
+    ],
+  );
+});
+
 test("the booklet PDF labels the Psalm response and included cantor verses", needsPdf, () => {
   const lyrics = "Response:\nThe Hand of the Lord feeds us;\nhe answers all our needs.\n\n"
     + "Verse 1\nThe LORD is gracious and merciful,\nslow to anger.";
