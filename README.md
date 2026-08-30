@@ -173,7 +173,7 @@ assets, and icons are ignored build products. Do not hand-edit them: the next bu
 overwrites them, tests rebuild them first, and the Pages workflow creates a fresh
 deployment artifact.
 
-`about.html`, `august-music.html`, and the manifest are maintained directly.
+`about.html`, `september-music.html`, and the manifest are maintained directly.
 `service-worker.js` is generated from the source template and asset manifest; do not
 hand-edit it.
 

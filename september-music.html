@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Choosing September music — St James Mass Music Planner</title>
+  <meta name="description" content="Shortlist of hymns for the 6pm Mass on 6, 13, 20 and 27 September, with the readings and practice links.">
+  <meta name="theme-color" content="#002F45">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <style>
+    :root{ --accent:#002F45; --accent-dark:#001F2D; --accentlt:#F0E5C8; --ink:#271A01; --muted:#675F52; --line:#D8CDB8; --canvas:#FBF6EF; }
+    html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; padding:0 22px calc(112px + env(safe-area-inset-bottom)); color:var(--ink); background:var(--canvas); font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+    a{ color:var(--accent); text-underline-offset:3px; }
+    a:focus-visible{ outline:3px solid rgba(0,47,69,.22); outline-offset:2px; }
+    .parish-bar{ margin:0 -22px; padding:11px 22px; background:var(--accent); color:#fff; }
+    .parish-bar-inner{ min-height:26px; display:flex; align-items:center; justify-content:space-between; gap:18px; max-width:760px; margin:0 auto; font-size:12px; }
+    .parish-home,.back-link{ color:#fff; font-weight:650; text-decoration:none; white-space:nowrap; }
+    .bar-mobile{ display:none; }
+    .parish-home:hover,.back-link:hover{ text-decoration:underline; }
+    .wrap{ max-width:760px; margin:0 auto; }
+    header{ padding:34px 2px 22px; }
+    .eyebrow{ margin-bottom:5px; color:var(--accent); font-size:11px; font-weight:750; letter-spacing:.8px; text-transform:uppercase; }
+    h1,h2,h3{ font-family:"Libre Caslon Text",Georgia,"Times New Roman",serif; font-weight:400; }
+    h1{ margin:0 0 7px; font-size:36px; line-height:1.15; letter-spacing:-.4px; }
+    header p{ max-width:620px; margin:0 0 10px; color:var(--muted); font-size:14px; line-height:1.5; }
+    header p:last-child{ margin-bottom:0; }
+    .card{ margin-bottom:16px; padding:24px 26px; border:1px solid var(--line); border-radius:4px; background:#fff; box-shadow:0 2px 10px rgba(39,26,1,.045); }
+    .card h2{ margin:0 0 5px; color:var(--ink); font-size:23px; line-height:1.2; }
+    .card > p{ margin:0 0 11px; font-size:14px; line-height:1.55; }
+    .card > p:last-child{ margin-bottom:0; }
+    .lede{ color:var(--muted); }
+    .note{ margin-top:14px; padding:13px 15px; border-left:4px solid var(--accent); background:var(--canvas); color:var(--muted); font-size:12.5px; line-height:1.5; }
+    .note strong{ color:var(--ink); }
+
+    /* Sundays */
+    .sundays{ display:grid; gap:10px; margin:14px 0 0; }
+    .sunday{ padding:14px 16px; border:1px solid var(--line); border-radius:3px; background:var(--canvas); }
+    .sunday-top{ display:flex; flex-wrap:wrap; align-items:baseline; gap:9px; }
+    .sunday-date{ color:var(--accent); font-size:13px; font-weight:750; font-variant-numeric:tabular-nums; }
+    .sunday-name{ font-family:"Libre Caslon Text",Georgia,serif; font-size:16px; }
+    .refs{ margin:5px 0 7px; color:var(--muted); font-size:11.5px; letter-spacing:.2px; }
+    .sunday p{ margin:0; font-size:13.5px; line-height:1.5; }
+    .sunday strong{ color:var(--accent); }
+
+    /* Option lists */
+    .opts{ margin:14px 0 0; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
+    .opt{ display:grid; grid-template-columns:auto 1fr; gap:0 13px; width:100%; margin:0; padding:15px 16px; border:0; border-top:1px solid var(--line); background:#fff; color:inherit; font:inherit; text-align:left; cursor:pointer; }
+    .opt:first-child{ border-top:0; }
+    .opt:hover{ background:var(--canvas); }
+    .opt[aria-pressed="true"]{ background:var(--accentlt); }
+    .opt:focus-visible{ outline:3px solid rgba(0,47,69,.3); outline-offset:-3px; }
+    .mark{ grid-row:1 / span 3; display:grid; place-items:center; width:19px; height:19px; margin-top:3px; border:2px solid var(--muted); border-radius:50%; }
+    .opt[aria-pressed="true"] .mark{ border-color:var(--accent); background:var(--accent); }
+    .mark:after{ content:""; width:7px; height:7px; border-radius:50%; background:#fff; transform:scale(0); }
+    .opt[aria-pressed="true"] .mark:after{ transform:scale(1); }
+    .opt-title{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-family:"Libre Caslon Text",Georgia,serif; font-size:17px; line-height:1.25; }
+    .opt-why{ margin-top:5px; color:var(--muted); font-size:13px; line-height:1.5; }
+    .opt-why q{ color:var(--ink); font-family:"Libre Caslon Text",Georgia,serif; font-style:italic; }
+    .chip{ padding:2px 6px; border:1px solid currentColor; border-radius:2px; color:var(--muted); font-size:9.5px; font-weight:750; letter-spacing:.7px; text-transform:uppercase; white-space:nowrap; }
+    .chip.new{ color:#8A5A00; background:#FBF0D8; }
+    .listen{ grid-column:2; justify-self:start; margin-top:9px; padding:5px 10px; border:1px solid var(--line); border-radius:2px; color:var(--accent); font-size:11px; font-weight:750; letter-spacing:.5px; text-transform:uppercase; text-decoration:none; }
+    .listen:hover{ border-color:var(--accent); background:var(--canvas); }
+
+    /* Communion weeks */
+    .week{ margin-top:22px; }
+    .week:first-of-type{ margin-top:14px; }
+    .week h3{ margin:0; padding-bottom:7px; border-bottom:1px solid var(--line); font-size:17px; }
+    .week h3 span{ color:var(--muted); font-family:"Libre Franklin",sans-serif; font-size:12.5px; }
+    .carried{ margin:10px 0 0; padding:10px 13px; border:1px dashed var(--line); border-radius:3px; background:var(--canvas); color:var(--muted); font-size:13px; line-height:1.5; }
+    .carried b{ display:block; color:var(--accent); font-size:10px; font-weight:750; letter-spacing:.7px; text-transform:uppercase; }
+
+    /* Picks bar */
+    .bar{ position:fixed; right:0; bottom:0; left:0; z-index:20; border-top:1px solid var(--line); background:#fff; box-shadow:0 -3px 14px rgba(39,26,1,.1); }
+    .bar-body{ max-width:760px; margin:0 auto; padding:9px 22px calc(9px + env(safe-area-inset-bottom)); }
+    .slots{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .slot{ min-width:0; }
+    .slot b{ display:block; color:var(--accent); font-size:9.5px; font-weight:750; letter-spacing:.7px; text-transform:uppercase; }
+    .slot span{ display:block; overflow:hidden; font-family:"Libre Caslon Text",Georgia,serif; font-size:14px; line-height:1.3; text-overflow:ellipsis; white-space:nowrap; }
+    .slot span.empty{ color:var(--muted); font-family:"Libre Franklin",sans-serif; font-size:12.5px; }
+    .bar-foot{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:8px; padding-top:8px; border-top:1px solid var(--line); }
+    .tally{ padding:3px 8px; border:1px solid var(--muted); border-radius:2px; color:var(--muted); font-size:10.5px; font-weight:750; letter-spacing:.5px; text-transform:uppercase; }
+    .tally.warn{ border-color:#8A5A00; background:#FBF0D8; color:#8A5A00; }
+    .reset{ padding:4px; border:0; background:none; color:var(--muted); font-family:inherit; font-size:10.5px; font-weight:750; letter-spacing:.5px; text-transform:uppercase; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+    .reset:hover{ color:var(--ink); }
+    .reset:focus-visible{ outline:3px solid rgba(0,47,69,.22); outline-offset:2px; }
+
+    footer{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:5px 2px 0; color:var(--muted); font-size:11px; }
+    footer a{ font-weight:700; }
+
+    @media (min-width:701px){ .sundays{ grid-template-columns:1fr 1fr; } }
+    @media (max-width:700px){
+      body{ padding:0 12px calc(120px + env(safe-area-inset-bottom)); }
+      .parish-bar{ margin:0 -12px; padding:7px 12px; }
+      .parish-bar-inner{ min-width:0; min-height:34px; gap:8px; font-size:11px; }
+      .bar-desktop{ display:none; }
+      .bar-mobile{ display:inline; }
+      header{ padding:20px 4px 15px; }
+      h1{ font-size:29px; }
+      header p{ font-size:13px; }
+      .card{ margin-bottom:12px; padding:19px 17px; border-radius:3px; }
+      .card h2{ font-size:21px; }
+      .bar-body{ padding:9px 12px calc(9px + env(safe-area-inset-bottom)); }
+      footer{ flex-direction:column; justify-content:center; padding-top:5px; text-align:center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="parish-bar">
+    <div class="parish-bar-inner">
+      <a class="parish-home" href="https://henrik.katolinen.fi/en/masses-at-the-church-of-saint-james-the-apostle/" target="_blank" rel="noopener" aria-label="Visit the St James the Apostle church webpage"><span class="bar-desktop">St James the Apostle ↗</span><span class="bar-mobile">St James ↗</span></a>
+      <nav><a class="back-link" href="./"><span class="bar-desktop">Music planner</span><span class="bar-mobile">Planner</span></a> · <a class="back-link" href="./repertoire.html"><span class="bar-desktop">Repertoire</span><span class="bar-mobile">Songs</span></a></nav>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <header>
+      <div class="eyebrow">St James 6pm Mass</div>
+      <h1>Choosing the music for September</h1>
+      <p>One entrance, one offertory and one recessional for the whole month. Communion changes each week, keeping one hymn from the Sunday before.</p>
+      <p>Tap an option to mark it. Choices are kept on this device only — nothing is saved to the planner until someone enters it there.</p>
+    </header>
+
+    <section class="card" aria-labelledby="settled-title">
+      <h2 id="settled-title">Already settled — and what is not</h2>
+      <p class="lede">All four responsorial psalms are recorded in the planner. The ordinaries are not: August’s set — the Bukas Palad Gloria, the St Louis Jesuits’ Holy Holy, the Mass for Young Americans Kyrie, Amén, Lamb of God and Sing Hallelujah — carries straight across unless someone wants a change, but somebody has to enter it.</p>
+      <p>6 September already has <strong>This is my command to you</strong> at the entrance and <strong>Make Me a Channel of Your Peace</strong> at communion. Both are treated as options below rather than as decisions. Seven slots are open.</p>
+    </section>
+
+    <section class="card" aria-labelledby="readings-title">
+      <h2 id="readings-title">What the readings are doing</h2>
+      <p class="lede">Year A, Matthew 18 to 21 — the chapters about how a church treats its own. The month runs from correction, through forgiveness, to a generosity that looks unfair, and ends on turning round.</p>
+      <div class="sundays">
+        <article class="sunday">
+          <div class="sunday-top"><span class="sunday-date">6 Sept</span><span class="sunday-name">23rd Sunday</span></div>
+          <div class="refs">Ezek 33:7–9 · Ps 95 · Rom 13:8–10 · Mt 18:15–20</div>
+          <p>Ezekiel is made a watchman, answerable for the neighbour he fails to warn; the gospel gives the steps for putting a wrong right and ends <strong>“where two or three are gathered in my name, there am I”</strong>. Paul reduces the whole law to one thing: love.</p>
+        </article>
+        <article class="sunday">
+          <div class="sunday-top"><span class="sunday-date">13 Sept</span><span class="sunday-name">24th Sunday</span></div>
+          <div class="refs">Sir 27:30–28:7 · Ps 103 · Rom 14:7–9 · Mt 18:21–35</div>
+          <p>Not seven times but seventy-seven, and the servant let off a fortune who will not let off a debt. <strong>Mercy received and refused</strong> — with the psalm answering, the Lord is kind and merciful.</p>
+        </article>
+        <article class="sunday">
+          <div class="sunday-top"><span class="sunday-date">20 Sept</span><span class="sunday-name">25th Sunday</span></div>
+          <div class="refs">Isa 55:6–9 · Ps 145 · Phil 1:20–24,27 · Mt 20:1–16</div>
+          <p>Seek the Lord while he may be found — <strong>my thoughts are not your thoughts</strong>. The labourers hired at the eleventh hour are paid the same as the first. Generosity that reads as injustice.</p>
+        </article>
+        <article class="sunday">
+          <div class="sunday-top"><span class="sunday-date">27 Sept</span><span class="sunday-name">26th Sunday</span></div>
+          <div class="refs">Ezek 18:25–28 · Ps 25 · Phil 2:1–11 · Mt 21:28–32</div>
+          <p>One son says no and goes; the other says yes and does not. Between them stands Paul’s hymn of the Christ who <strong>emptied himself</strong>. Turning round, and doing the thing rather than saying it.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="entrance-title">
+      <h2 id="entrance-title">Entrance — one for the month</h2>
+      <p class="lede">Sung four Sundays running, so this is the cheapest place to spend a new song: learn it once, reinforce it three times. Table of Plenty has opened every Mass since 2 August, which makes the start of a month the natural place to change it.</p>
+      <div class="opts">
+        <button class="opt" type="button" aria-pressed="false" data-slot="entrance" data-new="true" data-title="Gather Us In">
+          <span class="mark"></span>
+          <span class="opt-title">Gather Us In <span class="chip new">New</span></span>
+          <span class="opt-why"><q>Here in this place new light is streaming… gather us in, the lost and forsaken.</q> Marty Haugen. Reads straight onto “where two or three are gathered in my name” on 6 September, and the gathered community is what the whole month is about. Well enough known that most of the church will be singing it by the second Sunday.</span>
+          <a class="listen" href="https://www.youtube.com/watch?v=HuLORIyEet4" target="_blank" rel="noopener">Listen ↗</a>
+        </button>
+        <button class="opt" type="button" aria-pressed="false" data-slot="entrance" data-new="false" data-title="Gather the People">
+          <span class="mark"></span>
+          <span class="opt-title">Gather the People <span class="chip">Repertoire</span></span>
+          <span class="opt-why"><q>Gather the people, enter the feast.</q> Dan Schutte. The same idea for no rehearsal at all — last sung on 26 July, so it needs a reminder rather than a lesson.</span>
+          <a class="listen" href="https://www.youtube.com/watch?v=PkOrYI5xt0g" target="_blank" rel="noopener">Listen ↗</a>
+        </button>
+        <button class="opt" type="button" aria-pressed="false" data-slot="entrance" data-new="true" data-title="Seek the Lord">
+          <span class="mark"></span>
+          <span class="opt-title">Seek the Lord <span class="chip new">New</span></span>
+          <span class="opt-why"><q>Seek the Lord, whose mercy abounds… for his ways are not our ways.</q> Roc O’Connor. Isaiah 55 set almost verbatim — that is 20 September’s first reading, and mercy is the month’s spine. Slower and more inward than an entrance usually wants.</span>
+          <a class="listen" href="https://www.youtube.com/watch?v=DBjPg4bTHEM" target="_blank" rel="noopener">Listen ↗</a>
+        </button>
+        <button class="opt" type="button" aria-pressed="false" data-slot="entrance" data-new="false" data-title="This is my command to you">
+          <span class="mark"></span>
+          <span class="opt-title">This is my command to you <span class="chip">Repertoire</span></span>
+          <span class="opt-why">Already entered for 6 September, and extending it over the month costs nothing. It puts Romans 13’s “love is the fulfilling of the law” in a single line — but it is the narrowest of the four, saying one thing four times.</span>
+          <a class="listen" href="https://www.youtube.com/results?search_query=This+is+my+command+to+you+that+you+love+one+another+hymn" target="_blank" rel="noopener">Find on YouTube ↗</a>
+        </button>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="offertory-title">
+      <h2 id="offertory-title">Offertory — one for the month</h2>
+      <p class="lede">Philippians 2 on 27 September — <q>he emptied himself, taking the form of a servant</q> — is an offertory text in all but name, and it opens with “have this mind among you which was in Christ Jesus”. Blessed be God has covered the slot since 9 August.</p>
+      <div class="opts">
+        <button class="opt" type="button" aria-pressed="false" data-slot="offertory" data-new="false" data-title="Christify">
+          <span class="mark"></span>
+          <span class="opt-title">Christify <span class="chip">Repertoire</span></span>
+          <span class="opt-why">Manoling Francisco. It asks that our thoughts, words and deeds be made Christ’s own — Philippians 2:5 almost word for word. Already known, last sung on 2 August, and the best month fit here for no new-song cost at all.</span>
+          <a class="listen" href="https://www.youtube.com/watch?v=n-wTFir4fnY" target="_blank" rel="noopener">Listen ↗</a>
+        </button>
+        <button class="opt" type="button" aria-pressed="false" data-slot="offertory" data-new="true" data-title="The Servant Song">
+          <span class="mark"></span>
+          <span class="opt-title">The Servant Song <span class="chip new">New</span></span>
+          <span class="opt-why"><q>Will you let me be your servant… we are pilgrims on a journey.</q> Richard Gillard. Servant language for 27 September, and bearing with one another for 6 and 13. Slow, four-square and quick to learn.</span>
+          <a class="listen" href="https://www.youtube.com/watch?v=fkwdYAnOTdg" target="_blank" rel="noopener">Listen ↗</a>
+        </button>
+        <button class="opt" type="button" aria-pressed="false" data-slot="offertory" data-new="true" data-title="Take and Receive">
+          <span class="mark"></span>
+          <span class="opt-title">Take and Receive <span class="chip new">New</span></span>
+          <span class="opt-why">Manoling Francisco’s Suscipe — the same composer and idiom as the Bukas Palad songs the choir already sings, so the style costs nothing even though the song is new. Total self-offering, though Christify lands nearer the actual reading.</span>
+          <a class="listen" href="https://www.youtube.com/watch?v=Y8oiCEvmo7M" target="_blank" rel="noopener">Listen ↗</a>
+        </button>
+        <button class="opt" type="button" aria-pressed="false" data-slot="offertory" data-new="false" data-title="Blessed be God">
+          <span class="mark"></span>
+          <span class="opt-title">Blessed be God <span class="chip">Repertoire</span></span>
+          <span class="opt-why">Leave it where it is. Free, unmistakably offertory-shaped and neutral across all four Sundays — the right answer if the month’s effort belongs in the entrance instead. By 27 September it will have run eight Sundays.</span>
+          <a class="listen" href="https://www.youtube.com/watch?v=uC1qVq7RuUg" target="_blank" rel="noopener">Listen ↗</a>
+        </button>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="recessional-title">
+      <h2 id="recessional-title">Recessional — one for the month</h2>
+      <p class="lede">September ends on doing rather than saying: labourers called into the vineyard at every hour on the 20th, the son who says no and goes on the 27th. A send-off about answering carries the month. City of God has closed most Sundays since 26 July.</p>
+      <div class="opts">
+        <button class="opt" type="button" aria-pressed="false" data-slot="recessional" data-new="true" data-title="The Summons">
+          <span class="mark"></span>
+          <span class="opt-title">The Summons <span class="chip new">New</span></span>
+          <span class="opt-why"><q>Will you come and follow me if I but call your name?</q> John Bell, to a Scottish folk tune. The landowner going out at every hour on 20 September and the son who actually goes on 27 September, in one refrain. Best month fit by some distance.</span>
+          <a class="listen" href="https://www.youtube.com/watch?v=6FasN8fukrs" target="_blank" rel="noopener">Listen ↗</a>
+        </button>
+        <button class="opt" type="button" aria-pressed="false" data-slot="recessional" data-new="true" data-title="Whatsoever You Do">
+          <span class="mark"></span>
+          <span class="opt-title">Whatsoever You Do <span class="chip new">New</span></span>
+          <span class="opt-why"><q>Whatsoever you do to the least of my brothers, that you do unto me.</q> Willard Jabusch. Doing rather than saying, and it answers Ezekiel’s watchman on 6 September. More energetic than The Summons and easier to pick up.</span>
+          <a class="listen" href="https://www.youtube.com/watch?v=hi7mOotsF0o" target="_blank" rel="noopener">Listen ↗</a>
+        </button>
+        <button class="opt" type="button" aria-pressed="false" data-slot="recessional" data-new="false" data-title="Send Us Your Spirit">
+          <span class="mark"></span>
+          <span class="opt-title">Send Us Your Spirit <span class="chip">Repertoire</span></span>
+          <span class="opt-why">Dan Schutte. Being sent out, at no cost and with no rehearsal — and a change from City of God without anyone having to learn anything.</span>
+          <a class="listen" href="https://www.youtube.com/watch?v=AEgm1Bt2Urc" target="_blank" rel="noopener">Listen ↗</a>
+        </button>
+        <button class="opt" type="button" aria-pressed="false" data-slot="recessional" data-new="false" data-title="Go, the Mass Is Ended">
+          <span class="mark"></span>
+          <span class="opt-title">Go, the Mass Is Ended <span class="chip">Repertoire</span></span>
+          <span class="opt-why">Does exactly what it says. Neutral across all four Sundays — the choice if the attention is better spent elsewhere.</span>
+          <a class="listen" href="https://www.youtube.com/watch?v=d9UADKrdyvM" target="_blank" rel="noopener">Listen ↗</a>
+        </button>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="communion-title">
+      <h2 id="communion-title">Communion — one changes, one carries</h2>
+      <p class="lede">Choose the new hymn for each week; the week before’s choice carries into the second slot. All but one option here is already in the repertoire, which leaves the new-song budget for the month spine.</p>
+
+      <div class="week">
+        <h3>6 September <span>· where two or three are gathered</span></h3>
+        <p class="carried"><b>Carries over from 30 August</b>One Bread, One Body — or We Remember, whichever is worth keeping.</p>
+        <div class="opts">
+          <button class="opt" type="button" aria-pressed="false" data-slot="communion-06" data-new="true" data-title="Ubi Caritas">
+            <span class="mark"></span>
+            <span class="opt-title">Ubi Caritas <span class="chip new">New</span></span>
+            <span class="opt-why"><q>Where charity and love are, there God is.</q> Matthew 18:20 and Romans 13:8 in a single line. A short Taizé ostinato the church has by the third repeat, so it is the one new communion hymn that pays for itself this month.</span>
+            <a class="listen" href="https://www.youtube.com/watch?v=MYfyoRi3t8I" target="_blank" rel="noopener">Listen ↗</a>
+          </button>
+          <button class="opt" type="button" aria-pressed="false" data-slot="communion-06" data-new="false" data-title="One Love Released">
+            <span class="mark"></span>
+            <span class="opt-title">One Love Released <span class="chip">Repertoire</span></span>
+            <span class="opt-why">One body, one love released — the gathered community, which is the week’s subject. Last sung on 9 August. Overlaps heavily with One Bread, One Body, so do not run both.</span>
+            <a class="listen" href="https://www.youtube.com/watch?v=-D7gKjk_bGw" target="_blank" rel="noopener">Listen ↗</a>
+          </button>
+          <button class="opt" type="button" aria-pressed="false" data-slot="communion-06" data-new="false" data-title="Amare et Servire">
+            <span class="mark"></span>
+            <span class="opt-title">Amare et Servire <span class="chip">Repertoire</span></span>
+            <span class="opt-why">To love and to serve — Romans 13 reduced to two verbs. Last sung on 26 July, so it is rested rather than stale.</span>
+            <a class="listen" href="https://www.youtube.com/watch?v=jTDIrEqA5L0" target="_blank" rel="noopener">Listen ↗</a>
+          </button>
+        </div>
+      </div>
+
+      <div class="week">
+        <h3>13 September <span>· not seven times, but seventy-seven</span></h3>
+        <p class="carried"><b>Carries over from 6 September</b>Whichever hymn was chosen above.</p>
+        <div class="opts">
+          <button class="opt" type="button" aria-pressed="false" data-slot="communion-13" data-new="false" data-title="Make Me a Channel of Your Peace">
+            <span class="mark"></span>
+            <span class="opt-title">Make Me a Channel of Your Peace <span class="chip">Repertoire</span></span>
+            <span class="opt-why"><q>It is in pardoning that we are pardoned.</q> The parable’s own logic, and everyone sings it without a sheet. It is currently entered for 6 September; this is the Sunday it belongs to.</span>
+            <a class="listen" href="https://www.youtube.com/watch?v=fYz14jEoaeU" target="_blank" rel="noopener">Listen ↗</a>
+          </button>
+          <button class="opt" type="button" aria-pressed="false" data-slot="communion-13" data-new="false" data-title="Divine Mercy – Holy God">
+            <span class="mark"></span>
+            <span class="opt-title">Divine Mercy – Holy God <span class="chip">Repertoire</span></span>
+            <span class="opt-why"><q>Have mercy on us and on the whole world.</q> Mercy asked for plainly, on the Sunday the psalm answers that the Lord is kind and merciful.</span>
+            <a class="listen" href="https://www.youtube.com/results?search_query=Divine+Mercy+Holy+God+Holy+Mighty+One+hymn" target="_blank" rel="noopener">Find on YouTube ↗</a>
+          </button>
+          <button class="opt" type="button" aria-pressed="false" data-slot="communion-13" data-new="false" data-title="Anima Christi">
+            <span class="mark"></span>
+            <span class="opt-title">Anima Christi <span class="chip">Repertoire</span></span>
+            <span class="opt-why"><q>Within thy wounds hide me.</q> The forgiven servant’s own prayer, said quietly and from inside — the contemplative option, and the stillest thing in the repertoire.</span>
+            <a class="listen" href="https://www.youtube.com/watch?v=O_e9_GmsR5E" target="_blank" rel="noopener">Listen ↗</a>
+          </button>
+        </div>
+      </div>
+
+      <div class="week">
+        <h3>20 September <span>· the last will be first</span></h3>
+        <p class="carried"><b>Carries over from 13 September</b>Whichever hymn was chosen above.</p>
+        <div class="opts">
+          <button class="opt" type="button" aria-pressed="false" data-slot="communion-20" data-new="false" data-title="O God, You Search Me">
+            <span class="mark"></span>
+            <span class="opt-title">O God, You Search Me <span class="chip">Repertoire</span></span>
+            <span class="opt-why">Bernadette Farrell’s Psalm 139. “Seek the Lord while he may be found”, turned the other way round — he searched us out first, whatever hour we were hired at.</span>
+            <a class="listen" href="https://www.youtube.com/watch?v=F4ScBPE9v_I" target="_blank" rel="noopener">Listen ↗</a>
+          </button>
+          <button class="opt" type="button" aria-pressed="false" data-slot="communion-20" data-new="false" data-title="One Bread, One Body">
+            <span class="mark"></span>
+            <span class="opt-title">One Bread, One Body <span class="chip">Repertoire</span></span>
+            <span class="opt-why"><q>Many the gifts, many the works, one in the Lord of all.</q> Different hours, the same wage. Only if it did not carry over from 30 August.</span>
+            <a class="listen" href="https://www.youtube.com/watch?v=kyobizQniKg" target="_blank" rel="noopener">Listen ↗</a>
+          </button>
+          <button class="opt" type="button" aria-pressed="false" data-slot="communion-20" data-new="false" data-title="Iesu, Panis Vitae">
+            <span class="mark"></span>
+            <span class="opt-title">Iesu, Panis Vitae <span class="chip">Repertoire</span></span>
+            <span class="opt-why">Bukas Palad. Straightforwardly eucharistic rather than tied to the readings — the choice if the week’s argument is better left to the homily. Last sung on 23 August.</span>
+            <a class="listen" href="https://www.youtube.com/watch?v=o0FzbpI7u1Y" target="_blank" rel="noopener">Listen ↗</a>
+          </button>
+        </div>
+      </div>
+
+      <div class="week">
+        <h3>27 September <span>· he changed his mind and went</span></h3>
+        <p class="carried"><b>Carries over from 20 September</b>Whichever hymn was chosen above.</p>
+        <div class="opts">
+          <button class="opt" type="button" aria-pressed="false" data-slot="communion-27" data-new="false" data-title="Unless a Grain of Wheat">
+            <span class="mark"></span>
+            <span class="opt-title">Unless a Grain of Wheat <span class="chip">Repertoire</span></span>
+            <span class="opt-why"><q>Unless a grain of wheat shall fall upon the ground and die, it remains but a single grain with no life.</q> Bernadette Farrell, on John 12 — the same movement downwards as Philippians 2.</span>
+            <a class="listen" href="https://www.youtube.com/watch?v=19RlNpG56Qs" target="_blank" rel="noopener">Listen ↗</a>
+          </button>
+          <button class="opt" type="button" aria-pressed="false" data-slot="communion-27" data-new="false" data-title="Stay With Me, Lord">
+            <span class="mark"></span>
+            <span class="opt-title">Stay With Me, Lord <span class="chip">Repertoire</span></span>
+            <span class="opt-why">Gethsemane in tone — the self-emptying of Philippians 2 heard from the inside. Last sung on 2 August, so it would be a return rather than a repeat.</span>
+            <a class="listen" href="https://www.youtube.com/watch?v=ERn-nuKiO3w" target="_blank" rel="noopener">Listen ↗</a>
+          </button>
+          <button class="opt" type="button" aria-pressed="false" data-slot="communion-27" data-new="false" data-title="Time to Change">
+            <span class="mark"></span>
+            <span class="opt-title">Time to Change <span class="chip">Repertoire</span></span>
+            <span class="opt-why">Listed in the repertoire and conversion is exactly the week — Ezekiel’s man who turns from his wickedness, and the son who changes his mind. It has not been sung on any Sunday the planner covers, so check first that the choir still has it.</span>
+            <a class="listen" href="https://www.youtube.com/results?search_query=Time+to+Change+Catholic+hymn" target="_blank" rel="noopener">Find on YouTube ↗</a>
+          </button>
+        </div>
+      </div>
+
+      <div class="note"><strong>On the new-song budget.</strong> A new hymn in a month-long slot is sung four times for one rehearsal; a new communion hymn costs the same rehearsal and is sung twice. If only one thing is added this month, put it in the entrance or the offertory — unless it is Ubi Caritas, which is four lines long and earns its place on 6 September alone.</div>
+    </section>
+
+    <section class="card" aria-labelledby="afterwards-title">
+      <h2 id="afterwards-title">Afterwards</h2>
+      <p>Once the choices are made, an authorised editor enters them in the <a href="./">music planner</a> for each Sunday, where they become visible to everyone — including the ordinaries, which still have to be carried over from August. Practice links and copyright details live on the <a href="./repertoire.html">repertoire page</a>.</p>
+      <div class="note">This page is a working aid for one music meeting on 30 August 2026, not an official parish or Diocese of Helsinki publication, and it is taken down once that meeting is over. Liturgical details must always be checked against the parish Ordo. The short quoted lines identify each song for the people choosing it; they are not a licence to reproduce or project the lyrics.</div>
+    </section>
+
+    <footer>
+      <a href="./">Return to the music planner</a>
+      <span>&copy; 2026 <a href="https://www.datamediate.com" target="_blank" rel="noopener">Datamediate Oy</a></span>
+    </footer>
+  </main>
+
+  <div class="bar">
+    <div class="bar-body">
+      <div class="slots">
+        <div class="slot"><b>Entrance</b><span class="empty" id="v-entrance">Not chosen</span></div>
+        <div class="slot"><b>Offertory</b><span class="empty" id="v-offertory">Not chosen</span></div>
+        <div class="slot"><b>Recessional</b><span class="empty" id="v-recessional">Not chosen</span></div>
+      </div>
+      <div class="bar-foot">
+        <span class="tally" id="tally">Communion 0 of 4 · 0 new songs</span>
+        <button class="reset" type="button" id="reset">Clear choices</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const KEY = "sundaymass-september-2026-choices";
+      const SPINE = ["entrance", "offertory", "recessional"];
+      const WEEKS = ["communion-06", "communion-13", "communion-20", "communion-27"];
+      const buttons = Array.from(document.querySelectorAll(".opt"));
+      let choices = {};
+
+      try {
+        choices = JSON.parse(localStorage.getItem(KEY) || "{}") || {};
+      } catch (error) {
+        choices = {};
+      }
+
+      function save() {
+        try {
+          localStorage.setItem(KEY, JSON.stringify(choices));
+        } catch (error) {
+          // Private browsing refuses writes; the page still works for this visit.
+        }
+      }
+
+      function render() {
+        buttons.forEach(button => {
+          const chosen = choices[button.dataset.slot] === button.dataset.title;
+          button.setAttribute("aria-pressed", chosen ? "true" : "false");
+        });
+
+        SPINE.forEach(slot => {
+          const field = document.getElementById("v-" + slot);
+          field.textContent = choices[slot] || "Not chosen";
+          field.classList.toggle("empty", !choices[slot]);
+        });
+
+        const decided = WEEKS.filter(week => choices[week]).length;
+        const fresh = new Set(
+          buttons
+            .filter(button => button.dataset.new === "true"
+              && choices[button.dataset.slot] === button.dataset.title)
+            .map(button => button.dataset.title),
+        );
+        const tally = document.getElementById("tally");
+        tally.textContent = "Communion " + decided + " of 4 · " + fresh.size
+          + (fresh.size === 1 ? " new song" : " new songs");
+        tally.classList.toggle("warn", fresh.size > 2);
+      }
+
+      buttons.forEach(button => {
+        button.addEventListener("click", () => {
+          const slot = button.dataset.slot;
+          if (choices[slot] === button.dataset.title) delete choices[slot];
+          else choices[slot] = button.dataset.title;
+          save();
+          render();
+        });
+      });
+
+      document.getElementById("reset").addEventListener("click", () => {
+        choices = {};
+        save();
+        render();
+      });
+
+      render();
+    })();
+
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js"));
+    }
+  </script>
+</body>
+</html>

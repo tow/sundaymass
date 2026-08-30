@@ -62,7 +62,7 @@ test("the Pages artifact contains only the explicit deployable surface", () => {
     "index.html",
     "repertoire.html",
     "about.html",
-    "august-music.html",
+    "september-music.html",
     "manifest.webmanifest",
     "service-worker.js",
     "favicon.ico",

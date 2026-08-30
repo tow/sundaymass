@@ -7,7 +7,7 @@ const PAGES_FILES = Object.freeze([
   "index.html",
   "repertoire.html",
   "about.html",
-  "august-music.html",
+  "september-music.html",
   "manifest.webmanifest",
   "service-worker.js",
   "favicon.ico",

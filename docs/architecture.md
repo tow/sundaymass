@@ -38,8 +38,8 @@ server between the browser and Supabase.
 - `repertoire.html` is the public browser and editor surface for both the choir
   repertoire and the distinct extended library.
 - `about.html` contains help, provenance, and limitations.
-- `august-music.html` is a public, hand-maintained shortlist page for the music-choosing
-  meeting of 2 August 2026. It carries no plan data; choices are held in `localStorage`
+- `september-music.html` is a public, hand-maintained shortlist page for the music-choosing
+  meeting of 30 August 2026. It carries no plan data; choices are held in `localStorage`
   only and are entered in the planner separately. **Delete this page, its `about.html`
   link, and its entries in `scripts/stage-pages.js`, `src/service-worker-assets.json`,
   `src/service-worker.js`, and `tests/pages-deployment.test.js` after that meeting.**
