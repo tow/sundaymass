@@ -103,7 +103,7 @@
         title: elements.title.value,
         youtubeUrl: elements.youtube.value,
         note: elements.note.value,
-        sunday: getDate(),
+        planDate: getDate(),
         part: targetPart,
       });
       if (!validation.valid) {

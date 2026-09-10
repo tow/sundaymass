@@ -214,7 +214,7 @@ test("local weekly lyrics keep canonical text and offer the newest earlier copy"
   ), {
     current: null,
     previous: {
-      sunday: "2026-07-19",
+      planDate: "2026-07-19",
       part: "entrance",
       songId: song.id,
       lyrics: "Earlier edited words",
@@ -447,7 +447,7 @@ function weeklyContextSupabase({ samePart, otherPart }) {
         limit() { return query; },
         maybeSingle() { return query; },
         then(resolve, reject) {
-          const data = equals.has("sunday")
+          const data = equals.has("plan_date")
             ? null
             : equals.has("part")
               ? samePart
@@ -464,13 +464,13 @@ function weeklyContextSupabase({ samePart, otherPart }) {
 
 test("Supabase weekly lyric reuse chooses the newest date and same-part ties", async () => {
   const samePart = {
-    sunday: "2026-07-19",
+    plan_date: "2026-07-19",
     part: "entrance",
     song_id: "song-1",
     lyrics: "Entrance edit",
   };
   const sameDateOtherPart = {
-    sunday: "2026-07-19",
+    plan_date: "2026-07-19",
     part: "offertory",
     song_id: "song-1",
     lyrics: "Offertory edit",
@@ -490,7 +490,7 @@ test("Supabase weekly lyric reuse chooses the newest date and same-part ties", a
 
   const newerOtherPart = {
     ...sameDateOtherPart,
-    sunday: "2026-07-26",
+    plan_date: "2026-07-26",
     lyrics: "Newer offertory edit",
   };
   const newerStore = storeModule.createSupabaseStore(
@@ -572,7 +572,7 @@ test("Supabase weekly reset includes the song identity", async () => {
   assert.deepEqual(calls.rpcs, [{
     name: "clear_plan_song_lyrics",
     params: {
-      p_sunday: "2026-08-02",
+      p_plan_date: "2026-08-02",
       p_part: "psalm",
       p_song_id: "psalm-song-id",
     },
@@ -597,7 +597,7 @@ test("Supabase plan song creation maps validated drafts to the atomic RPC", asyn
   assert.deepEqual(calls.rpcs[0], {
     name: "create_and_assign_song",
     params: {
-      p_sunday: "2026-08-02",
+      p_plan_date: "2026-08-02",
       p_part: "entrance",
       p_title: "New Song",
       p_youtube_video_id: "",
@@ -773,7 +773,7 @@ test("local song requests need membership to create and an editor to resolve", a
     title: "New Hymn",
     youtubeVideoId: "AAAAAAAAAAA",
     note: "For the feast",
-    sunday: "2026-08-09",
+    planDate: "2026-08-09",
     part: "entrance",
   });
   const pending = await store.listSongRequests();
@@ -839,7 +839,7 @@ test("Supabase song requests call the bounded request RPCs", async () => {
     title: "New Hymn",
     youtubeVideoId: "AAAAAAAAAAA",
     note: "For the feast",
-    sunday: "2026-08-09",
+    planDate: "2026-08-09",
     part: "entrance",
   });
   assert.equal(id, "request-1");
@@ -852,7 +852,7 @@ test("Supabase song requests call the bounded request RPCs", async () => {
         p_title: "New Hymn",
         p_youtube_video_id: "AAAAAAAAAAA",
         p_note: "For the feast",
-        p_sunday: "2026-08-09",
+        p_plan_date: "2026-08-09",
         p_part: "entrance",
       },
     },

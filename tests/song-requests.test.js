@@ -18,7 +18,7 @@ test("an existing-song request keeps the reference and drops free-text fields", 
     title: "Typed but ignored",
     youtubeUrl: "https://youtu.be/AAAAAAAAAAA",
     note: "  For the feast  ",
-    sunday: "2026-08-09",
+    planDate: "2026-08-09",
     part: "offertory",
   });
   assert.equal(result.valid, true);
@@ -27,7 +27,7 @@ test("an existing-song request keeps the reference and drops free-text fields", 
     title: "",
     youtubeVideoId: "",
     note: "For the feast",
-    sunday: "2026-08-09",
+    planDate: "2026-08-09",
     part: "offertory",
   });
 });
@@ -41,7 +41,7 @@ test("a new-song request reduces the pasted link to a video ID", () => {
   assert.equal(result.value.songId, null);
   assert.equal(result.value.title, "New Hymn");
   assert.equal(result.value.youtubeVideoId, "AAAAAAAAAAA");
-  assert.equal(result.value.sunday, null);
+  assert.equal(result.value.planDate, null);
   assert.equal(result.value.part, null);
 });
 

@@ -57,7 +57,7 @@
     function renderPrevious() {
       elements.previous.hidden = !previous?.lyrics;
       elements.previousButton.textContent = previous?.lyrics
-        ? `Reuse edit from ${formatDate(previous.sunday)}`
+        ? `Reuse edit from ${formatDate(previous.planDate)}`
         : "Reuse most recent edit";
       elements.previousMeta.textContent = previous?.lyrics
         ? `${partFor(previous.part)?.label || previous.part} · copied only when you choose it`

@@ -142,7 +142,7 @@ test("selecting a search result sends an existing-song request", async () => {
     title: "",
     youtubeVideoId: "",
     note: "For the feast",
-    sunday: "2026-08-09",
+    planDate: "2026-08-09",
     part: "offertory",
   }]);
   assert.equal(elements.dialog.open, false);

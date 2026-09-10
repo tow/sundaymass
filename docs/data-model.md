@@ -13,7 +13,7 @@ auth.users
    |
    +-- audit references from mutable records
 
-plans (one row per Sunday with shared data)
+plans (one row per plan date with shared data)
    |
    +--< plan_songs >-- songs --0..1-- song_lyrics
             |           |
@@ -35,7 +35,7 @@ is created when an editor first persists shared data for that date.
 
 | Field | Meaning |
 |---|---|
-| `sunday` | Primary-key calendar date |
+| `plan_date` | Primary-key calendar date |
 | `reading_overrides` | Object keyed by `first`, `psalm`, `second`, or `gospel` |
 | `celebration_override` | Optional complete resolved celebration snapshot |
 | `updated_at`, `updated_by` | Private last-write audit data |
@@ -106,7 +106,7 @@ authorizes a shared mutation.
 | `title` | Free-text title when no existing song is referenced |
 | `youtube_video_id` | Optional validated 11-character YouTube video identifier |
 | `note` | Optional message for the editors |
-| `sunday`, `part` | Optional target Mass slot |
+| `plan_date`, `part` | Optional target Mass slot |
 | `status` | `pending`, `accepted`, or `declined` |
 | `created_at`, `created_by` | Private creation audit data |
 | `resolved_at`, `resolved_by` | Private resolution audit data |
@@ -204,7 +204,7 @@ part of the song domain model. See
 
 | Field | Meaning |
 |---|---|
-| `sunday`, `part` | Composite primary key identifying one plan slot |
+| `plan_date`, `part` | Composite primary key identifying one plan slot |
 | `song_id` | Reference to the canonical song |
 | `updated_at`, `updated_by` | Private last-write audit data |
 
@@ -219,7 +219,7 @@ song's `suggestion_parts`. Manual assignment is unrestricted.
 
 | Field | Meaning |
 |---|---|
-| `sunday`, `part` | One optional override for an assigned Sunday slot |
+| `plan_date`, `part` | One optional override for an assigned plan slot |
 | `song_id` | Must be the song currently assigned to that slot |
 | `lyrics` | Private edited full text for this use only |
 | `updated_at`, `updated_by` | Private last-write audit data |
