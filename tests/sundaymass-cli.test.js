@@ -177,7 +177,7 @@ test("booklet export loads one Sunday and delegates to the website PDF builder",
     runQuery(value) {
       sql = value;
       return [{
-        sunday: "2026-08-30",
+        plan_date: "2026-08-30",
         part: "entrance",
         song: { id: SONG_ID, title: "Table of Plenty" },
         lyrics: "Come to the feast",

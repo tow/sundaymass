@@ -198,7 +198,7 @@ function localStore({
       writePlanRecord(date, plan);
       if (previousSongId && previousSongId !== songId) {
         writeWeeklyLyrics(readWeeklyLyrics()
-          .filter(item => item.sunday !== date || item.part !== part));
+          .filter(item => item.planDate !== date || item.part !== part));
       }
       emit(date);
     },
@@ -212,7 +212,7 @@ function localStore({
       plan.songs[part] = song.id;
       writePlanRecord(date, plan);
       writeWeeklyLyrics(readWeeklyLyrics()
-        .filter(item => item.sunday !== date || item.part !== part));
+        .filter(item => item.planDate !== date || item.part !== part));
       emit(date);
       return song;
     },
@@ -234,29 +234,29 @@ function localStore({
       delete plan.songs[part];
       writePlanRecord(date, plan);
       writeWeeklyLyrics(readWeeklyLyrics()
-        .filter(item => item.sunday !== date || item.part !== part));
+        .filter(item => item.planDate !== date || item.part !== part));
       emit(date);
     },
     async getWeeklyLyrics(date) {
       requireLyricsAccess();
       return Object.fromEntries(readWeeklyLyrics()
-        .filter(item => item.sunday === date)
+        .filter(item => item.planDate === date)
         .map(item => [item.part, item]));
     },
     async getWeeklyLyricsParts(date) {
       requireEditor();
       return readWeeklyLyrics()
-        .filter(item => item.sunday === date)
+        .filter(item => item.planDate === date)
         .map(item => item.part);
     },
     async getWeeklyLyricsContext(date, part, songId) {
       requireEditor();
       const rows = readWeeklyLyrics();
       const current = rows.find(item =>
-        item.sunday === date && item.part === part && item.songId === songId) || null;
+        item.planDate === date && item.part === part && item.songId === songId) || null;
       const previous = rows
-        .filter(item => item.songId === songId && item.sunday < date)
-        .sort((a, b) => b.sunday.localeCompare(a.sunday)
+        .filter(item => item.songId === songId && item.planDate < date)
+        .sort((a, b) => b.planDate.localeCompare(a.planDate)
           || Number(a.part !== part) - Number(b.part !== part))[0] || null;
       return { current, previous };
     },
@@ -267,15 +267,15 @@ function localStore({
         throw new Error("The song is not assigned to this Mass slot");
       }
       const rows = readWeeklyLyrics()
-        .filter(item => item.sunday !== date || item.part !== part);
-      rows.push({ sunday: date, part, songId, lyrics: String(lyrics || "").trim() });
+        .filter(item => item.planDate !== date || item.part !== part);
+      rows.push({ planDate: date, part, songId, lyrics: String(lyrics || "").trim() });
       writeWeeklyLyrics(rows);
     },
     async clearWeeklyLyrics(date, part, songId) {
       requireEditor();
       writeWeeklyLyrics(readWeeklyLyrics()
         .filter(item =>
-          item.sunday !== date || item.part !== part || item.songId !== songId));
+          item.planDate !== date || item.part !== part || item.songId !== songId));
     },
     async createSongRequest(request) {
       requireLyricsAccess();
@@ -288,7 +288,7 @@ function localStore({
         title: request.title || "",
         youtubeVideoId: request.youtubeVideoId || "",
         note: request.note || "",
-        sunday: request.sunday || null,
+        planDate: request.planDate || null,
         part: request.part || null,
         status: "pending",
         createdAt: new Date().toISOString(),
@@ -457,7 +457,7 @@ function createSupabaseStore(
           )
         )
       `)
-      .eq("sunday", date)
+      .eq("plan_date", date)
       .maybeSingle();
     if (error) throw error;
     return planDataApi.planFromRow(data);
@@ -533,12 +533,12 @@ function createSupabaseStore(
         .channel("mass-plan-" + date + "-" + random().toString(36).slice(2))
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "plans", filter: "sunday=eq." + date },
+          { event: "*", schema: "public", table: "plans", filter: "plan_date=eq." + date },
           refresh,
         )
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "plan_songs", filter: "sunday=eq." + date },
+          { event: "*", schema: "public", table: "plan_songs", filter: "plan_date=eq." + date },
           refresh,
         )
         .on(
@@ -663,7 +663,7 @@ function createSupabaseStore(
         p_title: request.title || "",
         p_youtube_video_id: request.youtubeVideoId || "",
         p_note: request.note || "",
-        p_sunday: request.sunday || null,
+        p_plan_date: request.planDate || null,
         p_part: request.part || null,
       });
       if (error) throw error;
@@ -679,7 +679,7 @@ function createSupabaseStore(
           title,
           youtube_video_id,
           note,
-          sunday,
+          plan_date,
           part,
           status,
           created_at,
@@ -696,7 +696,7 @@ function createSupabaseStore(
         title: row.title || "",
         youtubeVideoId: row.youtube_video_id || "",
         note: row.note || "",
-        sunday: row.sunday || null,
+        planDate: row.plan_date || null,
         part: row.part || null,
         status: row.status,
         createdAt: row.created_at,
@@ -756,7 +756,7 @@ function createSupabaseStore(
     async assignSong(date, part, songId) {
       requireOnline();
       const { error } = await supabase.rpc("assign_plan_song", {
-        p_sunday: date,
+        p_plan_date: date,
         p_part: part,
         p_song_id: songId,
       });
@@ -766,7 +766,7 @@ function createSupabaseStore(
       requireOnline();
       const song = rpcDraft(draft);
       const { data, error } = await supabase.rpc("create_and_assign_song", {
-        p_sunday: date,
+        p_plan_date: date,
         p_part: part,
         ...song.params,
       });
@@ -786,7 +786,7 @@ function createSupabaseStore(
     async clearSong(date, part) {
       requireOnline();
       const { error } = await supabase.rpc("clear_plan_song", {
-        p_sunday: date,
+        p_plan_date: date,
         p_part: part,
       });
       if (error) throw error;
@@ -795,11 +795,11 @@ function createSupabaseStore(
       requireOnline();
       const { data, error } = await supabase
         .from("plan_song_lyrics")
-        .select("sunday,part,song_id,lyrics")
-        .eq("sunday", date);
+        .select("plan_date,part,song_id,lyrics")
+        .eq("plan_date", date);
       if (error) throw error;
       return Object.fromEntries((data || []).map(row => [row.part, {
-        sunday: row.sunday,
+        planDate: row.plan_date,
         part: row.part,
         songId: row.song_id,
         lyrics: row.lyrics,
@@ -813,27 +813,27 @@ function createSupabaseStore(
       requireOnline();
       const currentQuery = supabase
         .from("plan_song_lyrics")
-        .select("sunday,part,song_id,lyrics")
-        .eq("sunday", date)
+        .select("plan_date,part,song_id,lyrics")
+        .eq("plan_date", date)
         .eq("part", part)
         .eq("song_id", songId)
         .maybeSingle();
       const previousSamePartQuery = supabase
         .from("plan_song_lyrics")
-        .select("sunday,part,song_id,lyrics")
+        .select("plan_date,part,song_id,lyrics")
         .eq("song_id", songId)
         .eq("part", part)
-        .lt("sunday", date)
-        .order("sunday", { ascending: false })
+        .lt("plan_date", date)
+        .order("plan_date", { ascending: false })
         .limit(1)
         .maybeSingle();
       const previousOtherPartQuery = supabase
         .from("plan_song_lyrics")
-        .select("sunday,part,song_id,lyrics")
+        .select("plan_date,part,song_id,lyrics")
         .eq("song_id", songId)
         .neq("part", part)
-        .lt("sunday", date)
-        .order("sunday", { ascending: false })
+        .lt("plan_date", date)
+        .order("plan_date", { ascending: false })
         .order("part", { ascending: true })
         .limit(1)
         .maybeSingle();
@@ -846,21 +846,21 @@ function createSupabaseStore(
       if (samePartResult.error) throw samePartResult.error;
       if (otherPartResult.error) throw otherPartResult.error;
       const map = row => row ? {
-        sunday: row.sunday,
+        planDate: row.plan_date,
         part: row.part,
         songId: row.song_id,
         lyrics: row.lyrics,
       } : null;
       const previous = [samePartResult.data, otherPartResult.data]
         .filter(Boolean)
-        .sort((a, b) => b.sunday.localeCompare(a.sunday)
+        .sort((a, b) => b.planDate.localeCompare(a.planDate)
           || Number(a.part !== part) - Number(b.part !== part))[0] || null;
       return { current: map(currentResult.data), previous: map(previous) };
     },
     async saveWeeklyLyrics(date, part, songId, lyrics) {
       requireOnline();
       const { error } = await supabase.rpc("save_plan_song_lyrics", {
-        p_sunday: date,
+        p_plan_date: date,
         p_part: part,
         p_song_id: songId,
         p_lyrics: lyrics,
@@ -870,7 +870,7 @@ function createSupabaseStore(
     async clearWeeklyLyrics(date, part, songId) {
       requireOnline();
       const { error } = await supabase.rpc("clear_plan_song_lyrics", {
-        p_sunday: date,
+        p_plan_date: date,
         p_part: part,
         p_song_id: songId,
       });
@@ -879,7 +879,7 @@ function createSupabaseStore(
     async saveReadingOverride(date, slot, readingOverride) {
       requireOnline();
       const { error } = await supabase.rpc("save_reading_override", {
-        p_sunday: date,
+        p_plan_date: date,
         p_slot: slot,
         p_override: readingOverride,
       });
@@ -888,7 +888,7 @@ function createSupabaseStore(
     async clearReadingOverride(date, slot) {
       requireOnline();
       const { error } = await supabase.rpc("clear_reading_override", {
-        p_sunday: date,
+        p_plan_date: date,
         p_slot: slot || null,
       });
       if (error) throw error;
@@ -896,7 +896,7 @@ function createSupabaseStore(
     async saveCelebrationOverride(date, celebrationOverride) {
       requireOnline();
       const { error } = await supabase.rpc("save_celebration_override", {
-        p_sunday: date,
+        p_plan_date: date,
         p_override: celebrationOverride,
       });
       if (error) throw error;
@@ -904,7 +904,7 @@ function createSupabaseStore(
     async clearCelebrationOverride(date) {
       requireOnline();
       const { error } = await supabase.rpc("clear_celebration_override", {
-        p_sunday: date,
+        p_plan_date: date,
       });
       if (error) throw error;
     },

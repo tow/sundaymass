@@ -23,13 +23,13 @@
     function targetText(request) {
       return [
         request.part ? partLabel(request.part) : "",
-        request.sunday ? formatDate(request.sunday) : "",
+        request.planDate ? formatDate(request.planDate) : "",
         request.songId ? "In the song library" : "New song",
       ].filter(Boolean).join(" · ");
     }
 
     function canAssign(request) {
-      return Boolean(request.songId && request.sunday && request.part);
+      return Boolean(request.songId && request.planDate && request.part);
     }
 
     function renderList() {
@@ -105,7 +105,7 @@
       }
       try {
         if (status === "accepted" && canAssign(request)) {
-          await getStore().assignSong(request.sunday, request.part, request.songId);
+          await getStore().assignSong(request.planDate, request.part, request.songId);
         }
         await getStore().resolveSongRequest(request.id, status);
         onStatus(status === "accepted" ? "Request accepted" : "Request declined", "saved");

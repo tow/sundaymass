@@ -121,9 +121,9 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       assert.ok([401, 403].includes(anonymousVectors.response.status));
 
       for (const [table, auditColumns] of [
-        ["plans", "sunday,updated_by"],
+        ["plans", "plan_date,updated_by"],
         ["songs", "id,created_by,updated_by"],
-        ["plan_songs", "sunday,part,updated_by"],
+        ["plan_songs", "plan_date,part,updated_by"],
       ]) {
         for (const [role, request] of [
           ["anonymous", anonymous],
@@ -200,7 +200,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
         body: {
           p_song_id: fixtureSong.id,
           p_note: "Please sing this again",
-          p_sunday: sunday,
+          p_plan_date: sunday,
           p_part: "offertory",
         },
       }));
@@ -289,7 +289,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
         {
           method: "POST",
           body: {
-            p_sunday: sunday,
+            p_plan_date: sunday,
             p_part: "entrance",
             p_title: `Unclassified ${suffix}`,
             p_suggestion_parts: [],
@@ -313,12 +313,12 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       assert.notEqual(duplicateId, createdId);
 
       const publicPlan = await anonymous(
-        `/rest/v1/plans?sunday=eq.${sunday}&select=sunday`,
+        `/rest/v1/plans?plan_date=eq.${sunday}&select=plan_date`,
       );
       assert.equal(publicPlan.response.status, 200);
-      assert.deepEqual(publicPlan.data, [{ sunday }]);
+      assert.deepEqual(publicPlan.data, [{ plan_date: sunday }]);
       const publicAssignment = await anonymous(
-        `/rest/v1/plan_songs?sunday=eq.${sunday}&part=eq.entrance&select=song_id`,
+        `/rest/v1/plan_songs?plan_date=eq.${sunday}&part=eq.entrance&select=song_id`,
       );
       assert.equal(publicAssignment.response.status, 200);
       assert.deepEqual(publicAssignment.data, [{ song_id: createdId }]);
@@ -336,10 +336,10 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       songIds.push(memorialId);
       await expectOk(await editor.request("/rest/v1/rpc/assign_plan_song", {
         method: "POST",
-        body: { p_sunday: sunday, p_part: "communion", p_song_id: memorialId },
+        body: { p_plan_date: sunday, p_part: "communion", p_song_id: memorialId },
       }));
       const assignment = await expectOk(await service(
-        `/rest/v1/plan_songs?sunday=eq.${sunday}&part=eq.communion&select=song_id`,
+        `/rest/v1/plan_songs?plan_date=eq.${sunday}&part=eq.communion&select=song_id`,
       ));
       assert.deepEqual(assignment, [{ song_id: memorialId }]);
       const promoted = await expectOk(await service(
@@ -363,7 +363,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
 
       const invalid = await editor.request("/rest/v1/rpc/assign_plan_song", {
         method: "POST",
-        body: { p_sunday: sunday, p_part: "not-a-part", p_song_id: memorialId },
+        body: { p_plan_date: sunday, p_part: "not-a-part", p_song_id: memorialId },
       });
       assert.ok(!invalid.response.ok);
       assert.match(JSON.stringify(invalid.data), /Invalid music part/i);
@@ -410,12 +410,12 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
 
       await expectOk(await editor.request("/rest/v1/rpc/assign_plan_song", {
         method: "POST",
-        body: { p_sunday: sunday, p_part: "psalm", p_song_id: exactPsalmId },
+        body: { p_plan_date: sunday, p_part: "psalm", p_song_id: exactPsalmId },
       }));
       await expectOk(await editor.request("/rest/v1/rpc/save_plan_song_lyrics", {
         method: "POST",
         body: {
-          p_sunday: sunday,
+          p_plan_date: sunday,
           p_part: "psalm",
           p_song_id: exactPsalmId,
           p_lyrics: "Response:\nEdited response\n\n1. Included cantor verse",
@@ -423,23 +423,23 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       }));
 
       const anonymousLyrics = await anonymous(
-        `/rest/v1/plan_song_lyrics?sunday=eq.${sunday}&select=lyrics`,
+        `/rest/v1/plan_song_lyrics?plan_date=eq.${sunday}&select=lyrics`,
       );
       assert.ok([401, 403].includes(anonymousLyrics.response.status));
       const nonEditorLyrics = await nonEditor.request(
-        `/rest/v1/plan_song_lyrics?sunday=eq.${sunday}&select=lyrics`,
+        `/rest/v1/plan_song_lyrics?plan_date=eq.${sunday}&select=lyrics`,
       );
       assert.equal(nonEditorLyrics.response.status, 200);
       assert.deepEqual(nonEditorLyrics.data, []);
       const choirLyrics = await expectOk(await choir.request(
-        `/rest/v1/plan_song_lyrics?sunday=eq.${sunday}&select=song_id,lyrics`,
+        `/rest/v1/plan_song_lyrics?plan_date=eq.${sunday}&select=song_id,lyrics`,
       ));
       assert.deepEqual(choirLyrics, [{
         song_id: exactPsalmId,
         lyrics: "Response:\nEdited response\n\n1. Included cantor verse",
       }]);
       const editorLyrics = await expectOk(await editor.request(
-        `/rest/v1/plan_song_lyrics?sunday=eq.${sunday}&select=song_id,lyrics`,
+        `/rest/v1/plan_song_lyrics?plan_date=eq.${sunday}&select=song_id,lyrics`,
       ));
       assert.deepEqual(editorLyrics, [{
         song_id: exactPsalmId,
@@ -448,16 +448,16 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
 
       await expectOk(await editor.request("/rest/v1/rpc/assign_plan_song", {
         method: "POST",
-        body: { p_sunday: sunday, p_part: "psalm", p_song_id: otherPsalmId },
+        body: { p_plan_date: sunday, p_part: "psalm", p_song_id: otherPsalmId },
       }));
       assert.deepEqual(await expectOk(await editor.request(
-        `/rest/v1/plan_song_lyrics?sunday=eq.${sunday}&select=song_id`,
+        `/rest/v1/plan_song_lyrics?plan_date=eq.${sunday}&select=song_id`,
       )), []);
 
       await expectOk(await editor.request("/rest/v1/rpc/save_plan_song_lyrics", {
         method: "POST",
         body: {
-          p_sunday: sunday,
+          p_plan_date: sunday,
           p_part: "psalm",
           p_song_id: otherPsalmId,
           p_lyrics: "Response:\nNew assignment edit\n\n1. New assignment verse",
@@ -466,18 +466,18 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       await expectOk(await editor.request("/rest/v1/rpc/clear_plan_song_lyrics", {
         method: "POST",
         body: {
-          p_sunday: sunday,
+          p_plan_date: sunday,
           p_part: "psalm",
           p_song_id: exactPsalmId,
         },
       }));
       assert.deepEqual(await expectOk(await editor.request(
-        `/rest/v1/plan_song_lyrics?sunday=eq.${sunday}&select=song_id`,
+        `/rest/v1/plan_song_lyrics?plan_date=eq.${sunday}&select=song_id`,
       )), [{ song_id: otherPsalmId }]);
       await expectOk(await editor.request("/rest/v1/rpc/clear_plan_song_lyrics", {
         method: "POST",
         body: {
-          p_sunday: sunday,
+          p_plan_date: sunday,
           p_part: "psalm",
           p_song_id: otherPsalmId,
         },
@@ -488,7 +488,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       const denied = await nonEditor.request("/rest/v1/rpc/save_celebration_override", {
         method: "POST",
         body: {
-          p_sunday: sunday,
+          p_plan_date: sunday,
           p_override: { key: "forbidden", title: "Forbidden" },
         },
       });
@@ -498,7 +498,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       await expectOk(await editor.request("/rest/v1/rpc/save_reading_override", {
         method: "POST",
         body: {
-          p_sunday: sunday,
+          p_plan_date: sunday,
           p_slot: "first",
           p_override: {
             citation: "Isaiah 1:1",
@@ -510,7 +510,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       await expectOk(await editor.request("/rest/v1/rpc/save_celebration_override", {
         method: "POST",
         body: {
-          p_sunday: sunday,
+          p_plan_date: sunday,
           p_override: {
             id: "test-solemnity",
             name: "Test solemnity",
@@ -525,7 +525,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       }));
 
       const [plan] = await expectOk(await service(
-        `/rest/v1/plans?sunday=eq.${sunday}&select=reading_overrides,celebration_override`,
+        `/rest/v1/plans?plan_date=eq.${sunday}&select=reading_overrides,celebration_override`,
       ));
       assert.deepEqual(plan.reading_overrides, {});
       assert.equal(plan.celebration_override.id, "test-solemnity");
@@ -548,11 +548,11 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
         },
       };
       const attempts = [
-        ["assign_plan_song", { p_sunday: sunday, p_part: "offertory", p_song_id: fixtureSong.id }],
-        ["clear_plan_song", { p_sunday: sunday, p_part: "entrance" }],
+        ["assign_plan_song", { p_plan_date: sunday, p_part: "offertory", p_song_id: fixtureSong.id }],
+        ["clear_plan_song", { p_plan_date: sunday, p_part: "entrance" }],
         ["create_song", { p_title: "Forbidden song" }],
         ["create_and_assign_song", {
-          p_sunday: sunday,
+          p_plan_date: sunday,
           p_part: "offertory",
           p_title: "Forbidden assigned song",
         }],
@@ -562,27 +562,27 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
           p_suggestion_parts: ["entrance"],
         }],
         ["save_plan_song_lyrics", {
-          p_sunday: sunday,
+          p_plan_date: sunday,
           p_part: "entrance",
           p_song_id: fixtureSong.id,
           p_lyrics: "Forbidden weekly lyrics",
         }],
         ["clear_plan_song_lyrics", {
-          p_sunday: sunday,
+          p_plan_date: sunday,
           p_part: "entrance",
           p_song_id: fixtureSong.id,
         }],
         ["save_reading_override", {
-          p_sunday: sunday,
+          p_plan_date: sunday,
           p_slot: "first",
           p_override: validReading,
         }],
-        ["clear_reading_override", { p_sunday: sunday, p_slot: "first" }],
+        ["clear_reading_override", { p_plan_date: sunday, p_slot: "first" }],
         ["save_celebration_override", {
-          p_sunday: sunday,
+          p_plan_date: sunday,
           p_override: validCelebration,
         }],
-        ["clear_celebration_override", { p_sunday: sunday }],
+        ["clear_celebration_override", { p_plan_date: sunday }],
       ];
 
       for (const [name, body] of attempts) {
@@ -699,8 +699,8 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
     });
   } finally {
     await service(`/rest/v1/song_requests?created_by=eq.${choir.id}`, { method: "DELETE" });
-    await service(`/rest/v1/plan_songs?sunday=eq.${sunday}`, { method: "DELETE" });
-    await service(`/rest/v1/plans?sunday=eq.${sunday}`, { method: "DELETE" });
+    await service(`/rest/v1/plan_songs?plan_date=eq.${sunday}`, { method: "DELETE" });
+    await service(`/rest/v1/plans?plan_date=eq.${sunday}`, { method: "DELETE" });
     for (const citation of readingCitations) {
       await service(
         `/rest/v1/reading_embeddings?citation=eq.${encodeURIComponent(citation)}`,

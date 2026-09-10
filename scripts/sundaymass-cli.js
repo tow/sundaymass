@@ -377,25 +377,25 @@ function bookletPlanSql(sunday) {
   return `${payloadSql({ sunday })},
 selected as (
   select
-    plan.sunday,
+    plan.plan_date,
     plan.celebration_override,
     assignment.part,
     to_jsonb(song) as song,
     canonical.lyrics,
     weekly.lyrics as weekly_lyrics
   from public.plans plan
-  join public.plan_songs assignment on assignment.sunday = plan.sunday
+  join public.plan_songs assignment on assignment.plan_date = plan.plan_date
   join public.songs song on song.id = assignment.song_id
   left join public.song_lyrics canonical on canonical.song_id = song.id
   left join public.plan_song_lyrics weekly
-    on weekly.sunday = assignment.sunday
+    on weekly.plan_date = assignment.plan_date
    and weekly.part = assignment.part
    and weekly.song_id = assignment.song_id
   cross join input
-  where plan.sunday = (p->>'sunday')::date
+  where plan.plan_date = (p->>'sunday')::date
 )
 select
-  sunday::text,
+  plan_date::text,
   celebration_override,
   part,
   song,
@@ -537,22 +537,22 @@ song as (
   where s.id = (p->>'id')::uuid
 ),
 plan as (
-  insert into public.plans (sunday, updated_at, updated_by)
+  insert into public.plans (plan_date, updated_at, updated_by)
   select (p->>'sunday')::date, now(), null from input
   where exists(select 1 from song)
-  on conflict (sunday) do update
+  on conflict (plan_date) do update
   set updated_at = now(), updated_by = null
-  returning sunday
+  returning plan_date
 ),
 assigned as (
-  insert into public.plan_songs (sunday, part, song_id, updated_at, updated_by)
-  select plan.sunday, p->>'part', song.id, now(), null
+  insert into public.plan_songs (plan_date, part, song_id, updated_at, updated_by)
+  select plan.plan_date, p->>'part', song.id, now(), null
   from input, plan, song
-  on conflict (sunday, part) do update
+  on conflict (plan_date, part) do update
   set song_id = excluded.song_id, updated_at = now(), updated_by = null
-  returning sunday, part, song_id
+  returning plan_date, part, song_id
 )
-select a.sunday::text, a.part, a.song_id::text as id, song.title
+select a.plan_date::text, a.part, a.song_id::text as id, song.title
 from assigned a join song on song.id = a.song_id;`;
 }
 
@@ -561,17 +561,17 @@ function clearSongSql(sunday, part) {
 deleted as (
   delete from public.plan_songs ps
   using input
-  where ps.sunday = (p->>'sunday')::date and ps.part = p->>'part'
-  returning ps.sunday, ps.part, ps.song_id
+  where ps.plan_date = (p->>'sunday')::date and ps.part = p->>'part'
+  returning ps.plan_date, ps.part, ps.song_id
 ),
 touched as (
   update public.plans p0
   set updated_at = now(), updated_by = null
   from input
-  where p0.sunday = (p->>'sunday')::date and exists(select 1 from deleted)
-  returning p0.sunday
+  where p0.plan_date = (p->>'sunday')::date and exists(select 1 from deleted)
+  returning p0.plan_date
 )
-select (p->>'sunday') as sunday, p->>'part' as part,
+select (p->>'sunday') as plan_date, p->>'part' as part,
   (select song_id::text from deleted) as previous_song_id,
   exists(select 1 from deleted) as changed
 from input;`;

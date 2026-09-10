@@ -26,7 +26,7 @@
       title: songId ? "" : title,
       youtubeVideoId: songId ? "" : youtubeVideoId,
       note: text(draft.note),
-      sunday: text(draft.sunday) || null,
+      planDate: text(draft.planDate) || null,
       part: text(draft.part) || null,
     };
     const invalid = error => ({ valid: false, error, value: normalized });
