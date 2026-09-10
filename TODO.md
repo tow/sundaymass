@@ -3,6 +3,55 @@
 This is a parking lot for ideas, not a committed roadmap. Scope and priority still need
 to be decided.
 
+## Non-Sunday music planning
+
+Goal: let editors plan music for occasions that aren't Sundays (Christmas Eve, Ash
+Wednesday, a wedding), while keeping the existing Sunday-to-Sunday workflow as the
+primary path. One plan per calendar date is enough; no need for multiple services on
+the same date. Planned as four parts, each building on the last.
+
+1. **Done (2026-09-10):** renamed the `plans`/`plan_songs`/`plan_song_lyrics`/
+   `song_requests` primary key and every dependent column, RPC parameter, and RLS
+   policy body from `sunday` to `plan_date`, since a PK literally named "sunday" would
+   mislead readers once it can hold non-Sunday dates. Landed on
+   `claude/music-planning-non-sunday-tojmw8`. Sunday-to-Sunday calendar navigation
+   (`liturgical-calendar.js`, `calendar-navigation.js`, `planner-state.js`) was left
+   untouched — that's a distinct concept from the plan-row date identifier.
+2. **Not started: source and encode Proper-of-Time non-Sunday solemnities** —
+   Christmas (Vigil/Night/Dawn/Day), Mary Mother of God and Epiphany as weekdays, Ash
+   Wednesday, Holy Thursday, Good Friday, Easter Vigil, Ascension. None of this data
+   exists in the repo today; `resolveSunday()` hard-returns `null` for any non-Sunday.
+   First verify whether the `cpbjr` per-date API (already used for other fixed feasts
+   in `build_readings.js`) actually covers these dates before committing to it as a
+   source. Needs new Easter-relative date math in `liturgical-calendar.js` (Ash
+   Wednesday = `easter - 46`, Holy Thursday = `easter - 3`, Good Friday = `easter - 2`,
+   Easter Vigil = `easter - 1`, Ascension = `easter + 39` — none of these are exposed
+   today, only the Sunday boundaries are), a new resolver distinct from
+   `resolveSunday`, and a new generated-data shape supporting multiple selectable Mass
+   formularies per date (Christmas Vigil/Night/Dawn/Day), unlike the single-value
+   shape `celebrations.json` uses for Sanctoral saints' days.
+3. **Not started: source and encode Ritual Mass readings** (weddings, funerals) — a
+   materially larger, separate effort. No existing source (`cpbjr`, the Felix Just
+   tables, the 2002 US Sanctoral index) covers this; needs its own citation list, a
+   `commons.json`-style multi-option-per-role shape (editor picks one reading per
+   role rather than the app resolving one), and new selection UI/domain logic in
+   `src/domain/lectionary.js` and the celebration/reading picker. Independently
+   shippable after parts 2 and 4 — the rest of non-Sunday planning doesn't depend on
+   it.
+4. **Not started: wire it together** — an additive `plans.occasion_label text` column
+   for anything the above catalogues don't resolve; a resolution order (Sunday →
+   Proper-of-Time → celebration override/Sanctoral/Ritual picker → free-text label);
+   stop `calendarNavigation.selectionFor` from snapping an explicit non-Sunday
+   `?date=` to the nearest Sunday (keep the snap only for the no-date default
+   landing); and a plain date-picker in the UI alongside the existing prev/next-Sunday
+   arrows. Re-verify at this stage, per CLAUDE.md, that public views and song requests
+   for a non-Sunday plan still never expose lyrics.
+
+Every new liturgical data entry should be confirmed by a human against the actual
+parish Ordo before relying on it live, per `docs/lectionary.md`'s existing caveat that
+this planner is "an independent planning aid, not an authoritative Finnish lectionary
+or parish Ordo."
+
 ## Repertoire and planning
 
 - Normalize lyrics formatting so pasted lyrics have consistent whitespace, stanza
