@@ -9,6 +9,23 @@
     return values.find(value => typeof value === "string") || fallback;
   }
 
+  // Renders a thrown value that is neither an Error nor string into text worth
+  // keeping, so a caught non-Error failure (a raw string/number/plain object
+  // thrown by third-party code) isn't silently dropped from the log entry.
+  function describeValue(value) {
+    if (typeof value === "string") return value;
+    if (typeof value === "number" || typeof value === "boolean") return String(value);
+    if (value && typeof value === "object") {
+      try {
+        const json = JSON.stringify(value);
+        if (json && json !== "{}") return json;
+      } catch {
+        // circular or non-serializable value: nothing more to show
+      }
+    }
+    return "";
+  }
+
   function errorFrom(values) {
     const direct = values.find(value => value instanceof Error);
     if (direct) return direct;
@@ -26,7 +43,8 @@
       wrapped.cause = errorLike;
       return wrapped;
     }
-    return new Error(values.filter(value => typeof value === "string").join(" ") || "Application error");
+    const description = values.map(describeValue).filter(Boolean).join(" ");
+    return new Error(description || "Application error");
   }
 
   function error(...values) {

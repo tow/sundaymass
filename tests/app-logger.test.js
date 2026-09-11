@@ -46,6 +46,46 @@ test("application logger preserves error-like values that are not Error instance
   }
 });
 
+test("application logger keeps details from a thrown value with no message, alongside its label", () => {
+  const originalConsoleError = console.error;
+  const seen = [];
+  console.error = () => {};
+
+  try {
+    // Third-party code (e.g. a PDF/export library) can reject with a plain
+    // object that has no `message`, carrying only a diagnostic code.
+    const codeOnly = { code: "SecurityError" };
+    AppLogger.error("Could not create lyrics PDF", codeOnly);
+    AppLogger.setReporter(entry => seen.push(entry));
+
+    assert.equal(seen.length, 1);
+    assert.ok(seen[0].error instanceof Error);
+    assert.equal(seen[0].error.message, 'Could not create lyrics PDF {"code":"SecurityError"}');
+    assert.equal(seen[0].label, "Could not create lyrics PDF");
+  } finally {
+    AppLogger.setReporter(null);
+    console.error = originalConsoleError;
+  }
+});
+
+test("application logger falls back to a generic message when nothing useful was thrown", () => {
+  const originalConsoleError = console.error;
+  const seen = [];
+  console.error = () => {};
+
+  try {
+    AppLogger.error("Could not create lyrics PDF", undefined);
+    AppLogger.setReporter(entry => seen.push(entry));
+
+    assert.equal(seen.length, 1);
+    assert.equal(seen[0].error.message, "Could not create lyrics PDF");
+    assert.equal(seen[0].label, "Could not create lyrics PDF");
+  } finally {
+    AppLogger.setReporter(null);
+    console.error = originalConsoleError;
+  }
+});
+
 test("application logger forwards explicit warnings and informational logs", () => {
   const originalWarn = console.warn;
   const originalInfo = console.info;
