@@ -26,6 +26,15 @@
     let started = false;
     let editorMode = false;
 
+    // A wrong password/email is an expected user mistake, not an application
+    // defect — it's already surfaced inline below. Only genuinely unexpected
+    // sign-in failures (network/service errors) should reach error tracking.
+    function isRejectedCredentials(error) {
+      if (!error || error.name !== "AuthApiError") return false;
+      if (error.code === "invalid_credentials") return true;
+      return error.status === 400 && /invalid login credentials/i.test(error.message || "");
+    }
+
     function renderMode() {
       titleElement.textContent = editorMode ? "Editor sign in" : "Choir member sign in";
       descriptionElement.textContent = editorMode
@@ -92,7 +101,11 @@
         passwordInput.value = "";
         closeDialog();
       } catch (error) {
-        logger.error("Could not sign in", error);
+        if (isRejectedCredentials(error)) {
+          logger.warn("Could not sign in", error);
+        } else {
+          logger.error("Could not sign in", error);
+        }
         errorElement.textContent = editorMode
           ? "Sign-in failed. Check the email and password."
           : "Sign-in failed. Check the choir password.";

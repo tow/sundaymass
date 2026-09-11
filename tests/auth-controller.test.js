@@ -152,6 +152,54 @@ test("sign-in errors stay in the dialog and auth-action errors reach the page", 
   assert.deepEqual(context.actionFailures, [failure]);
 });
 
+test("rejected credentials are logged as a warning, not an application error", async () => {
+  const rejected = Object.assign(new Error("Invalid login credentials"), {
+    name: "AuthApiError",
+    status: 400,
+    code: "invalid_credentials",
+  });
+  const errors = [];
+  const warnings = [];
+  const context = harness({
+    getStore: () => ({
+      async signInChoir() { throw rejected; },
+      async signInEditor() { throw rejected; },
+    }),
+    logger: {
+      error: (...values) => errors.push(values),
+      warn: (...values) => warnings.push(values),
+    },
+  });
+
+  await context.form.listeners.get("submit")({ preventDefault() {} });
+
+  assert.equal(context.errorElement.textContent, "Sign-in failed. Check the choir password.");
+  assert.equal(errors.length, 0);
+  assert.equal(warnings.length, 1);
+  assert.deepEqual(warnings[0], ["Could not sign in", rejected]);
+});
+
+test("unexpected sign-in failures still reach error tracking", async () => {
+  const failure = new Error("network unavailable");
+  const errors = [];
+  const warnings = [];
+  const context = harness({
+    getStore: () => ({
+      async signInChoir() { throw failure; },
+      async signInEditor() { throw failure; },
+    }),
+    logger: {
+      error: (...values) => errors.push(values),
+      warn: (...values) => warnings.push(values),
+    },
+  });
+
+  await context.form.listeners.get("submit")({ preventDefault() {} });
+
+  assert.equal(errors.length, 1);
+  assert.equal(warnings.length, 0);
+});
+
 test("missing stores report unavailability and listener cleanup is complete", async () => {
   const context = harness();
   context.setStore(null);
