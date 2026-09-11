@@ -853,7 +853,7 @@ function createSupabaseStore(
       } : null;
       const previous = [samePartResult.data, otherPartResult.data]
         .filter(Boolean)
-        .sort((a, b) => b.planDate.localeCompare(a.planDate)
+        .sort((a, b) => b.plan_date.localeCompare(a.plan_date)
           || Number(a.part !== part) - Number(b.part !== part))[0] || null;
       return { current: map(currentResult.data), previous: map(previous) };
     },

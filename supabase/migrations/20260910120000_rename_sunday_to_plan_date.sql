@@ -49,11 +49,13 @@ create policy "Editors can update weekly song lyrics"
   );
 
 -- Recreate every function whose body references the literal sunday/p_sunday
--- identifier. Argument type lists are unchanged, so OIDs and existing
--- GRANT EXECUTE privileges are preserved; only the parameter name and the
--- column references in each body change.
+-- identifier. Argument type lists are unchanged, but Postgres refuses to
+-- rename an input parameter through CREATE OR REPLACE FUNCTION ("cannot
+-- change name of input parameter"), so each is dropped and recreated, which
+-- also drops its GRANT EXECUTE privileges; those are reissued below each drop.
 
-create or replace function public.save_reading_override(
+drop function public.save_reading_override(date, text, jsonb);
+create function public.save_reading_override(
   p_plan_date date,
   p_slot text,
   p_override jsonb
@@ -99,8 +101,11 @@ begin
       updated_by = auth.uid();
 end;
 $$;
+revoke execute on function public.save_reading_override(date, text, jsonb) from public, anon;
+grant execute on function public.save_reading_override(date, text, jsonb) to authenticated;
 
-create or replace function public.clear_reading_override(
+drop function public.clear_reading_override(date, text);
+create function public.clear_reading_override(
   p_plan_date date,
   p_slot text default null
 )
@@ -130,8 +135,11 @@ begin
   where plan_date = p_plan_date;
 end;
 $$;
+revoke execute on function public.clear_reading_override(date, text) from public, anon;
+grant execute on function public.clear_reading_override(date, text) to authenticated;
 
-create or replace function public.save_celebration_override(
+drop function public.save_celebration_override(date, jsonb);
+create function public.save_celebration_override(
   p_plan_date date,
   p_override jsonb
 )
@@ -182,8 +190,11 @@ begin
       updated_by = auth.uid();
 end;
 $$;
+revoke execute on function public.save_celebration_override(date, jsonb) from public, anon;
+grant execute on function public.save_celebration_override(date, jsonb) to authenticated;
 
-create or replace function public.clear_celebration_override(
+drop function public.clear_celebration_override(date);
+create function public.clear_celebration_override(
   p_plan_date date
 )
 returns void
@@ -206,8 +217,11 @@ begin
   where plan_date = p_plan_date;
 end;
 $$;
+revoke execute on function public.clear_celebration_override(date) from public, anon;
+grant execute on function public.clear_celebration_override(date) to authenticated;
 
-create or replace function public.assign_plan_song(
+drop function public.assign_plan_song(date, text, uuid);
+create function public.assign_plan_song(
   p_plan_date date,
   p_part text,
   p_song_id uuid
@@ -244,8 +258,11 @@ begin
       updated_by = auth.uid();
 end;
 $$;
+revoke execute on function public.assign_plan_song(date, text, uuid) from public, anon;
+grant execute on function public.assign_plan_song(date, text, uuid) to authenticated;
 
-create or replace function public.clear_plan_song(
+drop function public.clear_plan_song(date, text);
+create function public.clear_plan_song(
   p_plan_date date,
   p_part text
 )
@@ -276,10 +293,16 @@ begin
   where plan_date = p_plan_date;
 end;
 $$;
+revoke execute on function public.clear_plan_song(date, text) from public, anon;
+grant execute on function public.clear_plan_song(date, text) to authenticated;
 
 -- Current (14-param) signature only; earlier overloads were already dropped by
 -- prior migrations and don't need touching.
-create or replace function public.create_and_assign_song(
+drop function public.create_and_assign_song(
+  date, text, text, text, text, text, text, text, text, integer, text[], text,
+  text[], boolean
+);
+create function public.create_and_assign_song(
   p_plan_date date,
   p_part text,
   p_title text,
@@ -340,8 +363,17 @@ begin
   return new_song_id;
 end;
 $$;
+revoke execute on function public.create_and_assign_song(
+  date, text, text, text, text, text, text, text, text, integer, text[], text,
+  text[], boolean
+) from public, anon;
+grant execute on function public.create_and_assign_song(
+  date, text, text, text, text, text, text, text, text, integer, text[], text,
+  text[], boolean
+) to authenticated;
 
-create or replace function public.save_plan_song_lyrics(
+drop function public.save_plan_song_lyrics(date, text, uuid, text);
+create function public.save_plan_song_lyrics(
   p_plan_date date,
   p_part text,
   p_song_id uuid,
@@ -382,8 +414,13 @@ begin
       updated_by = auth.uid();
 end;
 $$;
+revoke execute on function public.save_plan_song_lyrics(date, text, uuid, text)
+  from public, anon;
+grant execute on function public.save_plan_song_lyrics(date, text, uuid, text)
+  to authenticated;
 
-create or replace function public.clear_plan_song_lyrics(
+drop function public.clear_plan_song_lyrics(date, text, uuid);
+create function public.clear_plan_song_lyrics(
   p_plan_date date,
   p_part text,
   p_song_id uuid
@@ -405,8 +442,13 @@ begin
     and song_id = p_song_id;
 end;
 $$;
+revoke execute on function public.clear_plan_song_lyrics(date, text, uuid)
+  from public, anon;
+grant execute on function public.clear_plan_song_lyrics(date, text, uuid)
+  to authenticated;
 
-create or replace function public.create_song_request(
+drop function public.create_song_request(uuid, text, text, text, date, text);
+create function public.create_song_request(
   p_song_id uuid default null,
   p_title text default '',
   p_youtube_video_id text default '',
@@ -468,6 +510,12 @@ begin
   return new_request_id;
 end;
 $$;
+revoke execute on function public.create_song_request(
+  uuid, text, text, text, date, text
+) from public, anon;
+grant execute on function public.create_song_request(
+  uuid, text, text, text, date, text
+) to authenticated;
 
 create or replace function public.discard_weekly_lyrics_for_changed_song()
 returns trigger
