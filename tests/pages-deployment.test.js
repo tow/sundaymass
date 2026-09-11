@@ -24,7 +24,7 @@ test("Pages deployment skips database integration when database files are unchan
   );
   assert.match(
     workflow,
-    /production-backend-contract:[\s\S]*needs: \[check, supabase-integration\]/,
+    /production-backend-contract:[\s\S]*needs: \[check, supabase-integration, migrate-production\]/,
   );
   assert.match(
     workflow,
@@ -34,7 +34,30 @@ test("Pages deployment skips database integration when database files are unchan
     workflow,
     /needs\.supabase-integration\.result == 'skipped'/,
   );
-  assert.doesNotMatch(workflow, /secrets\.SUPABASE|supabase db push --linked/);
+  assert.match(
+    workflow,
+    /production-backend-contract:[\s\S]*needs\.migrate-production\.result == 'skipped'/,
+  );
+});
+
+test("production migrations run from CI only for a passing database change on main", () => {
+  const job = workflow.match(/migrate-production:[\s\S]*?\n  production-backend-contract:/)?.[0];
+  assert.ok(job, "migrate-production job precedes production-backend-contract");
+  assert.match(job, /github\.ref == 'refs\/heads\/main'/);
+  assert.match(job, /needs\.changes\.outputs\.database == 'true'/);
+  assert.match(job, /needs\.check\.result == 'success'/);
+  assert.match(job, /needs\.supabase-integration\.result == 'success'/);
+  assert.match(job, /needs: \[changes, check, supabase-integration\]/);
+  assert.match(job, /environment: production-database/);
+  assert.match(job, /concurrency:\s*\n\s+group: production-database\s*\n\s+cancel-in-progress: false/);
+  assert.match(job, /SUPABASE_ACCESS_TOKEN: \$\{\{ secrets\.SUPABASE_ACCESS_TOKEN \}\}/);
+  assert.match(job, /SUPABASE_DB_PASSWORD: \$\{\{ secrets\.SUPABASE_DB_PASSWORD \}\}/);
+  assert.match(job, /supabase link --project-ref igeeigohcupcxakmlxno/);
+  assert.match(job, /supabase db push --linked --dry-run[\s\S]*supabase db push --linked\s*\n/);
+  assert.doesNotMatch(job, /--include-seed|db reset/);
+  // Only the migration job may hold production credentials or push migrations.
+  const elsewhere = workflow.replace(job, "");
+  assert.doesNotMatch(elsewhere, /secrets\.SUPABASE|supabase db push/);
   assert.match(workflow, /build-pages:[\s\S]*needs: check/);
   assert.match(
     workflow,
