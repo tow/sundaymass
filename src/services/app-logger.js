@@ -10,8 +10,23 @@
   }
 
   function errorFrom(values) {
-    return values.find(value => value instanceof Error)
-      || new Error(values.filter(value => typeof value === "string").join(" ") || "Application error");
+    const direct = values.find(value => value instanceof Error);
+    if (direct) return direct;
+    // Some thrown values (DOMException from an aborted fetch, errors from
+    // another realm/bundle) carry a real message but fail `instanceof Error`.
+    // Wrap them instead of discarding the message behind a generic fallback.
+    const errorLike = values.find(value => value
+      && typeof value === "object"
+      && typeof value.message === "string"
+      && value.message);
+    if (errorLike) {
+      const wrapped = new Error(errorLike.message);
+      if (typeof errorLike.name === "string" && errorLike.name) wrapped.name = errorLike.name;
+      if (typeof errorLike.stack === "string" && errorLike.stack) wrapped.stack = errorLike.stack;
+      wrapped.cause = errorLike;
+      return wrapped;
+    }
+    return new Error(values.filter(value => typeof value === "string").join(" ") || "Application error");
   }
 
   function error(...values) {
