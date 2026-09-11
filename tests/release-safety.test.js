@@ -1,7 +1,12 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
 const {
   destructiveOperations,
+  migrationFilesForVersions,
+  pendingMigrationVersions,
   rolloutPhase,
   validateMigration,
 } = require("../scripts/check-migration-rollout.js");
@@ -38,6 +43,47 @@ test("migration rollout check detects operations that can break old clients", ()
       rejectContract: true,
     })[0],
     /manual production release/,
+  );
+});
+
+test("pending migrations are read from the Supabase CLI table and fail closed otherwise", () => {
+  const listing = [
+    "",
+    "        LOCAL      │     REMOTE     │     TIME (UTC)      ",
+    "  ─────────────────┼────────────────┼──────────────────────",
+    "    20260726180000 │ 20260726180000 │ 2026-07-26 18:00:00 ",
+    "    20260812160000 │ 20260812160000 │ 2026-08-12 16:00:00 ",
+    "    20260910120000 │                │ 2026-09-10 12:00:00 ",
+    "    20260915090000 │                │ 2026-09-15 09:00:00 ",
+    "",
+  ].join("\n");
+  assert.deepEqual(pendingMigrationVersions(listing), ["20260910120000", "20260915090000"]);
+
+  const applied = listing.replace(/(\d{14}) │ {16}/g, "$1 │ $1 ");
+  assert.deepEqual(pendingMigrationVersions(applied), []);
+
+  assert.throws(
+    () => pendingMigrationVersions("Cannot find project ref. Have you run supabase link?"),
+    /could not read any migration rows/,
+  );
+  assert.throws(() => pendingMigrationVersions(""), /could not read any migration rows/);
+});
+
+test("pending migration versions resolve to their tracked files", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "migrations-"));
+  fs.writeFileSync(path.join(directory, "20260910120000_rename.sql"), "-- rollout: contract\n");
+  fs.writeFileSync(path.join(directory, "20260915090000_add_note.sql"), "-- rollout: expand\n");
+
+  assert.deepEqual(
+    migrationFilesForVersions(["20260915090000", "20260910120000"], directory),
+    [
+      "supabase/migrations/20260915090000_add_note.sql",
+      "supabase/migrations/20260910120000_rename.sql",
+    ],
+  );
+  assert.throws(
+    () => migrationFilesForVersions(["20261001000000"], directory),
+    /pending migration 20261001000000 has no local file/,
   );
 });
 

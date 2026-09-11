@@ -6,6 +6,14 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      allow_contract_migrations:
+        description: >-
+          Apply pending contract (destructive) migrations. Only after the
+          compatible frontend has been live for a service-worker window and a
+          fresh backup exists.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -114,6 +122,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
+      - name: Use supported Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+
       - name: Install pinned Supabase CLI
         uses: supabase/setup-cli@v1
         with:
@@ -121,6 +134,12 @@ jobs:
 
       - name: Link the production project
         run: supabase link --project-ref igeeigohcupcxakmlxno
+
+      - name: Refuse to apply contract migrations without an explicit release
+        if: ${{ !inputs.allow_contract_migrations }}
+        run: >-
+          supabase migration list --linked
+          | node scripts/check-migration-rollout.js --pending --reject-contract
 
       - name: Preview pending migrations
         run: supabase db push --linked --dry-run

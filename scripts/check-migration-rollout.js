@@ -78,19 +78,55 @@ function changedMigrations(base) {
     .filter(filename => filename.endsWith(".sql"));
 }
 
+// `supabase migration list --linked` prints a LOCAL │ REMOTE │ TIME table. A row
+// with a local version and a blank remote column is what `db push` would apply.
+// Anything that fails to parse as that table is treated as "unknown", which the
+// guard must fail closed on rather than silently apply.
+function pendingMigrationVersions(listOutput) {
+  const rows = String(listOutput || "")
+    .split("\n")
+    .map(line => line.match(/^\s*(\d{14})?\s*[│|]\s*(\d{14})?\s*[│|]/))
+    .filter(Boolean)
+    .map(([, local, remote]) => ({ local: local || "", remote: remote || "" }))
+    .filter(row => row.local || row.remote);
+  if (!rows.length) {
+    throw new Error("could not read any migration rows from `supabase migration list` output");
+  }
+  return rows.filter(row => row.local && !row.remote).map(row => row.local);
+}
+
+function migrationFilesForVersions(versions, directory = path.join(ROOT, MIGRATION_DIRECTORY)) {
+  const files = fs.readdirSync(directory).filter(filename => filename.endsWith(".sql"));
+  return versions.map(version => {
+    const filename = files.find(candidate => candidate.startsWith(`${version}_`));
+    if (!filename) throw new Error(`pending migration ${version} has no local file`);
+    return MIGRATION_DIRECTORY + filename;
+  });
+}
+
 function parseArguments(argv) {
   const baseIndex = argv.indexOf("--base");
   return {
     base: argv.includes("--working-tree")
       ? "WORKTREE"
       : (baseIndex >= 0 ? argv[baseIndex + 1] : "HEAD^"),
+    pending: argv.includes("--pending"),
     rejectContract: argv.includes("--reject-contract"),
   };
 }
 
-function main(argv = process.argv.slice(2)) {
+function main(argv = process.argv.slice(2), readStdin = () => fs.readFileSync(0, "utf8")) {
   const options = parseArguments(argv);
-  const migrations = changedMigrations(options.base);
+  let migrations;
+  try {
+    migrations = options.pending
+      ? migrationFilesForVersions(pendingMigrationVersions(readStdin()))
+      : changedMigrations(options.base);
+  } catch (error) {
+    console.error(`Migration rollout check failed:\n- ${error.message}`);
+    process.exitCode = 1;
+    return;
+  }
   const failures = migrations.flatMap(filename => validateMigration(
     filename,
     fs.readFileSync(path.join(ROOT, filename), "utf8"),
@@ -101,10 +137,11 @@ function main(argv = process.argv.slice(2)) {
     process.exitCode = 1;
     return;
   }
+  const scope = options.pending ? "pending" : "changed";
   console.log(
     migrations.length
-      ? `validated rollout phase for ${migrations.length} changed migration(s)`
-      : "no changed migrations require rollout validation",
+      ? `validated rollout phase for ${migrations.length} ${scope} migration(s): ${migrations.join(", ")}`
+      : `no ${scope} migrations require rollout validation`,
   );
 }
 
@@ -112,6 +149,8 @@ if (require.main === module) main();
 
 module.exports = {
   destructiveOperations,
+  migrationFilesForVersions,
+  pendingMigrationVersions,
   rolloutPhase,
   validateMigration,
 };

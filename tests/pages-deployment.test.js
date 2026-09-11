@@ -55,6 +55,20 @@ test("production migrations run from CI only for a passing database change on ma
   assert.match(job, /supabase link --project-ref igeeigohcupcxakmlxno/);
   assert.match(job, /supabase db push --linked --dry-run[\s\S]*supabase db push --linked\s*\n/);
   assert.doesNotMatch(job, /--include-seed|db reset/);
+  // Destructive (contract) migrations pending in production are refused before
+  // db push unless a manual release opted in; the guard fails closed.
+  assert.match(
+    workflow,
+    /workflow_dispatch:\s*\n\s+inputs:\s*\n\s+allow_contract_migrations:[\s\S]*?type: boolean\s*\n\s+default: false/,
+  );
+  const guard = job.match(/- name: Refuse to apply contract migrations[\s\S]*?- name: Preview pending migrations/)?.[0];
+  assert.ok(guard, "the contract guard runs before the migration preview");
+  assert.match(guard, /if: \$\{\{ !inputs\.allow_contract_migrations \}\}/);
+  assert.match(
+    guard,
+    /supabase migration list --linked\s*\n?\s*\| node scripts\/check-migration-rollout\.js --pending --reject-contract/,
+  );
+  assert.match(job, /uses: actions\/setup-node@v7/);
   // Only the migration job may hold production credentials or push migrations.
   const elsewhere = workflow.replace(job, "");
   assert.doesNotMatch(elsewhere, /secrets\.SUPABASE|supabase db push/);

@@ -287,7 +287,8 @@ tighten access; truncate data; or otherwise break an older client. The rollout c
 recognises these operations and refuses to label them as expand. Because installed PWA
 clients can remain cached, wait at least one full service-worker compatibility window
 after the compatible frontend release, verify current usage, and take a fresh backup
-before applying the contract migration manually.
+before releasing the contract migration with `allow_contract_migrations`. An ordinary
+push to `main` never applies one.
 
 GitHub Actions applies tracked migrations to production itself, so the frontend and the
 schema it needs ship in one run rather than depending on a manual `db push` before the
@@ -303,10 +304,18 @@ migrated-Supabase integration suite passed. It links the project, previews with
 - `SUPABASE_DB_PASSWORD` — the project's database password (Project Settings →
   Database).
 
-Add required reviewers to that environment if a contract migration should wait for a
-manual approval click; the job then pauses there with the site untouched. A migration
-that fails leaves the workflow red and the currently deployed site untouched, so a
-rerun after a corrective migration is the recovery path.
+Before pushing, the job pipes `migration list --linked` through
+`check-migration-rollout.js --pending --reject-contract`: if any migration still pending
+in production is labelled `-- rollout: contract` (which the checks require for every
+migration containing a destructive statement), the job fails before `db push` and the
+production schema and site stay untouched. The guard also fails when the CLI listing
+cannot be parsed, rather than assuming nothing is pending. Contract migrations are
+applied only by running the workflow manually from `main` with
+`allow_contract_migrations` ticked, after the compatibility window and a fresh backup.
+Add required reviewers to the `production-database` environment as well if that
+manual run should itself wait for an approval click. A migration that fails leaves the
+workflow red and the currently deployed site untouched, so a rerun after a corrective
+migration is the recovery path.
 
 For a release with backend changes:
 
