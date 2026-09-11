@@ -177,7 +177,7 @@
         });
       } catch (error) {
         if (generation !== openGeneration) return;
-        logger.error(error);
+        logger.error("Could not load weekly lyrics", error);
         onStatus(error.message || "Could not load weekly lyrics.", "error");
       }
     }
@@ -200,7 +200,7 @@
         onStatus("Weekly lyrics saved", "saved");
         close();
       } catch (error) {
-        logger.error(error);
+        logger.error("Could not save weekly lyrics", error);
         setError(error.message || "Could not save weekly lyrics.");
       } finally {
         elements.save.disabled = false;
@@ -221,7 +221,7 @@
         onStatus("Using canonical lyrics", "saved");
         close();
       } catch (error) {
-        logger.error(error);
+        logger.error("Could not reset weekly lyrics", error);
         setError(error.message || "Could not reset weekly lyrics.");
       } finally {
         elements.reset.disabled = false;

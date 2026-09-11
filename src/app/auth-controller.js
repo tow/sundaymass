@@ -59,7 +59,7 @@
           scheduleFocus(() => passwordInput.focus());
         }
       } catch (error) {
-        logger.error(error);
+        logger.error("Could not sign out", error);
         onActionFailure(error);
       }
     }
@@ -92,7 +92,7 @@
         passwordInput.value = "";
         closeDialog();
       } catch (error) {
-        logger.error(error);
+        logger.error("Could not sign in", error);
         errorElement.textContent = editorMode
           ? "Sign-in failed. Check the email and password."
           : "Sign-in failed. Check the choir password.";

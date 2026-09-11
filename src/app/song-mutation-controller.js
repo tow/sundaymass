@@ -37,7 +37,7 @@
         }
         return result;
       } catch (error) {
-        logger.error(error);
+        logger.error("Could not save song assignment", error);
         onStatus(
           isOnline() ? "Save failed" : "Offline — editing unavailable",
           "error",
@@ -54,7 +54,7 @@
         onStatus("Up to date", "saved");
         return song;
       } catch (error) {
-        logger.error(error);
+        logger.error("Could not load song", error);
         onStatus("Could not load song", "error");
         throw error;
       }

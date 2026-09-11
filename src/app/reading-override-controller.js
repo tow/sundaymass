@@ -32,7 +32,7 @@
         }
         return true;
       } catch (error) {
-        logger.error(error);
+        logger.error("Could not save reading override", error);
         onStatus("Save failed", "error");
         return false;
       } finally {
