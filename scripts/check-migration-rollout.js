@@ -116,7 +116,14 @@ function migrationRows(listOutput) {
 function pendingMigrationVersions(listOutput) {
   const rows = migrationRows(listOutput).filter(row => row.local || row.remote);
   if (!rows.length) {
-    throw new Error("could not read any migration rows from `supabase migration list` output");
+    // Quote what actually arrived. A listing carries only migration versions and
+    // timestamps, never credentials, and reading it beats guessing at the shape from a
+    // CI log that shows neither stream separately.
+    const received = String(listOutput || "");
+    throw new Error(
+      "could not read any migration rows from `supabase migration list` output"
+      + `; received ${received.length} bytes: ${JSON.stringify(received.slice(0, 800))}`,
+    );
   }
   return rows.filter(row => row.local && !row.remote).map(row => row.local);
 }

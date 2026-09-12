@@ -47,7 +47,8 @@ test("production migrations run from CI only for a passing database change on ma
   assert.match(job, /needs\.changes\.outputs\.database == 'true'/);
   assert.match(job, /needs\.check\.result == 'success'/);
   assert.match(job, /needs\.supabase-integration\.result == 'success'/);
-  assert.match(job, /needs: \[changes, check, supabase-integration\]/);
+  assert.match(job, /needs: \[changes, check, supabase-integration, production-preflight\]/);
+  assert.match(job, /needs\.production-preflight\.result == 'success'/);
   assert.match(job, /environment: production-database/);
   assert.match(job, /concurrency:\s*\n\s+group: production-database\s*\n\s+cancel-in-progress: false/);
   assert.match(job, /SUPABASE_ACCESS_TOKEN: \$\{\{ secrets\.SUPABASE_ACCESS_TOKEN \}\}/);
@@ -68,11 +69,22 @@ test("production migrations run from CI only for a passing database change on ma
   assert.match(guard, /if: \$\{\{ !inputs\.allow_contract_migrations \}\}/);
   assert.match(
     guard,
-    /supabase migration list --linked 2>&1\s*\n?\s*\| node scripts\/check-migration-rollout\.js --pending --reject-contract/,
+    /node scripts\/check-migration-rollout\.js --pending --reject-contract\s*\n?\s*< migration-list\.txt/,
   );
+  // The listing is captured and printed before anything parses it, so a parsing
+  // failure names its own cause instead of costing another CI round trip.
+  assert.match(job, /supabase migration list --linked > migration-list\.txt 2>&1/);
+  assert.match(job, /cat migration-list\.txt/);
   assert.match(job, /uses: actions\/setup-node@v7/);
-  // Only the migration job may hold production credentials or push migrations.
-  const elsewhere = workflow.replace(job, "");
+  // Only migrate-production may push migrations. The read-only preflight also holds the
+  // credential, so credentials are allowed in exactly those two jobs — both gated on the
+  // production-database environment — and nowhere else.
+  const preflight = workflow.match(/production-preflight:[\s\S]*?(?=\n  migrate-production:)/)?.[0];
+  assert.ok(preflight, "production-preflight job precedes migrate-production");
+  assert.match(preflight, /environment: production-database/);
+  assert.match(preflight, /SUPABASE_ACCESS_TOKEN: \$\{\{ secrets\.SUPABASE_ACCESS_TOKEN \}\}/);
+  assert.doesNotMatch(preflight, /supabase db push|--include-seed|db reset/);
+  const elsewhere = workflow.replace(job, "").replace(preflight, "");
   assert.doesNotMatch(elsewhere, /secrets\.SUPABASE|supabase db push/);
   assert.match(workflow, /build-pages:[\s\S]*needs: check/);
   assert.match(
