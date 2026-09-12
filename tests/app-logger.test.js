@@ -2,6 +2,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 
 const AppLogger = require("../src/services/app-logger.js");
+const Failures = require("../src/domain/failures.js");
 
 test("application logger buffers caught errors until monitoring is ready", () => {
   const originalConsoleError = console.error;
@@ -109,5 +110,71 @@ test("application logger forwards explicit warnings and informational logs", () 
     AppLogger.setReporter(null);
     console.warn = originalWarn;
     console.info = originalInfo;
+  }
+});
+
+test("conditions the user can resolve are reported as warnings, not faults", () => {
+  const originalConsoleError = console.error;
+  const originalConsoleWarn = console.warn;
+  const seen = [];
+  console.error = () => assert.fail("an expected condition must not reach console.error");
+  console.warn = () => {};
+
+  try {
+    AppLogger.setReporter(entry => seen.push(entry));
+    const condition = Failures.expected("Add canonical lyrics for Panginoon, Maawa ka first.");
+    AppLogger.error("Could not load weekly lyrics", condition);
+
+    assert.equal(seen.length, 1);
+    assert.equal(seen[0].level, "warn");
+    assert.equal(seen[0].label, "Could not load weekly lyrics");
+    assert.equal(seen[0].error, condition);
+  } finally {
+    AppLogger.setReporter(null);
+    console.error = originalConsoleError;
+    console.warn = originalConsoleWarn;
+  }
+});
+
+test("a plain Error marked expected by a module is treated the same way", () => {
+  const originalConsoleError = console.error;
+  const originalConsoleWarn = console.warn;
+  const seen = [];
+  console.error = () => assert.fail("an expected condition must not reach console.error");
+  console.warn = () => {};
+
+  try {
+    AppLogger.setReporter(entry => seen.push(entry));
+    // Stores mark their own errors rather than depending on the logger loading first.
+    const condition = Object.assign(new Error("Editor access required"), { expected: true });
+    AppLogger.error("Could not save song assignment", condition);
+
+    assert.equal(seen.length, 1);
+    assert.equal(seen[0].level, "warn");
+    assert.ok(Failures.isExpected(condition));
+  } finally {
+    AppLogger.setReporter(null);
+    console.error = originalConsoleError;
+    console.warn = originalConsoleWarn;
+  }
+});
+
+test("genuine faults are still reported as errors", () => {
+  const originalConsoleError = console.error;
+  const seen = [];
+  console.error = () => {};
+
+  try {
+    AppLogger.setReporter(entry => seen.push(entry));
+    const fault = new Error("Reading catalogue response was invalid");
+    AppLogger.error("Could not load reading library", fault);
+
+    assert.equal(seen.length, 1);
+    assert.equal(seen[0].level, "error");
+    assert.equal(seen[0].error, fault);
+    assert.equal(Failures.isExpected(fault), false);
+  } finally {
+    AppLogger.setReporter(null);
+    console.error = originalConsoleError;
   }
 });

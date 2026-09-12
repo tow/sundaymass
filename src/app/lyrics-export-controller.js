@@ -92,7 +92,9 @@
         });
       } catch (error) {
         logger.error(errorLogLabel, error);
-        setStatus(errorMessage, "error");
+        // An expected condition already carries the sentence to show; the generic
+        // message is for faults, which have nothing useful to say to the user.
+        setStatus(error?.expected ? error.message : errorMessage, "error");
       } finally {
         exporting = false;
         render();

@@ -2,11 +2,20 @@
 (function (global) {
   "use strict";
 
-  function defaultLoader(document) {
+  const failures = global.Failures
+    || (typeof require === "function" ? require("../domain/failures.js") : null);
+
+
+  function defaultLoader(document, importModule) {
     const url = global.AppAssets?.url("vendor/jspdf.js", document)
       || new URL("./vendor/jspdf.js", document.baseURI).href;
-    return import(url)
-      .then(module => module.jsPDF);
+    return importModule(url).then(module => module.jsPDF, cause => {
+      if (!failures.isModuleFetchFailure(cause)) throw cause;
+      throw failures.expected(
+        "Export unavailable — check your connection and try again.",
+        cause,
+      );
+    });
   }
 
   function buildDocument({ JsPDF, booklet, date, values, assignments }) {
@@ -32,7 +41,8 @@
     getValues,
     canReadLyrics,
     isOnline,
-    loadJsPdf = () => defaultLoader(document),
+    importModule = url => import(url),
+    loadJsPdf = () => defaultLoader(document, importModule),
     logger = console,
   }) {
     const controller = exportController.create({

@@ -152,11 +152,15 @@ test("sign-in errors stay in the dialog and auth-action errors reach the page", 
   assert.deepEqual(context.actionFailures, [failure]);
 });
 
-test("rejected credentials are logged as a warning, not an application error", async () => {
+// Whether a sign-in failure is the user's mistake or ours is decided by the store, at
+// the boundary that talks to Supabase, and asserted in its tests. All the dialog owes is
+// the same message and one log entry either way.
+test("a failed sign-in shows the same message and is logged once, however it failed", async () => {
   const rejected = Object.assign(new Error("Invalid login credentials"), {
     name: "AuthApiError",
     status: 400,
     code: "invalid_credentials",
+    expected: true,
   });
   const errors = [];
   const warnings = [];
@@ -174,9 +178,9 @@ test("rejected credentials are logged as a warning, not an application error", a
   await context.form.listeners.get("submit")({ preventDefault() {} });
 
   assert.equal(context.errorElement.textContent, "Sign-in failed. Check the choir password.");
-  assert.equal(errors.length, 0);
-  assert.equal(warnings.length, 1);
-  assert.deepEqual(warnings[0], ["Could not sign in", rejected]);
+  assert.equal(warnings.length, 0);
+  assert.equal(errors.length, 1);
+  assert.deepEqual(errors[0], ["Could not sign in", rejected]);
 });
 
 test("unexpected sign-in failures still reach error tracking", async () => {

@@ -26,6 +26,7 @@ const assetVersions = buildAssetVersions();
 const appAssetUrl = relativePath => versionedUrl(relativePath, assetVersions);
 
 const appValues = {
+  "@@FAILURES_JS@@": read("src/domain/failures.js"),
   "@@APP_LOGGER_JS@@": read("src/services/app-logger.js"),
   "@@ASSET_URL_JS@@": read("src/domain/asset-url.js"),
   "@@READING_TEXT_STORE_JS@@": read("src/services/reading-text-store.js"),
@@ -100,6 +101,12 @@ fs.writeFileSync(path.join(ROOT, "index.html"), html);
 fs.rmSync(path.join(ROOT, "StJames_Mass_Planner.html"), { force: true });
 
 let repertoireScript = read("src/app/repertoire.js").trimEnd();
+// Ahead of the logger, which reads the mark this module defines.
+repertoireScript = replaceOnce(
+  repertoireScript,
+  "@@FAILURES_JS@@",
+  read("src/domain/failures.js"),
+);
 repertoireScript = replaceOnce(
   repertoireScript,
   "@@APP_LOGGER_JS@@",

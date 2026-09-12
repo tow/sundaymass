@@ -2,6 +2,10 @@
 (function (global) {
   "use strict";
 
+  const failures = global.Failures
+    || (typeof require === "function" ? require("../domain/failures.js") : null);
+  const expected = failures.expected;
+
   function create({
     getStore,
     isEditor,
@@ -16,9 +20,9 @@
     function requireAccess() {
       if (!isOnline()) {
         onStatus("Offline — editing unavailable", "error");
-        throw new Error("Editing requires an internet connection");
+        throw expected("Editing requires an internet connection");
       }
-      if (!isEditor()) throw new Error("Editor access required");
+      if (!isEditor()) throw expected("Editor access required");
       const store = getStore();
       if (!store) throw new Error("Song store unavailable");
       return store;
@@ -39,7 +43,9 @@
       } catch (error) {
         logger.error("Could not save song assignment", error);
         onStatus(
-          isOnline() ? "Save failed" : "Offline — editing unavailable",
+          error?.expected
+            ? error.message
+            : (isOnline() ? "Save failed" : "Offline — editing unavailable"),
           "error",
         );
         throw error;
@@ -61,7 +67,7 @@
     }
 
     async function assign(part, song) {
-      if (!part || !song?.id) throw new Error("Choose a song and Mass part");
+      if (!part || !song?.id) throw expected("Choose a song and Mass part");
       const date = getDate();
       return runMutation(
         store => store.assignSong(date, part, song.id),
@@ -71,7 +77,7 @@
     }
 
     async function clear(part) {
-      if (!part) throw new Error("Choose a Mass part");
+      if (!part) throw expected("Choose a Mass part");
       const date = getDate();
       await runMutation(
         store => store.clearSong(date, part),
@@ -88,7 +94,7 @@
     }
 
     async function save({ existingSong, part, draft }) {
-      if (!part) throw new Error("Choose a Mass part");
+      if (!part) throw expected("Choose a Mass part");
       const store = requireAccess();
       const date = getDate();
       const song = await runMutation(

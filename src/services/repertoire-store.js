@@ -1,3 +1,7 @@
+const failures = globalThis.window?.Failures
+  || (typeof require === "function" ? require("../domain/failures.js") : null);
+const expected = failures.expected;
+
 const mapSong = row => {
   const youtubeVideoId = /^[A-Za-z0-9_-]{11}$/.test(row.youtube_video_id || "")
     ? row.youtube_video_id
@@ -35,7 +39,7 @@ const mapSong = row => {
 };
 const draftParams = (draft, songCatalog = globalThis.window?.SongCatalog) => {
   const result = songCatalog.validateDraft(draft);
-  if (!result.valid) throw new Error(result.error);
+  if (!result.valid) throw expected(result.error);
   return {
     value: result.value,
     params: {
@@ -69,6 +73,17 @@ function storeError(error) {
   return failure;
 }
 
+// A wrong email or password is the user mistaking their password, not a defect,
+// and the sign-in dialog already says so. Recognising Supabase's error shape is
+// src/domain/failures.js's job; this is only the boundary that applies it.
+function authError(error) {
+  // Classify the value Supabase handed us before storeError rebrands a non-Error as a
+  // PostgrestError, which would erase the name the classifier reads.
+  const rejected = failures.isRejectedCredentials(error);
+  const failure = storeError(error);
+  return rejected ? failures.markExpected(failure) : failure;
+}
+
 const authState = (user, { isChoirMember = false, isEditor = false } = {}) => {
   const accessLevel = isEditor ? "editor" : isChoirMember ? "choir" : "public";
   return Object.freeze({
@@ -100,29 +115,29 @@ function localStore({
   return {
     async browseSongs() { return read(); },
     async getSong(songId) {
-      if (accessLevel === "public") throw new Error("Choir member access required");
+      if (accessLevel === "public") throw expected("Choir member access required");
       return read().find(song => song.id === songId);
     },
     async createSong(draft) {
-      if (accessLevel !== "editor") throw new Error("Editor access required");
+      if (accessLevel !== "editor") throw expected("Editor access required");
       const value = draftParams(draft, songCatalog).value;
       const song = { id: randomUUID(), ...value };
       write([...read(), song]);
       return song;
     },
     async updateSong(songId, draft) {
-      if (accessLevel !== "editor") throw new Error("Editor access required");
+      if (accessLevel !== "editor") throw expected("Editor access required");
       const value = draftParams(draft, songCatalog).value;
       const songs = read();
-      if (!songs.some(song => song.id === songId)) throw new Error("Song not found");
+      if (!songs.some(song => song.id === songId)) throw expected("Song not found");
       write(songs.map(song => song.id === songId ? { id: songId, ...value } : song));
       return { id: songId, ...value };
     },
     async reviewSongSuggestionParts(songId, suggestionParts) {
-      if (accessLevel !== "editor") throw new Error("Editor access required");
+      if (accessLevel !== "editor") throw expected("Editor access required");
       const songs = read();
       const song = songs.find(value => value.id === songId);
-      if (!song) throw new Error("Song not found");
+      if (!song) throw expected("Song not found");
       const reviewed = {
         ...song,
         suggestionParts: suggestionParts || [],
@@ -265,11 +280,11 @@ function createSupabaseStore(
         email: choirEmail,
         password,
       });
-      if (error) throw storeError(error);
+      if (error) throw authError(error);
     },
     async signInEditor(email, password) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw storeError(error);
+      if (error) throw authError(error);
     },
     async signIn(email, password) {
       return this.signInEditor(email, password);

@@ -22,6 +22,8 @@ function element() {
 
 function setup({
   editor = true,
+  importModule = null,
+  logged = [],
   online = true,
   songs = {
     entrance: { id: "song-a", title: "Song A" },
@@ -69,11 +71,13 @@ function setup({
     getValues: () => ({ day: "18th Sunday", meta: "Sunday · Year A" }),
     canReadLyrics: () => editor,
     isOnline: () => online,
-    loadPptx: async () => FakePptx,
-    logger: { error() {} },
+    ...(importModule
+      ? { importModule }
+      : { loadPptx: async () => FakePptx }),
+    logger: { error: (...values) => logged.push(values) },
   });
   controller.start();
-  return { button, controller, fetched, status, writes };
+  return { button, controller, fetched, logged, status, writes };
 }
 
 test("authorized lyric export fetches each private song once and preserves repeated assignments", async () => {
@@ -106,4 +110,38 @@ test("the export action is hidden and rejected without choir access", async () =
   await controller.download();
   assert.equal(writes.length, 0);
   assert.equal(status.textContent, "Choir member access required.");
+});
+
+// The export bundles are deliberately not precached by the service worker, so fetching
+// one needs the network even when `navigator.onLine` reports a connection. A failed
+// module fetch told the editor "Could not build the PowerPoint" and filed a Sentry
+// fault; it is a connectivity condition, and it says so.
+test("a vendor bundle that cannot be fetched reports connectivity, not a fault", async () => {
+  const failure = new TypeError(
+    "Failed to fetch dynamically imported module: "
+    + "https://tow.github.io/sundaymass/vendor/pptxgenjs.js?v=29194f6ff252",
+  );
+  const { button, logged, status, writes } = setup({
+    importModule: async () => { throw failure; },
+  });
+  await button.click();
+
+  assert.equal(writes.length, 0);
+  assert.equal(status.textContent, "Export unavailable — check your connection and try again.");
+  assert.equal(status.dataset.state, "error");
+  assert.equal(logged.length, 1);
+  assert.equal(logged[0][1].expected, true);
+  assert.equal(logged[0][1].cause, failure);
+});
+
+test("a broken vendor bundle stays a fault", async () => {
+  const failure = new SyntaxError("Unexpected token '<'");
+  const { button, logged, status } = setup({
+    importModule: async () => { throw failure; },
+  });
+  await button.click();
+
+  assert.equal(status.dataset.state, "error");
+  assert.equal(logged[0][1], failure);
+  assert.notEqual(logged[0][1].expected, true);
 });

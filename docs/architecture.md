@@ -318,6 +318,18 @@ Sentry installation. Entries logged before the monitoring bundle finishes loadin
 buffered and forwarded afterward. Errors appear both as Sentry issues and structured
 logs; warnings and information appear as structured logs.
 
+Not every failure is a defect. "Editor access required", "you are offline", "add
+canonical lyrics first", a mistyped password: each is the application working correctly
+and telling somebody what to do next, and filing those as issues buries the failures
+that are genuinely ours. `src/domain/failures.js` owns that distinction. A failure is
+classified where it is created, by the layer that knows why it happened — stores
+classify vendor errors because they own the vendor, loaders classify failed module
+fetches because they own the fetch, and guards mark their own preconditions. Every layer
+above only passes it along: controllers show `error.message` and log once, and
+`AppLogger` reads the mark to choose a level, reporting a marked failure as a warning
+rather than an error. Nothing outside that module should recognise a vendor's error
+shape, and an unmarked failure is a fault by default.
+
 Monitoring is disabled when its DSN is blank. When enabled, the locally built browser
 SDK sends errors and application-authored logs only: tracing, replay, metrics, and
 automatic console capture are absent, default PII is disabled, and processors remove

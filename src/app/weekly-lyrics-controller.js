@@ -2,6 +2,10 @@
 (function (global) {
   "use strict";
 
+  const failures = global.Failures
+    || (typeof require === "function" ? require("../domain/failures.js") : null);
+  const expected = failures.expected;
+
   function create({
     elements,
     parts,
@@ -32,20 +36,20 @@
     const partFor = key => parts.find(part => part.key === key);
 
     function requireAccess() {
-      if (!isEditor()) throw new Error("Editor access required");
-      if (!isOnline()) throw new Error("Editing requires an internet connection");
+      if (!isEditor()) throw expected("Editor access required");
+      if (!isOnline()) throw expected("Editing requires an internet connection");
       const store = getStore();
-      if (!store) throw new Error("Still connecting. Try again in a moment.");
+      if (!store) throw expected("Still connecting. Try again in a moment.");
       return store;
     }
 
     function requireCurrentSession() {
       const store = requireAccess();
       if (!openedSunday || !song || getDate() !== openedSunday) {
-        throw new Error("The selected Sunday changed. Close and reopen weekly lyrics.");
+        throw expected("The selected Sunday changed. Close and reopen weekly lyrics.");
       }
       if (getSongs()[partKey]?.id !== song.id) {
-        throw new Error("The assigned song changed. Close and reopen weekly lyrics.");
+        throw expected("The assigned song changed. Close and reopen weekly lyrics.");
       }
       return store;
     }
@@ -144,7 +148,7 @@
         const loadedSong = await store.getSong(selected.id);
         const loadedCanonical = weeklyLyrics.normalize(loadedSong.lyrics);
         if (!loadedCanonical) {
-          throw new Error(`Add canonical lyrics for ${loadedSong.title} first.`);
+          throw expected(`Add canonical lyrics for ${loadedSong.title} first.`);
         }
         const context = await store.getWeeklyLyricsContext(
           sunday,
@@ -188,7 +192,7 @@
       setError();
       try {
         const lyrics = editedValue();
-        if (!lyrics) throw new Error("Keep at least one lyric section.");
+        if (!lyrics) throw expected("Keep at least one lyric section.");
         await requireCurrentSession().saveWeeklyLyrics(
           openedSunday,
           partKey,

@@ -2,6 +2,10 @@
 (function (global) {
   "use strict";
 
+  const failures = global.Failures
+    || (typeof require === "function" ? require("../domain/failures.js") : null);
+  const { isExpected } = failures;
+
   const pending = [];
   let reporter = null;
 
@@ -48,8 +52,12 @@
   }
 
   function error(...values) {
-    console.error(...values);
     const failure = errorFrom(values);
+    if (isExpected(failure) || values.some(isExpected)) {
+      warn(...values);
+      return;
+    }
+    console.error(...values);
     const entry = Object.freeze({
       level: "error",
       error: failure,

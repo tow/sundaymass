@@ -2,6 +2,10 @@
 (function (global) {
   "use strict";
 
+  const failures = global.Failures
+    || (typeof require === "function" ? require("../domain/failures.js") : null);
+  const expected = failures.expected;
+
   function create({
     assets,
     values = {},
@@ -30,7 +34,7 @@
     async function load(citation) {
       if (!citation || has(citation)) return get(citation);
       const filename = assets[citation];
-      if (!filename) throw new Error(`Reading text is unavailable for ${citation}`);
+      if (!filename) throw expected(`Reading text is unavailable for ${citation}`);
       if (!pending.has(citation)) {
         pending.set(citation, requestJson(`data/readings/${filename}`)
           .then(text => {

@@ -920,3 +920,35 @@ test("Supabase RPC failures become real errors that keep their PostgREST code", 
     error => error === authFailure,
   );
 });
+
+// Whether a sign-in failure is the user's mistake or a defect is decided here, at the
+// only boundary that talks to Supabase auth, so no controller has to recognise the
+// vendor's error shape.
+test("Supabase marks a rejected password as the user's to fix and a server fault as ours", async () => {
+  function storeRejecting(error) {
+    return storeModule.createSupabaseStore({
+      auth: { async signInWithPassword() { return { error }; } },
+    }, {
+      storage: memoryStorage(),
+      planData,
+      songCatalog,
+      choirEmail: "shared-choir@example.test",
+    });
+  }
+
+  const rejected = await storeRejecting({
+    name: "AuthApiError",
+    status: 400,
+    code: "invalid_credentials",
+    message: "Invalid login credentials",
+  }).signInChoir("wrong").then(() => null, error => error);
+  assert.equal(rejected.expected, true);
+  assert.equal(rejected.message, "Invalid login credentials");
+
+  const fault = await storeRejecting({
+    name: "AuthApiError",
+    status: 503,
+    message: "Service unavailable",
+  }).signInEditor("editor@example.test", "secret").then(() => null, error => error);
+  assert.notEqual(fault.expected, true);
+});

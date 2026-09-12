@@ -1,4 +1,9 @@
 // Persistence adapter: Supabase in production, local storage during local development.
+
+const failures = globalThis.window?.Failures
+  || (typeof require === "function" ? require("../domain/failures.js") : null);
+const expected = failures.expected;
+
 const planData = () => globalThis.window?.PlanMusicData;
 const songCatalog = () => globalThis.window?.SongCatalog;
 const sharedPlanCacheKey = date => "st-james-plan-cache-v2-" + date;
@@ -35,6 +40,17 @@ function storeError(error) {
     if (value !== undefined && value !== null && value !== "") failure[key] = value;
   });
   return failure;
+}
+
+// A wrong email or password is the user mistaking their password, not a defect,
+// and the sign-in dialog already says so. Recognising Supabase's error shape is
+// src/domain/failures.js's job; this is only the boundary that applies it.
+function authError(error) {
+  // Classify the value Supabase handed us before storeError rebrands a non-Error as a
+  // PostgrestError, which would erase the name the classifier reads.
+  const rejected = failures.isRejectedCredentials(error);
+  const failure = storeError(error);
+  return rejected ? failures.markExpected(failure) : failure;
 }
 
 function emptyPlan() {
@@ -130,10 +146,10 @@ function localStore({
     };
   };
   const requireEditor = () => {
-    if (accessLevel !== "editor") throw new Error("Editor access required");
+    if (accessLevel !== "editor") throw expected("Editor access required");
   };
   const requireLyricsAccess = () => {
-    if (accessLevel === "public") throw new Error("Choir member access required");
+    if (accessLevel === "public") throw expected("Choir member access required");
   };
   const readWeeklyLyrics = () => {
     try {
@@ -194,14 +210,14 @@ function localStore({
     async getSong(songId) {
       requireLyricsAccess();
       const song = readSongs().find(value => value.id === songId);
-      if (!song) throw new Error("Song not found");
+      if (!song) throw expected("Song not found");
       return song;
     },
     async assignSong(date, part, songId) {
       requireEditor();
       const songs = readSongs();
       const songIndex = songs.findIndex(song => song.id === songId);
-      if (songIndex < 0) throw new Error("Song not found");
+      if (songIndex < 0) throw expected("Song not found");
       if (songs[songIndex].inRepertoire === false) {
         songs[songIndex] = { ...songs[songIndex], inRepertoire: true };
         writeSongs(songs);
@@ -219,7 +235,7 @@ function localStore({
     async createAndAssignSong(date, part, draft) {
       requireEditor();
       const validation = songCatalogApi.validateDraft(draft);
-      if (!validation.valid) throw new Error(validation.error);
+      if (!validation.valid) throw expected(validation.error);
       const song = { id: randomUUID(), ...validation.value, inRepertoire: true };
       writeSongs([...readSongs(), song]);
       const plan = readPlanRecord(date);
@@ -233,10 +249,10 @@ function localStore({
     async updateSong(songId, draft) {
       requireEditor();
       const validation = songCatalogApi.validateDraft(draft);
-      if (!validation.valid) throw new Error(validation.error);
+      if (!validation.valid) throw expected(validation.error);
       const songs = readSongs();
       const index = songs.findIndex(song => song.id === songId);
-      if (index < 0) throw new Error("Song not found");
+      if (index < 0) throw expected("Song not found");
       songs[index] = { id: songId, ...validation.value };
       writeSongs(songs);
       listeners.forEach((callback, date) => callback(read(date), { offline: true }));
@@ -278,7 +294,7 @@ function localStore({
       requireEditor();
       const plan = readPlanRecord(date);
       if (plan.songs[part] !== songId) {
-        throw new Error("The song is not assigned to this Mass slot");
+        throw expected("The song is not assigned to this Mass slot");
       }
       const rows = readWeeklyLyrics()
         .filter(item => item.planDate !== date || item.part !== part);
@@ -294,7 +310,7 @@ function localStore({
     async createSongRequest(request) {
       requireLyricsAccess();
       if (request.songId && !readSongs().some(song => song.id === request.songId)) {
-        throw new Error("Song not found");
+        throw expected("Song not found");
       }
       const record = {
         id: randomUUID(),
@@ -329,7 +345,7 @@ function localStore({
       const requests = readSongRequests();
       const index = requests.findIndex(request =>
         request.id === requestId && request.status === "pending");
-      if (index < 0) throw new Error("Request not found");
+      if (index < 0) throw expected("Request not found");
       requests[index] = { ...requests[index], status };
       writeSongRequests(requests);
     },
@@ -389,7 +405,7 @@ function unavailableStore({
   reason = new Error("Supabase has not been configured"),
 } = {}) {
   const unavailable = async () => {
-    throw new Error("Shared editing is unavailable");
+    throw expected("Shared editing is unavailable");
   };
   return {
     subscribePlan(date, onValue, onError) {
@@ -445,7 +461,7 @@ function createSupabaseStore(
   } = {},
 ) {
   const requireOnline = () => {
-    if (!isOnline()) throw new Error("Editing requires an internet connection");
+    if (!isOnline()) throw expected("Editing requires an internet connection");
   };
   const loadPlan = async date => {
     const { data, error } = await supabase
@@ -478,7 +494,7 @@ function createSupabaseStore(
   };
   const rpcDraft = draft => {
     const value = songCatalogApi.validateDraft(draft);
-    if (!value.valid) throw new Error(value.error);
+    if (!value.valid) throw expected(value.error);
     return {
       value: value.value,
       params: {
@@ -929,12 +945,12 @@ function createSupabaseStore(
         email: choirEmail,
         password,
       });
-      if (error) throw storeError(error);
+      if (error) throw authError(error);
     },
     async signInEditor(email, password) {
       requireOnline();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw storeError(error);
+      if (error) throw authError(error);
     },
     async signIn(email, password) {
       return this.signInEditor(email, password);

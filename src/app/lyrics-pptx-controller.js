@@ -2,11 +2,20 @@
 (function (global) {
   "use strict";
 
-  function defaultLoader(document) {
+  const failures = global.Failures
+    || (typeof require === "function" ? require("../domain/failures.js") : null);
+
+
+  function defaultLoader(document, importModule) {
     const url = global.AppAssets?.url("vendor/pptxgenjs.js", document)
       || new URL("./vendor/pptxgenjs.js", document.baseURI).href;
-    return import(url)
-      .then(module => module.default);
+    return importModule(url).then(module => module.default, cause => {
+      if (!failures.isModuleFetchFailure(cause)) throw cause;
+      throw failures.expected(
+        "Export unavailable — check your connection and try again.",
+        cause,
+      );
+    });
   }
 
   function create({
@@ -22,7 +31,8 @@
     getValues,
     canReadLyrics,
     isOnline,
-    loadPptx = () => defaultLoader(document),
+    importModule = url => import(url),
+    loadPptx = () => defaultLoader(document, importModule),
     logger = console,
   }) {
     const controller = exportController.create({
