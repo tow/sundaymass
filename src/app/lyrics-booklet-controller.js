@@ -6,13 +6,18 @@
     || (typeof require === "function" ? require("../domain/failures.js") : null);
 
 
-  function defaultLoader(document, importModule) {
+  function defaultLoader(document, importModule, isOnline) {
     const url = global.AppAssets?.url("vendor/jspdf.js", document)
       || new URL("./vendor/jspdf.js", document.baseURI).href;
     return importModule(url).then(module => module.jsPDF, cause => {
-      if (!failures.isModuleFetchFailure(cause)) throw cause;
+      // Offline, this is the user's connection and theirs to fix. Online, the very
+      // same TypeError is also what a missing or misdeployed bundle produces, and we
+      // cannot tell the two apart from here — so it stays a fault and reaches
+      // monitoring, because a broken deployment is not something to hide behind a
+      // reassuring message about somebody's wifi.
+      if (!failures.isModuleFetchFailure(cause) || isOnline()) throw cause;
       throw failures.expected(
-        "Export unavailable — check your connection and try again.",
+        "Export unavailable — you appear to be offline.",
         cause,
       );
     });
@@ -42,7 +47,7 @@
     canReadLyrics,
     isOnline,
     importModule = url => import(url),
-    loadJsPdf = () => defaultLoader(document, importModule),
+    loadJsPdf = () => defaultLoader(document, importModule, isOnline),
     logger = console,
   }) {
     const controller = exportController.create({

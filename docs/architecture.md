@@ -330,6 +330,15 @@ above only passes it along: controllers show `error.message` and log once, and
 rather than an error. Nothing outside that module should recognise a vendor's error
 shape, and an unmarked failure is a fault by default.
 
+Marking narrows what an operator is alerted to, so the test for adding one is whether
+the condition could *also* be produced by something broken on our side. Where it could,
+it stays a fault. A failed export-bundle fetch is the example worth remembering: offline
+it is the reader's connection, but online the identical `TypeError` is what a missing or
+misdeployed bundle raises, so it is only marked when the browser reports being offline
+at the moment the fetch failed. Marked failures are still sent as structured logs, so
+nothing is discarded — but they no longer raise issues, which is the whole point and the
+whole risk.
+
 Monitoring is disabled when its DSN is blank. When enabled, the locally built browser
 SDK sends errors and application-authored logs only: tracing, replay, metrics, and
 automatic console capture are absent, default PII is disabled, and processors remove

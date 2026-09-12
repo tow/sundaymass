@@ -23,6 +23,7 @@ function element() {
 function setup({
   editor = true,
   importModule = null,
+  isOnline = null,
   logged = [],
   online = true,
   songs = {
@@ -70,7 +71,7 @@ function setup({
     getDate: () => "2026-08-02",
     getValues: () => ({ day: "18th Sunday", meta: "Sunday · Year A" }),
     canReadLyrics: () => editor,
-    isOnline: () => online,
+    isOnline: isOnline || (() => online),
     ...(importModule
       ? { importModule }
       : { loadPptx: async () => FakePptx }),
@@ -112,26 +113,46 @@ test("the export action is hidden and rejected without choir access", async () =
   assert.equal(status.textContent, "Choir member access required.");
 });
 
-// The export bundles are deliberately not precached by the service worker, so fetching
-// one needs the network even when `navigator.onLine` reports a connection. A failed
-// module fetch told the editor "Could not build the PowerPoint" and filed a Sentry
-// fault; it is a connectivity condition, and it says so.
-test("a vendor bundle that cannot be fetched reports connectivity, not a fault", async () => {
+// The export bundles are deliberately not precached by the service worker, so building
+// an export needs the network even when the online gate has already passed. A drop
+// during the fetch is the user's connection and says so.
+test("losing the connection mid-fetch reports connectivity, not a fault", async () => {
   const failure = new TypeError(
     "Failed to fetch dynamically imported module: "
     + "https://tow.github.io/sundaymass/vendor/pptxgenjs.js?v=29194f6ff252",
   );
+  let online = true;
   const { button, logged, status, writes } = setup({
-    importModule: async () => { throw failure; },
+    isOnline: () => online,
+    importModule: async () => { online = false; throw failure; },
   });
   await button.click();
 
   assert.equal(writes.length, 0);
-  assert.equal(status.textContent, "Export unavailable — check your connection and try again.");
+  assert.equal(status.textContent, "Export unavailable — you appear to be offline.");
   assert.equal(status.dataset.state, "error");
   assert.equal(logged.length, 1);
   assert.equal(logged[0][1].expected, true);
   assert.equal(logged[0][1].cause, failure);
+});
+
+// A missing or misdeployed bundle raises exactly the same TypeError as flaky wifi. While
+// the browser still reports a connection we cannot tell them apart, so it stays a fault:
+// a broken deployment must not hide behind a message about somebody's wifi.
+test("a bundle that will not load while online stays a fault the operator sees", async () => {
+  const failure = new TypeError(
+    "Failed to fetch dynamically imported module: "
+    + "https://tow.github.io/sundaymass/vendor/pptxgenjs.js?v=29194f6ff252",
+  );
+  const { button, logged, status } = setup({
+    importModule: async () => { throw failure; },
+  });
+  await button.click();
+
+  assert.equal(status.textContent, "Could not create PowerPoint. Try again.");
+  assert.equal(status.dataset.state, "error");
+  assert.equal(logged[0][1], failure);
+  assert.notEqual(logged[0][1].expected, true);
 });
 
 test("a broken vendor bundle stays a fault", async () => {
