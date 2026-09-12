@@ -141,8 +141,8 @@ jobs:
 
       - name: Read the production migration history
         run: |
-          supabase migration list --linked > migration-list.txt 2>&1
-          echo "::group::supabase migration list --linked"
+          supabase migration list --linked --output-format json > migration-list.txt 2>&1
+          echo "::group::supabase migration list --linked --output-format json"
           cat migration-list.txt
           echo "::endgroup::"
 
@@ -194,8 +194,8 @@ jobs:
       # trip.
       - name: Read the production migration history
         run: |
-          supabase migration list --linked > migration-list.txt 2>&1
-          echo "::group::supabase migration list --linked"
+          supabase migration list --linked --output-format json > migration-list.txt 2>&1
+          echo "::group::supabase migration list --linked --output-format json"
           cat migration-list.txt
           echo "::endgroup::"
 
@@ -212,7 +212,7 @@ jobs:
         run: supabase db push --linked
 
       - name: Record migration history
-        run: supabase migration list --linked
+        run: supabase migration list --linked --output-format json
 
   production-backend-contract:
     if: >-

@@ -73,8 +73,19 @@ test("production migrations run from CI only for a passing database change on ma
   );
   // The listing is captured and printed before anything parses it, so a parsing
   // failure names its own cause instead of costing another CI round trip.
-  assert.match(job, /supabase migration list --linked > migration-list\.txt 2>&1/);
+  assert.match(
+    job,
+    /supabase migration list --linked --output-format json > migration-list\.txt 2>&1/,
+  );
   assert.match(job, /cat migration-list\.txt/);
+  // Every listing pins its format. Left to itself the CLI prints a table here and JSON
+  // under an agent-driven shell, so an unpinned command is read one way locally and
+  // another way on the runner.
+  const listings = workflow.match(/supabase migration list[^\n]*/g) || [];
+  assert.ok(listings.length, "the workflow lists migrations somewhere");
+  for (const listing of listings) {
+    assert.match(listing, /--output-format json/, `unpinned listing format: ${listing}`);
+  }
   assert.match(job, /uses: actions\/setup-node@v7/);
   // Only migrate-production may push migrations. The read-only preflight also holds the
   // credential, so credentials are allowed in exactly those two jobs — both gated on the

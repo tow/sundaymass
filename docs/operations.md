@@ -311,7 +311,25 @@ freshly issued token, the job will start failing a month later with an authentic
 error; the fix is a new token, or moving the job to `--db-url` with a session-pooler
 connection string, which needs a database password but never expires.
 
-Before pushing, the job pipes `migration list --linked` through
+Every listing passes `--output-format json`, and that flag is not optional. The CLI's
+default format is `text`, but it also detects when an agent is driving the shell and
+switches to JSON on its own, so the same pinned version prints a backticked ASCII table
+on the runner and JSON on a developer's machine. An unpinned command is therefore read
+one way locally and another way in CI, and a parser written against whichever shape the
+author happened to see fails only in the place it cannot be observed. To reproduce a
+runner's output exactly, ask for the format the runner would get:
+
+```sh
+npx --yes supabase@2.109.1 migration list --linked --output-format text
+```
+
+A read-only `production-preflight` job rehearses the credential, the link, the listing
+and the contract guard without waiting on the checks, so a bad secret or an unreadable
+listing fails in under a minute rather than after four. Both jobs capture the listing to
+a file and print it before parsing it, and the guard's failure quotes the bytes it was
+given; a listing holds only versions and timestamps, never credentials.
+
+Before pushing, the job pipes `migration list --linked --output-format json` through
 `check-migration-rollout.js --pending --reject-contract`: if any migration still pending
 in production is labelled `-- rollout: contract` (which the checks require for every
 migration containing a destructive statement), the job fails before `db push` and the
