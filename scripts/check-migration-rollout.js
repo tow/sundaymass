@@ -106,7 +106,11 @@ function migrationRows(listOutput) {
       // Not this JSON shape; try the next candidate, then the table below.
     }
   }
+  // The table quotes each version in backticks — `20260726070000` — and draws its rules
+  // with either box characters or ASCII pipes depending on where it runs. Strip the
+  // backticks first so one row pattern covers both.
   return text
+    .replace(/`/g, "")
     .split("\n")
     .map(line => line.match(/^\s*(\d{14})?\s*[│|]\s*(\d{14})?\s*[│|]/))
     .filter(Boolean)

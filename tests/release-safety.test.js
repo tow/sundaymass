@@ -46,6 +46,28 @@ test("migration rollout check detects operations that can break old clients", ()
   );
 });
 
+// Copied verbatim from a GitHub Actions run of `supabase migration list --linked`: the
+// CLI prints this table, with each version in backticks and ASCII rules, where a local
+// terminal or an npx invocation prints JSON. Three CI runs were lost to a regex written
+// against an imagined shape, so this sample stays byte-for-byte.
+test("pending migrations are read from the backticked table the CLI prints in CI", () => {
+  const listing = [
+    "Initialising login role...",
+    "Connecting to remote database...",
+    "",
+    "  ",
+    "   Local            | Remote           | Time (UTC)            ",
+    "  ------------------|------------------|-----------------------",
+    "   `20260812160000` | `20260812160000` | `2026-08-12 16:00:00` ",
+    "   `20260910120000` |                  | `2026-09-10 12:00:00` ",
+    "",
+  ].join("\n");
+  assert.deepEqual(pendingMigrationVersions(listing), ["20260910120000"]);
+
+  const applied = listing.replace("|                  |", "| `20260910120000` |");
+  assert.deepEqual(pendingMigrationVersions(applied), []);
+});
+
 test("pending migrations are read from the Supabase CLI table and fail closed otherwise", () => {
   const listing = [
     "",
