@@ -294,17 +294,23 @@ GitHub Actions applies tracked migrations to production itself, so the frontend 
 schema it needs ship in one run rather than depending on a manual `db push` before the
 push to `main`. The `migrate-production` job runs only on `main`, only when `supabase/`
 or `tests/integration/` changed, and only after the checks and the local
-migrated-Supabase integration suite passed. It links the project, previews with
-`db push --linked --dry-run`, applies with `db push --linked`, and prints
-`migration list --linked`. It never seeds and never resets. Its credentials live in the
-`production-database` GitHub environment:
+migrated-Supabase integration suite passed. It previews with
+`db push --db-url … --dry-run`, applies with `db push --db-url …`, and prints
+`migration list --db-url …`. It never seeds and never resets. Its one credential lives
+in the `production-database` GitHub environment:
 
-- `SUPABASE_ACCESS_TOKEN` — a personal access token from the Supabase dashboard
-  (Account → Access Tokens).
-- `SUPABASE_DB_PASSWORD` — the project's database password (Project Settings →
-  Database).
+- `SUPABASE_DB_URL` — the session-pooler connection string from the Supabase dashboard
+  (Project Settings → Database → Connection string → Session pooler), with the
+  project's database password filled in.
 
-Before pushing, the job pipes `migration list --linked` through
+The job connects straight to the database rather than linking the project, so it needs
+no Supabase personal access token. That is deliberate: the dashboard caps personal
+access tokens at a 30-day expiry, which would mean re-issuing the secret every month,
+whereas the database password does not expire. Use the session pooler rather than the
+direct `db.<ref>.supabase.co` host, which is IPv6-only and unreachable from GitHub's
+IPv4 runners.
+
+Before pushing, the job pipes `migration list --db-url …` through
 `check-migration-rollout.js --pending --reject-contract`: if any migration still pending
 in production is labelled `-- rollout: contract` (which the checks require for every
 migration containing a destructive statement), the job fails before `db push` and the

@@ -78,17 +78,34 @@ function changedMigrations(base) {
     .filter(filename => filename.endsWith(".sql"));
 }
 
-// `supabase migration list --linked` prints a LOCAL │ REMOTE │ TIME table. A row
-// with a local version and a blank remote column is what `db push` would apply.
-// Anything that fails to parse as that table is treated as "unknown", which the
-// guard must fail closed on rather than silently apply.
-function pendingMigrationVersions(listOutput) {
-  const rows = String(listOutput || "")
+// `supabase migration list` reports one row per migration, with a local version, a
+// remote version, or both. A row with a local version and no remote one is what
+// `db push` would apply. The CLI prints a LOCAL │ REMOTE │ TIME table to a terminal
+// but JSON whenever its output is redirected, which is always the case in CI, so both
+// shapes are read here. Anything that parses as neither is treated as "unknown", which
+// the guard must fail closed on rather than silently apply.
+function migrationRows(listOutput) {
+  const text = String(listOutput || "");
+  try {
+    const parsed = JSON.parse(text);
+    if (Array.isArray(parsed?.migrations)) {
+      return parsed.migrations.map(row => ({
+        local: String(row?.local || ""),
+        remote: String(row?.remote || ""),
+      }));
+    }
+  } catch {
+    // Not the JSON form; fall through to the table below.
+  }
+  return text
     .split("\n")
     .map(line => line.match(/^\s*(\d{14})?\s*[│|]\s*(\d{14})?\s*[│|]/))
     .filter(Boolean)
-    .map(([, local, remote]) => ({ local: local || "", remote: remote || "" }))
-    .filter(row => row.local || row.remote);
+    .map(([, local, remote]) => ({ local: local || "", remote: remote || "" }));
+}
+
+function pendingMigrationVersions(listOutput) {
+  const rows = migrationRows(listOutput).filter(row => row.local || row.remote);
   if (!rows.length) {
     throw new Error("could not read any migration rows from `supabase migration list` output");
   }

@@ -69,6 +69,30 @@ test("pending migrations are read from the Supabase CLI table and fail closed ot
   assert.throws(() => pendingMigrationVersions(""), /could not read any migration rows/);
 });
 
+test("pending migrations are read from the JSON the CLI emits when redirected", () => {
+  const listing = JSON.stringify({
+    migrations: [
+      { local: "20260726180000", remote: "20260726180000", time: "2026-07-26 18:00:00" },
+      { local: "20260910120000", remote: "", time: "2026-09-10 12:00:00" },
+      { local: "20260915090000", time: "2026-09-15 09:00:00" },
+    ],
+  });
+  assert.deepEqual(pendingMigrationVersions(listing), ["20260910120000", "20260915090000"]);
+
+  const applied = JSON.stringify({
+    migrations: [
+      { local: "20260726180000", remote: "20260726180000", time: "2026-07-26 18:00:00" },
+      { local: "20260910120000", remote: "20260910120000", time: "2026-09-10 12:00:00" },
+    ],
+  });
+  assert.deepEqual(pendingMigrationVersions(applied), []);
+
+  assert.throws(
+    () => pendingMigrationVersions(JSON.stringify({ migrations: [] })),
+    /could not read any migration rows/,
+  );
+});
+
 test("pending migration versions resolve to their tracked files", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "migrations-"));
   fs.writeFileSync(path.join(directory, "20260910120000_rename.sql"), "-- rollout: contract\n");
