@@ -9,9 +9,42 @@
     return values.find(value => typeof value === "string") || fallback;
   }
 
+  // Renders a thrown value that is neither an Error nor string into text worth
+  // keeping, so a caught non-Error failure (a raw string/number/plain object
+  // thrown by third-party code) isn't silently dropped from the log entry.
+  function describeValue(value) {
+    if (typeof value === "string") return value;
+    if (typeof value === "number" || typeof value === "boolean") return String(value);
+    if (value && typeof value === "object") {
+      try {
+        const json = JSON.stringify(value);
+        if (json && json !== "{}") return json;
+      } catch {
+        // circular or non-serializable value: nothing more to show
+      }
+    }
+    return "";
+  }
+
   function errorFrom(values) {
-    return values.find(value => value instanceof Error)
-      || new Error(values.filter(value => typeof value === "string").join(" ") || "Application error");
+    const direct = values.find(value => value instanceof Error);
+    if (direct) return direct;
+    // Some thrown values (DOMException from an aborted fetch, errors from
+    // another realm/bundle) carry a real message but fail `instanceof Error`.
+    // Wrap them instead of discarding the message behind a generic fallback.
+    const errorLike = values.find(value => value
+      && typeof value === "object"
+      && typeof value.message === "string"
+      && value.message);
+    if (errorLike) {
+      const wrapped = new Error(errorLike.message);
+      if (typeof errorLike.name === "string" && errorLike.name) wrapped.name = errorLike.name;
+      if (typeof errorLike.stack === "string" && errorLike.stack) wrapped.stack = errorLike.stack;
+      wrapped.cause = errorLike;
+      return wrapped;
+    }
+    const description = values.map(describeValue).filter(Boolean).join(" ");
+    return new Error(description || "Application error");
   }
 
   function error(...values) {

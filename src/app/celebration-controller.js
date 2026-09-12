@@ -160,7 +160,7 @@
         close();
         return true;
       } catch (error) {
-        logger.error(error);
+        logger.error("Could not save celebration override", error);
         value.saving = false;
         onStatus("Save failed", "error");
         emit();
@@ -186,7 +186,7 @@
         }
         return true;
       } catch (error) {
-        logger.error(error);
+        logger.error("Could not restore computed celebration", error);
         onStatus("Save failed", "error");
         return false;
       }

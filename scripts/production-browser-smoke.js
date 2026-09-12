@@ -35,13 +35,23 @@ function recordProblems(page, problems, supabaseRequests) {
   });
 }
 
-async function waitForText(page, selector, expected) {
-  await page.waitForFunction(
-    ({ selector: target, expected: text }) =>
-      document.querySelector(target)?.textContent.trim() === text,
-    { selector, expected },
-    { timeout: 15000 },
-  );
+async function waitForText(page, selector, expected, problems) {
+  try {
+    await page.waitForFunction(
+      ({ selector: target, expected: text }) =>
+        document.querySelector(target)?.textContent.trim() === text,
+      { selector, expected },
+      { timeout: 15000 },
+    );
+  } catch {
+    // A bare Playwright timeout hides the diagnosis; report the status the page
+    // actually showed together with every failed request recorded so far.
+    const actual = await page.locator(selector).textContent().catch(() => null);
+    problems.push(
+      `${selector}: expected "${expected}" but found "${(actual || "").trim() || "nothing"}" after 15s`,
+    );
+    throw new Error(problems.join("\n"));
+  }
 }
 
 async function smokeBrowser({
@@ -69,7 +79,7 @@ async function smokeBrowser({
     if (!plannerResponse?.ok()) {
       problems.push(`planner: HTTP ${plannerResponse?.status() || "no response"}`);
     }
-    await waitForText(planner, "#syncStatus", "Up to date");
+    await waitForText(planner, "#syncStatus", "Up to date", problems);
     const musicRows = await planner.locator(".music-view-row").count();
     if (musicRows !== 14) problems.push(`planner: expected 14 music rows, found ${musicRows}`);
     const listenLinks = await planner.getByRole("link", { name: /Listen/ }).count();
@@ -89,7 +99,7 @@ async function smokeBrowser({
     if (!repertoireResponse?.ok()) {
       problems.push(`repertoire: HTTP ${repertoireResponse?.status() || "no response"}`);
     }
-    await waitForText(repertoire, "#repertoireStatus", "Up to date");
+    await waitForText(repertoire, "#repertoireStatus", "Up to date", problems);
     const songCards = await repertoire.locator(".song-card").count();
     if (songCards === 0) problems.push("repertoire: no public songs rendered");
     if (await repertoire.locator("[data-edit-song]:visible").count()) {

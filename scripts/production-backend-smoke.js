@@ -39,6 +39,31 @@ async function requestJson(fetchImpl, url, options, label) {
   }
 }
 
+// PostgREST resolves an RPC by its parameter names, so a renamed parameter makes
+// the function vanish (PGRST202) or turn ambiguous (PGRST203) for the client even
+// though a same-named function still exists. Anything else — including the RPC's
+// own access guard rejecting the anonymous call — proves the signature is live.
+async function requireRpcSignature(fetchImpl, baseUrl, headers, name, body) {
+  const response = await fetchImpl(`${baseUrl}/rest/v1/rpc/${name}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+  const text = await response.text();
+  let code = "";
+  try {
+    code = JSON.parse(text)?.code || "";
+  } catch {
+    // a non-JSON body cannot be a PostgREST schema error
+  }
+  if (response.status === 404 || /^PGRST20[23]$/.test(code)) {
+    throw new Error(
+      `editor RPC contract: ${name}(${Object.keys(body).join(", ")}) `
+      + `is not in the production schema: ${text.slice(0, 300)}`,
+    );
+  }
+}
+
 async function smokeBackend({
   fetchImpl = fetch,
   url,
@@ -113,9 +138,35 @@ async function smokeBackend({
     throw new Error("public Psalm-suggestion RPC did not return an array");
   }
 
+  // The planner's public plan read and every editor write key on plan_date. Reading
+  // the column by the name the frontend uses refuses a deploy ahead of the schema.
+  const plans = await requestJson(
+    fetchImpl,
+    `${baseUrl}/rest/v1/plans?select=${encodeURIComponent("plan_date,reading_overrides,celebration_override")}&limit=1`,
+    { headers },
+    "public plan contract",
+  );
+  if (!Array.isArray(plans)) {
+    throw new Error("public plan contract did not return an array");
+  }
+  const planSongs = await requestJson(
+    fetchImpl,
+    `${baseUrl}/rest/v1/plan_songs?select=${encodeURIComponent("plan_date,part,song_id")}&limit=1`,
+    { headers },
+    "public plan song contract",
+  );
+  if (!Array.isArray(planSongs)) {
+    throw new Error("public plan song contract did not return an array");
+  }
+  await requireRpcSignature(fetchImpl, baseUrl, headers, "assign_plan_song", {
+    p_plan_date: "2000-01-02",
+    p_part: "entrance",
+    p_song_id: "00000000-0000-0000-0000-000000000000",
+  });
+
   // The Psalm RPC and the private weekly-lyric schema ship in the same transactional
   // migration. Exercising it therefore catches a frontend deploy ahead of that schema.
-  const publicValues = { songs, suggestions, psalmSuggestions };
+  const publicValues = { songs, suggestions, psalmSuggestions, plans, planSongs };
   const privateFields = privateFieldPaths(publicValues);
   if (privateFields.length) {
     throw new Error(`public backend exposed private lyric fields: ${privateFields.join(", ")}`);
@@ -133,7 +184,8 @@ async function smokeBackend({
   console.log(
     `production backend contract passed (${songs.length} song sample, `
     + `${suggestions.length} suggestion sample, `
-    + `${psalmSuggestions.length} Psalm suggestion sample)`,
+    + `${psalmSuggestions.length} Psalm suggestion sample, `
+    + `${plans.length} plan sample, assign_plan_song signature present)`,
   );
 }
 

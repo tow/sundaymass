@@ -240,6 +240,26 @@ test("Supabase repertoire mutation failures reach the caller", async () => {
   );
 });
 
+test("Supabase repertoire failures become real errors that keep their PostgREST code", async () => {
+  const { supabase } = supabaseFixture();
+  supabase.rpc = async () => ({
+    data: null,
+    error: { message: "Song not found", code: "P0001", details: null, hint: null },
+  });
+  const store = storeModule.createSupabaseStore(supabase, { songCatalog });
+
+  await assert.rejects(
+    store.updateSong("missing", { title: "Missing song" }),
+    error => {
+      assert.ok(error instanceof Error);
+      assert.equal(error.name, "PostgrestError");
+      assert.equal(error.message, "Song not found");
+      assert.equal(error.code, "P0001");
+      return true;
+    },
+  );
+});
+
 test("repertoire auth ignores a stale editor lookup after sign-out", async () => {
   const sessionResult = deferred();
   const editorResult = deferred();

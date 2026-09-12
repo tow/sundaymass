@@ -665,10 +665,12 @@ test("Supabase network failures report whether an offline copy exists", async ()
   await new Promise(resolve => setImmediate(resolve));
   unsubscribe();
 
-  assert.deepEqual(failures, [{
-    error: failure,
-    status: { offline: true, cached: true },
-  }]);
+  assert.equal(failures.length, 1);
+  assert.ok(failures[0].error instanceof Error);
+  assert.equal(failures[0].error.name, "PostgrestError");
+  assert.equal(failures[0].error.message, "TypeError: Failed to fetch");
+  assert.equal(failures[0].error.details, "TypeError: Failed to fetch");
+  assert.deepEqual(failures[0].status, { offline: true, cached: true });
 });
 
 test("a successful live load becomes the cache available to later failures", async () => {
@@ -879,4 +881,42 @@ test("Supabase editor mutations stop before making requests while offline", asyn
   await assert.rejects(store.searchSongs("Gather"), /internet connection/);
   assert.deepEqual(calls.rpcs, []);
   assert.deepEqual(calls.selects, []);
+});
+
+test("Supabase RPC failures become real errors that keep their PostgREST code", async () => {
+  const { supabase } = supabaseFixture(Promise.resolve({ data: null, error: null }));
+  supabase.rpc = async () => ({
+    data: null,
+    error: { message: "JWT expired", code: "PGRST301", details: null, hint: "" },
+  });
+  const store = storeModule.createSupabaseStore(supabase, {
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+  });
+
+  await assert.rejects(
+    store.assignSong("2026-08-02", "entrance", "song-1"),
+    error => {
+      assert.ok(error instanceof Error);
+      assert.equal(error.name, "PostgrestError");
+      assert.equal(error.message, "JWT expired");
+      assert.equal(error.code, "PGRST301");
+      assert.equal("details" in error, false);
+      assert.equal("hint" in error, false);
+      return true;
+    },
+  );
+
+  const authFailure = Object.assign(new Error("Invalid login credentials"), {
+    name: "AuthApiError",
+  });
+  supabase.auth = {
+    ...supabase.auth,
+    signInWithPassword: async () => ({ data: null, error: authFailure }),
+  };
+  await assert.rejects(
+    store.signInEditor("editor@example.org", "wrong"),
+    error => error === authFailure,
+  );
 });

@@ -24,7 +24,7 @@ test("Pages deployment skips database integration when database files are unchan
   );
   assert.match(
     workflow,
-    /production-backend-contract:[\s\S]*needs: \[check, supabase-integration\]/,
+    /production-backend-contract:[\s\S]*needs: \[check, supabase-integration, migrate-production\]/,
   );
   assert.match(
     workflow,
@@ -34,7 +34,46 @@ test("Pages deployment skips database integration when database files are unchan
     workflow,
     /needs\.supabase-integration\.result == 'skipped'/,
   );
-  assert.doesNotMatch(workflow, /secrets\.SUPABASE|supabase db push --linked/);
+  assert.match(
+    workflow,
+    /production-backend-contract:[\s\S]*needs\.migrate-production\.result == 'skipped'/,
+  );
+});
+
+test("production migrations run from CI only for a passing database change on main", () => {
+  const job = workflow.match(/migrate-production:[\s\S]*?\n  production-backend-contract:/)?.[0];
+  assert.ok(job, "migrate-production job precedes production-backend-contract");
+  assert.match(job, /github\.ref == 'refs\/heads\/main'/);
+  assert.match(job, /needs\.changes\.outputs\.database == 'true'/);
+  assert.match(job, /needs\.check\.result == 'success'/);
+  assert.match(job, /needs\.supabase-integration\.result == 'success'/);
+  assert.match(job, /needs: \[changes, check, supabase-integration\]/);
+  assert.match(job, /environment: production-database/);
+  assert.match(job, /concurrency:\s*\n\s+group: production-database\s*\n\s+cancel-in-progress: false/);
+  assert.match(job, /SUPABASE_ACCESS_TOKEN: \$\{\{ secrets\.SUPABASE_ACCESS_TOKEN \}\}/);
+  // The access token is the only credential: the CLI mints its own short-lived login
+  // role from it, so no database password is needed or held.
+  assert.doesNotMatch(job, /SUPABASE_DB_PASSWORD|SUPABASE_DB_URL/);
+  assert.match(job, /supabase link --project-ref igeeigohcupcxakmlxno/);
+  assert.match(job, /supabase db push --linked --dry-run[\s\S]*supabase db push --linked\s*\n/);
+  assert.doesNotMatch(job, /--include-seed|db reset/);
+  // Destructive (contract) migrations pending in production are refused before
+  // db push unless a manual release opted in; the guard fails closed.
+  assert.match(
+    workflow,
+    /workflow_dispatch:\s*\n\s+inputs:\s*\n\s+allow_contract_migrations:[\s\S]*?type: boolean\s*\n\s+default: false/,
+  );
+  const guard = job.match(/- name: Refuse to apply contract migrations[\s\S]*?- name: Preview pending migrations/)?.[0];
+  assert.ok(guard, "the contract guard runs before the migration preview");
+  assert.match(guard, /if: \$\{\{ !inputs\.allow_contract_migrations \}\}/);
+  assert.match(
+    guard,
+    /supabase migration list --linked\s*\n?\s*\| node scripts\/check-migration-rollout\.js --pending --reject-contract/,
+  );
+  assert.match(job, /uses: actions\/setup-node@v7/);
+  // Only the migration job may hold production credentials or push migrations.
+  const elsewhere = workflow.replace(job, "");
+  assert.doesNotMatch(elsewhere, /secrets\.SUPABASE|supabase db push/);
   assert.match(workflow, /build-pages:[\s\S]*needs: check/);
   assert.match(
     workflow,

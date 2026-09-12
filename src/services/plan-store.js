@@ -23,6 +23,20 @@ function isNetworkFailure(error) {
   );
 }
 
+// PostgREST reports failures as plain { message, details, hint, code } objects
+// (only .throwOnError() yields PostgrestError instances). Promote them to real
+// Errors so `instanceof Error` holds and the code survives into error tracking.
+function storeError(error) {
+  if (error instanceof Error) return error;
+  const failure = new Error(error?.message || "Request failed");
+  failure.name = "PostgrestError";
+  ["code", "details", "hint", "status"].forEach(key => {
+    const value = error?.[key];
+    if (value !== undefined && value !== null && value !== "") failure[key] = value;
+  });
+  return failure;
+}
+
 function emptyPlan() {
   return planData().emptyPlan();
 }
@@ -459,7 +473,7 @@ function createSupabaseStore(
       `)
       .eq("plan_date", date)
       .maybeSingle();
-    if (error) throw error;
+    if (error) throw storeError(error);
     return planDataApi.planFromRow(data);
   };
   const rpcDraft = draft => {
@@ -485,7 +499,7 @@ function createSupabaseStore(
   };
   const invokeSemantic = async body => {
     const { data, error } = await supabase.functions.invoke("semantic-songs", { body });
-    if (error) throw error;
+    if (error) throw storeError(error);
     if (data?.error) throw new Error(data.error);
     return data;
   };
@@ -571,10 +585,10 @@ function createSupabaseStore(
             membership("choir_members"),
           ]);
           if (editorResult.error && active && requestGeneration === generation) {
-            logger.warn("Could not verify editor access", editorResult.error);
+            logger.warn("Could not verify editor access", storeError(editorResult.error));
           }
           if (choirResult.error && active && requestGeneration === generation) {
-            logger.warn("Could not verify choir access", choirResult.error);
+            logger.warn("Could not verify choir access", storeError(choirResult.error));
           }
           isEditor = Boolean(editorResult.data);
           isChoirMember = !isEditor && Boolean(choirResult.data);
@@ -631,7 +645,7 @@ function createSupabaseStore(
           song_lyrics (lyrics)
         `)
         .order("title");
-      if (error) throw error;
+      if (error) throw storeError(error);
       return songCatalogApi.search((data || []).map(planDataApi.songFromRow), query);
     },
     async searchPublicSongs(query) {
@@ -653,7 +667,7 @@ function createSupabaseStore(
           suggestion_parts
         `)
         .order("title");
-      if (error) throw error;
+      if (error) throw storeError(error);
       return songCatalogApi.search((data || []).map(planDataApi.songFromRow), query);
     },
     async createSongRequest(request) {
@@ -666,7 +680,7 @@ function createSupabaseStore(
         p_plan_date: request.planDate || null,
         p_part: request.part || null,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
       return data;
     },
     async listSongRequests() {
@@ -687,7 +701,7 @@ function createSupabaseStore(
         `)
         .eq("status", "pending")
         .order("created_at", { ascending: false });
-      if (error) throw error;
+      if (error) throw storeError(error);
       return (data || []).map(row => ({
         id: row.id,
         songId: row.song_id || null,
@@ -708,7 +722,7 @@ function createSupabaseStore(
         p_request_id: requestId,
         p_status: status,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     async suggestSongs(citations, part, psalmCitation = "") {
       requireOnline();
@@ -722,7 +736,7 @@ function createSupabaseStore(
             p_part: part,
             p_limit: 3,
           });
-      if (error) throw error;
+      if (error) throw storeError(error);
       return (data || []).map(planDataApi.songFromRow);
     },
     async syncSongEmbedding(songId) {
@@ -750,7 +764,7 @@ function createSupabaseStore(
         `)
         .eq("id", songId)
         .single();
-      if (error) throw error;
+      if (error) throw storeError(error);
       return planDataApi.songFromRow(data);
     },
     async assignSong(date, part, songId) {
@@ -760,7 +774,7 @@ function createSupabaseStore(
         p_part: part,
         p_song_id: songId,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     async createAndAssignSong(date, part, draft) {
       requireOnline();
@@ -770,7 +784,7 @@ function createSupabaseStore(
         p_part: part,
         ...song.params,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
       return { id: data, ...song.value };
     },
     async updateSong(songId, draft) {
@@ -780,7 +794,7 @@ function createSupabaseStore(
         p_song_id: songId,
         ...song.params,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
       return { id: songId, ...song.value };
     },
     async clearSong(date, part) {
@@ -789,7 +803,7 @@ function createSupabaseStore(
         p_plan_date: date,
         p_part: part,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     async getWeeklyLyrics(date) {
       requireOnline();
@@ -797,7 +811,7 @@ function createSupabaseStore(
         .from("plan_song_lyrics")
         .select("plan_date,part,song_id,lyrics")
         .eq("plan_date", date);
-      if (error) throw error;
+      if (error) throw storeError(error);
       return Object.fromEntries((data || []).map(row => [row.part, {
         planDate: row.plan_date,
         part: row.part,
@@ -842,9 +856,9 @@ function createSupabaseStore(
         previousSamePartQuery,
         previousOtherPartQuery,
       ]);
-      if (currentResult.error) throw currentResult.error;
-      if (samePartResult.error) throw samePartResult.error;
-      if (otherPartResult.error) throw otherPartResult.error;
+      if (currentResult.error) throw storeError(currentResult.error);
+      if (samePartResult.error) throw storeError(samePartResult.error);
+      if (otherPartResult.error) throw storeError(otherPartResult.error);
       const map = row => row ? {
         planDate: row.plan_date,
         part: row.part,
@@ -865,7 +879,7 @@ function createSupabaseStore(
         p_song_id: songId,
         p_lyrics: lyrics,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     async clearWeeklyLyrics(date, part, songId) {
       requireOnline();
@@ -874,7 +888,7 @@ function createSupabaseStore(
         p_part: part,
         p_song_id: songId,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     async saveReadingOverride(date, slot, readingOverride) {
       requireOnline();
@@ -883,7 +897,7 @@ function createSupabaseStore(
         p_slot: slot,
         p_override: readingOverride,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     async clearReadingOverride(date, slot) {
       requireOnline();
@@ -891,7 +905,7 @@ function createSupabaseStore(
         p_plan_date: date,
         p_slot: slot || null,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     async saveCelebrationOverride(date, celebrationOverride) {
       requireOnline();
@@ -899,14 +913,14 @@ function createSupabaseStore(
         p_plan_date: date,
         p_override: celebrationOverride,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     async clearCelebrationOverride(date) {
       requireOnline();
       const { error } = await supabase.rpc("clear_celebration_override", {
         p_plan_date: date,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     async signInChoir(password) {
       requireOnline();
@@ -915,19 +929,19 @@ function createSupabaseStore(
         email: choirEmail,
         password,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     async signInEditor(email, password) {
       requireOnline();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     async signIn(email, password) {
       return this.signInEditor(email, password);
     },
     async signOut() {
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
   };
 }

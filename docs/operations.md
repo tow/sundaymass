@@ -18,11 +18,14 @@ service-role key, lyric export, or backup in the repository.
 - `.github/workflows/verify.yml` runs unit/browser/generated checks on every push and
   pull request. The slower local Supabase integration job runs only when `supabase/` or
   `tests/integration/` changes, and always for an explicit manual workflow run.
-- On `main`, the Pages build runs in parallel with the read-only production backend
-  contract smoke. Deployment waits for both, stages an explicit public artifact, and
-  publishes through the protected `github-pages` environment. A failed check,
-  database integration failure when applicable, or incompatible production schema
-  cannot deploy the frontend even though `main` itself is not branch-protected.
+- On `main`, a release that changes `supabase/` first applies its pending migrations to
+  production from the `migrate-production` job (see "Release procedure"), which runs only
+  after the local migrated-Supabase integration suite passed. The Pages build runs in
+  parallel; the read-only production backend contract smoke runs after any migration.
+  Deployment waits for all of them, stages an explicit public artifact, and publishes
+  through the protected `github-pages` environment. A failed check, database
+  integration failure, migration failure, or incompatible production schema cannot
+  deploy the frontend even though `main` itself is not branch-protected.
 - The production smoke runs once after each Pages deployment. There is no scheduled
   synthetic monitor; this installation does not need continuous availability checks.
 - Sentry browser issue and structured-log reporting is enabled with the public EU
@@ -284,24 +287,59 @@ tighten access; truncate data; or otherwise break an older client. The rollout c
 recognises these operations and refuses to label them as expand. Because installed PWA
 clients can remain cached, wait at least one full service-worker compatibility window
 after the compatible frontend release, verify current usage, and take a fresh backup
-before applying the contract migration manually.
+before releasing the contract migration with `allow_contract_migrations`. An ordinary
+push to `main` never applies one.
 
-GitHub Actions deliberately has no production Supabase credential and never mutates the
-production backend. For a release with backend changes:
+GitHub Actions applies tracked migrations to production itself, so the frontend and the
+schema it needs ship in one run rather than depending on a manual `db push` before the
+push to `main`. The `migrate-production` job runs only on `main`, only when `supabase/`
+or `tests/integration/` changed, and only after the checks and the local
+migrated-Supabase integration suite passed. It links the project, previews with
+`db push --linked --dry-run`, applies with `db push --linked`, and prints
+`migration list --linked`. It never seeds and never resets. Its one credential lives in
+the `production-database` GitHub environment:
+
+- `SUPABASE_ACCESS_TOKEN` — a Supabase personal access token (Account → Access Tokens).
+
+No database password is stored anywhere. The CLI mints a short-lived login role from
+the access token — the `Initialising login role...` line every linked command prints —
+so the token alone is enough to apply migrations.
+
+Note that the dashboard now caps newly created access tokens at a 30-day expiry, while
+tokens issued before that change do not expire. If the secret is ever replaced with a
+freshly issued token, the job will start failing a month later with an authentication
+error; the fix is a new token, or moving the job to `--db-url` with a session-pooler
+connection string, which needs a database password but never expires.
+
+Before pushing, the job pipes `migration list --linked` through
+`check-migration-rollout.js --pending --reject-contract`: if any migration still pending
+in production is labelled `-- rollout: contract` (which the checks require for every
+migration containing a destructive statement), the job fails before `db push` and the
+production schema and site stay untouched. The guard also fails when the CLI listing
+cannot be parsed, rather than assuming nothing is pending. Contract migrations are
+applied only by running the workflow manually from `main` with
+`allow_contract_migrations` ticked, after the compatibility window and a fresh backup.
+Add required reviewers to the `production-database` environment as well if that
+manual run should itself wait for an approval click. A migration that fails leaves the
+workflow red and the currently deployed site untouched, so a rerun after a corrective
+migration is the recovery path.
+
+For a release with backend changes:
 
 1. Run all local and migrated-database checks.
-2. Preview and apply the migration manually with `db push --linked --dry-run`, then
-   `db push --linked`.
+2. Push to `main`. The workflow validates the rollout phase, proves the migration on a
+   fresh local Supabase, applies it to production, then runs the backend contract.
 3. Deploy `semantic-songs` manually if its implementation changed.
-4. Run `npm run smoke:backend` against production.
-5. Push the frontend to `main`.
 
-The push then calls the public REST and suggestion RPC contracts before Pages can
+After any migration, the workflow reads the public plan, plan-song, songs, and
+suggestion contracts by the column and parameter names the frontend uses, and confirms
+the editor `assign_plan_song(p_plan_date, …)` signature exists, before Pages can
 deploy. This is the migration-forgetting gate: an incompatible production schema stops
 the workflow while the currently deployed site remains untouched. After deployment,
 the workflow opens the site in a new mobile-sized browser context and verifies the
 planner, repertoire, Supabase responses, listening links, anonymous controls, and
-lyric privacy.
+lyric privacy, reporting the status text it saw and every failed request if the
+planner or repertoire never reaches "Up to date".
 
 `npm run build` writes the generated planner entry point, repertoire page, local vendor
 bundles, per-citation reading files, icons, and content-addressed service worker. These
@@ -318,8 +356,8 @@ git push origin main
 ```
 
 The push starts the production workflow. The frontend deploy occurs only after the
-Node/browser gate, migrated-Supabase integration suite, and public production backend
-contract all pass.
+Node/browser gate, migrated-Supabase integration suite, production migration (when
+`supabase/` changed), and public production backend contract all pass.
 
 To run the same read-only production checks from a workstation:
 

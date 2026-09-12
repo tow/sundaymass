@@ -91,7 +91,7 @@ async function loadSongs(){
     repertoireStatus.textContent="Up to date";
     render();
   }catch(error){
-    appLogger.error(error);
+    appLogger.error("Could not load repertoire",error);
     repertoireStatus.textContent="Could not load repertoire";
   }
 }
@@ -123,7 +123,7 @@ function openEditor(song,{review=false}={}){
 async function loadForEditing(id,{review=false}={}){
   repertoireStatus.textContent="Loading song…";
   try{ openEditor(await store.getSong(id),{review}); repertoireStatus.textContent="Up to date"; }
-  catch(error){ appLogger.error(error); repertoireStatus.textContent="Could not load song"; }
+  catch(error){ appLogger.error("Could not load song",error); repertoireStatus.textContent="Could not load song"; }
 }
 async function refreshIndex(){
   indexButton.disabled=true;
@@ -154,7 +154,7 @@ async function refreshIndex(){
     }
     await loadIndexStatus();
   }catch(error){
-    appLogger.error(error);
+    appLogger.error("Could not refresh song index",error);
     indexStatus.textContent="Indexing failed. You can safely try again.";
   }finally{ indexButton.disabled=false; }
 }
@@ -198,7 +198,7 @@ window.repertoireApp={
     });
     loadSongs();
   },
-  fail(error){ appLogger.error(error); repertoireStatus.textContent="Could not connect"; },
+  fail(error){ appLogger.error("Could not connect",error); repertoireStatus.textContent="Could not connect"; },
 };
 
 repertoireSearch.addEventListener("input",()=>{
@@ -243,7 +243,7 @@ async function loadLyrics(id){
     lyricsViewerDialog.showModal();
     repertoireStatus.textContent="Up to date";
   }catch(error){
-    appLogger.error(error);
+    appLogger.error("Could not load lyrics",error);
     repertoireStatus.textContent="Could not load lyrics";
   }
 }
@@ -271,7 +271,7 @@ songEditorForm.addEventListener("submit",async event=>{
     songEditorDialog.close();
     await loadSongs();
   }catch(error){
-    appLogger.error(error);
+    appLogger.error("Could not save song",error);
     songEditorError.textContent=error.message||"Could not save song.";
   }
   finally{saveSong.disabled=false;}

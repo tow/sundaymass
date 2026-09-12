@@ -55,6 +55,20 @@ const draftParams = (draft, songCatalog = globalThis.window?.SongCatalog) => {
   };
 };
 
+// PostgREST reports failures as plain { message, details, hint, code } objects
+// (only .throwOnError() yields PostgrestError instances). Promote them to real
+// Errors so `instanceof Error` holds and the code survives into error tracking.
+function storeError(error) {
+  if (error instanceof Error) return error;
+  const failure = new Error(error?.message || "Request failed");
+  failure.name = "PostgrestError";
+  ["code", "details", "hint", "status"].forEach(key => {
+    const value = error?.[key];
+    if (value !== undefined && value !== null && value !== "") failure[key] = value;
+  });
+  return failure;
+}
+
 const authState = (user, { isChoirMember = false, isEditor = false } = {}) => {
   const accessLevel = isEditor ? "editor" : isChoirMember ? "choir" : "public";
   return Object.freeze({
@@ -154,7 +168,7 @@ function createSupabaseStore(
 ) {
   const invoke = async body => {
     const { data, error } = await supabase.functions.invoke("semantic-songs", { body });
-    if (error) throw error;
+    if (error) throw storeError(error);
     if (data?.error) throw new Error(data.error);
     return data;
   };
@@ -164,7 +178,7 @@ function createSupabaseStore(
         .from("songs")
         .select("id,title,youtube_video_id,authors,copyright_owner,copyright_year,source,responsorial_book,responsorial_number,responsorial_citations,in_repertoire,suggestion_parts,suggestion_proposed_parts,suggestion_proposal_confidence,suggestion_proposal_reason,suggestion_review_status")
         .order("title");
-      if (error) throw error;
+      if (error) throw storeError(error);
       return (data || []).map(mapSong);
     },
     async getSong(songId) {
@@ -173,19 +187,19 @@ function createSupabaseStore(
         .select("id,title,youtube_video_id,authors,copyright_owner,copyright_year,source,responsorial_book,responsorial_number,responsorial_citations,in_repertoire,suggestion_parts,suggestion_proposed_parts,suggestion_proposal_confidence,suggestion_proposal_reason,suggestion_review_status,song_lyrics(lyrics)")
         .eq("id", songId)
         .single();
-      if (error) throw error;
+      if (error) throw storeError(error);
       return mapSong(data);
     },
     async createSong(draft) {
       const song = draftParams(draft, songCatalog);
       const { data, error } = await supabase.rpc("create_song", song.params);
-      if (error) throw error;
+      if (error) throw storeError(error);
       return { id: data, ...song.value };
     },
     async updateSong(songId, draft) {
       const song = draftParams(draft, songCatalog);
       const { error } = await supabase.rpc("update_song", { p_song_id: songId, ...song.params });
-      if (error) throw error;
+      if (error) throw storeError(error);
       return { id: songId, ...song.value };
     },
     async reviewSongSuggestionParts(songId, suggestionParts) {
@@ -193,7 +207,7 @@ function createSupabaseStore(
         p_song_id: songId,
         p_suggestion_parts: suggestionParts || [],
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     subscribeAuth(callback) {
       let active = true;
@@ -213,10 +227,10 @@ function createSupabaseStore(
             membership("choir_members"),
           ]);
           if (editorResult.error && active && requestGeneration === generation) {
-            logger.warn("Could not verify editor access", editorResult.error);
+            logger.warn("Could not verify editor access", storeError(editorResult.error));
           }
           if (choirResult.error && active && requestGeneration === generation) {
-            logger.warn("Could not verify choir access", choirResult.error);
+            logger.warn("Could not verify choir access", storeError(choirResult.error));
           }
           isEditor = Boolean(editorResult.data);
           isChoirMember = !isEditor && Boolean(choirResult.data);
@@ -251,18 +265,18 @@ function createSupabaseStore(
         email: choirEmail,
         password,
       });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     async signInEditor(email, password) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     async signIn(email, password) {
       return this.signInEditor(email, password);
     },
     async signOut() {
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) throw storeError(error);
     },
     semanticStatus: () => invoke({ action: "status" }),
     syncSongs: songIds => invoke({ action: "sync-songs", songIds }),

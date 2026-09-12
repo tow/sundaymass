@@ -43,7 +43,7 @@
           );
         },
         (error, meta = {}) => {
-          logger.error(error);
+          logger.error("Could not load plan", error);
           if (meta.offline || !isOnline()) {
             const hasCachedPlan = showingCachedPlan || meta.cached;
             onStatus(

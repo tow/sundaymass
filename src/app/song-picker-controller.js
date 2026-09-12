@@ -142,7 +142,7 @@
           || request !== searchRequest
           || !value.open
         ) return true;
-        logger.error(error);
+        logger.error("Could not search songs", error);
         value.searchResults = [];
         value.selectedSong = null;
         value.searchStatus = "error";
