@@ -68,7 +68,7 @@ test("production migrations run from CI only for a passing database change on ma
   assert.match(guard, /if: \$\{\{ !inputs\.allow_contract_migrations \}\}/);
   assert.match(
     guard,
-    /supabase migration list --linked\s*\n?\s*\| node scripts\/check-migration-rollout\.js --pending --reject-contract/,
+    /supabase migration list --linked 2>&1\s*\n?\s*\| node scripts\/check-migration-rollout\.js --pending --reject-contract/,
   );
   assert.match(job, /uses: actions\/setup-node@v7/);
   // Only the migration job may hold production credentials or push migrations.
