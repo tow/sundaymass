@@ -93,6 +93,10 @@ test("pending migrations are read from the JSON the CLI emits when redirected", 
   );
 });
 
+// Verbatim shape of `supabase migration list --linked 2>&1` as the CLI actually emits
+// it: two progress lines, then a JSON document whose `migrations` array is followed by
+// a further `message` field. An earlier fix matched only up to the array's closing
+// bracket and so read nothing from real output while passing a tidier invented sample.
 test("pending migrations are read from JSON interleaved with CLI progress output", () => {
   const listing = [
     "Initialising login role...",
@@ -102,6 +106,7 @@ test("pending migrations are read from JSON interleaved with CLI progress output
         { local: "20260726180000", remote: "20260726180000", time: "2026-07-26 18:00:00" },
         { local: "20260910120000", remote: "", time: "2026-09-10 12:00:00" },
       ],
+      message: "Migrations listed",
     }),
     "",
   ].join("\n");

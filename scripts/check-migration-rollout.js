@@ -89,7 +89,9 @@ function changedMigrations(base) {
 // closed on rather than silently apply.
 function migrationRows(listOutput) {
   const text = String(listOutput || "");
-  const documents = [text, text.match(/\{\s*"migrations"\s*:\s*\[[\s\S]*?\]\s*\}/)?.[0]];
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  const documents = [text, start >= 0 && end > start ? text.slice(start, end + 1) : ""];
   for (const document of documents) {
     if (!document) continue;
     try {
