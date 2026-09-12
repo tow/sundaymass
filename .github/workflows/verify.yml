@@ -116,7 +116,7 @@ jobs:
       group: production-database
       cancel-in-progress: false
     env:
-      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -131,20 +131,23 @@ jobs:
         with:
           version: 2.109.1
 
+      - name: Link the production project
+        run: supabase link --project-ref igeeigohcupcxakmlxno
+
       - name: Refuse to apply contract migrations without an explicit release
         if: ${{ !inputs.allow_contract_migrations }}
         run: >-
-          supabase migration list --db-url "$SUPABASE_DB_URL"
+          supabase migration list --linked
           | node scripts/check-migration-rollout.js --pending --reject-contract
 
       - name: Preview pending migrations
-        run: supabase db push --db-url "$SUPABASE_DB_URL" --dry-run
+        run: supabase db push --linked --dry-run
 
       - name: Apply pending migrations
-        run: supabase db push --db-url "$SUPABASE_DB_URL"
+        run: supabase db push --linked
 
       - name: Record migration history
-        run: supabase migration list --db-url "$SUPABASE_DB_URL"
+        run: supabase migration list --linked
 
   production-backend-contract:
     if: >-

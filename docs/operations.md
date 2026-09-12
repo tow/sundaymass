@@ -294,23 +294,24 @@ GitHub Actions applies tracked migrations to production itself, so the frontend 
 schema it needs ship in one run rather than depending on a manual `db push` before the
 push to `main`. The `migrate-production` job runs only on `main`, only when `supabase/`
 or `tests/integration/` changed, and only after the checks and the local
-migrated-Supabase integration suite passed. It previews with
-`db push --db-url … --dry-run`, applies with `db push --db-url …`, and prints
-`migration list --db-url …`. It never seeds and never resets. Its one credential lives
-in the `production-database` GitHub environment:
+migrated-Supabase integration suite passed. It links the project, previews with
+`db push --linked --dry-run`, applies with `db push --linked`, and prints
+`migration list --linked`. It never seeds and never resets. Its one credential lives in
+the `production-database` GitHub environment:
 
-- `SUPABASE_DB_URL` — the session-pooler connection string from the Supabase dashboard
-  (Project Settings → Database → Connection string → Session pooler), with the
-  project's database password filled in.
+- `SUPABASE_ACCESS_TOKEN` — a Supabase personal access token (Account → Access Tokens).
 
-The job connects straight to the database rather than linking the project, so it needs
-no Supabase personal access token. That is deliberate: the dashboard caps personal
-access tokens at a 30-day expiry, which would mean re-issuing the secret every month,
-whereas the database password does not expire. Use the session pooler rather than the
-direct `db.<ref>.supabase.co` host, which is IPv6-only and unreachable from GitHub's
-IPv4 runners.
+No database password is stored anywhere. The CLI mints a short-lived login role from
+the access token — the `Initialising login role...` line every linked command prints —
+so the token alone is enough to apply migrations.
 
-Before pushing, the job pipes `migration list --db-url …` through
+Note that the dashboard now caps newly created access tokens at a 30-day expiry, while
+tokens issued before that change do not expire. If the secret is ever replaced with a
+freshly issued token, the job will start failing a month later with an authentication
+error; the fix is a new token, or moving the job to `--db-url` with a session-pooler
+connection string, which needs a database password but never expires.
+
+Before pushing, the job pipes `migration list --linked` through
 `check-migration-rollout.js --pending --reject-contract`: if any migration still pending
 in production is labelled `-- rollout: contract` (which the checks require for every
 migration containing a destructive statement), the job fails before `db push` and the

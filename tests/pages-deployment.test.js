@@ -50,14 +50,12 @@ test("production migrations run from CI only for a passing database change on ma
   assert.match(job, /needs: \[changes, check, supabase-integration\]/);
   assert.match(job, /environment: production-database/);
   assert.match(job, /concurrency:\s*\n\s+group: production-database\s*\n\s+cancel-in-progress: false/);
-  assert.match(job, /SUPABASE_DB_URL: \$\{\{ secrets\.SUPABASE_DB_URL \}\}/);
-  // The job connects straight to the database, so no Supabase personal access token
-  // (which the dashboard expires after 30 days) is involved.
-  assert.doesNotMatch(job, /SUPABASE_ACCESS_TOKEN|supabase link/);
-  assert.match(
-    job,
-    /supabase db push --db-url "\$SUPABASE_DB_URL" --dry-run[\s\S]*supabase db push --db-url "\$SUPABASE_DB_URL"\s*\n/,
-  );
+  assert.match(job, /SUPABASE_ACCESS_TOKEN: \$\{\{ secrets\.SUPABASE_ACCESS_TOKEN \}\}/);
+  // The access token is the only credential: the CLI mints its own short-lived login
+  // role from it, so no database password is needed or held.
+  assert.doesNotMatch(job, /SUPABASE_DB_PASSWORD|SUPABASE_DB_URL/);
+  assert.match(job, /supabase link --project-ref igeeigohcupcxakmlxno/);
+  assert.match(job, /supabase db push --linked --dry-run[\s\S]*supabase db push --linked\s*\n/);
   assert.doesNotMatch(job, /--include-seed|db reset/);
   // Destructive (contract) migrations pending in production are refused before
   // db push unless a manual release opted in; the guard fails closed.
@@ -70,7 +68,7 @@ test("production migrations run from CI only for a passing database change on ma
   assert.match(guard, /if: \$\{\{ !inputs\.allow_contract_migrations \}\}/);
   assert.match(
     guard,
-    /supabase migration list --db-url "\$SUPABASE_DB_URL"\s*\n?\s*\| node scripts\/check-migration-rollout\.js --pending --reject-contract/,
+    /supabase migration list --linked\s*\n?\s*\| node scripts\/check-migration-rollout\.js --pending --reject-contract/,
   );
   assert.match(job, /uses: actions\/setup-node@v7/);
   // Only the migration job may hold production credentials or push migrations.
