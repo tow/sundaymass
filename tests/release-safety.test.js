@@ -93,6 +93,26 @@ test("pending migrations are read from the JSON the CLI emits when redirected", 
   );
 });
 
+test("pending migrations are read from JSON interleaved with CLI progress output", () => {
+  const listing = [
+    "Initialising login role...",
+    "Connecting to remote database...",
+    JSON.stringify({
+      migrations: [
+        { local: "20260726180000", remote: "20260726180000", time: "2026-07-26 18:00:00" },
+        { local: "20260910120000", remote: "", time: "2026-09-10 12:00:00" },
+      ],
+    }),
+    "",
+  ].join("\n");
+  assert.deepEqual(pendingMigrationVersions(listing), ["20260910120000"]);
+
+  assert.throws(
+    () => pendingMigrationVersions("Initialising login role...\nConnecting to remote database...\n"),
+    /could not read any migration rows/,
+  );
+});
+
 test("pending migration versions resolve to their tracked files", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "migrations-"));
   fs.writeFileSync(path.join(directory, "20260910120000_rename.sql"), "-- rollout: contract\n");

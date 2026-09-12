@@ -81,21 +81,28 @@ function changedMigrations(base) {
 // `supabase migration list` reports one row per migration, with a local version, a
 // remote version, or both. A row with a local version and no remote one is what
 // `db push` would apply. The CLI prints a LOCAL │ REMOTE │ TIME table to a terminal
-// but JSON whenever its output is redirected, which is always the case in CI, so both
-// shapes are read here. Anything that parses as neither is treated as "unknown", which
-// the guard must fail closed on rather than silently apply.
+// and JSON when its output is redirected, and it interleaves progress lines such as
+// `Initialising login role...` with either shape, on whichever stream it pleases. The
+// caller therefore feeds both streams in, and all three cases are read here: a clean
+// JSON document, a JSON document buried in progress output, and the table. Anything
+// that parses as none of them is treated as "unknown", which the guard must fail
+// closed on rather than silently apply.
 function migrationRows(listOutput) {
   const text = String(listOutput || "");
-  try {
-    const parsed = JSON.parse(text);
-    if (Array.isArray(parsed?.migrations)) {
-      return parsed.migrations.map(row => ({
-        local: String(row?.local || ""),
-        remote: String(row?.remote || ""),
-      }));
+  const documents = [text, text.match(/\{\s*"migrations"\s*:\s*\[[\s\S]*?\]\s*\}/)?.[0]];
+  for (const document of documents) {
+    if (!document) continue;
+    try {
+      const parsed = JSON.parse(document);
+      if (Array.isArray(parsed?.migrations)) {
+        return parsed.migrations.map(row => ({
+          local: String(row?.local || ""),
+          remote: String(row?.remote || ""),
+        }));
+      }
+    } catch {
+      // Not this JSON shape; try the next candidate, then the table below.
     }
-  } catch {
-    // Not the JSON form; fall through to the table below.
   }
   return text
     .split("\n")

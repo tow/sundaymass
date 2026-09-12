@@ -137,7 +137,7 @@ jobs:
       - name: Refuse to apply contract migrations without an explicit release
         if: ${{ !inputs.allow_contract_migrations }}
         run: >-
-          supabase migration list --linked
+          supabase migration list --linked 2>&1
           | node scripts/check-migration-rollout.js --pending --reject-contract
 
       - name: Preview pending migrations
