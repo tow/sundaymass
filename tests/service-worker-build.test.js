@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const vm = require("node:vm");
 const {
   buildAssetVersions,
   versionShellAssets,
@@ -39,7 +40,7 @@ test("the generated service-worker cache version represents its complete app she
   assert.match(template, /@@CACHE_VERSION@@/);
   assert.match(template, /@@APP_SHELL@@/);
   assert.match(generated, new RegExp(`st-james-mass-planner-${version}`));
-  assert.doesNotMatch(generated, /@@(?:CACHE_VERSION|APP_SHELL)@@/);
+  assert.doesNotMatch(generated, /@@(?:CACHE_VERSION|APP_SHELL|APP_BUILDS)@@/);
   assets.forEach(asset => assert.ok(
     generated.includes(JSON.stringify(asset)),
     `${asset} must be in the generated app shell`,
@@ -88,4 +89,56 @@ test("authorized export and monitoring bundles are fetched only when requested",
     "./vendor/jspdf.js",
     "./vendor/sentry.js",
   ].forEach(asset => assert.equal(assets.includes(asset), false));
+});
+
+const pageBuild = html => html.match(/MASS_PLANNER_BUILD\s*=\s*"([0-9a-f]+)"/)[1];
+
+// Pages left open across a deployment cannot be changed, so the worker the browser installs
+// over them is what reloads them.
+test("a new worker reloads every open app page that cannot update itself", async () => {
+  const listeners = {};
+  const navigations = [];
+  const announcements = [];
+  function page(url, answers) {
+    return {
+      url,
+      postMessage(message, [port]) {
+        announcements.push([url, message]);
+        if (answers) port.postMessage("updating");
+      },
+      async navigate(target) { navigations.push(target); },
+    };
+  }
+  const scope = "https://tow.github.io/sundaymass/";
+  const pages = [
+    page(`${scope}?date=2026-09-13`, true),
+    page(`${scope}?date=2026-08-17`, false),
+    page(`${scope}repertoire.html`, false),
+    page(`${scope}about.html`, false),
+  ];
+  const context = vm.createContext({
+    URL,
+    MessageChannel,
+    setTimeout: callback => setTimeout(callback, 50),
+    clearTimeout,
+    caches: { keys: async () => [], delete: async () => true },
+    self: {
+      registration: { scope },
+      addEventListener: (type, listener) => { listeners[type] = listener; },
+      clients: { claim: async () => {}, matchAll: async () => pages },
+    },
+  });
+  vm.runInContext(read("service-worker.js"), context);
+
+  let activation;
+  listeners.activate({ waitUntil: promise => { activation = promise; } });
+  await activation;
+
+  const builds = [pageBuild(read("index.html")), pageBuild(read("repertoire.html"))];
+  assert.equal(announcements.length, 3, "only planner and repertoire pages are asked");
+  announcements.forEach(([, message]) => {
+    assert.equal(message.type, "deployment");
+    assert.deepEqual([...message.builds], builds);
+  });
+  assert.deepEqual(navigations, [`${scope}?date=2026-08-17`, `${scope}repertoire.html`]);
 });

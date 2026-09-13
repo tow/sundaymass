@@ -618,13 +618,19 @@ cache targets.
 
 An open page keeps running the code it loaded, and an installed app resumed from the
 background is not reloaded by the browser, so after a deployment that page can call RPCs
-or request asset files that no longer exist. Each time the planner or repertoire page is
-shown again it asks the browser to check for a new worker. When one takes control, the
-page fetches its own URL, compares the deployed `MASS_PLANNER_BUILD` with its own, and
-reloads if they differ, unless a dialog is open or a form field has focus, in which case
-it waits until the page is next shown. Pages loaded before this behaviour shipped still
-need one manual reload. In Sentry, an old `app_build` tag reporting after a deploy is a
-device that has not yet reloaded.
+or request asset files that no longer exist. Its code cannot be changed, but the browser
+still installs each new worker over it: whenever the site is opened on that device, and
+otherwise when a controlled page makes a request more than a day after the last check.
+On activation, the new worker sends each open planner and repertoire page the builds it
+serves and waits three seconds for an answer. Pages built with the current
+`pwa-controller.js` answer and reload themselves if their build is not listed, waiting
+while a dialog is open or a form field has focus. Any page that does not answer is
+navigated to a fresh load of its URL: that covers every page from before this behaviour
+shipped, and also a current page suspended in the background, which loses anything
+unsaved in an open dialog. Current pages also ask for a new worker each time they are
+shown again. In Sentry, an old `app_build` tag still reporting well after a deploy is a
+device whose browser has not yet installed the new worker, or does not support
+`WindowClient.navigate()`.
 
 When a device appears stale:
 
