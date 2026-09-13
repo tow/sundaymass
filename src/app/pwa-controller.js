@@ -2,14 +2,66 @@
 (function (global) {
   "use strict";
 
+  // An open page keeps running the code it loaded, and a phone resuming the installed app
+  // from the background does not reload it. A later deployment can remove the database
+  // calls and asset files that code relies on, so a page left open for weeks fails in
+  // ways no fix can reach. So each time the page is shown again, ask for the current
+  // service worker. A new worker taking control means a deployment happened, but not
+  // that this page is behind it (one opened just before the worker finished installing
+  // already runs the new code), so compare builds before reloading, and never reload
+  // over an open dialog or a focused field, where it would discard work.
   function registerServiceWorker({
     window,
     navigator,
     location,
+    document,
+    fetch = window.fetch?.bind(window),
+    build = window.MASS_PLANNER_BUILD,
     url = "./service-worker.js",
   }) {
-    if (!navigator.serviceWorker || location.protocol === "file:") return false;
-    window.addEventListener("load", () => navigator.serviceWorker.register(url));
+    const serviceWorker = navigator.serviceWorker;
+    if (!serviceWorker || location.protocol === "file:") return false;
+    let registration = null;
+    let deploymentSeen = false;
+
+    function editing() {
+      if (document.querySelector("dialog[open]")) return true;
+      const active = document.activeElement;
+      return Boolean(active && (active.isContentEditable
+        || ["INPUT", "SELECT", "TEXTAREA"].includes(active.tagName)));
+    }
+
+    // The service worker answers same-origin requests from its cache first, and its
+    // freshly installed cache can still hold the page it is replacing, so ask past it.
+    async function deployedBuild() {
+      const response = await fetch(`${location.pathname}?build-check=${Date.now()}`, {
+        cache: "no-store",
+      });
+      if (!response.ok) return null;
+      return (await response.text()).match(/MASS_PLANNER_BUILD\s*=\s*"([0-9a-f]+)"/)?.[1] || null;
+    }
+
+    function reloadIfBehind() {
+      if (!deploymentSeen || document.visibilityState !== "visible" || editing()) return;
+      deploymentSeen = false;
+      deployedBuild().then(current => {
+        if (current && current !== build) location.reload();
+      }, () => {
+        deploymentSeen = true;
+      });
+    }
+
+    serviceWorker.addEventListener("controllerchange", () => {
+      deploymentSeen = true;
+      reloadIfBehind();
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState !== "visible") return;
+      reloadIfBehind();
+      registration?.update().catch(() => {});
+    });
+    window.addEventListener("load", () => serviceWorker.register(url)
+      .then(value => { registration = value || null; }));
     return true;
   }
 

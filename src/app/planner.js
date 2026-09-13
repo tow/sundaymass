@@ -673,4 +673,5 @@ PwaController.registerServiceWorker({
   window,
   navigator,
   location,
+  document,
 });

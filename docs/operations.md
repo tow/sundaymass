@@ -616,13 +616,23 @@ with page-specific offline fallbacks; other same-origin assets return the cached
 response while refreshing it. Planner, repertoire, and About navigations have distinct
 cache targets.
 
+An open page keeps running the code it loaded, and an installed app resumed from the
+background is not reloaded by the browser, so after a deployment that page can call RPCs
+or request asset files that no longer exist. Each time the planner or repertoire page is
+shown again it asks the browser to check for a new worker. When one takes control, the
+page fetches its own URL, compares the deployed `MASS_PLANNER_BUILD` with its own, and
+reloads if they differ, unless a dialog is open or a form field has focus, in which case
+it waits until the page is next shown. Pages loaded before this behaviour shipped still
+need one manual reload. In Sentry, an old `app_build` tag reporting after a deploy is a
+device that has not yet reloaded.
+
 When a device appears stale:
 
 1. confirm the expected commit is actually published by Pages;
 2. fetch `service-worker.js` and compare its cache name with the local generated file;
 3. reload while online so the browser can discover and activate the worker;
-4. close and reopen the installed app if an existing page still holds old in-memory
-   state; and
+4. switch away from the installed app and back, or close and reopen it, if an existing
+   page still holds old in-memory state; and
 5. only as a last resort, clear the site's storage/service worker and revisit online.
 
 Clearing site storage also removes cached public plans and may remove the persisted Auth

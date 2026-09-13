@@ -300,4 +300,4 @@ AuthController.create({
 }).start();
 indexButton.addEventListener("click",refreshIndex);
 
-PwaController.registerServiceWorker({window,navigator,location});
+PwaController.registerServiceWorker({window,navigator,location,document});
