@@ -1,9 +1,14 @@
-// Owns the selected Sunday and the effective live plan without touching the DOM.
+// Owns the selected day and the effective live plan without touching the DOM.
 (function (global) {
   "use strict";
 
+  // A Sunday is placed by its lectionary cycle; any other day by its rank.
+  function dayMeta(day, cycleName) {
+    return `${day.s} · ${day.r && day.r !== "Sunday" ? day.r : cycleName(day.c)}`;
+  }
+
   function summaryValues({
-    sunday,
+    day,
     celebration,
     celebrationOverride = false,
     formatLong,
@@ -11,34 +16,35 @@
   }) {
     const baseMeta = celebrationOverride
       ? `${celebration.rank || "Celebration"} · normally ${formatLong(celebration.sourceDate)}`
-      : `${sunday.s} · ${cycleName(sunday.c)}`;
+      : dayMeta(day, cycleName);
     return {
       day: celebration.name,
-      meta: `${formatLong(sunday.d)}  ·  ${baseMeta}`,
-      date: sunday.d,
+      meta: `${formatLong(day.d)}  ·  ${baseMeta}`,
+      date: day.d,
     };
   }
 
   function create({
-    initialSunday,
+    initialDay,
     readingSlots,
     scheduledCelebration,
     formatLong,
     cycleName,
   }) {
-    if (!initialSunday?.d) throw new Error("An initial Sunday is required");
-    let selectedSunday = initialSunday;
+    if (!initialDay?.d) throw new Error("An initial day is required");
+    let selectedDay = initialDay;
     let selectedSongs = {};
     let selectedReadings = {};
     let selectedCelebration = null;
 
-    function setSunday(value) {
-      if (!value?.d || !value?.l) throw new Error("A resolved Sunday is required");
-      selectedSunday = value;
+    // Holy Saturday resolves with an empty lectionary key: a day with no Mass readings.
+    function setDay(value) {
+      if (!value?.d || typeof value.l !== "string") throw new Error("A resolved day is required");
+      selectedDay = value;
     }
 
     function current() {
-      return selectedSunday;
+      return selectedDay;
     }
 
     function songs() {
@@ -66,12 +72,12 @@
     }
 
     function values() {
-      const sunday = current();
+      const day = current();
       const celebration = baseCelebration();
       const citationFor = slot => displayedCitation(slot);
       return {
         ...summaryValues({
-          sunday,
+          day,
           celebration,
           celebrationOverride: Boolean(selectedCelebration),
           formatLong,
@@ -142,7 +148,7 @@
       readingOverrides,
       reset,
       restoreCelebration,
-      setSunday,
+      setDay,
       setReadingOverride,
       songs,
       updateSong,
@@ -151,7 +157,7 @@
     });
   }
 
-  const api = Object.freeze({ create, summaryValues });
+  const api = Object.freeze({ create, dayMeta, summaryValues });
   global.PlannerState = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window === "undefined" ? globalThis : window);

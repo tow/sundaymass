@@ -5,7 +5,7 @@ const PlannerState = require("../src/app/planner-state.js");
 
 function state() {
   return PlannerState.create({
-    initialSunday: {
+    initialDay: {
       d: "2026-07-26",
       s: "Ordinary Time",
       c: "A",
@@ -31,9 +31,9 @@ function state() {
   });
 }
 
-test("planner state resolves the selected Sunday and effective readings", () => {
+test("planner state resolves the selected day and effective readings", () => {
   const value = state();
-  value.setSunday({
+  value.setDay({
     d: "2026-08-02",
     s: "Ordinary Time",
     c: "A",
@@ -64,7 +64,7 @@ test("planner state resolves the selected Sunday and effective readings", () => 
 
 test("summary values are shared by stateful and command-line booklet exports", () => {
   assert.deepEqual(PlannerState.summaryValues({
-    sunday: { d: "2026-08-30", s: "Ordinary Time", c: "A" },
+    day: { d: "2026-08-30", s: "Ordinary Time", c: "A" },
     celebration: { name: "22nd Sunday in Ordinary Time" },
     formatLong: value => `Long ${value}`,
     cycleName: value => `Year ${value}`,
@@ -123,3 +123,17 @@ test("song and reading mutations update only their intended state", () => {
   assert.deepEqual(value.songs(), {});
   assert.equal(value.celebrationOverride(), null);
 });
+
+test("a weekday is described by its rank and Holy Saturday can be selected", () => {
+  assert.deepEqual(PlannerState.summaryValues({
+    day: { d: "2026-10-30", s: "Ordinary Time", c: "A", r: "Weekday" },
+    celebration: { name: "Friday of the 30th Week in Ordinary Time" },
+    formatLong: value => `Long ${value}`,
+    cycleName: value => `Year ${value}`,
+  }).meta, "Long 2026-10-30  ·  Ordinary Time · Weekday");
+  const value = state();
+  value.setDay({ d: "2026-04-04", s: "Holy Week", c: "A", l: "", r: "Triduum" });
+  assert.equal(value.current().d, "2026-04-04");
+  assert.throws(() => value.setDay({ d: "2026-04-05" }), /A resolved day is required/);
+});
+

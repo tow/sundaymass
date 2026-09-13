@@ -26,7 +26,7 @@ song_requests (pending choir suggestions) --0..1--> songs
 reading_embeddings (one row per canonical citation)
 ```
 
-A calendar Sunday and its computed readings do not need a database row. A `plans` row
+A calendar date and its computed readings do not need a database row. A `plans` row
 is created when an editor first persists shared data for that date.
 
 ## Tables

@@ -1,23 +1,26 @@
-// Pure navigation over Sundays calculated by the liturgical-calendar domain.
+// Pure navigation over days calculated by the liturgical-calendar domain. A chosen date is
+// planned exactly; the arrows step between Sundays, the usual way into a plan.
 (function (global) {
   "use strict";
 
   function create(calendar) {
-    if (!calendar?.upcomingSunday || !calendar?.nearestSunday
-      || !calendar?.previousSunday || !calendar?.nextSunday) {
+    if (!calendar?.upcomingSunday || !calendar?.resolveDay || !calendar?.addDays) {
       throw new Error("A runtime liturgical calendar is required");
     }
 
     function selectionFor(iso) {
-      return calendar.nearestSunday(iso);
+      return calendar.resolveDay(iso);
     }
 
-    function previousSunday(sunday) {
-      return calendar.previousSunday(sunday?.d);
+    // The Sunday before a day, or the one before that when the day is itself a Sunday.
+    function previousSunday(day) {
+      const earlier = calendar.addDays(day?.d, -7);
+      return earlier ? calendar.upcomingSunday(earlier) : null;
     }
 
-    function nextSunday(sunday) {
-      return calendar.nextSunday(sunday?.d);
+    function nextSunday(day) {
+      const later = calendar.addDays(day?.d, 1);
+      return later ? calendar.upcomingSunday(later) : null;
     }
 
     return Object.freeze({

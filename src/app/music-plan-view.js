@@ -58,7 +58,7 @@
           + copyrightWarning(choice)
           + '</div><div class="music-editor-actions assigned">'
           + `<button type="button" data-song-action="choose" data-part="${escapeHtml(part.key)}">Change</button>`
-          + `<button type="button" data-song-action="lyrics" data-part="${escapeHtml(part.key)}">Lyrics for this Sunday</button>`
+          + `<button type="button" data-song-action="lyrics" data-part="${escapeHtml(part.key)}">Lyrics for this Mass</button>`
           + (customizedParts?.has(part.key)
             ? '<span class="weekly-lyrics-badge">Weekly lyrics customized</span>'
             : "")
@@ -102,7 +102,7 @@
         mode: isEditor ? "edit" : "view",
         intro: isEditor
           ? "Choose or add a song for each part."
-          : "Selections for this Sunday appear here as they are chosen.",
+          : "Selections for this Mass appear here as they are chosen.",
         editorHelpHidden: !isEditor,
       });
     }

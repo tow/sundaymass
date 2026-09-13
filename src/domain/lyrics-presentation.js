@@ -379,7 +379,7 @@
     pptx.layout = "LAYOUT_WIDE";
     pptx.author = "St James the Apostle 6pm Mass";
     pptx.company = "Datamediate Oy";
-    pptx.subject = "Lyrics for the selected Sunday Mass";
+    pptx.subject = "Lyrics for the selected Mass";
     pptx.title = `${celebration} — ${date}`;
     pptx.lang = "en-GB";
     pptx.theme = {
@@ -395,7 +395,7 @@
       fontFace: "Aptos", fontSize: 12, bold: true,
       charSpacing: 1.5, color: COLOURS[SLIDE_LAYOUT.kicker.color], margin: 0,
     });
-    cover.addText(celebration || "Sunday Mass", {
+    cover.addText(celebration || "Mass", {
       ...pptxBox(SLIDE_LAYOUT.coverTitle),
       fontFace: "Aptos Display", fontSize: 38, bold: true,
       color: COLOURS[SLIDE_LAYOUT.coverTitle.color], margin: 0, breakLine: false,
@@ -542,12 +542,12 @@
     const doc = new JsPDF({ orientation: "landscape", unit: "pt", format: [PAGE.w, PAGE.h] });
     doc.setProperties({
       title: `${celebration} — ${date}`,
-      subject: "Lyrics for the selected Sunday Mass",
+      subject: "Lyrics for the selected Mass",
       author: "St James the Apostle 6pm Mass",
       creator: "Datamediate Oy",
     });
 
-    const title = celebration || "Sunday Mass";
+    const title = celebration || "Mass";
     paintPdfBackground(doc);
     paintPdfText(doc, "ST JAMES THE APOSTLE · 6PM MASS", SLIDE_LAYOUT.kicker, {
       style: "bold", size: 12, charSpace: 1.5,

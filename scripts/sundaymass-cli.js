@@ -115,11 +115,11 @@ function assertUuid(value, label = "song ID") {
 
 function assertDate(value) {
   if (!DATE_PATTERN.test(String(value || ""))) {
-    throw new Error("Sunday must use YYYY-MM-DD");
+    throw new Error("Date must use YYYY-MM-DD");
   }
   const date = new Date(`${value}T00:00:00Z`);
   if (Number.isNaN(date.valueOf()) || date.toISOString().slice(0, 10) !== value) {
-    throw new Error("Sunday is not a valid date");
+    throw new Error("Date is not a valid date");
   }
   return value;
 }
@@ -433,12 +433,12 @@ function buildBooklet({ sunday, rows, output }) {
   require("../src/app/lyrics-booklet-controller.js");
   const { jsPDF } = require("jspdf");
 
-  const resolvedSunday = global.LiturgicalCalendar.resolveSunday(sunday);
-  if (!resolvedSunday) throw new Error(`${sunday} is not a Sunday`);
+  const resolvedDay = global.LiturgicalCalendar.resolveDay(sunday);
+  if (!resolvedDay) throw new Error(`${sunday} is not a valid date`);
   const celebrationOverride = rows[0].celebration_override || null;
   const values = global.PlannerState.summaryValues({
-    sunday: resolvedSunday,
-    celebration: celebrationOverride || { name: resolvedSunday.n },
+    day: resolvedDay,
+    celebration: celebrationOverride || { name: resolvedDay.n },
     celebrationOverride: Boolean(celebrationOverride),
     formatLong,
     cycleName: cycle => `Year ${cycle}`,

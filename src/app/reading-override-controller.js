@@ -28,7 +28,7 @@
           onSuccess();
           onStatus("Saved", "saved");
         } else {
-          onStatus("Saved for previous Sunday", "saved");
+          onStatus("Saved for the previously selected date", "saved");
         }
         return true;
       } catch (error) {

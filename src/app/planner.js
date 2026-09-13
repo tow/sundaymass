@@ -43,6 +43,7 @@
 @@LECTIONARY_CATALOG_JS@@
 @@READING_SELECTION_JS@@
 const SUNDAY_LECTIONARY = @@SUNDAY_LECTIONARY@@;
+const WEEKDAY_LECTIONARY = @@WEEKDAY_LECTIONARY@@;
 const CELEBRATIONS = @@CELEBRATIONS@@;
 const COMMONS = @@COMMONS@@;
 const READING_ASSETS = @@READING_ASSETS@@;
@@ -55,6 +56,7 @@ const MUSIC_PARTS=MassMusicParts.parts;
 const lectionary=LectionaryCatalog.create({
   liturgicalCalendar:LiturgicalCalendar,
   sundayLectionary:SUNDAY_LECTIONARY,
+  weekdayLectionary:WEEKDAY_LECTIONARY,
   celebrations:CELEBRATIONS,
   commons:COMMONS,
   readings:READING_ASSETS,
@@ -109,7 +111,7 @@ const openModal=modalController.open;
 modalController.start();
 const calendarNavigation=CalendarNavigation.create(LiturgicalCalendar);
 const initialUrlDate=DateUrlState.read(location);
-const initialUrlSelection=initialUrlDate
+const initialUrlDay=initialUrlDate
   ? calendarNavigation.selectionFor(initialUrlDate)
   : null;
 const songForm=SongForm.create({
@@ -141,10 +143,10 @@ let readingLoadGeneration = 0;
 const failedReadingTexts = new Set();
 
 const plannerState=PlannerState.create({
-  initialSunday:initialUrlSelection?.sunday
+  initialDay:initialUrlDay
     || calendarNavigation.upcomingSunday(new Date().toISOString().slice(0,10)),
   readingSlots:READING_SLOTS,
-  scheduledCelebration:sunday=>lectionary.scheduledCelebration(sunday),
+  scheduledCelebration:day=>lectionary.scheduledCelebration(day),
   formatLong:fmtLong,
   cycleName,
 });
@@ -331,7 +333,8 @@ function refresh(){
   loadDisplayedReadings();
   today.hidden=current().d===upcomingSunday().d;
   const v = vals();
-  if(!v.gospel && !v.first){ warn.style.display="block"; warn.textContent="This day has proper readings that are not in the dataset. Please confirm them against the parish Ordo."; }
+  if(current().n==="Holy Saturday"){ warn.style.display="block"; warn.textContent="No Mass is celebrated on Holy Saturday by day. The Easter Vigil is planned on Easter Sunday."; }
+  else if(!v.gospel && !v.first){ warn.style.display="block"; warn.textContent="This day has proper readings that are not in the dataset. Please confirm them against the parish Ordo."; }
   else{ warn.style.display="none"; }
 }
 
@@ -565,25 +568,24 @@ AuthController.create({
   logger:appLogger,
 }).start();
 
-// pick nearest Sunday to a chosen date
-function selectSunday(sunday,{updateUrl=true,replaceUrl=false}={}){
+function selectDay(day,{updateUrl=true,replaceUrl=false}={}){
   weeklyLyricsController.close();
-  plannerState.setSunday(sunday);
+  plannerState.setDay(day);
   weeklyLyricsParts=new Set();
-  if(updateUrl) DateUrlState.write(window,sunday.d,{replace:replaceUrl});
+  if(updateUrl) DateUrlState.write(window,day.d,{replace:replaceUrl});
   refresh();
   subscribeToCurrentPlan();
 }
 
 function goToDate(iso,{updateUrl=true,replaceUrl=false}={}){
-  const selection=calendarNavigation.selectionFor(iso);
-  if(!selection){
+  const day=calendarNavigation.selectionFor(iso);
+  if(!day){
     warn.style.display="block";
     warn.textContent="Choose a valid date.";
     return;
   }
   warn.style.display="none";
-  selectSunday(selection.sunday,{updateUrl,replaceUrl});
+  selectDay(day,{updateUrl,replaceUrl});
 }
 
 const lyricsPptxController=LyricsPptxController.create({
@@ -641,13 +643,13 @@ function upcomingSunday(){
   return calendarNavigation.upcomingSunday(new Date().toISOString().slice(0,10));
 }
 prev.addEventListener("click", ()=>{
-  selectSunday(calendarNavigation.previousSunday(current()));
+  selectDay(calendarNavigation.previousSunday(current()));
 });
 next.addEventListener("click", ()=>{
-  selectSunday(calendarNavigation.nextSunday(current()));
+  selectDay(calendarNavigation.nextSunday(current()));
 });
 document.getElementById("today").addEventListener("click", ()=>{
-  selectSunday(upcomingSunday());
+  selectDay(upcomingSunday());
 });
 date.addEventListener("change", ()=>{ if(date.value) goToDate(date.value); else syncDateControl(); });
 window.addEventListener("popstate",()=>{

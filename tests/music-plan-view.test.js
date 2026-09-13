@@ -53,7 +53,7 @@ test("public rendering includes safe metadata but never private lyrics", () => {
 
   assert.equal(result.mode, "view");
   assert.equal(result.editorHelpHidden, true);
-  assert.match(result.intro, /Selections for this Sunday/);
+  assert.match(result.intro, /Selections for this Mass/);
   assert.match(result.html, /All &lt;Are&gt; Welcome/);
   assert.match(result.html, /Marty Haugen/);
   assert.doesNotMatch(result.html, /Authors:/);
@@ -96,7 +96,7 @@ test("editor rendering offers weekly lyrics only for selected slots", () => {
   assert.match(result.intro, /Choose or add a song/);
   assert.match(result.html, /data-song-action="choose" data-part="entrance">Change<\/button>/);
   assert.match(result.html, /data-song-action="choose" data-part="communion">Choose song<\/button>/);
-  assert.match(result.html, /data-song-action="lyrics" data-part="entrance">Lyrics for this Sunday/);
+  assert.match(result.html, /data-song-action="lyrics" data-part="entrance">Lyrics for this Mass/);
   assert.equal((result.html.match(/data-song-action=/g) || []).length, 3);
   assert.doesNotMatch(result.html, /data-song-action="edit"/);
   assert.doesNotMatch(result.html, /data-song-action="remove"/);

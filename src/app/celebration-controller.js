@@ -155,7 +155,7 @@
           onSaved(payload);
           onStatus("Saved", "saved");
         } else {
-          onStatus("Saved for previous Sunday", "saved");
+          onStatus("Saved for the previously selected date", "saved");
         }
         close();
         return true;
@@ -172,7 +172,7 @@
       const store = getStore();
       if (!isEditor() || !store) return false;
       if (!confirmRestore(
-        "Restore the computed Sunday celebration and all of its readings?",
+        "Restore the calendar's celebration for this date and all of its readings?",
       )) return false;
       const date = getDate();
       onStatus("Saving…", "");
@@ -182,7 +182,7 @@
           onRestored();
           onStatus("Saved", "saved");
         } else {
-          onStatus("Saved for previous Sunday", "saved");
+          onStatus("Saved for the previously selected date", "saved");
         }
         return true;
       } catch (error) {

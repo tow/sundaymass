@@ -603,11 +603,14 @@ test("public reading and navigation workflow excludes private lyrics", async () 
   assert.equal(await page.locator("#dateDisplay").textContent(), beforeDate);
   assert.equal(new URL(page.url()).searchParams.get("date"), "2026-08-02");
 
+  // A chosen weekday is planned as that day, with its own readings.
   await page.locator("#date").fill("2126-07-27");
   await page.locator("#date").dispatchEvent("change");
-  assert.equal(await page.locator("#date").inputValue(), "2126-07-28");
-  assert.match(await page.locator("#dateDisplay").textContent(), /28 Jul 2126/);
-  assert.equal(new URL(page.url()).searchParams.get("date"), "2126-07-28");
+  assert.equal(await page.locator("#date").inputValue(), "2126-07-27");
+  assert.match(await page.locator("#dateDisplay").textContent(), /27 Jul 2126/);
+  assert.equal(new URL(page.url()).searchParams.get("date"), "2126-07-27");
+  assert.match(await page.locator("#resolved").innerText(), /Saturday of the 16th Week in Ordinary Time[\s\S]*Ordinary Time · Weekday/);
+  assert.match(await page.locator("#readingSummary").innerText(), /Jeremiah 7:1-11[\s\S]*Matthew 13:24-30/);
   await page.locator("#prev").click();
   assert.equal(await page.locator("#date").inputValue(), "2126-07-21");
   await page.locator("#next").click();

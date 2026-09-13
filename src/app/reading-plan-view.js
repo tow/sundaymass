@@ -12,7 +12,8 @@
         ? escapeHtml(
           `${celebration.rank || "Celebration"} · normally ${formatLong(celebration.sourceDate)}`,
         )
-        : `${escapeHtml(sunday.s)} · ${escapeHtml(cycleName(sunday.c))}`;
+        // A Sunday is placed by its lectionary cycle; any other day by its rank.
+        : `${escapeHtml(sunday.s)} · ${escapeHtml(sunday.r && sunday.r !== "Sunday" ? sunday.r : cycleName(sunday.c))}`;
 
       return `<span class="selected-date">${escapeHtml(formatLong(sunday.d))}</span>`
         + `<span class="selected-day">${escapeHtml(celebration.name)}`

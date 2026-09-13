@@ -656,7 +656,7 @@ When a device appears stale:
 Clearing site storage also removes cached public plans and may remove the persisted Auth
 session. Do not recommend it as the first refresh step.
 
-An unvisited Sunday cannot have a shared plan offline. The expected message is
+An unvisited date cannot have a shared plan offline. The expected message is
 “Offline — no saved plan,” not a blank success state.
 
 ## Incident priorities

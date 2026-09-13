@@ -24,7 +24,7 @@
   </header>
 
   <div class="card planner-card">
-    <label class="fld sr-only" for="date">Choose a Sunday</label>
+    <label class="fld sr-only" for="date">Choose a date</label>
     <div class="daterow">
       <button class="nav" id="prev" title="Previous Sunday" aria-label="Previous Sunday"><span class="nav-desktop">‹ Previous</span><span class="nav-mobile" aria-hidden="true">‹</span></button>
       <div class="date-slot"><span class="date-display" id="dateDisplay" aria-hidden="true"></span><input type="date" id="date"></div>
@@ -41,7 +41,7 @@
     <div class="music-head">
       <div>
         <h2 id="musicTitle">Music choices</h2>
-        <p id="musicIntro">Selections for this Sunday appear here as they are chosen.</p>
+        <p id="musicIntro">Selections for this Mass appear here as they are chosen.</p>
       </div>
       <button class="practice-all" id="practiceAll" type="button">
         <span>Listen to all</span>
@@ -92,7 +92,7 @@
       <div class="celebration-current" id="celebrationCurrent"></div>
       <div class="celebration-actions">
         <button class="primary" type="button" id="chooseCelebration">Use another celebration</button>
-        <button type="button" id="restoreCelebration" hidden>Restore Sunday</button>
+        <button type="button" id="restoreCelebration" hidden>Restore calendar readings</button>
       </div>
       <div class="fine-tune-head">
         <h3>Fine-tune individual readings</h3>
@@ -238,7 +238,7 @@
       <button class="reading-dialog-close" id="songEditorClose" type="button" aria-label="Close">×</button>
     </div>
     <div class="reading-dialog-body song-editor-body">
-      <p class="song-shared-warning" id="songSharedWarning" hidden>Changes apply to every Sunday that uses this song.</p>
+      <p class="song-shared-warning" id="songSharedWarning" hidden>Changes apply to every Mass that uses this song.</p>
       <label for="songTitle">Song title <span>Required</span></label>
       <input id="songTitle" type="text" maxlength="200" required>
       <label for="songYoutube">YouTube link <span>Optional</span></label>
@@ -327,14 +327,14 @@
       <button class="reading-dialog-close" id="weeklyLyricsClose" type="button" aria-label="Close">×</button>
     </div>
     <div class="reading-dialog-body weekly-lyrics-body">
-      <p class="weekly-custom-notice" id="weeklyLyricsCustomNotice" hidden>This Sunday currently uses edited lyrics.</p>
+      <p class="weekly-custom-notice" id="weeklyLyricsCustomNotice" hidden>This Mass currently uses edited lyrics.</p>
       <section class="weekly-previous" id="weeklyLyricsPrevious" hidden>
         <div><strong id="weeklyLyricsPreviousMeta"></strong></div>
         <button type="button" id="weeklyLyricsPreviousButton">Reuse most recent edit</button>
       </section>
       <p class="weekly-psalm-fallback" id="weeklyPsalmFallback" hidden>This Psalm needs a response and at least one verse before it can be sectioned.</p>
       <div id="weeklyLyricsTextEditor">
-        <label for="weeklyLyricsTextarea">Lyrics for this Sunday</label>
+        <label for="weeklyLyricsTextarea">Lyrics for this Mass</label>
         <textarea id="weeklyLyricsTextarea" rows="18"></textarea>
       </div>
       <div class="weekly-psalm-editor" id="weeklyPsalmEditor" hidden>
@@ -346,7 +346,7 @@
     <div class="reading-dialog-actions weekly-lyrics-actions">
       <button type="button" id="weeklyLyricsReset">Use canonical</button>
       <button type="button" id="weeklyLyricsCancel">Cancel</button>
-      <button class="primary" type="submit" id="weeklyLyricsSave">Save for this Sunday</button>
+      <button class="primary" type="submit" id="weeklyLyricsSave">Save for this Mass</button>
     </div>
   </form>
 </dialog>

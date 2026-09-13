@@ -226,7 +226,7 @@ test("a late Sunday assignment never changes the newly selected plan", async () 
   }]);
   assert.deepEqual(state.assigned, []);
   assert.deepEqual(state.statuses.at(-1), {
-    text: "Saved for previous Sunday",
+    text: "Saved for the previously selected date",
     kind: "saved",
   });
 });

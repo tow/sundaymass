@@ -150,15 +150,16 @@ planner code must never contain lyrics.
 
 ## Principal runtime flows
 
-### Public Sunday view
+### Public plan view
 
-1. Calendar logic computes the selected Sunday and its standard celebration.
+1. Calendar logic computes the selected date's standard celebration. A date chosen in the
+   picker or the URL is planned exactly; the arrows step between Sundays.
 2. The plan store emits a cached public plan first when one exists.
 3. Supabase loads the shared `plans` row and its public `plan_songs`/`songs` metadata.
 4. A celebration snapshot or individual reading overrides are applied over the
    computed lectionary.
 5. Separate music and reading views render the effective plan.
-6. Realtime invalidation reloads the currently selected Sunday.
+6. Realtime invalidation reloads the currently selected date.
 
 ### Editor mutation
 
@@ -258,7 +259,7 @@ valid passage outside the offered Ordo options.
 
 The authorized export controller derives the selected songs in canonical Mass order,
 deduplicates IDs only for private fetching, calls `getSong` for each distinct song, and
-loads the selected Sunday's private lyric overrides.
+loads the selected date's private lyric overrides.
 That existing store operation is independently protected by editor membership and
 `song_lyrics` RLS. The controller refuses export when any selected song has no lyrics.
 

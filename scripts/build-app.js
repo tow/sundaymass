@@ -97,6 +97,7 @@ const plannerScriptUrl = writeAppScript({
   },
   values: {
     "@@SUNDAY_LECTIONARY@@": read(path.join(GENERATED_DATA, "sunday-lectionary.json")).trimEnd(),
+    "@@WEEKDAY_LECTIONARY@@": read(path.join(GENERATED_DATA, "weekday-lectionary.json")).trimEnd(),
     "@@CELEBRATIONS@@": read(path.join(GENERATED_DATA, "celebrations.json")).trimEnd(),
     "@@COMMONS@@": read(path.join(GENERATED_DATA, "commons.json")).trimEnd(),
     "@@READING_ASSETS@@": read("data/readings/manifest.json").trimEnd(),

@@ -223,7 +223,7 @@ test("a late celebration save cannot replace the newly selected Sunday", async (
   assert.deepEqual(state.saved, []);
   assert.equal(state.controller.state().open, false);
   assert.deepEqual(state.statuses.at(-1), {
-    text: "Saved for previous Sunday",
+    text: "Saved for the previously selected date",
     kind: "saved",
   });
 });

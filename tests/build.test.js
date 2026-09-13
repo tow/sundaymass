@@ -62,6 +62,7 @@ test("the generated planner contains no unresolved build tokens", () => {
     "@@ASSET_URL_JS@@",
     "@@READING_TEXT_STORE_JS@@",
     "@@SUNDAY_LECTIONARY@@",
+    "@@WEEKDAY_LECTIONARY@@",
     "@@CELEBRATIONS@@",
     "@@COMMONS@@",
     "@@READING_ASSETS@@",

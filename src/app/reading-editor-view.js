@@ -28,7 +28,7 @@
       const celebrationChanged = Boolean(celebrationOverride);
       const celebrationMeta = celebrationChanged
         ? `${celebration.rank || "Celebration"} · normally ${formatLong(celebration.sourceDate)}`
-        : `${formatLong(sunday.d)} · ${sunday.s} · ${cycleName(sunday.c)}`;
+        : `${formatLong(sunday.d)} · ${sunday.s} · ${sunday.r && sunday.r !== "Sunday" ? sunday.r : cycleName(sunday.c)}`;
       const changedSlots = readingSlots.filter(slot => readingOverrides[slot.key]);
       const readingsHtml = readingSlots.map(slot => {
         const adjusted = Boolean(readingOverrides[slot.key]);

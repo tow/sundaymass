@@ -510,7 +510,7 @@
 
   function layoutMasthead(measure, { celebration, meta, date } = {}) {
     requireMeasure(measure);
-    const titleLines = wrapText(measure, celebration || "Sunday Mass", {
+    const titleLines = wrapText(measure, celebration || "Mass", {
       font: "times", style: "bold", size: MASTHEAD.titleSize, width: TEXT_WIDTH,
     });
     const metaLines = wrapText(measure, meta || date || "", {
@@ -702,8 +702,8 @@
     const doc = new JsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     const sheets = impose(logicalPages({ ...options, measure: measurer(doc) }));
     doc.setProperties({
-      title: `${options.celebration || "Sunday Mass"} — congregational song booklet`,
-      subject: "Congregational song booklet for the selected Sunday Mass",
+      title: `${options.celebration || "Mass"} — congregational song booklet`,
+      subject: "Congregational song booklet for the selected Mass",
       author: "St James the Apostle 6pm Mass",
       creator: "Datamediate Oy",
     });
