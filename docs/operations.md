@@ -264,6 +264,15 @@ and column already point at readable deployed code. If source maps later stop be
 publicly hosted, add an authenticated CI upload before deployment rather than placing a
 Sentry auth token in browser configuration.
 
+Each page reports its release as `planner@<build>` or `repertoire@<build>`, where the
+build is the page's `MASS_PLANNER_BUILD` digest. After a successful Pages deployment, the
+`sentry-release` job registers both releases in the `datamediate-jc/sundaymass` project,
+attaches the deployed commit, and records a production deploy, using the
+`SENTRY_AUTH_TOKEN` repository secret (an organization token). A failure there leaves the
+site deployed; events still arrive, only without commit and deploy information. A digest
+is unchanged when a commit does not touch that page's code, so one release can carry
+several deploys.
+
 ## Normal release
 
 Every new migration begins with one of these exact headers:

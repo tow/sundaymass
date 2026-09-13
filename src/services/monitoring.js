@@ -43,12 +43,19 @@
   const moduleUrl = global.AppAssets?.url("vendor/sentry.js")
     || new URL("./vendor/sentry.js", document.baseURI).href;
 
+  // Named `planner@<build>` or `repertoire@<build>`: the deploy workflow creates the release
+  // under the same name and attaches the commit it was built from.
+  const surface = document.body?.dataset?.surface || "unknown";
+  const release = global.MASS_PLANNER_BUILD
+    ? `${surface}@${global.MASS_PLANNER_BUILD}`
+    : undefined;
+
   import(moduleUrl)
     .then(Sentry => {
       Sentry.init({
         dsn: config.dsn,
         environment: config.environment || "production",
-        release: global.MASS_PLANNER_BUILD || undefined,
+        release,
         sendDefaultPii: false,
         enableLogs: true,
         enableMetrics: false,
@@ -71,9 +78,9 @@
           return {
             ...log,
             attributes: {
-              app_surface: document.body?.dataset?.surface || "unknown",
+              app_surface: surface,
               app_build: global.MASS_PLANNER_BUILD || "unknown",
-              "sentry.release": global.MASS_PLANNER_BUILD || "unknown",
+              "sentry.release": release || "unknown",
               "sentry.environment": config.environment || "production",
               ...errorAttributes(log.attributes),
             },
@@ -86,7 +93,7 @@
         if (level === "error") {
           Sentry.captureException(error, {
             tags: {
-              app_surface: document.body?.dataset?.surface || "unknown",
+              app_surface: surface,
               app_build: global.MASS_PLANNER_BUILD || "unknown",
               ...(detail.error_code ? { error_code: detail.error_code } : {}),
             },

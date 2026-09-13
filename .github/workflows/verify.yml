@@ -246,6 +246,9 @@ jobs:
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     needs: check
     runs-on: ubuntu-latest
+    outputs:
+      planner: ${{ steps.page-builds.outputs.planner }}
+      repertoire: ${{ steps.page-builds.outputs.repertoire }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -264,6 +267,10 @@ jobs:
 
       - name: Stage explicit Pages surface
         run: npm run stage:pages
+
+      - name: Read the build each page reports to Sentry
+        id: page-builds
+        run: node scripts/page-builds.js >> "$GITHUB_OUTPUT"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
@@ -294,6 +301,39 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+  # Each page reports its release as `<surface>@<build>`. Registering those releases once
+  # they are live ties every Sentry event to the commit it was built from and marks the
+  # deploy. It runs after deployment, so a Sentry outage cannot hold back the site.
+  sentry-release:
+    needs: [build-pages, deploy-pages]
+    if: always() && needs.deploy-pages.result == 'success'
+    runs-on: ubuntu-latest
+    env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: datamediate-jc
+      SENTRY_PROJECT: sundaymass
+    steps:
+      - name: Check out repository with history for commit association
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Register the planner release
+        uses: getsentry/action-release@v3
+        with:
+          release: planner@${{ needs.build-pages.outputs.planner }}
+          environment: production
+          set_commits: auto
+          ignore_missing: true
+
+      - name: Register the repertoire release
+        uses: getsentry/action-release@v3
+        with:
+          release: repertoire@${{ needs.build-pages.outputs.repertoire }}
+          environment: production
+          set_commits: auto
+          ignore_missing: true
 
   production-smoke:
     needs: deploy-pages

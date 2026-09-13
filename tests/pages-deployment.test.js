@@ -174,3 +174,23 @@ test("every service-worker precache asset is part of the deployed Pages surface"
       );
     });
 });
+
+// Sentry groups events by the release string the page sends, so the workflow must register
+// exactly that string, and only for a deployment that actually went live.
+test("each deployed page's Sentry release is registered under the name the page reports", () => {
+  const job = workflow.slice(workflow.indexOf("  sentry-release:"), workflow.indexOf("  production-smoke:"));
+  const monitoring = fs.readFileSync(path.join(root, "src/services/monitoring.js"), "utf8");
+
+  assert.match(job, /needs: \[build-pages, deploy-pages\]/);
+  assert.match(job, /if: always\(\) && needs\.deploy-pages\.result == 'success'/);
+  assert.match(job, /SENTRY_AUTH_TOKEN: \$\{\{ secrets\.SENTRY_AUTH_TOKEN \}\}/);
+  assert.match(job, /fetch-depth: 0/);
+  assert.match(job, /release: planner@\$\{\{ needs\.build-pages\.outputs\.planner \}\}/);
+  assert.match(job, /release: repertoire@\$\{\{ needs\.build-pages\.outputs\.repertoire \}\}/);
+  assert.match(monitoring, /`\$\{surface\}@\$\{global\.MASS_PLANNER_BUILD\}`/);
+
+  const { pageBuilds } = require("../scripts/page-builds.js");
+  assert.deepEqual(Object.keys(pageBuilds()), ["planner", "repertoire"]);
+  assert.match(workflow, /node scripts\/page-builds\.js >> "\$GITHUB_OUTPUT"/);
+});
+

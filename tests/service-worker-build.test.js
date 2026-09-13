@@ -91,8 +91,6 @@ test("authorized export and monitoring bundles are fetched only when requested",
   ].forEach(asset => assert.equal(assets.includes(asset), false));
 });
 
-const pageBuild = html => html.match(/MASS_PLANNER_BUILD\s*=\s*"([0-9a-f]+)"/)[1];
-
 // Pages left open across a deployment cannot be changed, so the worker the browser installs
 // over them is what reloads them.
 test("a new worker reloads every open app page that cannot update itself", async () => {
@@ -134,7 +132,7 @@ test("a new worker reloads every open app page that cannot update itself", async
   listeners.activate({ waitUntil: promise => { activation = promise; } });
   await activation;
 
-  const builds = [pageBuild(read("index.html")), pageBuild(read("repertoire.html"))];
+  const builds = Object.values(require("../scripts/page-builds.js").pageBuilds());
   assert.equal(announcements.length, 3, "only planner and repertoire pages are asked");
   announcements.forEach(([, message]) => {
     assert.equal(message.type, "deployment");
