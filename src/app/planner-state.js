@@ -7,10 +7,13 @@
     return `${day.s} · ${day.r && day.r !== "Sunday" ? day.r : cycleName(day.c)}`;
   }
 
+  // A named Mass ("Filipino Mass") takes the title, and the celebration moves into the
+  // details so it is still said.
   function summaryValues({
     day,
     celebration,
     celebrationOverride = false,
+    occasionLabel = "",
     formatLong,
     cycleName,
   }) {
@@ -18,8 +21,8 @@
       ? `${celebration.rank || "Celebration"} · normally ${formatLong(celebration.sourceDate)}`
       : dayMeta(day, cycleName);
     return {
-      day: celebration.name,
-      meta: `${formatLong(day.d)}  ·  ${baseMeta}`,
+      day: occasionLabel || celebration.name,
+      meta: `${formatLong(day.d)}  ·  ${occasionLabel ? `${celebration.name} · ` : ""}${baseMeta}`,
       date: day.d,
     };
   }
@@ -36,6 +39,7 @@
     let selectedSongs = {};
     let selectedReadings = {};
     let selectedCelebration = null;
+    let selectedOccasionLabel = "";
 
     // Holy Saturday resolves with an empty lectionary key: a day with no Mass readings.
     function setDay(value) {
@@ -59,6 +63,14 @@
       return selectedCelebration;
     }
 
+    function occasionLabel() {
+      return selectedOccasionLabel;
+    }
+
+    function setOccasionLabel(value) {
+      selectedOccasionLabel = value || "";
+    }
+
     function baseCelebration() {
       return selectedCelebration || scheduledCelebration(current());
     }
@@ -80,6 +92,7 @@
           day,
           celebration,
           celebrationOverride: Boolean(selectedCelebration),
+          occasionLabel: selectedOccasionLabel,
           formatLong,
           cycleName,
         }),
@@ -94,12 +107,14 @@
       selectedSongs = {};
       selectedReadings = {};
       selectedCelebration = null;
+      selectedOccasionLabel = "";
     }
 
     function applyPlan(plan = {}) {
       selectedSongs = plan.songs || {};
       selectedReadings = plan.readingOverrides || {};
       selectedCelebration = plan.celebrationOverride || null;
+      selectedOccasionLabel = plan.occasionLabel || "";
     }
 
     function useCelebration(value) {
@@ -145,10 +160,12 @@
       computedCitation,
       current,
       displayedCitation,
+      occasionLabel,
       readingOverrides,
       reset,
       restoreCelebration,
       setDay,
+      setOccasionLabel,
       setReadingOverride,
       songs,
       updateSong,

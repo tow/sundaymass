@@ -32,6 +32,9 @@
       <button class="nav" id="today">Jump to upcoming Sunday</button>
     </div>
     <div class="resolved" id="resolved"></div>
+    <div class="occasion-edit" id="occasionEdit" hidden>
+      <button type="button" id="openOccasionDialog">Name this Mass</button>
+    </div>
     <div class="warn" id="warn" style="display:none"></div>
 
     <div class="reading-summary" id="readingSummary"></div>
@@ -347,6 +350,29 @@
       <button type="button" id="weeklyLyricsReset">Use canonical</button>
       <button type="button" id="weeklyLyricsCancel">Cancel</button>
       <button class="primary" type="submit" id="weeklyLyricsSave">Save for this Mass</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="reading-dialog occasion-dialog" id="occasionDialog">
+  <form class="reading-dialog-form" id="occasionForm">
+    <div class="reading-dialog-head">
+      <div>
+        <div class="eyebrow">This date</div>
+        <h2>Name this Mass</h2>
+        <p id="occasionContext"></p>
+      </div>
+      <button class="reading-dialog-close" id="occasionClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="reading-dialog-body">
+      <label for="occasionInput">Name</label>
+      <input id="occasionInput" type="text" maxlength="80" autocomplete="off" placeholder="Filipino Mass">
+      <p class="reading-validation" id="occasionError" role="alert"></p>
+    </div>
+    <div class="reading-dialog-actions">
+      <button type="button" id="occasionClear" hidden>Remove name</button>
+      <button type="button" id="occasionCancel">Cancel</button>
+      <button class="primary" type="submit" id="occasionSave">Save</button>
     </div>
   </form>
 </dialog>

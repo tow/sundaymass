@@ -1327,3 +1327,86 @@ test("a service-worker-controlled offline reload shows the saved public plan", a
 
   await context.close();
 });
+
+test("an editor names a weekday Mass and a visitor sees the name without any lyrics", async () => {
+  const { context, page } = await plannerPage(
+    browser,
+    server,
+    { width: 390, height: 844 },
+  );
+  await page.evaluate(() => {
+    const plans = {};
+    const listeners = {};
+    let authCallback = () => {};
+    const planFor = date => plans[date] || {
+      songs: {
+        entrance: {
+          id: "weekday-entrance",
+          title: "Weekday Entrance",
+          authors: "Composer",
+          lyrics: "PRIVATE LYRICS MUST NEVER RENDER",
+        },
+      },
+      readingOverrides: {},
+      celebrationOverride: null,
+      occasionLabel: "",
+    };
+    window.__signOut = () => authCallback({ user: null, isEditor: false, canReadLyrics: false });
+    window.massPlanApp.connect({
+      subscribeAuth(callback) {
+        authCallback = callback;
+        callback({ user: { id: "editor" }, isEditor: true, canReadLyrics: true });
+        return () => {};
+      },
+      subscribePlan(date, onValue) {
+        listeners[date] = onValue;
+        onValue(planFor(date));
+        return () => delete listeners[date];
+      },
+      saveOccasionLabel(date, label) {
+        window.__savedLabel = { date, label };
+        plans[date] = { ...planFor(date), occasionLabel: label };
+        listeners[date]?.(plans[date]);
+        return Promise.resolve();
+      },
+    });
+  });
+
+  await page.locator("#date").fill("2026-10-30");
+  await page.locator("#date").dispatchEvent("change");
+  assert.match(await page.locator("#resolved").innerText(), /Friday of the 30th Week in Ordinary Time/);
+  assert.equal(await page.locator("#openOccasionDialog").innerText(), "Name this Mass");
+
+  await page.locator("#openOccasionDialog").click();
+  await page.locator("#occasionInput").fill("  Filipino Mass ");
+  assert.equal(
+    await page.evaluate(() => document.activeElement?.id),
+    "occasionInput",
+  );
+  assert.ok(await page.evaluate(() => {
+    const box = document.querySelector("#occasionDialog").getBoundingClientRect();
+    return box.left >= 0 && box.right <= window.innerWidth;
+  }), "the naming dialog fits a phone screen");
+  await page.locator("#occasionSave").click();
+  await assert.doesNotReject(() => page.locator("#occasionDialog").waitFor({ state: "hidden" }));
+
+  assert.deepEqual(await page.evaluate(() => window.__savedLabel), {
+    date: "2026-10-30",
+    label: "Filipino Mass",
+  });
+  assert.match(
+    await page.locator("#resolved").innerText(),
+    /FILIPINO MASS[\s\S]*Friday of the 30th Week in Ordinary Time/i,
+  );
+  assert.equal(await page.locator("#openOccasionDialog").innerText(), "Rename this Mass");
+  assert.equal(
+    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    true,
+  );
+
+  await page.evaluate(() => window.__signOut());
+  assert.equal(await page.locator("#occasionEdit").isHidden(), true);
+  assert.match(await page.locator("#resolved").innerText(), /FILIPINO MASS/i);
+  assert.equal(await page.getByText("PRIVATE LYRICS MUST NEVER RENDER").count(), 0);
+  await context.close();
+});

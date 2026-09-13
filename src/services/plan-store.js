@@ -5,6 +5,8 @@ const failures = globalThis.window?.Failures
 const expected = failures.expected;
 
 const planData = () => globalThis.window?.PlanMusicData;
+// Matches plans_occasion_label_shape in the database.
+const OCCASION_LABEL_MAX_LENGTH = 80;
 const songCatalog = () => globalThis.window?.SongCatalog;
 const sharedPlanCacheKey = date => "st-james-plan-cache-v2-" + date;
 
@@ -112,6 +114,7 @@ function localStore({
               && typeof value.celebrationOverride === "object"
               ? value.celebrationOverride
               : null,
+            occasionLabel: typeof value.occasionLabel === "string" ? value.occasionLabel : "",
           }
         : planDataApi.emptyPlan();
     } catch (error) {
@@ -148,6 +151,7 @@ function localStore({
       ),
       readingOverrides: record.readingOverrides,
       celebrationOverride: record.celebrationOverride,
+      occasionLabel: record.occasionLabel,
     };
   };
   const requireEditor = () => {
@@ -385,6 +389,17 @@ function localStore({
       writePlanRecord(date, plan);
       emit(date);
     },
+    async saveOccasionLabel(date, label) {
+      requireEditor();
+      const value = String(label || "").trim();
+      if (value.length > OCCASION_LABEL_MAX_LENGTH) {
+        throw expected(`Keep the name to ${OCCASION_LABEL_MAX_LENGTH} characters or fewer.`);
+      }
+      const plan = readPlanRecord(date);
+      plan.occasionLabel = value;
+      writePlanRecord(date, plan);
+      emit(date);
+    },
     async signInChoir() {
       accessLevel = "choir";
       notifyAuth();
@@ -445,6 +460,7 @@ function unavailableStore({
     clearReadingOverride: unavailable,
     saveCelebrationOverride: unavailable,
     clearCelebrationOverride: unavailable,
+    saveOccasionLabel: unavailable,
     signInChoir: unavailable,
     signInEditor: unavailable,
     signIn: unavailable,
@@ -474,6 +490,7 @@ function createSupabaseStore(
       .select(`
         reading_overrides,
         celebration_override,
+        occasion_label,
         plan_songs (
           part,
           song:songs (
@@ -940,6 +957,18 @@ function createSupabaseStore(
       requireOnline();
       const { error } = await supabase.rpc("clear_celebration_override", {
         p_plan_date: date,
+      });
+      if (error) throw storeError(error);
+    },
+    async saveOccasionLabel(date, label) {
+      requireOnline();
+      const value = String(label || "").trim();
+      if (value.length > OCCASION_LABEL_MAX_LENGTH) {
+        throw expected(`Keep the name to ${OCCASION_LABEL_MAX_LENGTH} characters or fewer.`);
+      }
+      const { error } = await supabase.rpc("save_plan_occasion_label", {
+        p_plan_date: date,
+        p_label: value,
       });
       if (error) throw storeError(error);
     },

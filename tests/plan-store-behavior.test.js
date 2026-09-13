@@ -17,7 +17,7 @@ function memoryStorage(initial = {}) {
 
 const planData = {
   emptyPlan() {
-    return { songs: {}, readingOverrides: {}, celebrationOverride: null };
+    return { songs: {}, readingOverrides: {}, celebrationOverride: null, occasionLabel: "" };
   },
   planFromRow(row) {
     return row?.mappedPlan || this.emptyPlan();
@@ -111,7 +111,7 @@ test("local plan subscriptions tolerate corrupted cached records", () => {
   store.subscribePlan("2026-08-02", (plan, status) => values.push({ plan, status }));
 
   assert.deepEqual(values, [{
-    plan: { songs: {}, readingOverrides: {}, celebrationOverride: null },
+    plan: { songs: {}, readingOverrides: {}, celebrationOverride: null, occasionLabel: "" },
     status: { offline: true },
   }]);
 });
@@ -190,6 +190,10 @@ test("local plan mutations enforce editor access and never publish lyrics", asyn
   });
   assert.deepEqual(plans.at(-1).readingOverrides, {});
   assert.equal(plans.at(-1).celebrationOverride.key, "saint-example");
+
+  await store.saveOccasionLabel("2026-08-02", "  Filipino Mass ");
+  assert.equal(plans.at(-1).occasionLabel, "Filipino Mass");
+  await assert.rejects(store.saveOccasionLabel("2026-08-02", "x".repeat(81)), /80 characters or fewer/);
 
   await store.signOut();
   await assert.rejects(store.getPlan("2026-08-02"), /Editor access required/);
@@ -424,6 +428,25 @@ test("Psalm suggestions use the structured citation RPC instead of semantic sear
     },
   }]);
   assert.deepEqual(calls.functionInvokes, []);
+});
+
+test("naming a plan trims the name and sends it to the editor-only RPC", async () => {
+  const { calls, supabase } = supabaseFixture(Promise.resolve({ data: null, error: null }));
+  const store = storeModule.createSupabaseStore(supabase, {
+    storage: memoryStorage(),
+    planData,
+    songCatalog,
+    isOnline: () => true,
+  });
+
+  await store.saveOccasionLabel("2026-10-30", "  Filipino Mass  ");
+  await store.saveOccasionLabel("2026-10-30", "");
+  await assert.rejects(store.saveOccasionLabel("2026-10-30", "x".repeat(81)), /80 characters or fewer/);
+
+  assert.deepEqual(calls.rpcs, [
+    { name: "save_plan_occasion_label", params: { p_plan_date: "2026-10-30", p_label: "Filipino Mass" } },
+    { name: "save_plan_occasion_label", params: { p_plan_date: "2026-10-30", p_label: "" } },
+  ]);
 });
 
 function weeklyContextSupabase({ samePart, otherPart }) {

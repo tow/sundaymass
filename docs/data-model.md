@@ -38,6 +38,7 @@ is created when an editor first persists shared data for that date.
 | `plan_date` | Primary-key calendar date |
 | `reading_overrides` | Object keyed by `first`, `psalm`, `second`, or `gospel` |
 | `celebration_override` | Optional complete resolved celebration snapshot |
+| `occasion_label` | Optional public name for the Mass ("Filipino Mass"), trimmed, 1–80 characters |
 | `updated_at`, `updated_by` | Private last-write audit data |
 
 The former free-form `choices` JSON column no longer exists. Music assignments are
@@ -293,6 +294,7 @@ like a successful no-op.
 | `clear_reading_override` | Clear one slot or all individual reading overrides |
 | `save_celebration_override` | Save one complete snapshot and clear individual overrides |
 | `clear_celebration_override` | Restore computed celebration and clear individual overrides |
+| `save_plan_occasion_label` | Name the Mass for a date, or clear the name with an empty value |
 | `create_song_request` | Record one pending choir suggestion: an existing song or free-text details |
 | `resolve_song_request` | Editor-only: mark one pending request accepted or declined |
 | `suggest_songs_for_readings` | Rank classified songs separately for every reading, reserving two places for repertoire songs and one extended-library candidate in each reading group |

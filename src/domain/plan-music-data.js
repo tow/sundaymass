@@ -51,7 +51,7 @@
   }
 
   function emptyPlan() {
-    return { songs: {}, readingOverrides: {}, celebrationOverride: null };
+    return { songs: {}, readingOverrides: {}, celebrationOverride: null, occasionLabel: "" };
   }
 
   function planFromRow(row) {
@@ -64,6 +64,7 @@
       && typeof row.celebration_override === "object"
       ? row.celebration_override
       : null;
+    plan.occasionLabel = string(row.occasion_label).trim();
     (Array.isArray(row.plan_songs) ? row.plan_songs : []).forEach(assignment => {
       if (!assignment || typeof assignment.part !== "string" || !assignment.song) return;
       plan.songs[assignment.part] = songFromRow(assignment.song);

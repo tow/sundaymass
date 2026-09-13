@@ -90,6 +90,7 @@ const plannerScriptUrl = writeAppScript({
   "@@READING_OVERRIDE_CONTROLLER_JS@@": "src/app/reading-override-controller.js",
   "@@READING_DIALOG_CONTROLLER_JS@@": "src/app/reading-dialog-controller.js",
   "@@READING_WORKFLOW_JS@@": "src/app/reading-workflow.js",
+  "@@OCCASION_LABEL_CONTROLLER_JS@@": "src/app/occasion-label-controller.js",
   "@@SONG_CATALOG_JS@@": "src/domain/songs.js",
   "@@PLAN_MUSIC_DATA_JS@@": "src/domain/plan-music-data.js",
   "@@LECTIONARY_CATALOG_JS@@": "src/domain/lectionary.js",

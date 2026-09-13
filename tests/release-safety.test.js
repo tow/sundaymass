@@ -46,6 +46,28 @@ test("migration rollout check detects operations that can break old clients", ()
   );
 });
 
+test("narrowing the execute grant of a function the migration creates is compatible", () => {
+  const created = `
+    create function public.save_label(p_date date, p_label text) returns void
+      language sql as $$ select 1 $$;
+    revoke execute on function public.save_label(date, text) from public, anon;
+    grant execute on function public.save_label(date, text) to authenticated;
+  `;
+  assert.deepEqual(destructiveOperations(created), []);
+  // An existing function, even one replaced in the same file, still needs a contract.
+  assert.deepEqual(
+    destructiveOperations("revoke execute on function public.old_rpc(text) from anon;"),
+    ["REVOKE"],
+  );
+  assert.deepEqual(
+    destructiveOperations(`
+      create or replace function public.old_rpc(p text) returns void language sql as $$ select 1 $$;
+      revoke execute on function public.old_rpc(text) from anon;
+    `),
+    ["REVOKE"],
+  );
+});
+
 // Copied verbatim from a GitHub Actions run of `supabase migration list --linked`: the
 // CLI prints this table, with each version in backticks and ASCII rules, where a local
 // terminal or an npx invocation prints JSON. Three CI runs were lost to a regex written

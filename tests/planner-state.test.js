@@ -137,3 +137,16 @@ test("a weekday is described by its rank and Holy Saturday can be selected", () 
   assert.throws(() => value.setDay({ d: "2026-04-05" }), /A resolved day is required/);
 });
 
+test("a named Mass takes the title and keeps its celebration in the details", () => {
+  const value = state();
+  value.applyPlan({ songs: {}, readingOverrides: {}, occasionLabel: "Filipino Mass" });
+  assert.equal(value.occasionLabel(), "Filipino Mass");
+  assert.equal(value.values().day, "Filipino Mass");
+  assert.equal(value.values().meta, "Long 2026-07-26  ·  Scheduled 2026-07-26 · Ordinary Time · Year A");
+  value.setOccasionLabel("");
+  assert.equal(value.values().day, "Scheduled 2026-07-26");
+  value.applyPlan({ occasionLabel: "Filipino Mass" });
+  value.reset();
+  assert.equal(value.occasionLabel(), "");
+});
+

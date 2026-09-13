@@ -38,6 +38,7 @@
 @@READING_OVERRIDE_CONTROLLER_JS@@
 @@READING_DIALOG_CONTROLLER_JS@@
 @@READING_WORKFLOW_JS@@
+@@OCCASION_LABEL_CONTROLLER_JS@@
 @@SONG_CATALOG_JS@@
 @@PLAN_MUSIC_DATA_JS@@
 @@LECTIONARY_CATALOG_JS@@
@@ -314,6 +315,7 @@ function renderReadingPlan(){
     sunday:current(),
     celebration:baseCelebration(),
     celebrationOverride:plannerState.celebrationOverride(),
+    occasionLabel:plannerState.occasionLabel(),
     readingOverrides:plannerState.readingOverrides(),
     readingSlots:READING_SLOTS,
     values:vals(),
@@ -329,7 +331,7 @@ function syncDateControl(){
   dateDisplay.textContent=fmtPicker(current().d);
 }
 function refresh(){
-  syncDateControl(); renderReadingPlan(); readingWorkflow.renderEditor();
+  syncDateControl(); renderReadingPlan(); readingWorkflow.renderEditor(); occasionLabelController.render();
   loadDisplayedReadings();
   today.hidden=current().d===upcomingSunday().d;
   const v = vals();
@@ -337,6 +339,36 @@ function refresh(){
   else if(!v.gospel && !v.first){ warn.style.display="block"; warn.textContent="This day has proper readings that are not in the dataset. Please confirm them against the parish Ordo."; }
   else{ warn.style.display="none"; }
 }
+
+const occasionLabelController=OccasionLabelController.create({
+  elements:{
+    launch:occasionEdit,
+    launchButton:openOccasionDialog,
+    dialog:occasionDialog,
+    form:occasionForm,
+    context:occasionContext,
+    input:occasionInput,
+    error:occasionError,
+    save:occasionSave,
+    clear:occasionClear,
+    close:occasionClose,
+    cancel:occasionCancel,
+  },
+  getStore:()=>planStore,
+  isEditor:()=>isEditor,
+  isOnline:()=>navigator.onLine,
+  getDate:()=>current().d,
+  getLabel:plannerState.occasionLabel,
+  formatDate:fmtLong,
+  openModal,
+  onSaved:label=>{
+    plannerState.setOccasionLabel(label);
+    refresh();
+  },
+  onStatus:(text,state)=>setSyncStatus(text,state),
+  logger:appLogger,
+});
+occasionLabelController.start();
 
 function setSyncStatus(text,state){
   syncStatus.textContent=text;
@@ -363,7 +395,9 @@ const planSessionController=PlanSessionController.create({
     canReadLyrics=!!auth.canReadLyrics;
     signedIn=!!auth.user;
     authButton.textContent=signedIn ? "Sign out" : "Sign in";
+    occasionLabelController.render();
     if(!isEditor){
+      occasionLabelController.close();
       readingWorkflow.closeAll();
       songWorkflow.closeAll();
       weeklyLyricsController.close();
@@ -570,6 +604,7 @@ AuthController.create({
 
 function selectDay(day,{updateUrl=true,replaceUrl=false}={}){
   weeklyLyricsController.close();
+  occasionLabelController.close();
   plannerState.setDay(day);
   weeklyLyricsParts=new Set();
   if(updateUrl) DateUrlState.write(window,day.d,{replace:replaceUrl});

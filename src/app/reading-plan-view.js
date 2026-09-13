@@ -7,7 +7,7 @@
       return values?.[slot.key] || "";
     }
 
-    function renderResolved({ sunday, celebration, celebrationOverride }) {
+    function renderResolved({ sunday, celebration, celebrationOverride, occasionLabel = "" }) {
       const meta = celebrationOverride
         ? escapeHtml(
           `${celebration.rank || "Celebration"} · normally ${formatLong(celebration.sourceDate)}`,
@@ -16,6 +16,7 @@
         : `${escapeHtml(sunday.s)} · ${escapeHtml(sunday.r && sunday.r !== "Sunday" ? sunday.r : cycleName(sunday.c))}`;
 
       return `<span class="selected-date">${escapeHtml(formatLong(sunday.d))}</span>`
+        + (occasionLabel ? `<span class="selected-occasion">${escapeHtml(occasionLabel)}</span>` : "")
         + `<span class="selected-day">${escapeHtml(celebration.name)}`
         + (celebrationOverride
           ? '<span class="reading-adjusted-note">Changed celebration</span>'

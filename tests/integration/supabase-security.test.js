@@ -531,6 +531,40 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
       assert.equal(plan.celebration_override.id, "test-solemnity");
     });
 
+    await t.test("an editor names a plan publicly, trimmed, and can clear the name", async () => {
+      const weekday = "2049-01-08";
+      const denied = await nonEditor.request("/rest/v1/rpc/save_plan_occasion_label", {
+        method: "POST",
+        body: { p_plan_date: weekday, p_label: "Forbidden label" },
+      });
+      assert.ok(!denied.response.ok);
+      assert.match(JSON.stringify(denied.data), /Editor access required/i);
+
+      await expectOk(await editor.request("/rest/v1/rpc/save_plan_occasion_label", {
+        method: "POST",
+        body: { p_plan_date: weekday, p_label: "  Filipino Mass  " },
+      }));
+      assert.deepEqual(await expectOk(await anonymous(
+        `/rest/v1/plans?plan_date=eq.${weekday}&select=plan_date,occasion_label`,
+      )), [{ plan_date: weekday, occasion_label: "Filipino Mass" }]);
+
+      const tooLong = await editor.request("/rest/v1/rpc/save_plan_occasion_label", {
+        method: "POST",
+        body: { p_plan_date: weekday, p_label: "x".repeat(81) },
+      });
+      assert.ok(!tooLong.response.ok);
+      assert.match(JSON.stringify(tooLong.data), /80 characters or fewer/);
+
+      await expectOk(await editor.request("/rest/v1/rpc/save_plan_occasion_label", {
+        method: "POST",
+        body: { p_plan_date: weekday, p_label: "   " },
+      }));
+      const [cleared] = await expectOk(await service(
+        `/rest/v1/plans?plan_date=eq.${weekday}&select=occasion_label,reading_overrides,celebration_override`,
+      ));
+      assert.deepEqual(cleared, { occasion_label: null, reading_overrides: {}, celebration_override: null });
+    });
+
     await t.test("every application mutation rejects a non-editor", async () => {
       const validReading = {
         citation: "Isaiah 1:1",
@@ -583,6 +617,7 @@ test("local Supabase enforces the editor and lyric privacy matrix", async t => {
           p_override: validCelebration,
         }],
         ["clear_celebration_override", { p_plan_date: sunday }],
+        ["save_plan_occasion_label", { p_plan_date: sunday, p_label: "Forbidden label" }],
       ];
 
       for (const [name, body] of attempts) {

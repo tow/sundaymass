@@ -138,11 +138,12 @@ async function smokeBackend({
     throw new Error("public Psalm-suggestion RPC did not return an array");
   }
 
-  // The planner's public plan read and every editor write key on plan_date. Reading
-  // the column by the name the frontend uses refuses a deploy ahead of the schema.
+  // The planner's public plan read and every editor write key on plan_date, and it reads
+  // each plan's occasion label. Reading the columns by the names the frontend uses
+  // refuses a deploy ahead of the schema.
   const plans = await requestJson(
     fetchImpl,
-    `${baseUrl}/rest/v1/plans?select=${encodeURIComponent("plan_date,reading_overrides,celebration_override")}&limit=1`,
+    `${baseUrl}/rest/v1/plans?select=${encodeURIComponent("plan_date,reading_overrides,celebration_override,occasion_label")}&limit=1`,
     { headers },
     "public plan contract",
   );

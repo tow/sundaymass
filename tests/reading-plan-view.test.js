@@ -109,3 +109,24 @@ test("celebration and reading overrides are marked in every relevant public view
   );
   assert.equal((result.fullReadingsHtml.match(/reading-adjusted-note/g) || []).length, 4);
 });
+
+test("a named Mass shows its name above the celebration, escaped", () => {
+  const result = view.render({
+    sunday: { d: "2026-10-30", s: "Ordinary Time", c: "A", r: "Weekday" },
+    celebration: { ...celebration, name: "Friday of the 30th Week in Ordinary Time" },
+    celebrationOverride: null,
+    occasionLabel: "Filipino <Mass>",
+    readingOverrides: {},
+    readingSlots: slots,
+    values,
+    textFor: () => "",
+  });
+  assert.match(
+    result.resolvedHtml,
+    /selected-occasion">Filipino &lt;Mass&gt;<\/span><span class="selected-day">Friday of the 30th Week/,
+  );
+  assert.match(result.resolvedHtml, /selected-meta">Ordinary Time · Weekday/);
+  assert.doesNotMatch(view.render({
+    sunday, celebration, celebrationOverride: null, readingOverrides: {}, readingSlots: slots, values, textFor: () => "",
+  }).resolvedHtml, /selected-occasion/);
+});

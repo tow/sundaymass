@@ -28,15 +28,12 @@ Planned as four parts.
    that is part 3. The assumptions made and the information still missing, above all the
    Finnish national calendar, are in `docs/lectionary.md` under "Weekdays and other
    non-Sunday dates".
-3. **Not started: plan a Mass on any date** — stop `calendarNavigation.selectionFor`
-   from snapping an explicit non-Sunday `?date=` to the nearest Sunday (keep the snap
-   only for the no-date default landing); add a date picker as a first-class way into a
-   plan, alongside the existing prev/next-Sunday arrows; an additive
-   `plans.occasion_label text` column so a plan can say what it is ("Filipino Mass")
-   and cover anything the catalogues don't resolve; and a resolution order (Sunday →
-   the date's default readings from part 2 → celebration override/Sanctoral/Ritual
-   picker → free-text label). Re-verify at this stage, per CLAUDE.md, that public views
-   and song requests for a non-Sunday plan still never expose lyrics.
+3. **Done (2026-09-13): plan a Mass on any date.** A date chosen in the picker or a
+   `?date=` link is planned exactly, with that day's readings, while the arrows still
+   step between Sundays and a page with no date opens on the upcoming Sunday. Editors can
+   name a plan ("Filipino Mass") through `plans.occasion_label`; the name heads the
+   readings and titles lyric exports. Public views and song requests for a weekday plan
+   were checked to carry no lyrics. Plans are still one per date.
 4. **Not started, lower priority: Ritual Mass readings** (weddings, funerals) — a
    materially larger, separate effort that the motivating case does not need. No
    existing source (`cpbjr`, the Felix Just tables, the 2002 US Sanctoral index) covers

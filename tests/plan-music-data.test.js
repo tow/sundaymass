@@ -46,6 +46,7 @@ test("public plan rows omit lyrics while retaining current canonical metadata", 
   const plan = data.planFromRow({
     reading_overrides: {},
     celebration_override: null,
+    occasion_label: "Filipino Mass",
     plan_songs: [{
       part: "entrance",
       song: {
@@ -66,6 +67,8 @@ test("public plan rows omit lyrics while retaining current canonical metadata", 
   assert.equal(plan.songs.entrance.inRepertoire, true);
   assert.deepEqual(plan.readingOverrides, {});
   assert.equal(plan.celebrationOverride, null);
+  assert.equal(plan.occasionLabel, "Filipino Mass");
+  assert.equal(data.planFromRow({}).occasionLabel, "");
 });
 
 test("duplicate titles in different assignments remain distinct songs", () => {

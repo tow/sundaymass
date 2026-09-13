@@ -27,8 +27,21 @@ function sqlWithoutComments(sql) {
     .replace(/--.*$/gm, " ");
 }
 
+// Restricting who may call a function is only destructive for a function that already
+// exists. A migration that creates a function (not create or replace) and narrows its
+// default execute grant in the same file breaks no deployed client.
+function withoutRevokesOnNewFunctions(sql) {
+  const created = new Set(
+    [...sql.matchAll(/\bcreate\s+function\s+([\w.]+)\s*\(/gi)].map(match => match[1].toLowerCase()),
+  );
+  return sql.replace(
+    /\brevoke\s+execute\s+on\s+function\s+([\w.]+)\s*\([^)]*\)\s+from\s+[^;]+;/gi,
+    (statement, name) => (created.has(name.toLowerCase()) ? " " : statement),
+  );
+}
+
 function destructiveOperations(sql) {
-  const executableSql = sqlWithoutComments(sql);
+  const executableSql = withoutRevokesOnNewFunctions(sqlWithoutComments(sql));
   return DESTRUCTIVE_PATTERNS
     .filter(([, pattern]) => pattern.test(executableSql))
     .map(([label]) => label);

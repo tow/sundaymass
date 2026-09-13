@@ -379,6 +379,7 @@ selected as (
   select
     plan.plan_date,
     plan.celebration_override,
+    plan.occasion_label,
     assignment.part,
     to_jsonb(song) as song,
     canonical.lyrics,
@@ -397,6 +398,7 @@ selected as (
 select
   plan_date::text,
   celebration_override,
+  occasion_label,
   part,
   song,
   lyrics,
@@ -440,6 +442,7 @@ function buildBooklet({ sunday, rows, output }) {
     day: resolvedDay,
     celebration: celebrationOverride || { name: resolvedDay.n },
     celebrationOverride: Boolean(celebrationOverride),
+    occasionLabel: rows[0].occasion_label || "",
     formatLong,
     cycleName: cycle => `Year ${cycle}`,
   });
