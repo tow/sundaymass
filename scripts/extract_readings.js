@@ -47,6 +47,21 @@ function getVerse(book, ch, v) {
   if (book === "Psalm" && PSALM_NAB_TO_WEB_OFFSET[ch] && v > PSALM_NAB_TO_WEB_OFFSET[ch]) {
     v -= PSALM_NAB_TO_WEB_OFFSET[ch];
   }
+  // NAB chapter divisions that start a verse or more earlier than WEB/KJV's.
+  if (book === "Genesis" && ch === 32) { if (v === 1) { ch = 31; v = 55; } else v -= 1; }  // Gen 32:2-33 (NAB) = Gen 32:1-32
+  if (book === "Hosea" && ch === 14) { if (v === 1) { ch = 13; v = 16; } else v -= 1; }    // Hos 14:2-10 (NAB) = Hos 14:1-9
+  if (book === "Jonah" && ch === 2) { if (v === 1) { ch = 1; v = 17; } else v -= 1; }      // Jonah 2:1-11 (NAB) = Jonah 1:17-2:10
+  if (book === "Joel" && ch === 4) ch = 3;                                                   // Joel 4 (NAB) = Joel 3
+  // Catholic Daniel continues chapter 3 after the Song of the Three (3:91 = 3:24) and
+  // prints Susanna as chapter 13; KJVA stores Susanna as a separate one-chapter book.
+  if (book === "Daniel" && ch === 3 && v >= 91) v -= 67;
+  if (book === "Daniel" && ch === 13 && KJV.Susanna?.[1]?.[v] != null) {
+    return { t: KJV.Susanna[1][v], src: "KJV" };
+  }
+  // Greek Esther's additions, cited by Vulgate chapter (Esther 14 = Addition C).
+  if (book === "Esther" && ch >= 11 && KJV["Additions to Esther"]?.[ch]?.[v] != null) {
+    return { t: KJV["Additions to Esther"][ch][v], src: "KJV" };
+  }
   // Catholic Daniel inserts the Prayer of Azariah/Song of the Three into ch. 3.
   // KJVA stores that addition as a separate one-chapter book: Dan 3:24 = Azar 1.
   if (book === "Daniel" && ch === 3 && v >= 24) {
@@ -79,6 +94,9 @@ function parseRef(cite) {
     // cross-chapter range a:b-c:d
     let m = seg.match(/^(\d+):(\d+)[a-z]?-(\d+):(\d+)[a-z]?$/);
     if (m) { const [_, c1, v1, c2, v2] = m.map(Number); for (let c = c1; c <= c2; c++) { const lo = c === c1 ? v1 : 1; const hi = c === c2 ? v2 : lastVerse(book, c); for (let v = lo; v <= hi; v++) list.push({ ch: c, v }); } curCh = c2; return; }
+    // v-c:v, a range continuing into the next chapter
+    m = seg.match(/^(\d+)[a-z]?-(\d+):(\d+)[a-z]?$/);
+    if (m && curCh) { const [_, v1, c2, v2] = m.map(Number); for (let c = curCh; c <= c2; c++) { const lo = c === curCh ? v1 : 1; const hi = c === c2 ? v2 : lastVerse(book, c); for (let v = lo; v <= hi; v++) list.push({ ch: c, v }); } curCh = c2; return; }
     // c:v-v
     m = seg.match(/^(\d+):(\d+)[a-z]?-(\d+)[a-z]?$/);
     if (m) { curCh = +m[1]; for (let v = +m[2]; v <= +m[3]; v++) list.push({ ch: curCh, v }); return; }
@@ -94,7 +112,11 @@ function parseRef(cite) {
   });
   return { book, list };
 }
+// Chapters that end earlier in the lectionary's numbering than in WEB's, where a range
+// runs on into the next chapter.
+const NAB_LAST_VERSE = { "Jonah 1": 16, "Hosea 13": 15, "Genesis 31": 54 };
 function lastVerse(book, ch) {
+  if (NAB_LAST_VERSE[`${book} ${ch}`]) return NAB_LAST_VERSE[`${book} ${ch}`];
   if (WEBNUM[book] && WEB[WEBNUM[book]] && WEB[WEBNUM[book]][ch]) return Math.max(...Object.keys(WEB[WEBNUM[book]][ch]).map(Number));
   const kn = KJVNAME[book] || (book === "Psalm" ? "Psalms" : book);
   if (KJV[kn] && KJV[kn][ch]) return Math.max(...Object.keys(KJV[kn][ch]).map(Number));
@@ -123,10 +145,12 @@ function expandAlternatives(cite) {
 
 // ---- run over all distinct citations ----
 const sundayLectionary = require("../data/generated/sunday-lectionary.json");
+const weekdayLectionary = require("../data/generated/weekday-lectionary.json");
 const celebrations = require("../data/generated/celebrations.json");
 const commons = require("../data/generated/commons.json");
 const cites = new Set();
 sundayLectionary.forEach(o => [o.f, o.p, o.e, o.g].forEach(c => c && cites.add(c)));
+weekdayLectionary.forEach(o => [o.f, o.p, o.e, o.g].forEach(c => c && cites.add(c)));
 celebrations.forEach(o => [o.f, o.p, o.e, o.g].forEach(c => c && cites.add(c)));
 commons.forEach(common => [
   ...common.firstOutsideEaster,

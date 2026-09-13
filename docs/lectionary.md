@@ -1,9 +1,10 @@
 # Calendar and lectionary
 
-The planner calculates the Finnish Sunday calendar locally at runtime and stores each
-distinct Sunday lectionary set once. It separately carries a searchable catalogue of
-standard celebrations and Commons for rare editor overrides. Browser domain logic
-resolves those catalogues into usable, role-aware choices at runtime.
+The planner calculates the Finnish liturgical calendar locally at runtime, for Sundays and
+for any other date, and stores each distinct Sunday and weekday lectionary set once. It
+separately carries a searchable catalogue of standard celebrations and Commons for rare
+editor overrides. Browser domain logic resolves those catalogues into usable, role-aware
+choices at runtime.
 
 This is an independent planning aid, not an authoritative Finnish lectionary or parish
 Ordo. National, diocesan, later-decreed, or current-Ordo choices may differ. The UI must
@@ -15,11 +16,11 @@ Calendar calculation and reading selection are deliberately separate:
 
 ```text
 liturgical-calendar.js
-  selected date -> title, season, cycle, lectionary key
+  selected date -> title, season, cycle, rank, lectionary key
                          |
                          v
-sunday-lectionary.json
-  one canonical citation set per distinct Sunday/cycle
+sunday-lectionary.json          weekday-lectionary.json
+  one set per Sunday/cycle        one set per weekday of the Proper of Time
 
 celebrations.json --references--> commons.json
           \                           /
@@ -30,9 +31,11 @@ celebrations.json --references--> commons.json
                  full text by citation
 ```
 
-The calculated Sunday's `l` key joins to one `sunday-lectionary.json` record through
-`LectionaryCatalog.scheduledCelebration()`. No dated Sunday dataset is built, checked
-in, embedded, downloaded, or cached.
+The calculated day's `l` key joins to exactly one record through
+`LectionaryCatalog.scheduledCelebration()`: a `sunday-lectionary.json` template
+(`A|Christmas`), a `weekday-lectionary.json` set (`II|Ordinary Time|30|Friday`, tried
+first in its Sunday-cycle variant `v`), or a celebration (`celebration:sanctoral-543`).
+No dated dataset is built, checked in, embedded, downloaded, or cached.
 
 This boundary keeps date selection deterministic and offline-capable without
 materializing decades of occurrences. A saved celebration override is different: it
@@ -45,6 +48,7 @@ is intentionally a complete resolved snapshot of the choices an editor reviewed.
 | `lectionary_table.json` | Harvested A/B by-date citation input |
 | `readings_master.json` | Normalized Sunday and fixed-feast citation source |
 | `sunday-lectionary.json` | 207 distinct scheduled reading sets |
+| `weekday-lectionary.json` | 540 weekday reading sets, including Sunday-cycle variants |
 | `celebrations.json` | 235 usable Proper/Finnish celebrations |
 | `commons.json` | Seven role-specific Common groups |
 | `readings_text.json` | 974 current selectable citation-to-full-text entries |
@@ -65,12 +69,17 @@ The full data rebuild is ordered:
    source is known to mislabel All Souls.
 3. `scripts/build_sunday_lectionary.js` converts the normalized sources directly into
    cycle-keyed reading templates. It does not enumerate calendar dates.
-4. `scripts/build_celebrations.js` imports the Proper of Saints, explicit alternatives,
+4. `scripts/build_weekday_lectionary.js` inverts Felix Just's scripture indexes of the
+   weekday and Sunday Lectionary into one reading set per weekday of the Proper of Time,
+   plus Ascension, Sacred Heart, Holy Thursday, and Good Friday by cycle. It shares
+   citation normalization with the celebrations importer
+   (`scripts/lectionary-citations.js`) and corrects a few source typos, each commented.
+5. `scripts/build_celebrations.js` imports the Proper of Saints, explicit alternatives,
    Common references, and all seven Commons from the 2002 US lectionary citation
    indexes. It then applies Finnish and parish-specific entries.
-5. `scripts/extract_readings.js` collects every distinct selectable citation and
+6. `scripts/extract_readings.js` collects every distinct selectable citation and
    extracts public-domain full text.
-6. `scripts/build-app.js` embeds the generated catalogues in the planner. It does not
+7. `scripts/build-app.js` embeds the generated catalogues in the planner. It does not
    decide which lectionary options are valid.
 
 The browser rules live in `src/domain/lectionary.js`, separately from rendering and
@@ -94,6 +103,7 @@ bash scripts/fetch_sources.sh
 node scripts/harvest.js
 node scripts/build_readings.js
 node scripts/build_sunday_lectionary.js
+node scripts/build_weekday_lectionary.js
 node scripts/build_celebrations.js
 node scripts/extract_readings.js
 npm run check
@@ -121,6 +131,80 @@ every Sunday from 2025 through 2075 with an independent development-only `romcal
 oracle, exercise navigation beyond that former horizon, and prove across 1900–2200 that
 every calculated key resolves to exactly one complete reusable template. `romcal` is
 not included in the browser bundle.
+
+## Weekdays and other non-Sunday dates
+
+`LiturgicalCalendar.resolveDay()` gives any date its default celebration. Sundays go to
+`resolveSunday()` unchanged. Any other date is the weekday of the Proper of Time unless a
+solemnity or feast takes precedence, following the Table of Liturgical Days:
+
+- **Weekday cycle.** Ordinary Time weekdays use Year I in odd years and Year II in even
+  years; other seasons repeat every year. A few days replace one reading in a particular
+  Sunday cycle (Monday of the 1st Week of Advent in Year A), stored as variants.
+- **Finland.** Epiphany is 6 January, so the Christmas weekdays after it follow their
+  dates (January 7–12); the Ascension is on its Thursday; Saint Henry is a solemnity.
+- **Precedence.** Solemnities and feasts on fixed dates are listed in
+  `FIXED_CELEBRATIONS`. A feast yields to a Sunday, a solemnity, or a privileged day (Ash
+  Wednesday, Holy Week, the Easter Octave). An impeded solemnity moves: Saint Joseph in
+  Holy Week to the Saturday before Palm Sunday, the Annunciation in Holy Week or the Easter
+  Octave to the Monday after the Second Sunday of Easter, and any other to the next day
+  free of a solemnity or feast (the Immaculate Conception from an Advent Sunday to 9
+  December).
+- **Readings.** A weekday uses its `weekday-lectionary.json` set. Christmas, Mary Mother
+  of God, Epiphany, Holy Family, All Souls, and the June, August, and November
+  solemnities use their Sunday templates, so they read the same whichever day they fall
+  on. Other celebrations use their `celebrations.json` entry with its Proper and Common
+  defaults. Holy Saturday has no Mass by day and no readings.
+
+Tests compare every weekday from 2025 through 2075 with romcal's Finland calendar
+(`epiphanyOnJan6`), check every weekday from 2000 through 2100 resolves to readings that
+parse and have text, and pin representative dates. `scripts/verify_weekday_readings.js`
+compares the defaults with the USCCB readings published by cpbjr for 2025–2027; it needs
+the network and its differences are reviewed by hand. In the last review, 106 of 736
+weekdays differed, all for these reasons: the US calendar (Epiphany on a Sunday and the
+weekdays after it, Thanksgiving, Our Lady of Guadalupe), the Finnish and parish days
+below, memorials the USCCB page gives proper readings, the Easter Vigil listed on Holy
+Saturday, a week of October 2025 shifted by a day in cpbjr, and verse-letter or
+punctuation differences between the two sources.
+
+### Assumptions
+
+These are planner defaults, not claims about the current Finnish diocesan Ordo:
+
+- **Memorials keep the weekday readings.** Obligatory and optional memorials, including
+  those with a proper reading (Saint Martha, Our Lady of Sorrows, Mary Mother of the
+  Church), are not defaults; an editor chooses them through the celebration picker.
+- **The Finnish feasts are the universal list plus the European co-patrons.** Saints
+  Cyril and Methodius, Catherine of Siena, Benedict, Bridget of Sweden, and Teresa
+  Benedicta of the Cross are feasts, taken from romcal's Finland calendar. Their readings
+  are the US Proper of Saints entries for the same saints.
+- **Saint James is a solemnity on weekdays too,** as the parish's titular celebration. When
+  25 July is a Sunday the Sunday of Ordinary Time is kept, as the Sunday calendar already
+  does.
+- **Clashing solemnities.** When the Sacred Heart falls on 24 June the Birth of John the
+  Baptist is anticipated to 23 June, as in 2022; when Corpus Christi takes Sunday 24 June,
+  or the Sacred Heart takes 29 June, the saint moves to the next free day. romcal omits
+  the saint in these years (2033, 2044, 2057, 2068).
+- **Feasts are celebrated in Lent.** A feast outranks a Lent weekday; romcal instead
+  reduces the Chair of Saint Peter and Saints Cyril and Methodius to commemorations then.
+- **The Mass of the day.** Holy Thursday is the Mass of the Lord's Supper, December 24 the
+  morning Mass, and vigil Masses are not defaults.
+- **Readings follow the US Lectionary.** The weekday readings themselves are universal,
+  but citations and verse divisions follow the 1998/2002 US edition, and the Tobit
+  canticle keeps the source's Vulgate verse numbers.
+
+### Missing information
+
+- **The Finnish national calendar.** Confirm against the diocese of Helsinki's Ordo which
+  days are solemnities and feasts in Finland, whether any US Proper of Saints entry
+  differs from the Finnish one, and whether Finland has further proper celebrations
+  above memorial rank.
+- **Transfers.** Confirm how the diocese handles the clashing solemnities above and a
+  Sunday 25 July at Saint James.
+- **Source discrepancies.** The celebrations source gives Luke 6:12-19 for Saints Simon
+  and Jude where the USCCB gives Luke 6:12-16. Several Sunday templates carry citations
+  the reading editor cannot parse (`137:1-2` without its book, `Psalm 23: 1-3a`,
+  `6 and 8`).
 
 ## Proper celebrations and Commons
 

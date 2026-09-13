@@ -51,6 +51,12 @@
         segments.push({ startChapter: chapter, startVerse: part[2], endChapter: Number(part[3]), endVerse: part[4] });
         continue;
       }
+      part = piece.match(/^(\d+[a-z]*)-(\d+):(\d+[a-z]*)$/i);
+      if (part && chapter !== null) {
+        segments.push({ startChapter: chapter, startVerse: part[1], endChapter: Number(part[2]), endVerse: part[3] });
+        chapter = Number(part[2]);
+        continue;
+      }
       part = piece.match(/^(\d+):(\d+[a-z]*)-(\d+[a-z]*)$/i);
       if (part) {
         chapter = Number(part[1]);
@@ -96,6 +102,7 @@
   function create({
     liturgicalCalendar,
     sundayLectionary,
+    weekdayLectionary = [],
     celebrations,
     commons,
     readings,
@@ -105,6 +112,8 @@
     }
     const commonById = new Map(commons.map(common => [common.id, common]));
     const sundayLectionaryById = new Map(sundayLectionary.map(item => [item.id, item]));
+    const weekdayLectionaryById = new Map(weekdayLectionary.map(item => [item.id, item]));
+    const celebrationById = new Map(celebrations.map(item => [item.id, item]));
     const occurrenceWindows = new Map();
 
     function usableCitation(citation) {
@@ -149,6 +158,7 @@
       });
       const catalogueValues = [
         ...sundayLectionary.flatMap(sunday => citationAlternatives(sunday[slot.dataKey])),
+        ...weekdayLectionary.flatMap(day => citationAlternatives(day[slot.dataKey])),
         ...celebrations.flatMap(item => citationAlternatives(item[slot.dataKey])),
         ...commonValues.flatMap(citationAlternatives),
       ];
@@ -163,22 +173,49 @@
       roleCitations[slot.key] = values;
     });
 
-    function scheduledCelebration(day) {
-      const item = sundayLectionaryById.get(day.l);
-      if (!item) throw new Error("No Sunday lectionary entry for " + day.l);
+    // A day's lectionary key names a Sunday-lectionary template ("A|Christmas"), a weekday
+    // set ("II|Ordinary Time|30|Friday", tried first in its Sunday-cycle variant), or a
+    // celebration ("celebration:sanctoral-543"). Holy Saturday has no Mass by day.
+    function scheduledReadings(day) {
+      if (day.l === "") return { first: "", psalm: "", second: "", gospel: "" };
+      const celebrationId = day.l.startsWith("celebration:") ? day.l.slice("celebration:".length) : "";
+      if (celebrationId) {
+        const item = celebrationById.get(celebrationId);
+        if (!item) throw new Error("No celebration " + celebrationId + " for " + day.d);
+        const options = Object.fromEntries(READING_SLOTS.map(slot => [
+          slot.key,
+          celebrationReadingOptions(item, slot, day.s),
+        ]));
+        return {
+          first: options.first[0] || "",
+          psalm: options.psalm[0] || "",
+          second: citationAlternatives(item.e)[0]
+            || (requiresSecondReading(day.r) ? options.second[0] || "" : ""),
+          gospel: options.gospel[0] || "",
+        };
+      }
+      const item = sundayLectionaryById.get(day.l)
+        || weekdayLectionaryById.get(day.v)
+        || weekdayLectionaryById.get(day.l);
+      if (!item) throw new Error("No lectionary entry for " + day.l);
       return {
-        id: "sunday-" + day.d,
+        first: item.f || "",
+        psalm: item.p || "",
+        second: item.e || "",
+        gospel: item.g || "",
+      };
+    }
+
+    function scheduledCelebration(day) {
+      const sunday = !day.r || day.r === "Sunday";
+      return {
+        id: (sunday ? "sunday-" : "day-") + day.d,
         name: day.n,
         sourceDate: day.d,
-        rank: "Sunday",
+        rank: sunday ? "Sunday" : day.r,
         season: day.s,
         cycle: day.c,
-        readings: {
-          first: item.f || "",
-          psalm: item.p || "",
-          second: item.e || "",
-          gospel: item.g || "",
-        },
+        readings: scheduledReadings(day),
       };
     }
 

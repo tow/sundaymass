@@ -1,0 +1,4322 @@
+[
+ {
+  "id": "A|Advent|1|Monday",
+  "n": "Monday of the 1st Week of Advent",
+  "f": "Isaiah 4:2-6",
+  "p": "Psalm 122:1-2, 3-4b, 4cd-5, 6-7, 8-9",
+  "e": "",
+  "g": "Matthew 8:5-11"
+ },
+ {
+  "id": "A|Ascension",
+  "n": "Ascension of the Lord",
+  "f": "Acts 1:1-11",
+  "p": "Psalm 47:2-3, 6-7, 8-9",
+  "e": "Ephesians 1:17-23",
+  "g": "Matthew 28:16-20"
+ },
+ {
+  "id": "A|Easter|4|Monday",
+  "n": "Monday of the 4th Week of Easter",
+  "f": "Acts 11:1-18",
+  "p": "Psalm 42:2-3; 43:3, 4",
+  "e": "",
+  "g": "John 10:11-18"
+ },
+ {
+  "id": "A|I|Ordinary Time|18|Monday",
+  "n": "Monday of the 18th Week in Ordinary Time",
+  "f": "Numbers 11:4b-15",
+  "p": "Psalm 81:12-13, 14-15, 16-17",
+  "e": "",
+  "g": "Matthew 14:22-36"
+ },
+ {
+  "id": "A|I|Ordinary Time|18|Tuesday",
+  "n": "Tuesday of the 18th Week in Ordinary Time",
+  "f": "Numbers 12:1-13",
+  "p": "Psalm 51:3-4, 5-6ab, 6cd-7, 12-13",
+  "e": "",
+  "g": "Matthew 15:1-2, 10-14"
+ },
+ {
+  "id": "A|II|Ordinary Time|18|Monday",
+  "n": "Monday of the 18th Week in Ordinary Time",
+  "f": "Jeremiah 28:1-17",
+  "p": "Psalm 119:29, 43, 79, 80, 95, 102",
+  "e": "",
+  "g": "Matthew 14:22-36"
+ },
+ {
+  "id": "A|II|Ordinary Time|18|Tuesday",
+  "n": "Tuesday of the 18th Week in Ordinary Time",
+  "f": "Jeremiah 30:1-2, 12-15, 18-22",
+  "p": "Psalm 102:16-18, 19-21, 29+22-23",
+  "e": "",
+  "g": "Matthew 15:1-2, 10-14"
+ },
+ {
+  "id": "A|Sacred Heart",
+  "n": "Most Sacred Heart of Jesus",
+  "f": "Deuteronomy 7:6-11",
+  "p": "Psalm 103:1-2, 3-4, 6-7, 8+10",
+  "e": "1 John 4:7-16",
+  "g": "Matthew 11:25-30"
+ },
+ {
+  "id": "Advent|1|Friday",
+  "n": "Friday of the 1st Week of Advent",
+  "f": "Isaiah 29:17-24",
+  "p": "Psalm 27:1, 4, 13-14",
+  "e": "",
+  "g": "Matthew 9:27-31"
+ },
+ {
+  "id": "Advent|1|Monday",
+  "n": "Monday of the 1st Week of Advent",
+  "f": "Isaiah 2:1-5",
+  "p": "Psalm 122:1-2, 3-4b, 4cd-5, 6-7, 8-9",
+  "e": "",
+  "g": "Matthew 8:5-11"
+ },
+ {
+  "id": "Advent|1|Saturday",
+  "n": "Saturday of the 1st Week of Advent",
+  "f": "Isaiah 30:19-21, 23-26",
+  "p": "Psalm 147:1-2, 3-4, 5-6",
+  "e": "",
+  "g": "Matthew 9:35-10:1, 5a, 6-8"
+ },
+ {
+  "id": "Advent|1|Thursday",
+  "n": "Thursday of the 1st Week of Advent",
+  "f": "Isaiah 26:1-6",
+  "p": "Psalm 118:1+8-9, 19-21, 25-27a",
+  "e": "",
+  "g": "Matthew 7:21, 24-27"
+ },
+ {
+  "id": "Advent|1|Tuesday",
+  "n": "Tuesday of the 1st Week of Advent",
+  "f": "Isaiah 11:1-10",
+  "p": "Psalm 72:1-2, 7-8, 12-13, 17",
+  "e": "",
+  "g": "Luke 10:21-24"
+ },
+ {
+  "id": "Advent|1|Wednesday",
+  "n": "Wednesday of the 1st Week of Advent",
+  "f": "Isaiah 25:6-10a",
+  "p": "Psalm 23:1-3a, 3b-4, 5, 6",
+  "e": "",
+  "g": "Matthew 15:29-37"
+ },
+ {
+  "id": "Advent|12-17",
+  "n": "December 17",
+  "f": "Genesis 49:2, 8-10",
+  "p": "Psalm 72:1-2, 3-4ab, 7-8, 17",
+  "e": "",
+  "g": "Matthew 1:1-17"
+ },
+ {
+  "id": "Advent|12-18",
+  "n": "December 18",
+  "f": "Jeremiah 23:5-8",
+  "p": "Psalm 72:1-2, 12-13, 18-19",
+  "e": "",
+  "g": "Matthew 1:18-25"
+ },
+ {
+  "id": "Advent|12-19",
+  "n": "December 19",
+  "f": "Judges 13:2-7, 24-25a",
+  "p": "Psalm 71:3-4a, 5-6ab, 16-17",
+  "e": "",
+  "g": "Luke 1:5-25"
+ },
+ {
+  "id": "Advent|12-20",
+  "n": "December 20",
+  "f": "Isaiah 7:10-14",
+  "p": "Psalm 24:1-2, 3-4ab, 5-6",
+  "e": "",
+  "g": "Luke 1:26-38"
+ },
+ {
+  "id": "Advent|12-21",
+  "n": "December 21",
+  "f": "Song of Songs 2:8-14 or Zephaniah 3:14-18a",
+  "p": "Psalm 33:2-3, 11-12, 20-21",
+  "e": "",
+  "g": "Luke 1:39-45"
+ },
+ {
+  "id": "Advent|12-22",
+  "n": "December 22",
+  "f": "1 Samuel 1:24-28",
+  "p": "1 Samuel 2:1, 4-5, 6-7, 8abcd",
+  "e": "",
+  "g": "Luke 1:46-56"
+ },
+ {
+  "id": "Advent|12-23",
+  "n": "December 23",
+  "f": "Malachi 3:1-4, 23-24",
+  "p": "Psalm 25:4-5ab, 8-9, 10+14",
+  "e": "",
+  "g": "Luke 1:57-66"
+ },
+ {
+  "id": "Advent|12-24",
+  "n": "December 24",
+  "f": "2 Samuel 7:1-5, 8b-12, 14a, 16",
+  "p": "Psalm 89:2-3, 4-5, 27+29",
+  "e": "",
+  "g": "Luke 1:67-79"
+ },
+ {
+  "id": "Advent|2|Friday",
+  "n": "Friday of the 2nd Week of Advent",
+  "f": "Isaiah 48:17-19",
+  "p": "Psalm 1:1-2, 3, 4+6",
+  "e": "",
+  "g": "Matthew 11:16-19"
+ },
+ {
+  "id": "Advent|2|Monday",
+  "n": "Monday of the 2nd Week of Advent",
+  "f": "Isaiah 35:1-10",
+  "p": "Psalm 85:9ab+10, 11-12, 13-14",
+  "e": "",
+  "g": "Luke 5:17-26"
+ },
+ {
+  "id": "Advent|2|Saturday",
+  "n": "Saturday of the 2nd Week of Advent",
+  "f": "Sirach 48:1-4, 9-11",
+  "p": "Psalm 80:2ac+3b, 15-16, 18-19",
+  "e": "",
+  "g": "Matthew 17:9a, 10-13"
+ },
+ {
+  "id": "Advent|2|Thursday",
+  "n": "Thursday of the 2nd Week of Advent",
+  "f": "Isaiah 41:13-20",
+  "p": "Psalm 145:1+9, 10-11, 12-13ab",
+  "e": "",
+  "g": "Matthew 11:11-15"
+ },
+ {
+  "id": "Advent|2|Tuesday",
+  "n": "Tuesday of the 2nd Week of Advent",
+  "f": "Isaiah 40:1-11",
+  "p": "Psalm 96:1-2, 3+10ac, 11-12, 13",
+  "e": "",
+  "g": "Matthew 18:12-14"
+ },
+ {
+  "id": "Advent|2|Wednesday",
+  "n": "Wednesday of the 2nd Week of Advent",
+  "f": "Isaiah 40:25-31",
+  "p": "Psalm 103:1-2, 3-4, 8+10",
+  "e": "",
+  "g": "Matthew 11:28-30"
+ },
+ {
+  "id": "Advent|3|Friday",
+  "n": "Friday of the 3rd Week of Advent",
+  "f": "Isaiah 56:1-3a, 6-8",
+  "p": "Psalm 67:2-3, 5, 7-8",
+  "e": "",
+  "g": "John 5:33-36"
+ },
+ {
+  "id": "Advent|3|Monday",
+  "n": "Monday of the 3rd Week of Advent",
+  "f": "Numbers 24:2-7, 15-17a",
+  "p": "Psalm 25:4-5ab, 6+7bc, 8-9",
+  "e": "",
+  "g": "Matthew 21:23-27"
+ },
+ {
+  "id": "Advent|3|Thursday",
+  "n": "Thursday of the 3rd Week of Advent",
+  "f": "Isaiah 54:1-10",
+  "p": "Psalm 30:2+4, 5-6, 11-12a+13b",
+  "e": "",
+  "g": "Luke 7:24-30"
+ },
+ {
+  "id": "Advent|3|Tuesday",
+  "n": "Tuesday of the 3rd Week of Advent",
+  "f": "Zephaniah 3:1-2, 9-13",
+  "p": "Psalm 34:2-3, 6-7, 17-18, 19+23",
+  "e": "",
+  "g": "Matthew 21:28-32"
+ },
+ {
+  "id": "Advent|3|Wednesday",
+  "n": "Wednesday of the 3rd Week of Advent",
+  "f": "Isaiah 45:6c-8, 18, 21c-25",
+  "p": "Psalm 85:9ab+10, 11-12, 13-14",
+  "e": "",
+  "g": "Luke 7:18b-23"
+ },
+ {
+  "id": "Ash Wednesday",
+  "n": "Ash Wednesday",
+  "f": "Joel 2:12-18",
+  "p": "Psalm 51:3-4, 5-6ab, 12-13, 14+17",
+  "e": "2 Corinthians 5:20-6:2",
+  "g": "Matthew 6:1-6, 16-18"
+ },
+ {
+  "id": "B|Ascension",
+  "n": "Ascension of the Lord",
+  "f": "Acts 1:1-11",
+  "p": "Psalm 47:2-3, 6-7, 8-9",
+  "e": "Ephesians 1:17-23 or Ephesians 4:1-13 or 4:1-7, 11-13",
+  "g": "Mark 16:15-20"
+ },
+ {
+  "id": "B|Sacred Heart",
+  "n": "Most Sacred Heart of Jesus",
+  "f": "Hosea 11:1, 3-4, 8c-9",
+  "p": "Isaiah 12:2-3, 4bcd, 5-6",
+  "e": "Ephesians 3:8-12, 14-19",
+  "g": "John 19:31-37"
+ },
+ {
+  "id": "C|Ascension",
+  "n": "Ascension of the Lord",
+  "f": "Acts 1:1-11",
+  "p": "Psalm 47:2-3, 6-7, 8-9",
+  "e": "Ephesians 1:17-23 or Hebrews 9:24-28; 10:19-23",
+  "g": "Luke 24:46-53"
+ },
+ {
+  "id": "C|Lent|5|Monday",
+  "n": "Monday of the 5th Week of Lent",
+  "f": "Daniel 13:1-9, 15-17, 19-30, 33-62 or 13:41c-62",
+  "p": "Psalm 23:1-3a, 3b-4, 5, 6",
+  "e": "",
+  "g": "John 8:12-20"
+ },
+ {
+  "id": "C|Sacred Heart",
+  "n": "Most Sacred Heart of Jesus",
+  "f": "Ezekiel 34:11-16",
+  "p": "Psalm 23:1-3a, 3b-4, 5, 6",
+  "e": "Romans 5:5b-11",
+  "g": "Luke 15:3-7"
+ },
+ {
+  "id": "Christmas|01-02",
+  "n": "January 2, Christmas Weekday",
+  "f": "1 John 2:22-28",
+  "p": "Psalm 98:1, 2-3ab, 3cd-4",
+  "e": "",
+  "g": "John 1:19-28"
+ },
+ {
+  "id": "Christmas|01-03",
+  "n": "January 3, Christmas Weekday",
+  "f": "1 John 2:29-3:6",
+  "p": "Psalm 98:1, 3cd-4, 5-6",
+  "e": "",
+  "g": "John 1:29-34"
+ },
+ {
+  "id": "Christmas|01-04",
+  "n": "January 4, Christmas Weekday",
+  "f": "1 John 3:7-10",
+  "p": "Psalm 98:1, 7-8, 9",
+  "e": "",
+  "g": "John 1:35-42"
+ },
+ {
+  "id": "Christmas|01-05",
+  "n": "January 5, Christmas Weekday",
+  "f": "1 John 3:11-21",
+  "p": "Psalm 100:1b-2, 3, 4, 5",
+  "e": "",
+  "g": "John 1:43-51"
+ },
+ {
+  "id": "Christmas|01-07",
+  "n": "January 7, Christmas Weekday",
+  "f": "1 John 3:22-4:6",
+  "p": "Psalm 2:7bc-8, 10-12a",
+  "e": "",
+  "g": "Matthew 4:12-17, 23-25"
+ },
+ {
+  "id": "Christmas|01-08",
+  "n": "January 8, Christmas Weekday",
+  "f": "1 John 4:7-10",
+  "p": "Psalm 72:1-2, 3-4, 7-8",
+  "e": "",
+  "g": "Mark 6:34-44"
+ },
+ {
+  "id": "Christmas|01-09",
+  "n": "January 9, Christmas Weekday",
+  "f": "1 John 4:11-18",
+  "p": "Psalm 72:1-2, 10, 12-13",
+  "e": "",
+  "g": "Mark 6:45-52"
+ },
+ {
+  "id": "Christmas|01-10",
+  "n": "January 10, Christmas Weekday",
+  "f": "1 John 4:19-5:4",
+  "p": "Psalm 72:1-2, 14+15bc, 17",
+  "e": "",
+  "g": "Luke 4:14-22a"
+ },
+ {
+  "id": "Christmas|01-11",
+  "n": "January 11, Christmas Weekday",
+  "f": "1 John 5:5-13",
+  "p": "Psalm 147:12-13, 14-15, 19-20",
+  "e": "",
+  "g": "Luke 5:12-16"
+ },
+ {
+  "id": "Christmas|01-12",
+  "n": "January 12, Christmas Weekday",
+  "f": "1 John 5:14-21",
+  "p": "Psalm 149:1-2, 3-4, 5+6a+9b",
+  "e": "",
+  "g": "John 3:22-30"
+ },
+ {
+  "id": "Christmas|12-29",
+  "n": "December 29, within the Octave of Christmas",
+  "f": "1 John 2:3-11",
+  "p": "Psalm 96:1-2a, 2b-3, 5b-6",
+  "e": "",
+  "g": "Luke 2:22-35"
+ },
+ {
+  "id": "Christmas|12-30",
+  "n": "December 30, within the Octave of Christmas",
+  "f": "1 John 2:12-17",
+  "p": "Psalm 96:7-8a, 8b-9, 10",
+  "e": "",
+  "g": "Luke 2:36-40"
+ },
+ {
+  "id": "Christmas|12-31",
+  "n": "December 31, within the Octave of Christmas",
+  "f": "1 John 2:18-21",
+  "p": "Psalm 96:1-2, 11-12, 13",
+  "e": "",
+  "g": "John 1:1-18"
+ },
+ {
+  "id": "Easter|1|Friday",
+  "n": "Friday within the Octave of Easter",
+  "f": "Acts 4:1-12",
+  "p": "Psalm 118:1-2+4, 22-24, 25-27a",
+  "e": "",
+  "g": "John 21:1-14"
+ },
+ {
+  "id": "Easter|1|Monday",
+  "n": "Monday within the Octave of Easter",
+  "f": "Acts 2:14, 22-33",
+  "p": "Psalm 16:1-2a+5, 7-8, 9-10, 11",
+  "e": "",
+  "g": "Matthew 28:8-15"
+ },
+ {
+  "id": "Easter|1|Saturday",
+  "n": "Saturday within the Octave of Easter",
+  "f": "Acts 4:13-21",
+  "p": "Psalm 118:1+14-15ab, 16-18, 19-21",
+  "e": "",
+  "g": "Mark 16:9-15"
+ },
+ {
+  "id": "Easter|1|Thursday",
+  "n": "Thursday within the Octave of Easter",
+  "f": "Acts 3:11-26",
+  "p": "Psalm 8:2ab+5, 6-7, 8-9",
+  "e": "",
+  "g": "Luke 24:35-48"
+ },
+ {
+  "id": "Easter|1|Tuesday",
+  "n": "Tuesday within the Octave of Easter",
+  "f": "Acts 2:36-41",
+  "p": "Psalm 33:4-5, 18-19, 20+22",
+  "e": "",
+  "g": "John 20:11-18"
+ },
+ {
+  "id": "Easter|1|Wednesday",
+  "n": "Wednesday within the Octave of Easter",
+  "f": "Acts 3:1-10",
+  "p": "Psalm 105:1-2, 3-4, 6-7, 8-9",
+  "e": "",
+  "g": "Luke 24:13-35"
+ },
+ {
+  "id": "Easter|2|Friday",
+  "n": "Friday of the 2nd Week of Easter",
+  "f": "Acts 5:34-42",
+  "p": "Psalm 27:1, 4, 13-14",
+  "e": "",
+  "g": "John 6:1-15"
+ },
+ {
+  "id": "Easter|2|Monday",
+  "n": "Monday of the 2nd Week of Easter",
+  "f": "Acts 4:23-31",
+  "p": "Psalm 2:1-3, 4-7a, 7b-9",
+  "e": "",
+  "g": "John 3:1-8"
+ },
+ {
+  "id": "Easter|2|Saturday",
+  "n": "Saturday of the 2nd Week of Easter",
+  "f": "Acts 6:1-7",
+  "p": "Psalm 33:1-2, 4-5, 18-19",
+  "e": "",
+  "g": "John 6:16-21"
+ },
+ {
+  "id": "Easter|2|Thursday",
+  "n": "Thursday of the 2nd Week of Easter",
+  "f": "Acts 5:27-33",
+  "p": "Psalm 34:2+9, 17-18, 19-20",
+  "e": "",
+  "g": "John 3:31-36"
+ },
+ {
+  "id": "Easter|2|Tuesday",
+  "n": "Tuesday of the 2nd Week of Easter",
+  "f": "Acts 4:32-37",
+  "p": "Psalm 93:1ab, 1cd-2, 5",
+  "e": "",
+  "g": "John 3:7b-15"
+ },
+ {
+  "id": "Easter|2|Wednesday",
+  "n": "Wednesday of the 2nd Week of Easter",
+  "f": "Acts 5:17-26",
+  "p": "Psalm 34:2-3, 4-5, 6-7, 8-9",
+  "e": "",
+  "g": "John 3:16-21"
+ },
+ {
+  "id": "Easter|3|Friday",
+  "n": "Friday of the 3rd Week of Easter",
+  "f": "Acts 9:1-20",
+  "p": "Psalm 117:1, 2",
+  "e": "",
+  "g": "John 6:52-59"
+ },
+ {
+  "id": "Easter|3|Monday",
+  "n": "Monday of the 3rd Week of Easter",
+  "f": "Acts 6:8-15",
+  "p": "Psalm 119:23-24, 26-27, 29-30",
+  "e": "",
+  "g": "John 6:22-29"
+ },
+ {
+  "id": "Easter|3|Saturday",
+  "n": "Saturday of the 3rd Week of Easter",
+  "f": "Acts 9:31-42",
+  "p": "Psalm 116:12-13, 14-15, 16-17",
+  "e": "",
+  "g": "John 6:60-69"
+ },
+ {
+  "id": "Easter|3|Thursday",
+  "n": "Thursday of the 3rd Week of Easter",
+  "f": "Acts 8:26-40",
+  "p": "Psalm 66:8-9, 16-17, 20",
+  "e": "",
+  "g": "John 6:44-51"
+ },
+ {
+  "id": "Easter|3|Tuesday",
+  "n": "Tuesday of the 3rd Week of Easter",
+  "f": "Acts 7:51-8:1a",
+  "p": "Psalm 31:3cd-4, 6+7b+8a, 17+21ab",
+  "e": "",
+  "g": "John 6:30-35"
+ },
+ {
+  "id": "Easter|3|Wednesday",
+  "n": "Wednesday of the 3rd Week of Easter",
+  "f": "Acts 8:1b-8",
+  "p": "Psalm 66:1-3a, 4-5, 6-7a",
+  "e": "",
+  "g": "John 6:35-40"
+ },
+ {
+  "id": "Easter|4|Friday",
+  "n": "Friday of the 4th Week of Easter",
+  "f": "Acts 13:26-33",
+  "p": "Psalm 2:6-7, 8-9, 10-11ab",
+  "e": "",
+  "g": "John 14:1-6"
+ },
+ {
+  "id": "Easter|4|Monday",
+  "n": "Monday of the 4th Week of Easter",
+  "f": "Acts 11:1-18",
+  "p": "Psalm 42:2-3; 43:3, 4",
+  "e": "",
+  "g": "John 10:1-10"
+ },
+ {
+  "id": "Easter|4|Saturday",
+  "n": "Saturday of the 4th Week of Easter",
+  "f": "Acts 13:44-52",
+  "p": "Psalm 98:1, 2-3ab, 3cd-4",
+  "e": "",
+  "g": "John 14:7-14"
+ },
+ {
+  "id": "Easter|4|Thursday",
+  "n": "Thursday of the 4th Week of Easter",
+  "f": "Acts 13:13-25",
+  "p": "Psalm 89:2-3, 21-22, 25+27",
+  "e": "",
+  "g": "John 13:16-20"
+ },
+ {
+  "id": "Easter|4|Tuesday",
+  "n": "Tuesday of the 4th Week of Easter",
+  "f": "Acts 11:19-26",
+  "p": "Psalm 87:1b-3, 4-5, 6-7",
+  "e": "",
+  "g": "John 10:22-30"
+ },
+ {
+  "id": "Easter|4|Wednesday",
+  "n": "Wednesday of the 4th Week of Easter",
+  "f": "Acts 12:24-13:5a",
+  "p": "Psalm 67:2-3, 5, 6+8",
+  "e": "",
+  "g": "John 12:44-50"
+ },
+ {
+  "id": "Easter|5|Friday",
+  "n": "Friday of the 5th Week of Easter",
+  "f": "Acts 15:22-31",
+  "p": "Psalm 57:8-9, 10+12",
+  "e": "",
+  "g": "John 15:12-17"
+ },
+ {
+  "id": "Easter|5|Monday",
+  "n": "Monday of the 5th Week of Easter",
+  "f": "Acts 14:5-18",
+  "p": "Psalm 115:1-2, 3-4, 15-16",
+  "e": "",
+  "g": "John 14:21-26"
+ },
+ {
+  "id": "Easter|5|Saturday",
+  "n": "Saturday of the 5th Week of Easter",
+  "f": "Acts 16:1-10",
+  "p": "Psalm 100:1b-2, 3, 5",
+  "e": "",
+  "g": "John 15:18-21"
+ },
+ {
+  "id": "Easter|5|Thursday",
+  "n": "Thursday of the 5th Week of Easter",
+  "f": "Acts 15:7-21",
+  "p": "Psalm 96:1-2a, 2b-3, 10",
+  "e": "",
+  "g": "John 15:9-11"
+ },
+ {
+  "id": "Easter|5|Tuesday",
+  "n": "Tuesday of the 5th Week of Easter",
+  "f": "Acts 14:19-28",
+  "p": "Psalm 145:10-11, 12-13ab, 21",
+  "e": "",
+  "g": "John 14:27-31a"
+ },
+ {
+  "id": "Easter|5|Wednesday",
+  "n": "Wednesday of the 5th Week of Easter",
+  "f": "Acts 15:1-6",
+  "p": "Psalm 122:1-2, 3-4ab, 4cd-5",
+  "e": "",
+  "g": "John 15:1-8"
+ },
+ {
+  "id": "Easter|6|Friday",
+  "n": "Friday of the 6th Week of Easter",
+  "f": "Acts 18:9-18",
+  "p": "Psalm 47:2-3, 4-5, 6-7",
+  "e": "",
+  "g": "John 16:20-23"
+ },
+ {
+  "id": "Easter|6|Monday",
+  "n": "Monday of the 6th Week of Easter",
+  "f": "Acts 16:11-15",
+  "p": "Psalm 149:1b-2, 3-4, 5-6a+9b",
+  "e": "",
+  "g": "John 15:26-16:4a"
+ },
+ {
+  "id": "Easter|6|Saturday",
+  "n": "Saturday of the 6th Week of Easter",
+  "f": "Acts 18:23-28",
+  "p": "Psalm 47:2-3, 8-9, 10",
+  "e": "",
+  "g": "John 16:23b-28"
+ },
+ {
+  "id": "Easter|6|Thursday",
+  "n": "Thursday of the 6th Week of Easter",
+  "f": "Acts 18:1-8",
+  "p": "Psalm 98:1, 2-3ab, 3cd-4",
+  "e": "",
+  "g": "John 16:16-20"
+ },
+ {
+  "id": "Easter|6|Tuesday",
+  "n": "Tuesday of the 6th Week of Easter",
+  "f": "Acts 16:22-34",
+  "p": "Psalm 138:1-2ab, 2cde-3, 7c-8",
+  "e": "",
+  "g": "John 16:5-11"
+ },
+ {
+  "id": "Easter|6|Wednesday",
+  "n": "Wednesday of the 6th Week of Easter",
+  "f": "Acts 17:15, 22-18:1",
+  "p": "Psalm 148:1-2, 11-12, 13, 14",
+  "e": "",
+  "g": "John 16:12-15"
+ },
+ {
+  "id": "Easter|7|Friday",
+  "n": "Friday of the 7th Week of Easter",
+  "f": "Acts 25:13b-21",
+  "p": "Psalm 103:1-2, 11-12, 19-20ab",
+  "e": "",
+  "g": "John 21:15-19"
+ },
+ {
+  "id": "Easter|7|Monday",
+  "n": "Monday of the 7th Week of Easter",
+  "f": "Acts 19:1-8",
+  "p": "Psalm 68:2-3ab, 4-5acd, 6-7ab",
+  "e": "",
+  "g": "John 16:29-33"
+ },
+ {
+  "id": "Easter|7|Saturday",
+  "n": "Saturday of the 7th Week of Easter",
+  "f": "Acts 28:16-20, 30-31",
+  "p": "Psalm 11:4, 5+7",
+  "e": "",
+  "g": "John 21:20-25"
+ },
+ {
+  "id": "Easter|7|Thursday",
+  "n": "Thursday of the 7th Week of Easter",
+  "f": "Acts 22:30; 23:6-11",
+  "p": "Psalm 16:1-2a+5, 7-8, 9-10, 11",
+  "e": "",
+  "g": "John 17:20-26"
+ },
+ {
+  "id": "Easter|7|Tuesday",
+  "n": "Tuesday of the 7th Week of Easter",
+  "f": "Acts 20:17-27",
+  "p": "Psalm 68:10-11, 20-21",
+  "e": "",
+  "g": "John 17:1-11a"
+ },
+ {
+  "id": "Easter|7|Wednesday",
+  "n": "Wednesday of the 7th Week of Easter",
+  "f": "Acts 20:28-38",
+  "p": "Psalm 68:29-30, 33-35a, 35bc-36ab",
+  "e": "",
+  "g": "John 17:11b-19"
+ },
+ {
+  "id": "Good Friday",
+  "n": "Good Friday of the Passion of the Lord",
+  "f": "Isaiah 52:13-53:12",
+  "p": "Psalm 31:2+6, 12-13, 15-16, 17+25",
+  "e": "Hebrews 4:14-16; 5:7-9",
+  "g": "John 18:1-19:42"
+ },
+ {
+  "id": "Holy Thursday",
+  "n": "Holy Thursday — Mass of the Lord's Supper",
+  "f": "Exodus 12:1-8, 11-14",
+  "p": "Psalm 116:12-13, 15-16, 17-18",
+  "e": "1 Corinthians 11:23-26",
+  "g": "John 13:1-15"
+ },
+ {
+  "id": "Holy Week|Monday",
+  "n": "Monday of Holy Week",
+  "f": "Isaiah 42:1-7",
+  "p": "Psalm 27:1, 2, 3, 13-14",
+  "e": "",
+  "g": "John 12:1-11"
+ },
+ {
+  "id": "Holy Week|Tuesday",
+  "n": "Tuesday of Holy Week",
+  "f": "Isaiah 49:1-6",
+  "p": "Psalm 71:1-2, 3-4a, 5-6ab, 15+17",
+  "e": "",
+  "g": "John 13:21-33, 36-38"
+ },
+ {
+  "id": "Holy Week|Wednesday",
+  "n": "Wednesday of Holy Week",
+  "f": "Isaiah 50:4-9a",
+  "p": "Psalm 69:8-10, 21-22, 31+33-34",
+  "e": "",
+  "g": "Matthew 26:14-25"
+ },
+ {
+  "id": "I|Ordinary Time|1|Friday",
+  "n": "Friday of the 1st Week in Ordinary Time",
+  "f": "Hebrews 4:1-5, 11",
+  "p": "Psalm 78:3+4bc, 6c-7, 8",
+  "e": "",
+  "g": "Mark 2:1-12"
+ },
+ {
+  "id": "I|Ordinary Time|1|Monday",
+  "n": "Monday of the 1st Week in Ordinary Time",
+  "f": "Hebrews 1:1-6",
+  "p": "Psalm 97:1+2b, 6+7c, 9",
+  "e": "",
+  "g": "Mark 1:14-20"
+ },
+ {
+  "id": "I|Ordinary Time|1|Saturday",
+  "n": "Saturday of the 1st Week in Ordinary Time",
+  "f": "Hebrews 4:12-16",
+  "p": "Psalm 19:8, 9, 10, 15",
+  "e": "",
+  "g": "Mark 2:13-17"
+ },
+ {
+  "id": "I|Ordinary Time|1|Thursday",
+  "n": "Thursday of the 1st Week in Ordinary Time",
+  "f": "Hebrews 3:7-14",
+  "p": "Psalm 95:6-7c, 8-9, 10-11",
+  "e": "",
+  "g": "Mark 1:40-45"
+ },
+ {
+  "id": "I|Ordinary Time|1|Tuesday",
+  "n": "Tuesday of the 1st Week in Ordinary Time",
+  "f": "Hebrews 2:5-12",
+  "p": "Psalm 8:2ab+5, 6-7, 8-9",
+  "e": "",
+  "g": "Mark 1:21-28"
+ },
+ {
+  "id": "I|Ordinary Time|1|Wednesday",
+  "n": "Wednesday of the 1st Week in Ordinary Time",
+  "f": "Hebrews 2:14-18",
+  "p": "Psalm 105:1-2, 3-4, 6-7, 8-9",
+  "e": "",
+  "g": "Mark 1:29-39"
+ },
+ {
+  "id": "I|Ordinary Time|10|Friday",
+  "n": "Friday of the 10th Week in Ordinary Time",
+  "f": "2 Corinthians 4:7-15",
+  "p": "Psalm 116:10-11, 15-16, 17-18",
+  "e": "",
+  "g": "Matthew 5:27-32"
+ },
+ {
+  "id": "I|Ordinary Time|10|Monday",
+  "n": "Monday of the 10th Week in Ordinary Time",
+  "f": "2 Corinthians 1:1-7",
+  "p": "Psalm 34:2-3, 4-5, 6-7, 8-9",
+  "e": "",
+  "g": "Matthew 5:1-12"
+ },
+ {
+  "id": "I|Ordinary Time|10|Saturday",
+  "n": "Saturday of the 10th Week in Ordinary Time",
+  "f": "2 Corinthians 5:14-21",
+  "p": "Psalm 103:1-2, 3-4, 9-10, 11-12",
+  "e": "",
+  "g": "Matthew 5:33-37"
+ },
+ {
+  "id": "I|Ordinary Time|10|Thursday",
+  "n": "Thursday of the 10th Week in Ordinary Time",
+  "f": "2 Corinthians 3:15-4:1, 3-6",
+  "p": "Psalm 85:9ab+10, 11-12, 13-14",
+  "e": "",
+  "g": "Matthew 5:20-26"
+ },
+ {
+  "id": "I|Ordinary Time|10|Tuesday",
+  "n": "Tuesday of the 10th Week in Ordinary Time",
+  "f": "2 Corinthians 1:18-22",
+  "p": "Psalm 119:129, 130, 131, 132, 133, 135",
+  "e": "",
+  "g": "Matthew 5:13-16"
+ },
+ {
+  "id": "I|Ordinary Time|10|Wednesday",
+  "n": "Wednesday of the 10th Week in Ordinary Time",
+  "f": "2 Corinthians 3:4-11",
+  "p": "Psalm 99:5, 6, 7, 8, 9",
+  "e": "",
+  "g": "Matthew 5:17-19"
+ },
+ {
+  "id": "I|Ordinary Time|11|Friday",
+  "n": "Friday of the 11th Week in Ordinary Time",
+  "f": "2 Corinthians 11:18, 21-30",
+  "p": "Psalm 34:2-3, 4-5, 6-7",
+  "e": "",
+  "g": "Matthew 6:19-23"
+ },
+ {
+  "id": "I|Ordinary Time|11|Monday",
+  "n": "Monday of the 11th Week in Ordinary Time",
+  "f": "2 Corinthians 6:1-10",
+  "p": "Psalm 98:1, 2b-3ab, 3cd-4",
+  "e": "",
+  "g": "Matthew 5:38-42"
+ },
+ {
+  "id": "I|Ordinary Time|11|Saturday",
+  "n": "Saturday of the 11th Week in Ordinary Time",
+  "f": "2 Corinthians 12:1-10",
+  "p": "Psalm 34:8-9, 10-11, 12-13",
+  "e": "",
+  "g": "Matthew 6:24-34"
+ },
+ {
+  "id": "I|Ordinary Time|11|Thursday",
+  "n": "Thursday of the 11th Week in Ordinary Time",
+  "f": "2 Corinthians 11:1-11",
+  "p": "Psalm 111:1b-2, 3-4, 7-8",
+  "e": "",
+  "g": "Matthew 6:7-15"
+ },
+ {
+  "id": "I|Ordinary Time|11|Tuesday",
+  "n": "Tuesday of the 11th Week in Ordinary Time",
+  "f": "2 Corinthians 8:1-9",
+  "p": "Psalm 146:2, 5-6ab, 6c-7, 8-9a",
+  "e": "",
+  "g": "Matthew 5:43-48"
+ },
+ {
+  "id": "I|Ordinary Time|11|Wednesday",
+  "n": "Wednesday of the 11th Week in Ordinary Time",
+  "f": "2 Corinthians 9:6-11",
+  "p": "Psalm 112:1bc-2, 3-4, 9",
+  "e": "",
+  "g": "Matthew 6:1-6, 16-18"
+ },
+ {
+  "id": "I|Ordinary Time|12|Friday",
+  "n": "Friday of the 12th Week in Ordinary Time",
+  "f": "Genesis 17:1, 9-10, 15-22",
+  "p": "Psalm 128:1-2, 3, 4-5",
+  "e": "",
+  "g": "Matthew 8:1-4"
+ },
+ {
+  "id": "I|Ordinary Time|12|Monday",
+  "n": "Monday of the 12th Week in Ordinary Time",
+  "f": "Genesis 12:1-9",
+  "p": "Psalm 33:12-13, 18-19, 20+22",
+  "e": "",
+  "g": "Matthew 7:1-5"
+ },
+ {
+  "id": "I|Ordinary Time|12|Saturday",
+  "n": "Saturday of the 12th Week in Ordinary Time",
+  "f": "Genesis 18:1-15",
+  "p": "Luke 1:46-47, 48-49, 50+53, 54-55",
+  "e": "",
+  "g": "Matthew 8:5-17"
+ },
+ {
+  "id": "I|Ordinary Time|12|Thursday",
+  "n": "Thursday of the 12th Week in Ordinary Time",
+  "f": "Genesis 16:1-12, 15-16 or 16:6b-12, 15-16",
+  "p": "Psalm 106:1b-2, 3-4a, 4b-5",
+  "e": "",
+  "g": "Matthew 7:21-29"
+ },
+ {
+  "id": "I|Ordinary Time|12|Tuesday",
+  "n": "Tuesday of the 12th Week in Ordinary Time",
+  "f": "Genesis 13:2, 5-18",
+  "p": "Psalm 15:2-3a, 3bc-4ab, 5",
+  "e": "",
+  "g": "Matthew 7:6, 12-14"
+ },
+ {
+  "id": "I|Ordinary Time|12|Wednesday",
+  "n": "Wednesday of the 12th Week in Ordinary Time",
+  "f": "Genesis 15:1-12, 17-18",
+  "p": "Psalm 105:1-2, 3-4, 6-7, 8-9",
+  "e": "",
+  "g": "Matthew 7:15-20"
+ },
+ {
+  "id": "I|Ordinary Time|13|Friday",
+  "n": "Friday of the 13th Week in Ordinary Time",
+  "f": "Genesis 23:1-4, 19; 24:1-8, 62-67",
+  "p": "Psalm 106:1b-2, 3-4a, 4b-5",
+  "e": "",
+  "g": "Matthew 9:9-13"
+ },
+ {
+  "id": "I|Ordinary Time|13|Monday",
+  "n": "Monday of the 13th Week in Ordinary Time",
+  "f": "Genesis 18:16-33",
+  "p": "Psalm 103:1b-2, 3-4, 8-9, 10-11",
+  "e": "",
+  "g": "Matthew 8:18-22"
+ },
+ {
+  "id": "I|Ordinary Time|13|Saturday",
+  "n": "Saturday of the 13th Week in Ordinary Time",
+  "f": "Genesis 27:1-5, 15-29",
+  "p": "Psalm 135:1b-2, 3-4, 5-6",
+  "e": "",
+  "g": "Matthew 9:14-17"
+ },
+ {
+  "id": "I|Ordinary Time|13|Thursday",
+  "n": "Thursday of the 13th Week in Ordinary Time",
+  "f": "Genesis 22:1b-19",
+  "p": "Psalm 115:1-2, 3-4, 5-6, 8-9",
+  "e": "",
+  "g": "Matthew 9:1-8"
+ },
+ {
+  "id": "I|Ordinary Time|13|Tuesday",
+  "n": "Tuesday of the 13th Week in Ordinary Time",
+  "f": "Genesis 19:15-29",
+  "p": "Psalm 26:2-3, 9-10, 11-12",
+  "e": "",
+  "g": "Matthew 8:23-27"
+ },
+ {
+  "id": "I|Ordinary Time|13|Wednesday",
+  "n": "Wednesday of the 13th Week in Ordinary Time",
+  "f": "Genesis 21:5, 8-20a",
+  "p": "Psalm 34:7-8, 10-11, 12-13",
+  "e": "",
+  "g": "Matthew 8:28-34"
+ },
+ {
+  "id": "I|Ordinary Time|14|Friday",
+  "n": "Friday of the 14th Week in Ordinary Time",
+  "f": "Genesis 46:1-7, 28-30",
+  "p": "Psalm 37:3-4, 18-19, 27-28, 39-40",
+  "e": "",
+  "g": "Matthew 10:16-23"
+ },
+ {
+  "id": "I|Ordinary Time|14|Monday",
+  "n": "Monday of the 14th Week in Ordinary Time",
+  "f": "Genesis 28:10-22a",
+  "p": "Psalm 91:1-2, 3-4, 14-15ab",
+  "e": "",
+  "g": "Matthew 9:18-26"
+ },
+ {
+  "id": "I|Ordinary Time|14|Saturday",
+  "n": "Saturday of the 14th Week in Ordinary Time",
+  "f": "Genesis 49:29-32; 50:15-26a",
+  "p": "Psalm 105:1-2, 3-4, 6-7",
+  "e": "",
+  "g": "Matthew 10:24-33"
+ },
+ {
+  "id": "I|Ordinary Time|14|Thursday",
+  "n": "Thursday of the 14th Week in Ordinary Time",
+  "f": "Genesis 44:18-21, 23b-29; 45:1-5",
+  "p": "Psalm 105:16-17, 18-19, 20-21",
+  "e": "",
+  "g": "Matthew 10:7-15"
+ },
+ {
+  "id": "I|Ordinary Time|14|Tuesday",
+  "n": "Tuesday of the 14th Week in Ordinary Time",
+  "f": "Genesis 32:23-33",
+  "p": "Psalm 17:1b, 2-3, 6-7ab, 8b+15",
+  "e": "",
+  "g": "Matthew 9:32-38"
+ },
+ {
+  "id": "I|Ordinary Time|14|Wednesday",
+  "n": "Wednesday of the 14th Week in Ordinary Time",
+  "f": "Genesis 41:55-57; 42:5-7a, 17-24a",
+  "p": "Psalm 33:2-3, 10-11, 18-19",
+  "e": "",
+  "g": "Matthew 10:1-7"
+ },
+ {
+  "id": "I|Ordinary Time|15|Friday",
+  "n": "Friday of the 15th Week in Ordinary Time",
+  "f": "Exodus 11:10-12:14",
+  "p": "Psalm 116:12-13, 15+16bc, 17-18",
+  "e": "",
+  "g": "Matthew 12:1-8"
+ },
+ {
+  "id": "I|Ordinary Time|15|Monday",
+  "n": "Monday of the 15th Week in Ordinary Time",
+  "f": "Exodus 1:8-14, 22",
+  "p": "Psalm 124:1b-3, 4-6, 7-8",
+  "e": "",
+  "g": "Matthew 10:34-11:1"
+ },
+ {
+  "id": "I|Ordinary Time|15|Saturday",
+  "n": "Saturday of the 15th Week in Ordinary Time",
+  "f": "Exodus 12:37-42",
+  "p": "Psalm 136:1+23-24, 10-12, 13-15",
+  "e": "",
+  "g": "Matthew 12:14-21"
+ },
+ {
+  "id": "I|Ordinary Time|15|Thursday",
+  "n": "Thursday of the 15th Week in Ordinary Time",
+  "f": "Exodus 3:13-20",
+  "p": "Psalm 105:1+5, 8-9, 24-25, 26-27",
+  "e": "",
+  "g": "Matthew 11:28-30"
+ },
+ {
+  "id": "I|Ordinary Time|15|Tuesday",
+  "n": "Tuesday of the 15th Week in Ordinary Time",
+  "f": "Exodus 2:1-15a",
+  "p": "Psalm 69:3, 14, 30-31, 33-34",
+  "e": "",
+  "g": "Matthew 11:20-24"
+ },
+ {
+  "id": "I|Ordinary Time|15|Wednesday",
+  "n": "Wednesday of the 15th Week in Ordinary Time",
+  "f": "Exodus 3:1-6, 9-12",
+  "p": "Psalm 103:1b-2, 3-4, 6-7",
+  "e": "",
+  "g": "Matthew 11:25-27"
+ },
+ {
+  "id": "I|Ordinary Time|16|Friday",
+  "n": "Friday of the 16th Week in Ordinary Time",
+  "f": "Exodus 20:1-17",
+  "p": "Psalm 19:8, 9, 10, 11",
+  "e": "",
+  "g": "Matthew 13:18-23"
+ },
+ {
+  "id": "I|Ordinary Time|16|Monday",
+  "n": "Monday of the 16th Week in Ordinary Time",
+  "f": "Exodus 14:5-18",
+  "p": "Exodus 15:1bc-2, 3-4, 5-6",
+  "e": "",
+  "g": "Matthew 12:38-42"
+ },
+ {
+  "id": "I|Ordinary Time|16|Saturday",
+  "n": "Saturday of the 16th Week in Ordinary Time",
+  "f": "Exodus 24:3-8",
+  "p": "Psalm 50:1b-2, 5-6, 14-15",
+  "e": "",
+  "g": "Matthew 13:24-30"
+ },
+ {
+  "id": "I|Ordinary Time|16|Thursday",
+  "n": "Thursday of the 16th Week in Ordinary Time",
+  "f": "Exodus 19:1-2, 9-11, 16-20b",
+  "p": "Daniel 3:52, 53, 54, 55, 56",
+  "e": "",
+  "g": "Matthew 13:10-17"
+ },
+ {
+  "id": "I|Ordinary Time|16|Tuesday",
+  "n": "Tuesday of the 16th Week in Ordinary Time",
+  "f": "Exodus 14:21-15:1",
+  "p": "Exodus 15:8-9, 10+12, 17",
+  "e": "",
+  "g": "Matthew 12:46-50"
+ },
+ {
+  "id": "I|Ordinary Time|16|Wednesday",
+  "n": "Wednesday of the 16th Week in Ordinary Time",
+  "f": "Exodus 16:1-5, 9-15",
+  "p": "Psalm 78:18-19, 23-24, 25-26, 27-28",
+  "e": "",
+  "g": "Matthew 13:1-9"
+ },
+ {
+  "id": "I|Ordinary Time|17|Friday",
+  "n": "Friday of the 17th Week in Ordinary Time",
+  "f": "Leviticus 23:1, 4-11, 15-16, 27, 34b-37",
+  "p": "Psalm 81:3-4, 5-6ab, 10-11ab",
+  "e": "",
+  "g": "Matthew 13:54-58"
+ },
+ {
+  "id": "I|Ordinary Time|17|Monday",
+  "n": "Monday of the 17th Week in Ordinary Time",
+  "f": "Exodus 32:15-24, 30-34",
+  "p": "Psalm 106:19-20, 21-22, 23",
+  "e": "",
+  "g": "Matthew 13:31-35"
+ },
+ {
+  "id": "I|Ordinary Time|17|Saturday",
+  "n": "Saturday of the 17th Week in Ordinary Time",
+  "f": "Leviticus 25:1, 8-17",
+  "p": "Psalm 67:2-3, 5, 7-8",
+  "e": "",
+  "g": "Matthew 14:1-12"
+ },
+ {
+  "id": "I|Ordinary Time|17|Thursday",
+  "n": "Thursday of the 17th Week in Ordinary Time",
+  "f": "Exodus 40:16-21, 34-38",
+  "p": "Psalm 84:3, 4, 5-6a+8a, 11",
+  "e": "",
+  "g": "Matthew 13:47-53"
+ },
+ {
+  "id": "I|Ordinary Time|17|Tuesday",
+  "n": "Tuesday of the 17th Week in Ordinary Time",
+  "f": "Exodus 33:7-11; 34:5b-9, 28",
+  "p": "Psalm 103:6-7, 8-9, 10-11, 12-13",
+  "e": "",
+  "g": "Matthew 13:36-43"
+ },
+ {
+  "id": "I|Ordinary Time|17|Wednesday",
+  "n": "Wednesday of the 17th Week in Ordinary Time",
+  "f": "Exodus 34:29-35",
+  "p": "Psalm 99:5, 6, 7, 9",
+  "e": "",
+  "g": "Matthew 13:44-46"
+ },
+ {
+  "id": "I|Ordinary Time|18|Friday",
+  "n": "Friday of the 18th Week in Ordinary Time",
+  "f": "Deuteronomy 4:32-40",
+  "p": "Psalm 77:12-13, 14-15, 16+21",
+  "e": "",
+  "g": "Matthew 16:24-28"
+ },
+ {
+  "id": "I|Ordinary Time|18|Monday",
+  "n": "Monday of the 18th Week in Ordinary Time",
+  "f": "Numbers 11:4b-15",
+  "p": "Psalm 81:12-13, 14-15, 16-17",
+  "e": "",
+  "g": "Matthew 14:13-21"
+ },
+ {
+  "id": "I|Ordinary Time|18|Saturday",
+  "n": "Saturday of the 18th Week in Ordinary Time",
+  "f": "Deuteronomy 6:4-13",
+  "p": "Psalm 18:2-3a, 3bc-4, 47+51",
+  "e": "",
+  "g": "Matthew 17:14-20"
+ },
+ {
+  "id": "I|Ordinary Time|18|Thursday",
+  "n": "Thursday of the 18th Week in Ordinary Time",
+  "f": "Numbers 20:1-13",
+  "p": "Psalm 95:1-2, 6-7, 8-9",
+  "e": "",
+  "g": "Matthew 16:13-23"
+ },
+ {
+  "id": "I|Ordinary Time|18|Tuesday",
+  "n": "Tuesday of the 18th Week in Ordinary Time",
+  "f": "Numbers 12:1-13",
+  "p": "Psalm 51:3-4, 5-6ab, 6cd-7, 12-13",
+  "e": "",
+  "g": "Matthew 14:22-36"
+ },
+ {
+  "id": "I|Ordinary Time|18|Wednesday",
+  "n": "Wednesday of the 18th Week in Ordinary Time",
+  "f": "Numbers 13:1-2, 25-14:1, 26a-29a, 34-35",
+  "p": "Psalm 106:6-7ab, 13-14, 21-22, 23",
+  "e": "",
+  "g": "Matthew 15:21-28"
+ },
+ {
+  "id": "I|Ordinary Time|19|Friday",
+  "n": "Friday of the 19th Week in Ordinary Time",
+  "f": "Joshua 24:1-13",
+  "p": "Psalm 136:1-3, 16-18, 21-22+24",
+  "e": "",
+  "g": "Matthew 19:3-12"
+ },
+ {
+  "id": "I|Ordinary Time|19|Monday",
+  "n": "Monday of the 19th Week in Ordinary Time",
+  "f": "Deuteronomy 10:12-22",
+  "p": "Psalm 147:12-13, 14-15, 19-20",
+  "e": "",
+  "g": "Matthew 17:22-27"
+ },
+ {
+  "id": "I|Ordinary Time|19|Saturday",
+  "n": "Saturday of the 19th Week in Ordinary Time",
+  "f": "Joshua 24:14-29",
+  "p": "Psalm 16:1-2a+5, 7-8, 11",
+  "e": "",
+  "g": "Matthew 19:13-15"
+ },
+ {
+  "id": "I|Ordinary Time|19|Thursday",
+  "n": "Thursday of the 19th Week in Ordinary Time",
+  "f": "Joshua 3:7-10a, 11, 13-17",
+  "p": "Psalm 114:1-2, 3-4, 5-6",
+  "e": "",
+  "g": "Matthew 18:21-19:1"
+ },
+ {
+  "id": "I|Ordinary Time|19|Tuesday",
+  "n": "Tuesday of the 19th Week in Ordinary Time",
+  "f": "Deuteronomy 31:1-8",
+  "p": "Deuteronomy 32:3-4ab, 7, 8, 9+12",
+  "e": "",
+  "g": "Matthew 18:1-5, 10, 12-14"
+ },
+ {
+  "id": "I|Ordinary Time|19|Wednesday",
+  "n": "Wednesday of the 19th Week in Ordinary Time",
+  "f": "Deuteronomy 34:1-12",
+  "p": "Psalm 66:1-3a, 5+8, 16-17",
+  "e": "",
+  "g": "Matthew 18:15-20"
+ },
+ {
+  "id": "I|Ordinary Time|2|Friday",
+  "n": "Friday of the 2nd Week in Ordinary Time",
+  "f": "Hebrews 8:6-13",
+  "p": "Psalm 85:8+10, 11-12, 13-14",
+  "e": "",
+  "g": "Mark 3:13-19"
+ },
+ {
+  "id": "I|Ordinary Time|2|Monday",
+  "n": "Monday of the 2nd Week in Ordinary Time",
+  "f": "Hebrews 5:1-10",
+  "p": "Psalm 110:1, 2, 3, 4",
+  "e": "",
+  "g": "Mark 2:18-22"
+ },
+ {
+  "id": "I|Ordinary Time|2|Saturday",
+  "n": "Saturday of the 2nd Week in Ordinary Time",
+  "f": "Hebrews 9:2-3, 11-14",
+  "p": "Psalm 47:2-3, 6-7, 8-9",
+  "e": "",
+  "g": "Mark 3:20-21"
+ },
+ {
+  "id": "I|Ordinary Time|2|Thursday",
+  "n": "Thursday of the 2nd Week in Ordinary Time",
+  "f": "Hebrews 7:25-8:6",
+  "p": "Psalm 40:7-8a, 8b-9, 10, 17",
+  "e": "",
+  "g": "Mark 3:7-12"
+ },
+ {
+  "id": "I|Ordinary Time|2|Tuesday",
+  "n": "Tuesday of the 2nd Week in Ordinary Time",
+  "f": "Hebrews 6:10-20",
+  "p": "Psalm 111:1-2, 4-5, 9+10c",
+  "e": "",
+  "g": "Mark 2:23-28"
+ },
+ {
+  "id": "I|Ordinary Time|2|Wednesday",
+  "n": "Wednesday of the 2nd Week in Ordinary Time",
+  "f": "Hebrews 7:1-3, 15-17",
+  "p": "Psalm 110:1, 2, 3, 4",
+  "e": "",
+  "g": "Mark 3:1-6"
+ },
+ {
+  "id": "I|Ordinary Time|20|Friday",
+  "n": "Friday of the 20th Week in Ordinary Time",
+  "f": "Ruth 1:1, 3-6, 14b-16, 22",
+  "p": "Psalm 146:5-6ab, 6c-7, 8-9a, 9bc-10",
+  "e": "",
+  "g": "Matthew 22:34-40"
+ },
+ {
+  "id": "I|Ordinary Time|20|Monday",
+  "n": "Monday of the 20th Week in Ordinary Time",
+  "f": "Judges 2:11-19",
+  "p": "Psalm 106:34-35, 36-37, 39-40, 43ab+44",
+  "e": "",
+  "g": "Matthew 19:16-22"
+ },
+ {
+  "id": "I|Ordinary Time|20|Saturday",
+  "n": "Saturday of the 20th Week in Ordinary Time",
+  "f": "Ruth 2:1-3, 8-11; 4:13-17",
+  "p": "Psalm 128:1b-2, 3, 4, 5",
+  "e": "",
+  "g": "Matthew 23:1-12"
+ },
+ {
+  "id": "I|Ordinary Time|20|Thursday",
+  "n": "Thursday of the 20th Week in Ordinary Time",
+  "f": "Judges 11:29-39a",
+  "p": "Psalm 40:5, 7-8a, 8b-9, 10",
+  "e": "",
+  "g": "Matthew 22:1-14"
+ },
+ {
+  "id": "I|Ordinary Time|20|Tuesday",
+  "n": "Tuesday of the 20th Week in Ordinary Time",
+  "f": "Judges 6:11-24a",
+  "p": "Psalm 85:9, 11-12, 13-14",
+  "e": "",
+  "g": "Matthew 19:23-30"
+ },
+ {
+  "id": "I|Ordinary Time|20|Wednesday",
+  "n": "Wednesday of the 20th Week in Ordinary Time",
+  "f": "Judges 9:6-15",
+  "p": "Psalm 21:2-3, 4-5, 6-7",
+  "e": "",
+  "g": "Matthew 20:1-16"
+ },
+ {
+  "id": "I|Ordinary Time|21|Friday",
+  "n": "Friday of the 21st Week in Ordinary Time",
+  "f": "1 Thessalonians 4:1-8",
+  "p": "Psalm 97:1+2b, 5-6, 10, 11-12",
+  "e": "",
+  "g": "Matthew 25:1-13"
+ },
+ {
+  "id": "I|Ordinary Time|21|Monday",
+  "n": "Monday of the 21st Week in Ordinary Time",
+  "f": "1 Thessalonians 1:1-5, 8b-10",
+  "p": "Psalm 149:1b-2, 3-4, 5-6a+9b",
+  "e": "",
+  "g": "Matthew 23:13-22"
+ },
+ {
+  "id": "I|Ordinary Time|21|Saturday",
+  "n": "Saturday of the 21st Week in Ordinary Time",
+  "f": "1 Thessalonians 4:9-11",
+  "p": "Psalm 98:1, 7-8, 9",
+  "e": "",
+  "g": "Matthew 25:14-30"
+ },
+ {
+  "id": "I|Ordinary Time|21|Thursday",
+  "n": "Thursday of the 21st Week in Ordinary Time",
+  "f": "1 Thessalonians 3:7-13",
+  "p": "Psalm 90:3-4, 12-13, 14+17",
+  "e": "",
+  "g": "Matthew 24:42-51"
+ },
+ {
+  "id": "I|Ordinary Time|21|Tuesday",
+  "n": "Tuesday of the 21st Week in Ordinary Time",
+  "f": "1 Thessalonians 2:1-8",
+  "p": "Psalm 139:1-3, 4-6",
+  "e": "",
+  "g": "Matthew 23:23-26"
+ },
+ {
+  "id": "I|Ordinary Time|21|Wednesday",
+  "n": "Wednesday of the 21st Week in Ordinary Time",
+  "f": "1 Thessalonians 2:9-13",
+  "p": "Psalm 139:7-8, 9-10, 11-12ab",
+  "e": "",
+  "g": "Matthew 23:27-32"
+ },
+ {
+  "id": "I|Ordinary Time|22|Friday",
+  "n": "Friday of the 22nd Week in Ordinary Time",
+  "f": "Colossians 1:15-20",
+  "p": "Psalm 100:1b-2, 3, 4, 5",
+  "e": "",
+  "g": "Luke 5:33-39"
+ },
+ {
+  "id": "I|Ordinary Time|22|Monday",
+  "n": "Monday of the 22nd Week in Ordinary Time",
+  "f": "1 Thessalonians 4:13-18",
+  "p": "Psalm 96:1+3, 4-5, 11-12, 13",
+  "e": "",
+  "g": "Luke 4:16-30"
+ },
+ {
+  "id": "I|Ordinary Time|22|Saturday",
+  "n": "Saturday of the 22nd Week in Ordinary Time",
+  "f": "Colossians 1:21-23",
+  "p": "Psalm 54:3-4, 6+8",
+  "e": "",
+  "g": "Luke 6:1-5"
+ },
+ {
+  "id": "I|Ordinary Time|22|Thursday",
+  "n": "Thursday of the 22nd Week in Ordinary Time",
+  "f": "Colossians 1:9-14",
+  "p": "Psalm 98:2-3ab, 3cd-4, 5-6",
+  "e": "",
+  "g": "Luke 5:1-11"
+ },
+ {
+  "id": "I|Ordinary Time|22|Tuesday",
+  "n": "Tuesday of the 22nd Week in Ordinary Time",
+  "f": "1 Thessalonians 5:1-6, 9-11",
+  "p": "Psalm 27:1, 4, 13-14",
+  "e": "",
+  "g": "Luke 4:31-37"
+ },
+ {
+  "id": "I|Ordinary Time|22|Wednesday",
+  "n": "Wednesday of the 22nd Week in Ordinary Time",
+  "f": "Colossians 1:1-8",
+  "p": "Psalm 52:10, 11",
+  "e": "",
+  "g": "Luke 4:38-44"
+ },
+ {
+  "id": "I|Ordinary Time|23|Friday",
+  "n": "Friday of the 23rd Week in Ordinary Time",
+  "f": "1 Timothy 1:1-2, 12-14",
+  "p": "Psalm 16:1b-2a+5, 7-8, 11",
+  "e": "",
+  "g": "Luke 6:39-42"
+ },
+ {
+  "id": "I|Ordinary Time|23|Monday",
+  "n": "Monday of the 23rd Week in Ordinary Time",
+  "f": "Colossians 1:24-2:3",
+  "p": "Psalm 62:6-7, 9",
+  "e": "",
+  "g": "Luke 6:6-11"
+ },
+ {
+  "id": "I|Ordinary Time|23|Saturday",
+  "n": "Saturday of the 23rd Week in Ordinary Time",
+  "f": "1 Timothy 1:15-17",
+  "p": "Psalm 113:1b-2, 3-4, 5a+6-7",
+  "e": "",
+  "g": "Luke 6:43-49"
+ },
+ {
+  "id": "I|Ordinary Time|23|Thursday",
+  "n": "Thursday of the 23rd Week in Ordinary Time",
+  "f": "Colossians 3:12-17",
+  "p": "Psalm 150:1b-2, 3-4, 5-6",
+  "e": "",
+  "g": "Luke 6:27-38"
+ },
+ {
+  "id": "I|Ordinary Time|23|Tuesday",
+  "n": "Tuesday of the 23rd Week in Ordinary Time",
+  "f": "Colossians 2:6-15",
+  "p": "Psalm 145:1b-2, 8-9, 10-11",
+  "e": "",
+  "g": "Luke 6:12-19"
+ },
+ {
+  "id": "I|Ordinary Time|23|Wednesday",
+  "n": "Wednesday of the 23rd Week in Ordinary Time",
+  "f": "Colossians 3:1-11",
+  "p": "Psalm 145:2-3, 10-11, 12-13ab",
+  "e": "",
+  "g": "Luke 6:20-26"
+ },
+ {
+  "id": "I|Ordinary Time|24|Friday",
+  "n": "Friday of the 24th Week in Ordinary Time",
+  "f": "1 Timothy 6:2c-12",
+  "p": "Psalm 49:6-7, 8-10, 17-18, 19-20",
+  "e": "",
+  "g": "Luke 8:1-3"
+ },
+ {
+  "id": "I|Ordinary Time|24|Monday",
+  "n": "Monday of the 24th Week in Ordinary Time",
+  "f": "1 Timothy 2:1-8",
+  "p": "Psalm 28:2, 7, 8-9",
+  "e": "",
+  "g": "Luke 7:1-10"
+ },
+ {
+  "id": "I|Ordinary Time|24|Saturday",
+  "n": "Saturday of the 24th Week in Ordinary Time",
+  "f": "1 Timothy 6:13-16",
+  "p": "Psalm 100:1b-2, 3, 4, 5",
+  "e": "",
+  "g": "Luke 8:4-15"
+ },
+ {
+  "id": "I|Ordinary Time|24|Thursday",
+  "n": "Thursday of the 24th Week in Ordinary Time",
+  "f": "1 Timothy 4:12-16",
+  "p": "Psalm 111:7-8, 9, 10",
+  "e": "",
+  "g": "Luke 7:36-50"
+ },
+ {
+  "id": "I|Ordinary Time|24|Tuesday",
+  "n": "Tuesday of the 24th Week in Ordinary Time",
+  "f": "1 Timothy 3:1-13",
+  "p": "Psalm 101:1b-2ab, 2cd-3ab, 5, 6",
+  "e": "",
+  "g": "Luke 7:11-17"
+ },
+ {
+  "id": "I|Ordinary Time|24|Wednesday",
+  "n": "Wednesday of the 24th Week in Ordinary Time",
+  "f": "1 Timothy 3:14-16",
+  "p": "Psalm 111:1-2, 3-4, 5-6",
+  "e": "",
+  "g": "Luke 7:31-35"
+ },
+ {
+  "id": "I|Ordinary Time|25|Friday",
+  "n": "Friday of the 25th Week in Ordinary Time",
+  "f": "Haggai 2:1-9",
+  "p": "Psalm 43:1, 2, 3, 4",
+  "e": "",
+  "g": "Luke 9:18-22"
+ },
+ {
+  "id": "I|Ordinary Time|25|Monday",
+  "n": "Monday of the 25th Week in Ordinary Time",
+  "f": "Ezra 1:1-6",
+  "p": "Psalm 126:1b-2ab, 2cd-3, 4-5, 6",
+  "e": "",
+  "g": "Luke 8:16-18"
+ },
+ {
+  "id": "I|Ordinary Time|25|Saturday",
+  "n": "Saturday of the 25th Week in Ordinary Time",
+  "f": "Zechariah 2:5-9, 14-15a",
+  "p": "Jeremiah 31:10, 11-12ab, 13",
+  "e": "",
+  "g": "Luke 9:43b-45"
+ },
+ {
+  "id": "I|Ordinary Time|25|Thursday",
+  "n": "Thursday of the 25th Week in Ordinary Time",
+  "f": "Haggai 1:1-8",
+  "p": "Psalm 149:1b-2, 3-4, 5-6a+9b",
+  "e": "",
+  "g": "Luke 9:7-9"
+ },
+ {
+  "id": "I|Ordinary Time|25|Tuesday",
+  "n": "Tuesday of the 25th Week in Ordinary Time",
+  "f": "Ezra 6:7-8, 12b, 14-20",
+  "p": "Psalm 122:1-2, 3-4ab, 4cd-5",
+  "e": "",
+  "g": "Luke 8:19-21"
+ },
+ {
+  "id": "I|Ordinary Time|25|Wednesday",
+  "n": "Wednesday of the 25th Week in Ordinary Time",
+  "f": "Ezra 9:5-9",
+  "p": "Tobit 13:2, 3-4a, 6, 7, 10",
+  "e": "",
+  "g": "Luke 9:1-6"
+ },
+ {
+  "id": "I|Ordinary Time|26|Friday",
+  "n": "Friday of the 26th Week in Ordinary Time",
+  "f": "Baruch 1:15-22",
+  "p": "Psalm 79:1b-2, 3-5, 8, 9",
+  "e": "",
+  "g": "Luke 10:13-16"
+ },
+ {
+  "id": "I|Ordinary Time|26|Monday",
+  "n": "Monday of the 26th Week in Ordinary Time",
+  "f": "Zechariah 8:1-8",
+  "p": "Psalm 102:16-18, 19-21, 29+22-23",
+  "e": "",
+  "g": "Luke 9:46-50"
+ },
+ {
+  "id": "I|Ordinary Time|26|Saturday",
+  "n": "Saturday of the 26th Week in Ordinary Time",
+  "f": "Baruch 4:5-12, 27-29",
+  "p": "Psalm 69:33-35, 36-37",
+  "e": "",
+  "g": "Luke 10:17-24"
+ },
+ {
+  "id": "I|Ordinary Time|26|Thursday",
+  "n": "Thursday of the 26th Week in Ordinary Time",
+  "f": "Nehemiah 8:1-4a, 5-6, 7b-12",
+  "p": "Psalm 19:8, 9, 10, 11",
+  "e": "",
+  "g": "Luke 10:1-12"
+ },
+ {
+  "id": "I|Ordinary Time|26|Tuesday",
+  "n": "Tuesday of the 26th Week in Ordinary Time",
+  "f": "Zechariah 8:20-23",
+  "p": "Psalm 87:1b-3, 4-5, 6-7",
+  "e": "",
+  "g": "Luke 9:51-56"
+ },
+ {
+  "id": "I|Ordinary Time|26|Wednesday",
+  "n": "Wednesday of the 26th Week in Ordinary Time",
+  "f": "Nehemiah 2:1-8",
+  "p": "Psalm 137:1-2, 3, 4-5, 6",
+  "e": "",
+  "g": "Luke 9:57-62"
+ },
+ {
+  "id": "I|Ordinary Time|27|Friday",
+  "n": "Friday of the 27th Week in Ordinary Time",
+  "f": "Joel 1:13-15; 2:1-2",
+  "p": "Psalm 9:2-3, 6+16, 8-9",
+  "e": "",
+  "g": "Luke 11:15-26"
+ },
+ {
+  "id": "I|Ordinary Time|27|Monday",
+  "n": "Monday of the 27th Week in Ordinary Time",
+  "f": "Jonah 1:1-2:2, 11",
+  "p": "Jonah 2:3, 4, 5, 8",
+  "e": "",
+  "g": "Luke 10:25-37"
+ },
+ {
+  "id": "I|Ordinary Time|27|Saturday",
+  "n": "Saturday of the 27th Week in Ordinary Time",
+  "f": "Joel 4:12-21",
+  "p": "Psalm 97:1-2, 5-6, 11-12",
+  "e": "",
+  "g": "Luke 11:27-28"
+ },
+ {
+  "id": "I|Ordinary Time|27|Thursday",
+  "n": "Thursday of the 27th Week in Ordinary Time",
+  "f": "Malachi 3:13-20b",
+  "p": "Psalm 1:1-2, 3, 4+6",
+  "e": "",
+  "g": "Luke 11:5-13"
+ },
+ {
+  "id": "I|Ordinary Time|27|Tuesday",
+  "n": "Tuesday of the 27th Week in Ordinary Time",
+  "f": "Jonah 3:1-10",
+  "p": "Psalm 130:1b-2, 3-4ab, 7-8",
+  "e": "",
+  "g": "Luke 10:38-42"
+ },
+ {
+  "id": "I|Ordinary Time|27|Wednesday",
+  "n": "Wednesday of the 27th Week in Ordinary Time",
+  "f": "Jonah 4:1-11",
+  "p": "Psalm 86:3-4, 5-6, 9-10",
+  "e": "",
+  "g": "Luke 11:1-4"
+ },
+ {
+  "id": "I|Ordinary Time|28|Friday",
+  "n": "Friday of the 28th Week in Ordinary Time",
+  "f": "Romans 4:1-8",
+  "p": "Psalm 32:1b-2, 5, 11",
+  "e": "",
+  "g": "Luke 12:1-7"
+ },
+ {
+  "id": "I|Ordinary Time|28|Monday",
+  "n": "Monday of the 28th Week in Ordinary Time",
+  "f": "Romans 1:1-7",
+  "p": "Psalm 98:1bcde, 2-3ab, 3cd-4",
+  "e": "",
+  "g": "Luke 11:29-32"
+ },
+ {
+  "id": "I|Ordinary Time|28|Saturday",
+  "n": "Saturday of the 28th Week in Ordinary Time",
+  "f": "Romans 4:13, 16-18",
+  "p": "Psalm 105:6-7, 8-9, 42-43",
+  "e": "",
+  "g": "Luke 12:8-12"
+ },
+ {
+  "id": "I|Ordinary Time|28|Thursday",
+  "n": "Thursday of the 28th Week in Ordinary Time",
+  "f": "Romans 3:21-30",
+  "p": "Psalm 130:1b-2, 3-4, 5-6ab",
+  "e": "",
+  "g": "Luke 11:47-54"
+ },
+ {
+  "id": "I|Ordinary Time|28|Tuesday",
+  "n": "Tuesday of the 28th Week in Ordinary Time",
+  "f": "Romans 1:16-25",
+  "p": "Psalm 19:2-3, 4-5",
+  "e": "",
+  "g": "Luke 11:37-41"
+ },
+ {
+  "id": "I|Ordinary Time|28|Wednesday",
+  "n": "Wednesday of the 28th Week in Ordinary Time",
+  "f": "Romans 2:1-11",
+  "p": "Psalm 62:2-3, 6-7, 9",
+  "e": "",
+  "g": "Luke 11:42-46"
+ },
+ {
+  "id": "I|Ordinary Time|29|Friday",
+  "n": "Friday of the 29th Week in Ordinary Time",
+  "f": "Romans 7:18-25a",
+  "p": "Psalm 119:66, 68, 76, 77, 93, 94",
+  "e": "",
+  "g": "Luke 12:54-59"
+ },
+ {
+  "id": "I|Ordinary Time|29|Monday",
+  "n": "Monday of the 29th Week in Ordinary Time",
+  "f": "Romans 4:20-25",
+  "p": "Luke 1:69-70, 71-72, 73-75",
+  "e": "",
+  "g": "Luke 12:13-21"
+ },
+ {
+  "id": "I|Ordinary Time|29|Saturday",
+  "n": "Saturday of the 29th Week in Ordinary Time",
+  "f": "Romans 8:1-11",
+  "p": "Psalm 24:1b-2, 3-4ab, 5-6",
+  "e": "",
+  "g": "Luke 13:1-9"
+ },
+ {
+  "id": "I|Ordinary Time|29|Thursday",
+  "n": "Thursday of the 29th Week in Ordinary Time",
+  "f": "Romans 6:19-23",
+  "p": "Psalm 1:1-2, 3, 4+6",
+  "e": "",
+  "g": "Luke 12:49-53"
+ },
+ {
+  "id": "I|Ordinary Time|29|Tuesday",
+  "n": "Tuesday of the 29th Week in Ordinary Time",
+  "f": "Romans 5:12, 15b, 17-19, 20b-21",
+  "p": "Psalm 40:7-8a, 8b-9, 10, 17",
+  "e": "",
+  "g": "Luke 12:35-38"
+ },
+ {
+  "id": "I|Ordinary Time|29|Wednesday",
+  "n": "Wednesday of the 29th Week in Ordinary Time",
+  "f": "Romans 6:12-18",
+  "p": "Psalm 124:1b-3, 4-6, 7-8",
+  "e": "",
+  "g": "Luke 12:39-48"
+ },
+ {
+  "id": "I|Ordinary Time|3|Friday",
+  "n": "Friday of the 3rd Week in Ordinary Time",
+  "f": "Hebrews 10:32-39",
+  "p": "Psalm 37:3-4, 5-6, 23-24, 39-40",
+  "e": "",
+  "g": "Mark 4:26-34"
+ },
+ {
+  "id": "I|Ordinary Time|3|Monday",
+  "n": "Monday of the 3rd Week in Ordinary Time",
+  "f": "Hebrews 9:15, 24-28",
+  "p": "Psalm 98:1, 2-3ab, 3cd-4, 5-6",
+  "e": "",
+  "g": "Mark 3:22-30"
+ },
+ {
+  "id": "I|Ordinary Time|3|Saturday",
+  "n": "Saturday of the 3rd Week in Ordinary Time",
+  "f": "Hebrews 11:1-2, 8-19",
+  "p": "Luke 1:69-70, 71-72, 73-75",
+  "e": "",
+  "g": "Mark 4:35-41"
+ },
+ {
+  "id": "I|Ordinary Time|3|Thursday",
+  "n": "Thursday of the 3rd Week in Ordinary Time",
+  "f": "Hebrews 10:19-25",
+  "p": "Psalm 24:1-2, 3-4ab, 5-6",
+  "e": "",
+  "g": "Mark 4:21-25"
+ },
+ {
+  "id": "I|Ordinary Time|3|Tuesday",
+  "n": "Tuesday of the 3rd Week in Ordinary Time",
+  "f": "Hebrews 10:1-10",
+  "p": "Psalm 40:2+4ab, 7-8a, 10, 11",
+  "e": "",
+  "g": "Mark 3:31-35"
+ },
+ {
+  "id": "I|Ordinary Time|3|Wednesday",
+  "n": "Wednesday of the 3rd Week in Ordinary Time",
+  "f": "Hebrews 10:11-18",
+  "p": "Psalm 110:1, 2, 3, 4",
+  "e": "",
+  "g": "Mark 4:1-20"
+ },
+ {
+  "id": "I|Ordinary Time|30|Friday",
+  "n": "Friday of the 30th Week in Ordinary Time",
+  "f": "Romans 9:1-5",
+  "p": "Psalm 147:12-13, 14-15, 19-20",
+  "e": "",
+  "g": "Luke 14:1-6"
+ },
+ {
+  "id": "I|Ordinary Time|30|Monday",
+  "n": "Monday of the 30th Week in Ordinary Time",
+  "f": "Romans 8:12-17",
+  "p": "Psalm 68:2+4, 6-7ab, 20-21",
+  "e": "",
+  "g": "Luke 13:10-17"
+ },
+ {
+  "id": "I|Ordinary Time|30|Saturday",
+  "n": "Saturday of the 30th Week in Ordinary Time",
+  "f": "Romans 11:1-2a, 11-12, 25-29",
+  "p": "Psalm 94:12-13a, 14-15, 17-18",
+  "e": "",
+  "g": "Luke 14:1, 7-11"
+ },
+ {
+  "id": "I|Ordinary Time|30|Thursday",
+  "n": "Thursday of the 30th Week in Ordinary Time",
+  "f": "Romans 8:31b-39",
+  "p": "Psalm 109:21-22, 26-27, 30-31",
+  "e": "",
+  "g": "Luke 13:31-35"
+ },
+ {
+  "id": "I|Ordinary Time|30|Tuesday",
+  "n": "Tuesday of the 30th Week in Ordinary Time",
+  "f": "Romans 8:18-25",
+  "p": "Psalm 126:1b-2ab, 2cd-3, 4-5, 6",
+  "e": "",
+  "g": "Luke 13:18-21"
+ },
+ {
+  "id": "I|Ordinary Time|30|Wednesday",
+  "n": "Wednesday of the 30th Week in Ordinary Time",
+  "f": "Romans 8:26-30",
+  "p": "Psalm 13:4-5, 6",
+  "e": "",
+  "g": "Luke 13:22-30"
+ },
+ {
+  "id": "I|Ordinary Time|31|Friday",
+  "n": "Friday of the 31st Week in Ordinary Time",
+  "f": "Romans 15:14-21",
+  "p": "Psalm 98:1, 2-3ab, 3cd-4",
+  "e": "",
+  "g": "Luke 16:1-8"
+ },
+ {
+  "id": "I|Ordinary Time|31|Monday",
+  "n": "Monday of the 31st Week in Ordinary Time",
+  "f": "Romans 11:29-36",
+  "p": "Psalm 69:30-31, 33-34, 36-37",
+  "e": "",
+  "g": "Luke 14:12-14"
+ },
+ {
+  "id": "I|Ordinary Time|31|Saturday",
+  "n": "Saturday of the 31st Week in Ordinary Time",
+  "f": "Romans 16:3-9, 16, 22-27",
+  "p": "Psalm 145:2-3, 4-5, 10-11",
+  "e": "",
+  "g": "Luke 16:9-15"
+ },
+ {
+  "id": "I|Ordinary Time|31|Thursday",
+  "n": "Thursday of the 31st Week in Ordinary Time",
+  "f": "Romans 14:7-12",
+  "p": "Psalm 27:1bcde, 4, 13-14",
+  "e": "",
+  "g": "Luke 15:1-10"
+ },
+ {
+  "id": "I|Ordinary Time|31|Tuesday",
+  "n": "Tuesday of the 31st Week in Ordinary Time",
+  "f": "Romans 12:5-16ab",
+  "p": "Psalm 131:1bcde, 2, 3",
+  "e": "",
+  "g": "Luke 14:15-24"
+ },
+ {
+  "id": "I|Ordinary Time|31|Wednesday",
+  "n": "Wednesday of the 31st Week in Ordinary Time",
+  "f": "Romans 13:8-10",
+  "p": "Psalm 112:1b-2, 4-5, 9",
+  "e": "",
+  "g": "Luke 14:25-33"
+ },
+ {
+  "id": "I|Ordinary Time|32|Friday",
+  "n": "Friday of the 32nd Week in Ordinary Time",
+  "f": "Wisdom 13:1-9",
+  "p": "Psalm 19:2-3, 4-5ab",
+  "e": "",
+  "g": "Luke 17:26-37"
+ },
+ {
+  "id": "I|Ordinary Time|32|Monday",
+  "n": "Monday of the 32nd Week in Ordinary Time",
+  "f": "Wisdom 1:1-7",
+  "p": "Psalm 139:1b-3, 4-6, 7-8, 9-10",
+  "e": "",
+  "g": "Luke 17:1-6"
+ },
+ {
+  "id": "I|Ordinary Time|32|Saturday",
+  "n": "Saturday of the 32nd Week in Ordinary Time",
+  "f": "Wisdom 18:14-16; 19:6-9",
+  "p": "Psalm 105:2-3, 36-37, 42-43",
+  "e": "",
+  "g": "Luke 18:1-8"
+ },
+ {
+  "id": "I|Ordinary Time|32|Thursday",
+  "n": "Thursday of the 32nd Week in Ordinary Time",
+  "f": "Wisdom 7:22b-8:1",
+  "p": "Psalm 119:89, 90, 91, 130, 135, 175",
+  "e": "",
+  "g": "Luke 17:20-25"
+ },
+ {
+  "id": "I|Ordinary Time|32|Tuesday",
+  "n": "Tuesday of the 32nd Week in Ordinary Time",
+  "f": "Wisdom 2:23-3:9",
+  "p": "Psalm 34:2-3, 16-17, 18-19",
+  "e": "",
+  "g": "Luke 17:7-10"
+ },
+ {
+  "id": "I|Ordinary Time|32|Wednesday",
+  "n": "Wednesday of the 32nd Week in Ordinary Time",
+  "f": "Wisdom 6:1-11",
+  "p": "Psalm 82:3-4, 6-7",
+  "e": "",
+  "g": "Luke 17:11-19"
+ },
+ {
+  "id": "I|Ordinary Time|33|Friday",
+  "n": "Friday of the 33rd Week in Ordinary Time",
+  "f": "1 Maccabees 4:36-37, 52-59",
+  "p": "1 Chronicles 29:10bcd, 11abc, 11d-12a, 12bcd",
+  "e": "",
+  "g": "Luke 19:45-48"
+ },
+ {
+  "id": "I|Ordinary Time|33|Monday",
+  "n": "Monday of the 33rd Week in Ordinary Time",
+  "f": "1 Maccabees 1:10-15, 41-43, 54-57, 62-63",
+  "p": "Psalm 119:53, 61, 134, 150, 155, 158",
+  "e": "",
+  "g": "Luke 18:35-43"
+ },
+ {
+  "id": "I|Ordinary Time|33|Saturday",
+  "n": "Saturday of the 33rd Week in Ordinary Time",
+  "f": "1 Maccabees 6:1-13",
+  "p": "Psalm 9:2-3, 4+6, 16+19",
+  "e": "",
+  "g": "Luke 20:27-40"
+ },
+ {
+  "id": "I|Ordinary Time|33|Thursday",
+  "n": "Thursday of the 33rd Week in Ordinary Time",
+  "f": "1 Maccabees 2:15-29",
+  "p": "Psalm 50:1b-2, 5-6, 14-15",
+  "e": "",
+  "g": "Luke 19:41-44"
+ },
+ {
+  "id": "I|Ordinary Time|33|Tuesday",
+  "n": "Tuesday of the 33rd Week in Ordinary Time",
+  "f": "2 Maccabees 6:18-31",
+  "p": "Psalm 3:2-3, 4-5, 6-7",
+  "e": "",
+  "g": "Luke 19:1-10"
+ },
+ {
+  "id": "I|Ordinary Time|33|Wednesday",
+  "n": "Wednesday of the 33rd Week in Ordinary Time",
+  "f": "2 Maccabees 7:1, 20-31",
+  "p": "Psalm 17:1bcd, 5-6, 8b+15",
+  "e": "",
+  "g": "Luke 19:11-28"
+ },
+ {
+  "id": "I|Ordinary Time|34|Friday",
+  "n": "Friday of the 34th Week in Ordinary Time",
+  "f": "Daniel 7:2-14",
+  "p": "Daniel 3:75, 76, 77, 78, 79, 80, 81",
+  "e": "",
+  "g": "Luke 21:29-33"
+ },
+ {
+  "id": "I|Ordinary Time|34|Monday",
+  "n": "Monday of the 34th Week in Ordinary Time",
+  "f": "Daniel 1:1-6, 8-20",
+  "p": "Daniel 3:52, 53, 54, 55, 56",
+  "e": "",
+  "g": "Luke 21:1-4"
+ },
+ {
+  "id": "I|Ordinary Time|34|Saturday",
+  "n": "Saturday of the 34th Week in Ordinary Time",
+  "f": "Daniel 7:15-27",
+  "p": "Daniel 3:82, 83, 84, 85, 86, 87",
+  "e": "",
+  "g": "Luke 21:34-36"
+ },
+ {
+  "id": "I|Ordinary Time|34|Thursday",
+  "n": "Thursday of the 34th Week in Ordinary Time",
+  "f": "Daniel 6:12-28",
+  "p": "Daniel 3:68, 69, 70, 71, 72, 73, 74",
+  "e": "",
+  "g": "Luke 21:20-28"
+ },
+ {
+  "id": "I|Ordinary Time|34|Tuesday",
+  "n": "Tuesday of the 34th Week in Ordinary Time",
+  "f": "Daniel 2:31-45",
+  "p": "Daniel 3:57, 58, 59, 60, 61",
+  "e": "",
+  "g": "Luke 21:5-11"
+ },
+ {
+  "id": "I|Ordinary Time|34|Wednesday",
+  "n": "Wednesday of the 34th Week in Ordinary Time",
+  "f": "Daniel 5:1-6, 13-14, 16-17, 23-28",
+  "p": "Daniel 3:62, 63, 64, 65, 66, 67",
+  "e": "",
+  "g": "Luke 21:12-19"
+ },
+ {
+  "id": "I|Ordinary Time|4|Friday",
+  "n": "Friday of the 4th Week in Ordinary Time",
+  "f": "Hebrews 13:1-8",
+  "p": "Psalm 27:1, 3, 5, 8b-9abc",
+  "e": "",
+  "g": "Mark 6:14-29"
+ },
+ {
+  "id": "I|Ordinary Time|4|Monday",
+  "n": "Monday of the 4th Week in Ordinary Time",
+  "f": "Hebrews 11:32-40",
+  "p": "Psalm 31:20, 21, 22, 23, 24",
+  "e": "",
+  "g": "Mark 5:1-20"
+ },
+ {
+  "id": "I|Ordinary Time|4|Saturday",
+  "n": "Saturday of the 4th Week in Ordinary Time",
+  "f": "Hebrews 13:15-17, 20-21",
+  "p": "Psalm 23:1-3a, 3b-4, 5, 6",
+  "e": "",
+  "g": "Mark 6:30-34"
+ },
+ {
+  "id": "I|Ordinary Time|4|Thursday",
+  "n": "Thursday of the 4th Week in Ordinary Time",
+  "f": "Hebrews 12:18-19, 21-24",
+  "p": "Psalm 48:2-3ab, 3cd-4, 9, 10-11",
+  "e": "",
+  "g": "Mark 6:7-13"
+ },
+ {
+  "id": "I|Ordinary Time|4|Tuesday",
+  "n": "Tuesday of the 4th Week in Ordinary Time",
+  "f": "Hebrews 12:1-4",
+  "p": "Psalm 22:26b-27, 28+30, 31-32",
+  "e": "",
+  "g": "Mark 5:21-43"
+ },
+ {
+  "id": "I|Ordinary Time|4|Wednesday",
+  "n": "Wednesday of the 4th Week in Ordinary Time",
+  "f": "Hebrews 12:4-7, 11-15",
+  "p": "Psalm 103:1-2, 13-14, 17-18a",
+  "e": "",
+  "g": "Mark 6:1-6"
+ },
+ {
+  "id": "I|Ordinary Time|5|Friday",
+  "n": "Friday of the 5th Week in Ordinary Time",
+  "f": "Genesis 3:1-8",
+  "p": "Psalm 32:1-2, 5, 6, 7",
+  "e": "",
+  "g": "Mark 7:31-37"
+ },
+ {
+  "id": "I|Ordinary Time|5|Monday",
+  "n": "Monday of the 5th Week in Ordinary Time",
+  "f": "Genesis 1:1-19",
+  "p": "Psalm 104:1-2a, 5-6, 10+12, 24+35c",
+  "e": "",
+  "g": "Mark 6:53-56"
+ },
+ {
+  "id": "I|Ordinary Time|5|Saturday",
+  "n": "Saturday of the 5th Week in Ordinary Time",
+  "f": "Genesis 3:9-24",
+  "p": "Psalm 90:2, 3-4abc, 5-6, 12-13",
+  "e": "",
+  "g": "Mark 8:1-10"
+ },
+ {
+  "id": "I|Ordinary Time|5|Thursday",
+  "n": "Thursday of the 5th Week in Ordinary Time",
+  "f": "Genesis 2:18-25",
+  "p": "Psalm 128:1-2, 3, 4-5",
+  "e": "",
+  "g": "Mark 7:24-30"
+ },
+ {
+  "id": "I|Ordinary Time|5|Tuesday",
+  "n": "Tuesday of the 5th Week in Ordinary Time",
+  "f": "Genesis 1:20-2:4a",
+  "p": "Psalm 8:4-5, 6-7, 8-9",
+  "e": "",
+  "g": "Mark 7:1-13"
+ },
+ {
+  "id": "I|Ordinary Time|5|Wednesday",
+  "n": "Wednesday of the 5th Week in Ordinary Time",
+  "f": "Genesis 2:4b-9, 15-17",
+  "p": "Psalm 104:1-2a, 27-28, 29bc-30",
+  "e": "",
+  "g": "Mark 7:14-23"
+ },
+ {
+  "id": "I|Ordinary Time|6|Friday",
+  "n": "Friday of the 6th Week in Ordinary Time",
+  "f": "Genesis 11:1-9",
+  "p": "Psalm 33:10-11, 12-13, 14-15",
+  "e": "",
+  "g": "Mark 8:34-9:1"
+ },
+ {
+  "id": "I|Ordinary Time|6|Monday",
+  "n": "Monday of the 6th Week in Ordinary Time",
+  "f": "Genesis 4:1-15, 25",
+  "p": "Psalm 50:1+8, 16bc-17, 20-21",
+  "e": "",
+  "g": "Mark 8:11-13"
+ },
+ {
+  "id": "I|Ordinary Time|6|Saturday",
+  "n": "Saturday of the 6th Week in Ordinary Time",
+  "f": "Hebrews 11:1-7",
+  "p": "Psalm 145:2-3, 4-5, 10-11",
+  "e": "",
+  "g": "Mark 9:2-13"
+ },
+ {
+  "id": "I|Ordinary Time|6|Thursday",
+  "n": "Thursday of the 6th Week in Ordinary Time",
+  "f": "Genesis 9:1-13",
+  "p": "Psalm 102:16-18, 19-21, 29+22-23",
+  "e": "",
+  "g": "Mark 8:27-33"
+ },
+ {
+  "id": "I|Ordinary Time|6|Tuesday",
+  "n": "Tuesday of the 6th Week in Ordinary Time",
+  "f": "Genesis 6:5-8; 7:1-5, 10",
+  "p": "Psalm 29:1a+2, 3ac-4, 3b+9c-10",
+  "e": "",
+  "g": "Mark 8:14-21"
+ },
+ {
+  "id": "I|Ordinary Time|6|Wednesday",
+  "n": "Wednesday of the 6th Week in Ordinary Time",
+  "f": "Genesis 8:6-13, 20-22",
+  "p": "Psalm 116:12-13, 14-15, 18-19",
+  "e": "",
+  "g": "Mark 8:22-26"
+ },
+ {
+  "id": "I|Ordinary Time|7|Friday",
+  "n": "Friday of the 7th Week in Ordinary Time",
+  "f": "Sirach 6:5-17",
+  "p": "Psalm 119:12, 16, 18, 27, 34, 35",
+  "e": "",
+  "g": "Mark 10:1-12"
+ },
+ {
+  "id": "I|Ordinary Time|7|Monday",
+  "n": "Monday of the 7th Week in Ordinary Time",
+  "f": "Sirach 1:1-10",
+  "p": "Psalm 93:1ab, 1cd-2, 5",
+  "e": "",
+  "g": "Mark 9:14-29"
+ },
+ {
+  "id": "I|Ordinary Time|7|Saturday",
+  "n": "Saturday of the 7th Week in Ordinary Time",
+  "f": "Sirach 17:1-15",
+  "p": "Psalm 103:13-14, 15-16, 17-18a",
+  "e": "",
+  "g": "Mark 10:13-16"
+ },
+ {
+  "id": "I|Ordinary Time|7|Thursday",
+  "n": "Thursday of the 7th Week in Ordinary Time",
+  "f": "Sirach 5:1-8",
+  "p": "Psalm 1:1-2, 3, 4+6",
+  "e": "",
+  "g": "Mark 9:41-50"
+ },
+ {
+  "id": "I|Ordinary Time|7|Tuesday",
+  "n": "Tuesday of the 7th Week in Ordinary Time",
+  "f": "Sirach 2:1-11",
+  "p": "Psalm 37:3-4, 18-19, 27-28, 39-40",
+  "e": "",
+  "g": "Mark 9:30-37"
+ },
+ {
+  "id": "I|Ordinary Time|7|Wednesday",
+  "n": "Wednesday of the 7th Week in Ordinary Time",
+  "f": "Sirach 4:11-19",
+  "p": "Psalm 119:165, 168, 171, 172, 174, 175",
+  "e": "",
+  "g": "Mark 9:38-40"
+ },
+ {
+  "id": "I|Ordinary Time|8|Friday",
+  "n": "Friday of the 8th Week in Ordinary Time",
+  "f": "Sirach 44:1, 9-13",
+  "p": "Psalm 149:1b-2, 3-4, 5-6a+9b",
+  "e": "",
+  "g": "Mark 11:11-26"
+ },
+ {
+  "id": "I|Ordinary Time|8|Monday",
+  "n": "Monday of the 8th Week in Ordinary Time",
+  "f": "Sirach 17:20-24",
+  "p": "Psalm 32:1-2, 5, 6, 7",
+  "e": "",
+  "g": "Mark 10:17-27"
+ },
+ {
+  "id": "I|Ordinary Time|8|Saturday",
+  "n": "Saturday of the 8th Week in Ordinary Time",
+  "f": "Sirach 51:12cd-20",
+  "p": "Psalm 19:8, 9, 10, 11",
+  "e": "",
+  "g": "Mark 11:27-33"
+ },
+ {
+  "id": "I|Ordinary Time|8|Thursday",
+  "n": "Thursday of the 8th Week in Ordinary Time",
+  "f": "Sirach 42:15-25",
+  "p": "Psalm 33:2-3, 4-5, 6-7, 8-9",
+  "e": "",
+  "g": "Mark 10:46-52"
+ },
+ {
+  "id": "I|Ordinary Time|8|Tuesday",
+  "n": "Tuesday of the 8th Week in Ordinary Time",
+  "f": "Sirach 35:1-12",
+  "p": "Psalm 50:5-6, 7-8, 14+23",
+  "e": "",
+  "g": "Mark 10:28-31"
+ },
+ {
+  "id": "I|Ordinary Time|8|Wednesday",
+  "n": "Wednesday of the 8th Week in Ordinary Time",
+  "f": "Sirach 36:1, 4-5a, 10-17",
+  "p": "Psalm 79:8, 9, 11+13",
+  "e": "",
+  "g": "Mark 10:32-45"
+ },
+ {
+  "id": "I|Ordinary Time|9|Friday",
+  "n": "Friday of the 9th Week in Ordinary Time",
+  "f": "Tobit 11:5-17",
+  "p": "Psalm 146:1b-2, 6c-7, 8-9a, 9bc-10",
+  "e": "",
+  "g": "Mark 12:35-37"
+ },
+ {
+  "id": "I|Ordinary Time|9|Monday",
+  "n": "Monday of the 9th Week in Ordinary Time",
+  "f": "Tobit 1:3; 2:1a-8",
+  "p": "Psalm 112:1b-2, 3b-4, 5-6",
+  "e": "",
+  "g": "Mark 12:1-12"
+ },
+ {
+  "id": "I|Ordinary Time|9|Saturday",
+  "n": "Saturday of the 9th Week in Ordinary Time",
+  "f": "Tobit 12:1, 5-15, 20",
+  "p": "Tobit 13:2, 6, 7, 10",
+  "e": "",
+  "g": "Mark 12:38-44"
+ },
+ {
+  "id": "I|Ordinary Time|9|Thursday",
+  "n": "Thursday of the 9th Week in Ordinary Time",
+  "f": "Tobit 6:10-11; 7:1bcde, 9-17; 8:4-9a",
+  "p": "Psalm 128:1-2, 3, 4-5",
+  "e": "",
+  "g": "Mark 12:28b-34"
+ },
+ {
+  "id": "I|Ordinary Time|9|Tuesday",
+  "n": "Tuesday of the 9th Week in Ordinary Time",
+  "f": "Tobit 2:9-14",
+  "p": "Psalm 112:1-2, 7-8, 9",
+  "e": "",
+  "g": "Mark 12:13-17"
+ },
+ {
+  "id": "I|Ordinary Time|9|Wednesday",
+  "n": "Wednesday of the 9th Week in Ordinary Time",
+  "f": "Tobit 3:1-11a, 16-17a",
+  "p": "Psalm 25:2-3, 4-5ab, 6+7bc, 8-9",
+  "e": "",
+  "g": "Mark 12:18-27"
+ },
+ {
+  "id": "II|Ordinary Time|1|Friday",
+  "n": "Friday of the 1st Week in Ordinary Time",
+  "f": "1 Samuel 8:4-7, 10-22a",
+  "p": "Psalm 89:16-17, 18-19",
+  "e": "",
+  "g": "Mark 2:1-12"
+ },
+ {
+  "id": "II|Ordinary Time|1|Monday",
+  "n": "Monday of the 1st Week in Ordinary Time",
+  "f": "1 Samuel 1:1-8",
+  "p": "Psalm 116:12-13, 14-17, 18-19",
+  "e": "",
+  "g": "Mark 1:14-20"
+ },
+ {
+  "id": "II|Ordinary Time|1|Saturday",
+  "n": "Saturday of the 1st Week in Ordinary Time",
+  "f": "1 Samuel 9:1-4, 17-19; 10:1",
+  "p": "Psalm 21:2-3, 4-5, 6-7",
+  "e": "",
+  "g": "Mark 2:13-17"
+ },
+ {
+  "id": "II|Ordinary Time|1|Thursday",
+  "n": "Thursday of the 1st Week in Ordinary Time",
+  "f": "1 Samuel 4:1-11",
+  "p": "Psalm 44:10-11, 14-15, 24-25",
+  "e": "",
+  "g": "Mark 1:40-45"
+ },
+ {
+  "id": "II|Ordinary Time|1|Tuesday",
+  "n": "Tuesday of the 1st Week in Ordinary Time",
+  "f": "1 Samuel 1:9-20",
+  "p": "1 Samuel 2:1, 4-5, 6-7, 8abcd",
+  "e": "",
+  "g": "Mark 1:21-28"
+ },
+ {
+  "id": "II|Ordinary Time|1|Wednesday",
+  "n": "Wednesday of the 1st Week in Ordinary Time",
+  "f": "1 Samuel 3:1-10, 19-20",
+  "p": "Psalm 40:2+5, 7-8a, 8b-9, 10",
+  "e": "",
+  "g": "Mark 1:29-39"
+ },
+ {
+  "id": "II|Ordinary Time|10|Friday",
+  "n": "Friday of the 10th Week in Ordinary Time",
+  "f": "1 Kings 19:9a, 11-16",
+  "p": "Psalm 27:7-8a, 8b-9abc, 13-14",
+  "e": "",
+  "g": "Matthew 5:27-32"
+ },
+ {
+  "id": "II|Ordinary Time|10|Monday",
+  "n": "Monday of the 10th Week in Ordinary Time",
+  "f": "1 Kings 17:1-6",
+  "p": "Psalm 121:1bc-2, 3-4, 5-6, 7-8",
+  "e": "",
+  "g": "Matthew 5:1-12"
+ },
+ {
+  "id": "II|Ordinary Time|10|Saturday",
+  "n": "Saturday of the 10th Week in Ordinary Time",
+  "f": "1 Kings 19:19-21",
+  "p": "Psalm 16:1b-2a+5, 7-8, 9-10",
+  "e": "",
+  "g": "Matthew 5:33-37"
+ },
+ {
+  "id": "II|Ordinary Time|10|Thursday",
+  "n": "Thursday of the 10th Week in Ordinary Time",
+  "f": "1 Kings 18:41-46",
+  "p": "Psalm 65:10, 11, 12-13",
+  "e": "",
+  "g": "Matthew 5:20-26"
+ },
+ {
+  "id": "II|Ordinary Time|10|Tuesday",
+  "n": "Tuesday of the 10th Week in Ordinary Time",
+  "f": "1 Kings 17:7-16",
+  "p": "Psalm 4:2-3, 4-5, 7b-8",
+  "e": "",
+  "g": "Matthew 5:13-16"
+ },
+ {
+  "id": "II|Ordinary Time|10|Wednesday",
+  "n": "Wednesday of the 10th Week in Ordinary Time",
+  "f": "1 Kings 18:20-39",
+  "p": "Psalm 16:1-2ab, 4, 5ab+8, 11",
+  "e": "",
+  "g": "Matthew 5:17-19"
+ },
+ {
+  "id": "II|Ordinary Time|11|Friday",
+  "n": "Friday of the 11th Week in Ordinary Time",
+  "f": "2 Kings 11:1-4, 9-18, 20",
+  "p": "Psalm 132:11, 12, 13-14, 17-18",
+  "e": "",
+  "g": "Matthew 6:19-23"
+ },
+ {
+  "id": "II|Ordinary Time|11|Monday",
+  "n": "Monday of the 11th Week in Ordinary Time",
+  "f": "1 Kings 21:1-16",
+  "p": "Psalm 5:2-3ab, 4b-6a, 6b-7",
+  "e": "",
+  "g": "Matthew 5:38-42"
+ },
+ {
+  "id": "II|Ordinary Time|11|Saturday",
+  "n": "Saturday of the 11th Week in Ordinary Time",
+  "f": "2 Chronicles 24:17-25",
+  "p": "Psalm 89:4-5, 29-30, 31-32, 33-34",
+  "e": "",
+  "g": "Matthew 6:24-34"
+ },
+ {
+  "id": "II|Ordinary Time|11|Thursday",
+  "n": "Thursday of the 11th Week in Ordinary Time",
+  "f": "Sirach 48:1-14",
+  "p": "Psalm 97:1-2, 3-4, 5-6, 7",
+  "e": "",
+  "g": "Matthew 6:7-15"
+ },
+ {
+  "id": "II|Ordinary Time|11|Tuesday",
+  "n": "Tuesday of the 11th Week in Ordinary Time",
+  "f": "1 Kings 21:17-29",
+  "p": "Psalm 51:3-4, 5-6ab, 11+16",
+  "e": "",
+  "g": "Matthew 5:43-48"
+ },
+ {
+  "id": "II|Ordinary Time|11|Wednesday",
+  "n": "Wednesday of the 11th Week in Ordinary Time",
+  "f": "2 Kings 2:1, 6-14",
+  "p": "Psalm 31:20, 21, 24",
+  "e": "",
+  "g": "Matthew 6:1-6, 16-18"
+ },
+ {
+  "id": "II|Ordinary Time|12|Friday",
+  "n": "Friday of the 12th Week in Ordinary Time",
+  "f": "2 Kings 25:1-12",
+  "p": "Psalm 137:1-2, 3, 4-5, 6",
+  "e": "",
+  "g": "Matthew 8:1-4"
+ },
+ {
+  "id": "II|Ordinary Time|12|Monday",
+  "n": "Monday of the 12th Week in Ordinary Time",
+  "f": "2 Kings 17:5-8, 13-15a, 18",
+  "p": "Psalm 60:3, 4-5, 12-13",
+  "e": "",
+  "g": "Matthew 7:1-5"
+ },
+ {
+  "id": "II|Ordinary Time|12|Saturday",
+  "n": "Saturday of the 12th Week in Ordinary Time",
+  "f": "Lamentations 2:2, 10-14, 18-19",
+  "p": "Psalm 74:1b-2, 3-5, 6-7, 20-21",
+  "e": "",
+  "g": "Matthew 8:5-17"
+ },
+ {
+  "id": "II|Ordinary Time|12|Thursday",
+  "n": "Thursday of the 12th Week in Ordinary Time",
+  "f": "2 Kings 24:8-17",
+  "p": "Psalm 79:1b-2, 3-5, 8, 9",
+  "e": "",
+  "g": "Matthew 7:21-29"
+ },
+ {
+  "id": "II|Ordinary Time|12|Tuesday",
+  "n": "Tuesday of the 12th Week in Ordinary Time",
+  "f": "2 Kings 19:9b-11, 14-21, 31-35a, 36",
+  "p": "Psalm 48:2-3ab, 3cd-4, 10-11",
+  "e": "",
+  "g": "Matthew 7:6, 12-14"
+ },
+ {
+  "id": "II|Ordinary Time|12|Wednesday",
+  "n": "Wednesday of the 12th Week in Ordinary Time",
+  "f": "2 Kings 22:8-13; 23:1-3",
+  "p": "Psalm 119:33, 34, 35, 36, 37, 40",
+  "e": "",
+  "g": "Matthew 7:15-20"
+ },
+ {
+  "id": "II|Ordinary Time|13|Friday",
+  "n": "Friday of the 13th Week in Ordinary Time",
+  "f": "Amos 8:4-6, 9-12",
+  "p": "Psalm 119:2, 10, 20, 30, 40, 131",
+  "e": "",
+  "g": "Matthew 9:9-13"
+ },
+ {
+  "id": "II|Ordinary Time|13|Monday",
+  "n": "Monday of the 13th Week in Ordinary Time",
+  "f": "Amos 2:6-10, 13-16",
+  "p": "Psalm 50:16bc-17, 18-19, 20-21, 22-23",
+  "e": "",
+  "g": "Matthew 8:18-22"
+ },
+ {
+  "id": "II|Ordinary Time|13|Saturday",
+  "n": "Saturday of the 13th Week in Ordinary Time",
+  "f": "Amos 9:11-15",
+  "p": "Psalm 85:9ab+10, 11-12, 13-14",
+  "e": "",
+  "g": "Matthew 9:14-17"
+ },
+ {
+  "id": "II|Ordinary Time|13|Thursday",
+  "n": "Thursday of the 13th Week in Ordinary Time",
+  "f": "Amos 7:10-17",
+  "p": "Psalm 19:8, 9, 10, 11",
+  "e": "",
+  "g": "Matthew 9:1-8"
+ },
+ {
+  "id": "II|Ordinary Time|13|Tuesday",
+  "n": "Tuesday of the 13th Week in Ordinary Time",
+  "f": "Amos 3:1-8; 4:11-12",
+  "p": "Psalm 5:4b-6a, 6b-7, 8",
+  "e": "",
+  "g": "Matthew 8:23-27"
+ },
+ {
+  "id": "II|Ordinary Time|13|Wednesday",
+  "n": "Wednesday of the 13th Week in Ordinary Time",
+  "f": "Amos 5:14-15, 21-24",
+  "p": "Psalm 50:7, 8-9, 10-11, 12-13, 16bc-17",
+  "e": "",
+  "g": "Matthew 8:28-34"
+ },
+ {
+  "id": "II|Ordinary Time|14|Friday",
+  "n": "Friday of the 14th Week in Ordinary Time",
+  "f": "Hosea 14:2-10",
+  "p": "Psalm 51:3-4, 8-9, 12-13, 14+17",
+  "e": "",
+  "g": "Matthew 10:16-23"
+ },
+ {
+  "id": "II|Ordinary Time|14|Monday",
+  "n": "Monday of the 14th Week in Ordinary Time",
+  "f": "Hosea 2:16, 17c-18, 21-22",
+  "p": "Psalm 145:2-3, 4-5, 6-7, 8-9",
+  "e": "",
+  "g": "Matthew 9:18-26"
+ },
+ {
+  "id": "II|Ordinary Time|14|Saturday",
+  "n": "Saturday of the 14th Week in Ordinary Time",
+  "f": "Isaiah 6:1-8",
+  "p": "Psalm 93:1ab, 1cd-2, 5",
+  "e": "",
+  "g": "Matthew 10:24-33"
+ },
+ {
+  "id": "II|Ordinary Time|14|Thursday",
+  "n": "Thursday of the 14th Week in Ordinary Time",
+  "f": "Hosea 11:1-4, 8e-9",
+  "p": "Psalm 80:2ac+3b, 15-16",
+  "e": "",
+  "g": "Matthew 10:7-15"
+ },
+ {
+  "id": "II|Ordinary Time|14|Tuesday",
+  "n": "Tuesday of the 14th Week in Ordinary Time",
+  "f": "Hosea 8:4-7, 11-13",
+  "p": "Psalm 115:3-4, 5-6, 7ab+8, 9-10",
+  "e": "",
+  "g": "Matthew 9:32-38"
+ },
+ {
+  "id": "II|Ordinary Time|14|Wednesday",
+  "n": "Wednesday of the 14th Week in Ordinary Time",
+  "f": "Hosea 10:1-3, 7-8, 12",
+  "p": "Psalm 105:2-3, 4-5, 6-7",
+  "e": "",
+  "g": "Matthew 10:1-7"
+ },
+ {
+  "id": "II|Ordinary Time|15|Friday",
+  "n": "Friday of the 15th Week in Ordinary Time",
+  "f": "Isaiah 38:1-6, 21-22, 7-8",
+  "p": "Isaiah 38:10, 11, 12abcd, 16",
+  "e": "",
+  "g": "Matthew 12:1-8"
+ },
+ {
+  "id": "II|Ordinary Time|15|Monday",
+  "n": "Monday of the 15th Week in Ordinary Time",
+  "f": "Isaiah 1:10-17",
+  "p": "Psalm 50:8-9, 16bc-17, 21+23",
+  "e": "",
+  "g": "Matthew 10:34-11:1"
+ },
+ {
+  "id": "II|Ordinary Time|15|Saturday",
+  "n": "Saturday of the 15th Week in Ordinary Time",
+  "f": "Micah 2:1-5",
+  "p": "Psalm 10:1-2, 3-4, 7-8, 14",
+  "e": "",
+  "g": "Matthew 12:14-21"
+ },
+ {
+  "id": "II|Ordinary Time|15|Thursday",
+  "n": "Thursday of the 15th Week in Ordinary Time",
+  "f": "Isaiah 26:7-9, 12, 16-19",
+  "p": "Psalm 102:13-14ab+15, 16-18, 19-21",
+  "e": "",
+  "g": "Matthew 11:28-30"
+ },
+ {
+  "id": "II|Ordinary Time|15|Tuesday",
+  "n": "Tuesday of the 15th Week in Ordinary Time",
+  "f": "Isaiah 7:1-9",
+  "p": "Psalm 48:2-3a, 3b-4, 5-6, 7-8",
+  "e": "",
+  "g": "Matthew 11:20-24"
+ },
+ {
+  "id": "II|Ordinary Time|15|Wednesday",
+  "n": "Wednesday of the 15th Week in Ordinary Time",
+  "f": "Isaiah 10:5-7, 13b-16",
+  "p": "Psalm 94:5-6, 7-8, 9-10, 14-15",
+  "e": "",
+  "g": "Matthew 11:25-27"
+ },
+ {
+  "id": "II|Ordinary Time|16|Friday",
+  "n": "Friday of the 16th Week in Ordinary Time",
+  "f": "Jeremiah 3:14-17",
+  "p": "Jeremiah 31:10, 11-12abcd, 13",
+  "e": "",
+  "g": "Matthew 13:18-23"
+ },
+ {
+  "id": "II|Ordinary Time|16|Monday",
+  "n": "Monday of the 16th Week in Ordinary Time",
+  "f": "Micah 6:1-4, 6-8",
+  "p": "Psalm 50:5-6, 8-9, 16bc-17, 21+23",
+  "e": "",
+  "g": "Matthew 12:38-42"
+ },
+ {
+  "id": "II|Ordinary Time|16|Saturday",
+  "n": "Saturday of the 16th Week in Ordinary Time",
+  "f": "Jeremiah 7:1-11",
+  "p": "Psalm 84:3, 4, 5-6a+8a, 11",
+  "e": "",
+  "g": "Matthew 13:24-30"
+ },
+ {
+  "id": "II|Ordinary Time|16|Thursday",
+  "n": "Thursday of the 16th Week in Ordinary Time",
+  "f": "Jeremiah 2:1-3, 7-8, 12-13",
+  "p": "Psalm 36:6-7ab, 8-9, 10-11",
+  "e": "",
+  "g": "Matthew 13:10-17"
+ },
+ {
+  "id": "II|Ordinary Time|16|Tuesday",
+  "n": "Tuesday of the 16th Week in Ordinary Time",
+  "f": "Micah 7:14-15, 18-20",
+  "p": "Psalm 85:2-4, 5-6, 7-8",
+  "e": "",
+  "g": "Matthew 12:46-50"
+ },
+ {
+  "id": "II|Ordinary Time|16|Wednesday",
+  "n": "Wednesday of the 16th Week in Ordinary Time",
+  "f": "Jeremiah 1:1, 4-10",
+  "p": "Psalm 71:1-2, 3-4a, 5-6ab, 15+17",
+  "e": "",
+  "g": "Matthew 13:1-9"
+ },
+ {
+  "id": "II|Ordinary Time|17|Friday",
+  "n": "Friday of the 17th Week in Ordinary Time",
+  "f": "Jeremiah 26:1-9",
+  "p": "Psalm 69:5, 8-10, 14",
+  "e": "",
+  "g": "Matthew 13:54-58"
+ },
+ {
+  "id": "II|Ordinary Time|17|Monday",
+  "n": "Monday of the 17th Week in Ordinary Time",
+  "f": "Jeremiah 13:1-11",
+  "p": "Deuteronomy 32:18-19, 20, 21",
+  "e": "",
+  "g": "Matthew 13:31-35"
+ },
+ {
+  "id": "II|Ordinary Time|17|Saturday",
+  "n": "Saturday of the 17th Week in Ordinary Time",
+  "f": "Jeremiah 26:11-16, 24",
+  "p": "Psalm 69:15-16, 30-31, 33-34",
+  "e": "",
+  "g": "Matthew 14:1-12"
+ },
+ {
+  "id": "II|Ordinary Time|17|Thursday",
+  "n": "Thursday of the 17th Week in Ordinary Time",
+  "f": "Jeremiah 18:1-6",
+  "p": "Psalm 146:1b-2, 3-4, 5-6ab",
+  "e": "",
+  "g": "Matthew 13:47-53"
+ },
+ {
+  "id": "II|Ordinary Time|17|Tuesday",
+  "n": "Tuesday of the 17th Week in Ordinary Time",
+  "f": "Jeremiah 14:17-22",
+  "p": "Psalm 79:8, 9, 11+13",
+  "e": "",
+  "g": "Matthew 13:36-43"
+ },
+ {
+  "id": "II|Ordinary Time|17|Wednesday",
+  "n": "Wednesday of the 17th Week in Ordinary Time",
+  "f": "Jeremiah 15:10, 16-21",
+  "p": "Psalm 59:2-3, 4, 10-11, 17, 18",
+  "e": "",
+  "g": "Matthew 13:44-46"
+ },
+ {
+  "id": "II|Ordinary Time|18|Friday",
+  "n": "Friday of the 18th Week in Ordinary Time",
+  "f": "Nahum 2:1, 3; 3:1-3, 6-7",
+  "p": "Deuteronomy 32:35cd-36ab, 39abcd, 41",
+  "e": "",
+  "g": "Matthew 16:24-28"
+ },
+ {
+  "id": "II|Ordinary Time|18|Monday",
+  "n": "Monday of the 18th Week in Ordinary Time",
+  "f": "Jeremiah 28:1-17",
+  "p": "Psalm 119:29, 43, 79, 80, 95, 102",
+  "e": "",
+  "g": "Matthew 14:13-21"
+ },
+ {
+  "id": "II|Ordinary Time|18|Saturday",
+  "n": "Saturday of the 18th Week in Ordinary Time",
+  "f": "Habakkuk 1:12-2:4",
+  "p": "Psalm 9:8-9, 10-11, 12-13",
+  "e": "",
+  "g": "Matthew 17:14-20"
+ },
+ {
+  "id": "II|Ordinary Time|18|Thursday",
+  "n": "Thursday of the 18th Week in Ordinary Time",
+  "f": "Jeremiah 31:31-34",
+  "p": "Psalm 51:12-13, 14-15, 18-19",
+  "e": "",
+  "g": "Matthew 16:13-23"
+ },
+ {
+  "id": "II|Ordinary Time|18|Tuesday",
+  "n": "Tuesday of the 18th Week in Ordinary Time",
+  "f": "Jeremiah 30:1-2, 12-15, 18-22",
+  "p": "Psalm 102:16-18, 19-21, 29+22-23",
+  "e": "",
+  "g": "Matthew 14:22-36"
+ },
+ {
+  "id": "II|Ordinary Time|18|Wednesday",
+  "n": "Wednesday of the 18th Week in Ordinary Time",
+  "f": "Jeremiah 31:1-7",
+  "p": "Jeremiah 31:10, 11-12ab, 13",
+  "e": "",
+  "g": "Matthew 15:21-28"
+ },
+ {
+  "id": "II|Ordinary Time|19|Friday",
+  "n": "Friday of the 19th Week in Ordinary Time",
+  "f": "Ezekiel 16:1-15, 60, 63 or 16:59-63",
+  "p": "Isaiah 12:2-3, 4bcd, 5-6",
+  "e": "",
+  "g": "Matthew 19:3-12"
+ },
+ {
+  "id": "II|Ordinary Time|19|Monday",
+  "n": "Monday of the 19th Week in Ordinary Time",
+  "f": "Ezekiel 1:2-5, 24-28c",
+  "p": "Psalm 148:1-2, 11-12, 13, 14",
+  "e": "",
+  "g": "Matthew 17:22-27"
+ },
+ {
+  "id": "II|Ordinary Time|19|Saturday",
+  "n": "Saturday of the 19th Week in Ordinary Time",
+  "f": "Ezekiel 18:1-10, 13b, 30-32",
+  "p": "Psalm 51:12-13, 14-15, 18-19",
+  "e": "",
+  "g": "Matthew 19:13-15"
+ },
+ {
+  "id": "II|Ordinary Time|19|Thursday",
+  "n": "Thursday of the 19th Week in Ordinary Time",
+  "f": "Ezekiel 12:1-12",
+  "p": "Psalm 78:56-57, 58-59, 61-62",
+  "e": "",
+  "g": "Matthew 18:21-19:1"
+ },
+ {
+  "id": "II|Ordinary Time|19|Tuesday",
+  "n": "Tuesday of the 19th Week in Ordinary Time",
+  "f": "Ezekiel 2:8-3:4",
+  "p": "Psalm 119:14, 24, 72, 103, 111, 131",
+  "e": "",
+  "g": "Matthew 18:1-5, 10, 12-14"
+ },
+ {
+  "id": "II|Ordinary Time|19|Wednesday",
+  "n": "Wednesday of the 19th Week in Ordinary Time",
+  "f": "Ezekiel 9:1-7; 10:18-22",
+  "p": "Psalm 113:1-2, 3-4, 5-6",
+  "e": "",
+  "g": "Matthew 18:15-20"
+ },
+ {
+  "id": "II|Ordinary Time|2|Friday",
+  "n": "Friday of the 2nd Week in Ordinary Time",
+  "f": "1 Samuel 24:3-21",
+  "p": "Psalm 57:2, 3-4, 6+11",
+  "e": "",
+  "g": "Mark 3:13-19"
+ },
+ {
+  "id": "II|Ordinary Time|2|Monday",
+  "n": "Monday of the 2nd Week in Ordinary Time",
+  "f": "1 Samuel 15:16-23",
+  "p": "Psalm 50:8-9, 16bc-17, 21+23",
+  "e": "",
+  "g": "Mark 2:18-22"
+ },
+ {
+  "id": "II|Ordinary Time|2|Saturday",
+  "n": "Saturday of the 2nd Week in Ordinary Time",
+  "f": "2 Samuel 1:1-4, 11-12, 19, 23-27",
+  "p": "Psalm 80:2-3, 5-7",
+  "e": "",
+  "g": "Mark 3:20-21"
+ },
+ {
+  "id": "II|Ordinary Time|2|Thursday",
+  "n": "Thursday of the 2nd Week in Ordinary Time",
+  "f": "1 Samuel 18:6-9; 19:1-7",
+  "p": "Psalm 56:2-3, 9-10a, 10b-11, 12-13",
+  "e": "",
+  "g": "Mark 3:7-12"
+ },
+ {
+  "id": "II|Ordinary Time|2|Tuesday",
+  "n": "Tuesday of the 2nd Week in Ordinary Time",
+  "f": "1 Samuel 16:1-13",
+  "p": "Psalm 89:20, 21-22, 27-28",
+  "e": "",
+  "g": "Mark 2:23-28"
+ },
+ {
+  "id": "II|Ordinary Time|2|Wednesday",
+  "n": "Wednesday of the 2nd Week in Ordinary Time",
+  "f": "1 Samuel 17:32-33, 37, 40-51",
+  "p": "Psalm 144:1b, 2, 9-10",
+  "e": "",
+  "g": "Mark 3:1-6"
+ },
+ {
+  "id": "II|Ordinary Time|20|Friday",
+  "n": "Friday of the 20th Week in Ordinary Time",
+  "f": "Ezekiel 37:1-14",
+  "p": "Psalm 107:2-3, 4-5, 6-7, 8-9",
+  "e": "",
+  "g": "Matthew 22:34-40"
+ },
+ {
+  "id": "II|Ordinary Time|20|Monday",
+  "n": "Monday of the 20th Week in Ordinary Time",
+  "f": "Ezekiel 24:15-23",
+  "p": "Deuteronomy 32:18-19, 20, 21",
+  "e": "",
+  "g": "Matthew 19:16-22"
+ },
+ {
+  "id": "II|Ordinary Time|20|Saturday",
+  "n": "Saturday of the 20th Week in Ordinary Time",
+  "f": "Ezekiel 43:1-7ab",
+  "p": "Psalm 85:9ab+10, 11-12, 13-14",
+  "e": "",
+  "g": "Matthew 23:1-12"
+ },
+ {
+  "id": "II|Ordinary Time|20|Thursday",
+  "n": "Thursday of the 20th Week in Ordinary Time",
+  "f": "Ezekiel 36:23-28",
+  "p": "Psalm 51:12-13, 14-15, 18-19",
+  "e": "",
+  "g": "Matthew 22:1-14"
+ },
+ {
+  "id": "II|Ordinary Time|20|Tuesday",
+  "n": "Tuesday of the 20th Week in Ordinary Time",
+  "f": "Ezekiel 28:1-10",
+  "p": "Deuteronomy 32:26-27ab, 27cd-28, 30, 35cd-36ab",
+  "e": "",
+  "g": "Matthew 19:23-30"
+ },
+ {
+  "id": "II|Ordinary Time|20|Wednesday",
+  "n": "Wednesday of the 20th Week in Ordinary Time",
+  "f": "Ezekiel 34:1-11",
+  "p": "Psalm 23:1-3a, 3b-4, 5, 6",
+  "e": "",
+  "g": "Matthew 20:1-16"
+ },
+ {
+  "id": "II|Ordinary Time|21|Friday",
+  "n": "Friday of the 21st Week in Ordinary Time",
+  "f": "1 Corinthians 1:17-25",
+  "p": "Psalm 33:1-2, 4-5, 10-11",
+  "e": "",
+  "g": "Matthew 25:1-13"
+ },
+ {
+  "id": "II|Ordinary Time|21|Monday",
+  "n": "Monday of the 21st Week in Ordinary Time",
+  "f": "2 Thessalonians 1:1-5, 11-12",
+  "p": "Psalm 96:1-2a, 2b-3, 4-5",
+  "e": "",
+  "g": "Matthew 23:13-22"
+ },
+ {
+  "id": "II|Ordinary Time|21|Saturday",
+  "n": "Saturday of the 21st Week in Ordinary Time",
+  "f": "1 Corinthians 1:26-31",
+  "p": "Psalm 33:12-13, 18-19, 20-21",
+  "e": "",
+  "g": "Matthew 25:14-30"
+ },
+ {
+  "id": "II|Ordinary Time|21|Thursday",
+  "n": "Thursday of the 21st Week in Ordinary Time",
+  "f": "1 Corinthians 1:1-9",
+  "p": "Psalm 145:2-3, 4-5, 6-7",
+  "e": "",
+  "g": "Matthew 24:42-51"
+ },
+ {
+  "id": "II|Ordinary Time|21|Tuesday",
+  "n": "Tuesday of the 21st Week in Ordinary Time",
+  "f": "2 Thessalonians 2:1-3a, 14-17",
+  "p": "Psalm 96:10, 11-12, 13",
+  "e": "",
+  "g": "Matthew 23:23-26"
+ },
+ {
+  "id": "II|Ordinary Time|21|Wednesday",
+  "n": "Wednesday of the 21st Week in Ordinary Time",
+  "f": "2 Thessalonians 3:6-10, 16-18",
+  "p": "Psalm 128:1-2, 4-5",
+  "e": "",
+  "g": "Matthew 23:27-32"
+ },
+ {
+  "id": "II|Ordinary Time|22|Friday",
+  "n": "Friday of the 22nd Week in Ordinary Time",
+  "f": "1 Corinthians 4:1-5",
+  "p": "Psalm 37:3-4, 5-6, 27-28, 39-40",
+  "e": "",
+  "g": "Luke 5:33-39"
+ },
+ {
+  "id": "II|Ordinary Time|22|Monday",
+  "n": "Monday of the 22nd Week in Ordinary Time",
+  "f": "1 Corinthians 2:1-5",
+  "p": "Psalm 119:97, 98, 99, 100, 101, 102",
+  "e": "",
+  "g": "Luke 4:16-30"
+ },
+ {
+  "id": "II|Ordinary Time|22|Saturday",
+  "n": "Saturday of the 22nd Week in Ordinary Time",
+  "f": "1 Corinthians 4:6b-15",
+  "p": "Psalm 145:17-18, 19-20, 21",
+  "e": "",
+  "g": "Luke 6:1-5"
+ },
+ {
+  "id": "II|Ordinary Time|22|Thursday",
+  "n": "Thursday of the 22nd Week in Ordinary Time",
+  "f": "1 Corinthians 3:18-23",
+  "p": "Psalm 24:1bc-2, 3-4ab, 5-6",
+  "e": "",
+  "g": "Luke 5:1-11"
+ },
+ {
+  "id": "II|Ordinary Time|22|Tuesday",
+  "n": "Tuesday of the 22nd Week in Ordinary Time",
+  "f": "1 Corinthians 2:10b-16",
+  "p": "Psalm 145:8-9, 10-11, 12-13ab, 13cd-14",
+  "e": "",
+  "g": "Luke 4:31-37"
+ },
+ {
+  "id": "II|Ordinary Time|22|Wednesday",
+  "n": "Wednesday of the 22nd Week in Ordinary Time",
+  "f": "1 Corinthians 3:1-9",
+  "p": "Psalm 33:12-13, 14-15, 20-21",
+  "e": "",
+  "g": "Luke 4:38-44"
+ },
+ {
+  "id": "II|Ordinary Time|23|Friday",
+  "n": "Friday of the 23rd Week in Ordinary Time",
+  "f": "1 Corinthians 9:16-19, 22b-27",
+  "p": "Psalm 84:3, 4, 5-6, 12",
+  "e": "",
+  "g": "Luke 6:39-42"
+ },
+ {
+  "id": "II|Ordinary Time|23|Monday",
+  "n": "Monday of the 23rd Week in Ordinary Time",
+  "f": "1 Corinthians 5:1-8",
+  "p": "Psalm 5:5-6, 7, 12",
+  "e": "",
+  "g": "Luke 6:6-11"
+ },
+ {
+  "id": "II|Ordinary Time|23|Saturday",
+  "n": "Saturday of the 23rd Week in Ordinary Time",
+  "f": "1 Corinthians 10:14-22",
+  "p": "Psalm 116:12-13, 17-18",
+  "e": "",
+  "g": "Luke 6:43-49"
+ },
+ {
+  "id": "II|Ordinary Time|23|Thursday",
+  "n": "Thursday of the 23rd Week in Ordinary Time",
+  "f": "1 Corinthians 8:1b-7, 11-13",
+  "p": "Psalm 139:1b-3, 13-14ab, 23-24",
+  "e": "",
+  "g": "Luke 6:27-38"
+ },
+ {
+  "id": "II|Ordinary Time|23|Tuesday",
+  "n": "Tuesday of the 23rd Week in Ordinary Time",
+  "f": "1 Corinthians 6:1-11",
+  "p": "Psalm 149:1b-2, 3-4, 5-6a+9b",
+  "e": "",
+  "g": "Luke 6:12-19"
+ },
+ {
+  "id": "II|Ordinary Time|23|Wednesday",
+  "n": "Wednesday of the 23rd Week in Ordinary Time",
+  "f": "1 Corinthians 7:25-31",
+  "p": "Psalm 45:11-12, 14-15, 16-17",
+  "e": "",
+  "g": "Luke 6:20-26"
+ },
+ {
+  "id": "II|Ordinary Time|24|Friday",
+  "n": "Friday of the 24th Week in Ordinary Time",
+  "f": "1 Corinthians 15:12-20",
+  "p": "Psalm 17:1bcd, 6-7, 8b+15",
+  "e": "",
+  "g": "Luke 8:1-3"
+ },
+ {
+  "id": "II|Ordinary Time|24|Monday",
+  "n": "Monday of the 24th Week in Ordinary Time",
+  "f": "1 Corinthians 11:17-26, 33",
+  "p": "Psalm 40:7-8a, 8b-9, 10, 17",
+  "e": "",
+  "g": "Luke 7:1-10"
+ },
+ {
+  "id": "II|Ordinary Time|24|Saturday",
+  "n": "Saturday of the 24th Week in Ordinary Time",
+  "f": "1 Corinthians 15:35-37, 42-49",
+  "p": "Psalm 56:10c-12, 13-14",
+  "e": "",
+  "g": "Luke 8:4-15"
+ },
+ {
+  "id": "II|Ordinary Time|24|Thursday",
+  "n": "Thursday of the 24th Week in Ordinary Time",
+  "f": "1 Corinthians 15:1-11",
+  "p": "Psalm 118:1b-2, 16ab+17, 28",
+  "e": "",
+  "g": "Luke 7:36-50"
+ },
+ {
+  "id": "II|Ordinary Time|24|Tuesday",
+  "n": "Tuesday of the 24th Week in Ordinary Time",
+  "f": "1 Corinthians 12:12-14, 27-31a",
+  "p": "Psalm 100:1b-2, 3, 4, 5",
+  "e": "",
+  "g": "Luke 7:11-17"
+ },
+ {
+  "id": "II|Ordinary Time|24|Wednesday",
+  "n": "Wednesday of the 24th Week in Ordinary Time",
+  "f": "1 Corinthians 12:31-13:13",
+  "p": "Psalm 33:2-3, 4-5, 12+22",
+  "e": "",
+  "g": "Luke 7:31-35"
+ },
+ {
+  "id": "II|Ordinary Time|25|Friday",
+  "n": "Friday of the 25th Week in Ordinary Time",
+  "f": "Ecclesiastes 3:1-11",
+  "p": "Psalm 144:1b+2abc, 3-4",
+  "e": "",
+  "g": "Luke 9:18-22"
+ },
+ {
+  "id": "II|Ordinary Time|25|Monday",
+  "n": "Monday of the 25th Week in Ordinary Time",
+  "f": "Proverbs 3:27-34",
+  "p": "Psalm 15:2-3a, 3bc-4ab, 5",
+  "e": "",
+  "g": "Luke 8:16-18"
+ },
+ {
+  "id": "II|Ordinary Time|25|Saturday",
+  "n": "Saturday of the 25th Week in Ordinary Time",
+  "f": "Ecclesiastes 11:9-12:8",
+  "p": "Psalm 90:3-4, 5-6, 12-13, 14+17",
+  "e": "",
+  "g": "Luke 9:43b-45"
+ },
+ {
+  "id": "II|Ordinary Time|25|Thursday",
+  "n": "Thursday of the 25th Week in Ordinary Time",
+  "f": "Ecclesiastes 1:2-11",
+  "p": "Psalm 90:3-4, 5-6, 12-13, 14+17bc",
+  "e": "",
+  "g": "Luke 9:7-9"
+ },
+ {
+  "id": "II|Ordinary Time|25|Tuesday",
+  "n": "Tuesday of the 25th Week in Ordinary Time",
+  "f": "Proverbs 21:1-6, 10-13",
+  "p": "Psalm 119:1, 27, 30, 34, 35, 44",
+  "e": "",
+  "g": "Luke 8:19-21"
+ },
+ {
+  "id": "II|Ordinary Time|25|Wednesday",
+  "n": "Wednesday of the 25th Week in Ordinary Time",
+  "f": "Proverbs 30:5-9",
+  "p": "Psalm 119:29, 72, 89, 101, 104, 163",
+  "e": "",
+  "g": "Luke 9:1-6"
+ },
+ {
+  "id": "II|Ordinary Time|26|Friday",
+  "n": "Friday of the 26th Week in Ordinary Time",
+  "f": "Job 38:1, 12-21; 40:3-5",
+  "p": "Psalm 139:1-3, 7-8, 9-10, 13-14ab",
+  "e": "",
+  "g": "Luke 10:13-16"
+ },
+ {
+  "id": "II|Ordinary Time|26|Monday",
+  "n": "Monday of the 26th Week in Ordinary Time",
+  "f": "Job 1:6-22",
+  "p": "Psalm 17:1bcd, 2-3, 6-7",
+  "e": "",
+  "g": "Luke 9:46-50"
+ },
+ {
+  "id": "II|Ordinary Time|26|Saturday",
+  "n": "Saturday of the 26th Week in Ordinary Time",
+  "f": "Job 42:1-3, 5-6, 12-17",
+  "p": "Psalm 119:66, 71, 75, 91, 125, 130",
+  "e": "",
+  "g": "Luke 10:17-24"
+ },
+ {
+  "id": "II|Ordinary Time|26|Thursday",
+  "n": "Thursday of the 26th Week in Ordinary Time",
+  "f": "Job 19:21-27",
+  "p": "Psalm 27:7-8a, 8b-9abc, 13-14",
+  "e": "",
+  "g": "Luke 10:1-12"
+ },
+ {
+  "id": "II|Ordinary Time|26|Tuesday",
+  "n": "Tuesday of the 26th Week in Ordinary Time",
+  "f": "Job 3:1-3, 11-17, 20-23",
+  "p": "Psalm 88:2-3, 4-5, 6, 7-8",
+  "e": "",
+  "g": "Luke 9:51-56"
+ },
+ {
+  "id": "II|Ordinary Time|26|Wednesday",
+  "n": "Wednesday of the 26th Week in Ordinary Time",
+  "f": "Job 9:1-12, 14-16",
+  "p": "Psalm 88:10bc-11, 12-13, 14-15",
+  "e": "",
+  "g": "Luke 9:57-62"
+ },
+ {
+  "id": "II|Ordinary Time|27|Friday",
+  "n": "Friday of the 27th Week in Ordinary Time",
+  "f": "Galatians 3:7-14",
+  "p": "Psalm 111:1b-2, 3-4, 5-6",
+  "e": "",
+  "g": "Luke 11:15-26"
+ },
+ {
+  "id": "II|Ordinary Time|27|Monday",
+  "n": "Monday of the 27th Week in Ordinary Time",
+  "f": "Galatians 1:6-12",
+  "p": "Psalm 111:1b-2, 7-8, 9+10c",
+  "e": "",
+  "g": "Luke 10:25-37"
+ },
+ {
+  "id": "II|Ordinary Time|27|Saturday",
+  "n": "Saturday of the 27th Week in Ordinary Time",
+  "f": "Galatians 3:22-29",
+  "p": "Psalm 105:2-3, 4-5, 6-7",
+  "e": "",
+  "g": "Luke 11:27-28"
+ },
+ {
+  "id": "II|Ordinary Time|27|Thursday",
+  "n": "Thursday of the 27th Week in Ordinary Time",
+  "f": "Galatians 3:1-5",
+  "p": "Luke 1:69-70, 71-72, 73-75",
+  "e": "",
+  "g": "Luke 11:5-13"
+ },
+ {
+  "id": "II|Ordinary Time|27|Tuesday",
+  "n": "Tuesday of the 27th Week in Ordinary Time",
+  "f": "Galatians 1:13-24",
+  "p": "Psalm 139:1b-3, 13-14ab, 14c-15",
+  "e": "",
+  "g": "Luke 10:38-42"
+ },
+ {
+  "id": "II|Ordinary Time|27|Wednesday",
+  "n": "Wednesday of the 27th Week in Ordinary Time",
+  "f": "Galatians 2:1-2, 7-14",
+  "p": "Psalm 117:1bc, 2",
+  "e": "",
+  "g": "Luke 11:1-4"
+ },
+ {
+  "id": "II|Ordinary Time|28|Friday",
+  "n": "Friday of the 28th Week in Ordinary Time",
+  "f": "Ephesians 1:11-14",
+  "p": "Psalm 33:1-2, 4-5, 12-13",
+  "e": "",
+  "g": "Luke 12:1-7"
+ },
+ {
+  "id": "II|Ordinary Time|28|Monday",
+  "n": "Monday of the 28th Week in Ordinary Time",
+  "f": "Galatians 4:22-24, 26-27, 31-5:1",
+  "p": "Psalm 113:1b-2, 3-4, 5a+6-7",
+  "e": "",
+  "g": "Luke 11:29-32"
+ },
+ {
+  "id": "II|Ordinary Time|28|Saturday",
+  "n": "Saturday of the 28th Week in Ordinary Time",
+  "f": "Ephesians 1:15-23",
+  "p": "Psalm 8:2-3ab, 4-5, 6-7",
+  "e": "",
+  "g": "Luke 12:8-12"
+ },
+ {
+  "id": "II|Ordinary Time|28|Thursday",
+  "n": "Thursday of the 28th Week in Ordinary Time",
+  "f": "Ephesians 1:1-10",
+  "p": "Psalm 98:1, 2-3ab, 3cd-4, 5-6",
+  "e": "",
+  "g": "Luke 11:47-54"
+ },
+ {
+  "id": "II|Ordinary Time|28|Tuesday",
+  "n": "Tuesday of the 28th Week in Ordinary Time",
+  "f": "Galatians 5:1-6",
+  "p": "Psalm 119:41, 43, 44, 45, 47, 48",
+  "e": "",
+  "g": "Luke 11:37-41"
+ },
+ {
+  "id": "II|Ordinary Time|28|Wednesday",
+  "n": "Wednesday of the 28th Week in Ordinary Time",
+  "f": "Galatians 5:18-25",
+  "p": "Psalm 1:1-2, 3, 4+6",
+  "e": "",
+  "g": "Luke 11:42-46"
+ },
+ {
+  "id": "II|Ordinary Time|29|Friday",
+  "n": "Friday of the 29th Week in Ordinary Time",
+  "f": "Ephesians 4:1-6",
+  "p": "Psalm 24:1-2, 3-4ab, 5-6",
+  "e": "",
+  "g": "Luke 12:54-59"
+ },
+ {
+  "id": "II|Ordinary Time|29|Monday",
+  "n": "Monday of the 29th Week in Ordinary Time",
+  "f": "Ephesians 2:1-10",
+  "p": "Psalm 100:1b-2, 3, 4ab, 4c-5",
+  "e": "",
+  "g": "Luke 12:13-21"
+ },
+ {
+  "id": "II|Ordinary Time|29|Saturday",
+  "n": "Saturday of the 29th Week in Ordinary Time",
+  "f": "Ephesians 4:7-16",
+  "p": "Psalm 122:1-2, 3-4ab, 4cd-5",
+  "e": "",
+  "g": "Luke 13:1-9"
+ },
+ {
+  "id": "II|Ordinary Time|29|Thursday",
+  "n": "Thursday of the 29th Week in Ordinary Time",
+  "f": "Ephesians 3:14-21",
+  "p": "Psalm 33:1-2, 4-5, 11-12, 18-19",
+  "e": "",
+  "g": "Luke 12:49-53"
+ },
+ {
+  "id": "II|Ordinary Time|29|Tuesday",
+  "n": "Tuesday of the 29th Week in Ordinary Time",
+  "f": "Ephesians 2:12-22",
+  "p": "Psalm 85:9ab+10, 11-12, 13-14",
+  "e": "",
+  "g": "Luke 12:35-38"
+ },
+ {
+  "id": "II|Ordinary Time|29|Wednesday",
+  "n": "Wednesday of the 29th Week in Ordinary Time",
+  "f": "Ephesians 3:2-12",
+  "p": "Isaiah 12:2-3, 4bcd, 5-6",
+  "e": "",
+  "g": "Luke 12:39-48"
+ },
+ {
+  "id": "II|Ordinary Time|3|Friday",
+  "n": "Friday of the 3rd Week in Ordinary Time",
+  "f": "2 Samuel 11:1-4a, 5-10a, 13-17",
+  "p": "Psalm 51:3-4, 5-6a, 6bcd-7, 10-11",
+  "e": "",
+  "g": "Mark 4:26-34"
+ },
+ {
+  "id": "II|Ordinary Time|3|Monday",
+  "n": "Monday of the 3rd Week in Ordinary Time",
+  "f": "2 Samuel 5:1-7, 10",
+  "p": "Psalm 89:20, 21-22, 25-26",
+  "e": "",
+  "g": "Mark 3:22-30"
+ },
+ {
+  "id": "II|Ordinary Time|3|Saturday",
+  "n": "Saturday of the 3rd Week in Ordinary Time",
+  "f": "2 Samuel 12:1-7a, 10-17",
+  "p": "Psalm 51:12-13, 14-15, 16-17",
+  "e": "",
+  "g": "Mark 4:35-41"
+ },
+ {
+  "id": "II|Ordinary Time|3|Thursday",
+  "n": "Thursday of the 3rd Week in Ordinary Time",
+  "f": "2 Samuel 7:18-19, 24-29",
+  "p": "Psalm 132:1-2, 3-5, 11, 12, 13-14",
+  "e": "",
+  "g": "Mark 4:21-25"
+ },
+ {
+  "id": "II|Ordinary Time|3|Tuesday",
+  "n": "Tuesday of the 3rd Week in Ordinary Time",
+  "f": "2 Samuel 6:12b-15, 17-19",
+  "p": "Psalm 24:7, 8, 9, 10",
+  "e": "",
+  "g": "Mark 3:31-35"
+ },
+ {
+  "id": "II|Ordinary Time|3|Wednesday",
+  "n": "Wednesday of the 3rd Week in Ordinary Time",
+  "f": "2 Samuel 7:4-17",
+  "p": "Psalm 89:4-5, 27-28, 29-30",
+  "e": "",
+  "g": "Mark 4:1-20"
+ },
+ {
+  "id": "II|Ordinary Time|30|Friday",
+  "n": "Friday of the 30th Week in Ordinary Time",
+  "f": "Philippians 1:1-11",
+  "p": "Psalm 111:1-2, 3-4, 5-6",
+  "e": "",
+  "g": "Luke 14:1-6"
+ },
+ {
+  "id": "II|Ordinary Time|30|Monday",
+  "n": "Monday of the 30th Week in Ordinary Time",
+  "f": "Ephesians 4:32-5:8",
+  "p": "Psalm 1:1-2, 3, 4+6",
+  "e": "",
+  "g": "Luke 13:10-17"
+ },
+ {
+  "id": "II|Ordinary Time|30|Saturday",
+  "n": "Saturday of the 30th Week in Ordinary Time",
+  "f": "Philippians 1:18b-26",
+  "p": "Psalm 42:2, 3, 5cdef",
+  "e": "",
+  "g": "Luke 14:1, 7-11"
+ },
+ {
+  "id": "II|Ordinary Time|30|Thursday",
+  "n": "Thursday of the 30th Week in Ordinary Time",
+  "f": "Ephesians 6:10-20",
+  "p": "Psalm 144:1b, 2, 9-10",
+  "e": "",
+  "g": "Luke 13:31-35"
+ },
+ {
+  "id": "II|Ordinary Time|30|Tuesday",
+  "n": "Tuesday of the 30th Week in Ordinary Time",
+  "f": "Ephesians 5:21-33",
+  "p": "Psalm 128:1-2, 3, 4-5",
+  "e": "",
+  "g": "Luke 13:18-21"
+ },
+ {
+  "id": "II|Ordinary Time|30|Wednesday",
+  "n": "Wednesday of the 30th Week in Ordinary Time",
+  "f": "Ephesians 6:1-9",
+  "p": "Psalm 145:10-11, 12-13ab, 13cd-14",
+  "e": "",
+  "g": "Luke 13:22-30"
+ },
+ {
+  "id": "II|Ordinary Time|31|Friday",
+  "n": "Friday of the 31st Week in Ordinary Time",
+  "f": "Philippians 3:17-4:1",
+  "p": "Psalm 122:1-2, 3-4ab, 4cd-5",
+  "e": "",
+  "g": "Luke 16:1-8"
+ },
+ {
+  "id": "II|Ordinary Time|31|Monday",
+  "n": "Monday of the 31st Week in Ordinary Time",
+  "f": "Philippians 2:1-4",
+  "p": "Psalm 131:1bcde, 2, 3",
+  "e": "",
+  "g": "Luke 14:12-14"
+ },
+ {
+  "id": "II|Ordinary Time|31|Saturday",
+  "n": "Saturday of the 31st Week in Ordinary Time",
+  "f": "Philippians 4:10-19",
+  "p": "Psalm 112:1b-2, 5-6, 8a+9",
+  "e": "",
+  "g": "Luke 16:9-15"
+ },
+ {
+  "id": "II|Ordinary Time|31|Thursday",
+  "n": "Thursday of the 31st Week in Ordinary Time",
+  "f": "Philippians 3:3-8a",
+  "p": "Psalm 105:2-3, 4-5, 6-7",
+  "e": "",
+  "g": "Luke 15:1-10"
+ },
+ {
+  "id": "II|Ordinary Time|31|Tuesday",
+  "n": "Tuesday of the 31st Week in Ordinary Time",
+  "f": "Philippians 2:5-11",
+  "p": "Psalm 22:26b-27, 28-30ab, 30e, 31-32",
+  "e": "",
+  "g": "Luke 14:15-24"
+ },
+ {
+  "id": "II|Ordinary Time|31|Wednesday",
+  "n": "Wednesday of the 31st Week in Ordinary Time",
+  "f": "Philippians 2:12-18",
+  "p": "Psalm 27:1, 4, 13-14",
+  "e": "",
+  "g": "Luke 14:25-33"
+ },
+ {
+  "id": "II|Ordinary Time|32|Friday",
+  "n": "Friday of the 32nd Week in Ordinary Time",
+  "f": "2 John 4-9",
+  "p": "Psalm 119:1, 2, 10, 11, 17, 18",
+  "e": "",
+  "g": "Luke 17:26-37"
+ },
+ {
+  "id": "II|Ordinary Time|32|Monday",
+  "n": "Monday of the 32nd Week in Ordinary Time",
+  "f": "Titus 1:1-9",
+  "p": "Psalm 24:1b-2, 3-4ab, 5-6",
+  "e": "",
+  "g": "Luke 17:1-6"
+ },
+ {
+  "id": "II|Ordinary Time|32|Saturday",
+  "n": "Saturday of the 32nd Week in Ordinary Time",
+  "f": "3 John 5-8",
+  "p": "Psalm 112:1-2, 3-4, 5-6",
+  "e": "",
+  "g": "Luke 18:1-8"
+ },
+ {
+  "id": "II|Ordinary Time|32|Thursday",
+  "n": "Thursday of the 32nd Week in Ordinary Time",
+  "f": "Philemon 7-20",
+  "p": "Psalm 146:7, 8-9a, 9bc-10",
+  "e": "",
+  "g": "Luke 17:20-25"
+ },
+ {
+  "id": "II|Ordinary Time|32|Tuesday",
+  "n": "Tuesday of the 32nd Week in Ordinary Time",
+  "f": "Titus 2:1-8, 11-14",
+  "p": "Psalm 37:3-4, 18+23, 27+29",
+  "e": "",
+  "g": "Luke 17:7-10"
+ },
+ {
+  "id": "II|Ordinary Time|32|Wednesday",
+  "n": "Wednesday of the 32nd Week in Ordinary Time",
+  "f": "Titus 3:1-7",
+  "p": "Psalm 23:1b-3a, 3bc-4, 5, 6",
+  "e": "",
+  "g": "Luke 17:11-19"
+ },
+ {
+  "id": "II|Ordinary Time|33|Friday",
+  "n": "Friday of the 33rd Week in Ordinary Time",
+  "f": "Revelation 10:8-11",
+  "p": "Psalm 119:14, 24, 72, 103, 111, 131",
+  "e": "",
+  "g": "Luke 19:45-48"
+ },
+ {
+  "id": "II|Ordinary Time|33|Monday",
+  "n": "Monday of the 33rd Week in Ordinary Time",
+  "f": "Revelation 1:1-4; 2:1-5",
+  "p": "Psalm 1:1-2, 3, 4+6",
+  "e": "",
+  "g": "Luke 18:35-43"
+ },
+ {
+  "id": "II|Ordinary Time|33|Saturday",
+  "n": "Saturday of the 33rd Week in Ordinary Time",
+  "f": "Revelation 11:4-12",
+  "p": "Psalm 144:1, 2, 9-10",
+  "e": "",
+  "g": "Luke 20:27-40"
+ },
+ {
+  "id": "II|Ordinary Time|33|Thursday",
+  "n": "Thursday of the 33rd Week in Ordinary Time",
+  "f": "Revelation 5:1-10",
+  "p": "Psalm 149:1b-2, 3-4, 5-6a+9b",
+  "e": "",
+  "g": "Luke 19:41-44"
+ },
+ {
+  "id": "II|Ordinary Time|33|Tuesday",
+  "n": "Tuesday of the 33rd Week in Ordinary Time",
+  "f": "Revelation 3:1-6, 14-22",
+  "p": "Psalm 15:2-3a, 3bc-4ab, 5",
+  "e": "",
+  "g": "Luke 19:1-10"
+ },
+ {
+  "id": "II|Ordinary Time|33|Wednesday",
+  "n": "Wednesday of the 33rd Week in Ordinary Time",
+  "f": "Revelation 4:1-11",
+  "p": "Psalm 150:1b-2, 3-4, 5-6",
+  "e": "",
+  "g": "Luke 19:11-28"
+ },
+ {
+  "id": "II|Ordinary Time|34|Friday",
+  "n": "Friday of the 34th Week in Ordinary Time",
+  "f": "Revelation 20:1-4, 11-21:2",
+  "p": "Psalm 84:3, 4, 5-6a+8a",
+  "e": "",
+  "g": "Luke 21:29-33"
+ },
+ {
+  "id": "II|Ordinary Time|34|Monday",
+  "n": "Monday of the 34th Week in Ordinary Time",
+  "f": "Revelation 14:1-3, 4b-5",
+  "p": "Psalm 24:1bc-2, 3-4ab, 5-6",
+  "e": "",
+  "g": "Luke 21:1-4"
+ },
+ {
+  "id": "II|Ordinary Time|34|Saturday",
+  "n": "Saturday of the 34th Week in Ordinary Time",
+  "f": "Revelation 22:1-7",
+  "p": "Psalm 95:1-2, 3-5, 6-7ab",
+  "e": "",
+  "g": "Luke 21:34-36"
+ },
+ {
+  "id": "II|Ordinary Time|34|Thursday",
+  "n": "Thursday of the 34th Week in Ordinary Time",
+  "f": "Revelation 18:1-2, 21-23; 19:1-3, 9a",
+  "p": "Psalm 100:1b-2, 3, 4, 5",
+  "e": "",
+  "g": "Luke 21:20-28"
+ },
+ {
+  "id": "II|Ordinary Time|34|Tuesday",
+  "n": "Tuesday of the 34th Week in Ordinary Time",
+  "f": "Revelation 14:14-19",
+  "p": "Psalm 96:10, 11-12, 13",
+  "e": "",
+  "g": "Luke 21:5-11"
+ },
+ {
+  "id": "II|Ordinary Time|34|Wednesday",
+  "n": "Wednesday of the 34th Week in Ordinary Time",
+  "f": "Revelation 15:1-4",
+  "p": "Psalm 98:1, 2-3ab, 7-8, 9",
+  "e": "",
+  "g": "Luke 21:12-19"
+ },
+ {
+  "id": "II|Ordinary Time|4|Friday",
+  "n": "Friday of the 4th Week in Ordinary Time",
+  "f": "Sirach 47:2-11",
+  "p": "Psalm 18:31, 47+50, 51",
+  "e": "",
+  "g": "Mark 6:14-29"
+ },
+ {
+  "id": "II|Ordinary Time|4|Monday",
+  "n": "Monday of the 4th Week in Ordinary Time",
+  "f": "2 Samuel 15:13-14, 30; 16:5-13",
+  "p": "Psalm 3:2-3, 4-5, 6-7",
+  "e": "",
+  "g": "Mark 5:1-20"
+ },
+ {
+  "id": "II|Ordinary Time|4|Saturday",
+  "n": "Saturday of the 4th Week in Ordinary Time",
+  "f": "1 Kings 3:4-13",
+  "p": "Psalm 119:9, 10, 11, 12, 13, 14",
+  "e": "",
+  "g": "Mark 6:30-34"
+ },
+ {
+  "id": "II|Ordinary Time|4|Thursday",
+  "n": "Thursday of the 4th Week in Ordinary Time",
+  "f": "1 Kings 2:1-4, 10-12",
+  "p": "1 Chronicles 29:10bcd, 11ab, 11d-12a, 12bcd",
+  "e": "",
+  "g": "Mark 6:7-13"
+ },
+ {
+  "id": "II|Ordinary Time|4|Tuesday",
+  "n": "Tuesday of the 4th Week in Ordinary Time",
+  "f": "2 Samuel 18:9-10, 14b, 24-25a, 30-19:3",
+  "p": "Psalm 86:1-2, 3-4, 5-6",
+  "e": "",
+  "g": "Mark 5:21-43"
+ },
+ {
+  "id": "II|Ordinary Time|4|Wednesday",
+  "n": "Wednesday of the 4th Week in Ordinary Time",
+  "f": "2 Samuel 24:2, 9-17",
+  "p": "Psalm 32:1-2, 5, 6, 7",
+  "e": "",
+  "g": "Mark 6:1-6"
+ },
+ {
+  "id": "II|Ordinary Time|5|Friday",
+  "n": "Friday of the 5th Week in Ordinary Time",
+  "f": "1 Kings 11:29-32; 12:19",
+  "p": "Psalm 81:10-11ab, 12-13, 14-15",
+  "e": "",
+  "g": "Mark 7:31-37"
+ },
+ {
+  "id": "II|Ordinary Time|5|Monday",
+  "n": "Monday of the 5th Week in Ordinary Time",
+  "f": "1 Kings 8:1-7, 9-13",
+  "p": "Psalm 132:6-7, 8-10",
+  "e": "",
+  "g": "Mark 6:53-56"
+ },
+ {
+  "id": "II|Ordinary Time|5|Saturday",
+  "n": "Saturday of the 5th Week in Ordinary Time",
+  "f": "1 Kings 12:26-32; 13:33-34",
+  "p": "Psalm 106:6-7ab, 19-20, 21-22",
+  "e": "",
+  "g": "Mark 8:1-10"
+ },
+ {
+  "id": "II|Ordinary Time|5|Thursday",
+  "n": "Thursday of the 5th Week in Ordinary Time",
+  "f": "1 Kings 11:4-13",
+  "p": "Psalm 106:3-4, 35-36, 37+40",
+  "e": "",
+  "g": "Mark 7:24-30"
+ },
+ {
+  "id": "II|Ordinary Time|5|Tuesday",
+  "n": "Tuesday of the 5th Week in Ordinary Time",
+  "f": "1 Kings 8:22-23, 27-30",
+  "p": "Psalm 84:3, 4, 5+10, 11",
+  "e": "",
+  "g": "Mark 7:1-13"
+ },
+ {
+  "id": "II|Ordinary Time|5|Wednesday",
+  "n": "Wednesday of the 5th Week in Ordinary Time",
+  "f": "1 Kings 10:1-10",
+  "p": "Psalm 37:5-6, 30-31, 39-40",
+  "e": "",
+  "g": "Mark 7:14-23"
+ },
+ {
+  "id": "II|Ordinary Time|6|Friday",
+  "n": "Friday of the 6th Week in Ordinary Time",
+  "f": "James 2:14-24, 26",
+  "p": "Psalm 112:1-2, 3-4, 5-6",
+  "e": "",
+  "g": "Mark 8:34-9:1"
+ },
+ {
+  "id": "II|Ordinary Time|6|Monday",
+  "n": "Monday of the 6th Week in Ordinary Time",
+  "f": "James 1:1-11",
+  "p": "Psalm 119:67, 68, 71, 72, 75, 76",
+  "e": "",
+  "g": "Mark 8:11-13"
+ },
+ {
+  "id": "II|Ordinary Time|6|Saturday",
+  "n": "Saturday of the 6th Week in Ordinary Time",
+  "f": "James 3:1-10",
+  "p": "Psalm 12:2-3, 4-5, 7-8",
+  "e": "",
+  "g": "Mark 9:2-13"
+ },
+ {
+  "id": "II|Ordinary Time|6|Thursday",
+  "n": "Thursday of the 6th Week in Ordinary Time",
+  "f": "James 2:1-9",
+  "p": "Psalm 34:2-3, 4-5, 6-7",
+  "e": "",
+  "g": "Mark 8:27-33"
+ },
+ {
+  "id": "II|Ordinary Time|6|Tuesday",
+  "n": "Tuesday of the 6th Week in Ordinary Time",
+  "f": "James 1:12-18",
+  "p": "Psalm 94:12-13a, 14-15, 18-19",
+  "e": "",
+  "g": "Mark 8:14-21"
+ },
+ {
+  "id": "II|Ordinary Time|6|Wednesday",
+  "n": "Wednesday of the 6th Week in Ordinary Time",
+  "f": "James 1:19-27",
+  "p": "Psalm 15:2-3a, 3bc-4ab, 5",
+  "e": "",
+  "g": "Mark 8:22-26"
+ },
+ {
+  "id": "II|Ordinary Time|7|Friday",
+  "n": "Friday of the 7th Week in Ordinary Time",
+  "f": "James 5:9-12",
+  "p": "Psalm 103:1-2, 3-4, 8-9, 11-12",
+  "e": "",
+  "g": "Mark 10:1-12"
+ },
+ {
+  "id": "II|Ordinary Time|7|Monday",
+  "n": "Monday of the 7th Week in Ordinary Time",
+  "f": "James 3:13-18",
+  "p": "Psalm 19:8, 9, 10, 15",
+  "e": "",
+  "g": "Mark 9:14-29"
+ },
+ {
+  "id": "II|Ordinary Time|7|Saturday",
+  "n": "Saturday of the 7th Week in Ordinary Time",
+  "f": "James 5:13-20",
+  "p": "Psalm 141:1-2, 3+8",
+  "e": "",
+  "g": "Mark 10:13-16"
+ },
+ {
+  "id": "II|Ordinary Time|7|Thursday",
+  "n": "Thursday of the 7th Week in Ordinary Time",
+  "f": "James 5:1-6",
+  "p": "Psalm 49:14-15ab, 15cd-16, 17-18, 19-20",
+  "e": "",
+  "g": "Mark 9:41-50"
+ },
+ {
+  "id": "II|Ordinary Time|7|Tuesday",
+  "n": "Tuesday of the 7th Week in Ordinary Time",
+  "f": "James 4:1-10",
+  "p": "Psalm 55:7-8, 9-10a, 10b-11a, 23",
+  "e": "",
+  "g": "Mark 9:30-37"
+ },
+ {
+  "id": "II|Ordinary Time|7|Wednesday",
+  "n": "Wednesday of the 7th Week in Ordinary Time",
+  "f": "James 4:13-17",
+  "p": "Psalm 49:2-3, 6-7, 8-10, 11",
+  "e": "",
+  "g": "Mark 9:38-40"
+ },
+ {
+  "id": "II|Ordinary Time|8|Friday",
+  "n": "Friday of the 8th Week in Ordinary Time",
+  "f": "1 Peter 4:7-13",
+  "p": "Psalm 96:10, 11-12, 13",
+  "e": "",
+  "g": "Mark 11:11-26"
+ },
+ {
+  "id": "II|Ordinary Time|8|Monday",
+  "n": "Monday of the 8th Week in Ordinary Time",
+  "f": "1 Peter 1:3-9",
+  "p": "Psalm 111:1-2, 5-6, 9,+10c",
+  "e": "",
+  "g": "Mark 10:17-27"
+ },
+ {
+  "id": "II|Ordinary Time|8|Saturday",
+  "n": "Saturday of the 8th Week in Ordinary Time",
+  "f": "Jude 17, 20b-25",
+  "p": "Psalm 63:2, 3-4, 5-6",
+  "e": "",
+  "g": "Mark 11:27-33"
+ },
+ {
+  "id": "II|Ordinary Time|8|Thursday",
+  "n": "Thursday of the 8th Week in Ordinary Time",
+  "f": "1 Peter 2:2-5, 9-12",
+  "p": "Psalm 100:2, 3, 4, 5",
+  "e": "",
+  "g": "Mark 10:46-52"
+ },
+ {
+  "id": "II|Ordinary Time|8|Tuesday",
+  "n": "Tuesday of the 8th Week in Ordinary Time",
+  "f": "1 Peter 1:10-16",
+  "p": "Psalm 98:1, 2-3ab, 3cd-4",
+  "e": "",
+  "g": "Mark 10:28-31"
+ },
+ {
+  "id": "II|Ordinary Time|8|Wednesday",
+  "n": "Wednesday of the 8th Week in Ordinary Time",
+  "f": "1 Peter 1:18-25",
+  "p": "Psalm 147:12-13, 14-15, 19-20",
+  "e": "",
+  "g": "Mark 10:32-45"
+ },
+ {
+  "id": "II|Ordinary Time|9|Friday",
+  "n": "Friday of the 9th Week in Ordinary Time",
+  "f": "2 Timothy 3:10-17",
+  "p": "Psalm 119:157, 160, 161, 165, 166, 168",
+  "e": "",
+  "g": "Mark 12:35-37"
+ },
+ {
+  "id": "II|Ordinary Time|9|Monday",
+  "n": "Monday of the 9th Week in Ordinary Time",
+  "f": "2 Peter 1:2-7",
+  "p": "Psalm 91:1-2, 14-15ab, 15c-16",
+  "e": "",
+  "g": "Mark 12:1-12"
+ },
+ {
+  "id": "II|Ordinary Time|9|Saturday",
+  "n": "Saturday of the 9th Week in Ordinary Time",
+  "f": "2 Timothy 4:1-8",
+  "p": "Psalm 71:8-9, 14-15ab, 16-17, 22",
+  "e": "",
+  "g": "Mark 12:38-44"
+ },
+ {
+  "id": "II|Ordinary Time|9|Thursday",
+  "n": "Thursday of the 9th Week in Ordinary Time",
+  "f": "2 Timothy 2:8-15",
+  "p": "Psalm 25:4-5ab, 8-9, 10+14",
+  "e": "",
+  "g": "Mark 12:28b-34"
+ },
+ {
+  "id": "II|Ordinary Time|9|Tuesday",
+  "n": "Tuesday of the 9th Week in Ordinary Time",
+  "f": "2 Peter 3:12-15a, 17-18",
+  "p": "Psalm 90:2, 3-4, 10, 14+16",
+  "e": "",
+  "g": "Mark 12:13-17"
+ },
+ {
+  "id": "II|Ordinary Time|9|Wednesday",
+  "n": "Wednesday of the 9th Week in Ordinary Time",
+  "f": "2 Timothy 1:1-3, 6-12",
+  "p": "Psalm 123:1b-2ab, 2cdef",
+  "e": "",
+  "g": "Mark 12:18-27"
+ },
+ {
+  "id": "Lent|0|Friday",
+  "n": "Friday after Ash Wednesday",
+  "f": "Isaiah 58:1-9a",
+  "p": "Psalm 51:3-4, 5-6ab, 18-19",
+  "e": "",
+  "g": "Matthew 9:14-15"
+ },
+ {
+  "id": "Lent|0|Saturday",
+  "n": "Saturday after Ash Wednesday",
+  "f": "Isaiah 58:9b-14",
+  "p": "Psalm 86:1-2, 3-4, 5-6",
+  "e": "",
+  "g": "Luke 5:27-32"
+ },
+ {
+  "id": "Lent|0|Thursday",
+  "n": "Thursday after Ash Wednesday",
+  "f": "Deuteronomy 30:15-20",
+  "p": "Psalm 1:1-2, 3, 4+6",
+  "e": "",
+  "g": "Luke 9:22-25"
+ },
+ {
+  "id": "Lent|1|Friday",
+  "n": "Friday of the 1st Week of Lent",
+  "f": "Ezekiel 18:21-28",
+  "p": "Psalm 130:1-2, 3-4, 5-7a, 7bc-8",
+  "e": "",
+  "g": "Matthew 5:20-26"
+ },
+ {
+  "id": "Lent|1|Monday",
+  "n": "Monday of the 1st Week of Lent",
+  "f": "Leviticus 19:1-2, 11-18",
+  "p": "Psalm 19:8, 9, 10, 15",
+  "e": "",
+  "g": "Matthew 25:31-46"
+ },
+ {
+  "id": "Lent|1|Saturday",
+  "n": "Saturday of the 1st Week of Lent",
+  "f": "Deuteronomy 26:16-19",
+  "p": "Psalm 119:1-2, 4-5, 7-8",
+  "e": "",
+  "g": "Matthew 5:43-48"
+ },
+ {
+  "id": "Lent|1|Thursday",
+  "n": "Thursday of the 1st Week of Lent",
+  "f": "Esther 14:1, 3-5, 12-14",
+  "p": "Psalm 138:1-2ab, 2cde-3, 7c-8",
+  "e": "",
+  "g": "Matthew 7:7-12"
+ },
+ {
+  "id": "Lent|1|Tuesday",
+  "n": "Tuesday of the 1st Week of Lent",
+  "f": "Isaiah 55:10-11",
+  "p": "Psalm 34:4-5, 6-7, 16-17, 18-19",
+  "e": "",
+  "g": "Matthew 6:7-15"
+ },
+ {
+  "id": "Lent|1|Wednesday",
+  "n": "Wednesday of the 1st Week of Lent",
+  "f": "Jonah 3:1-10",
+  "p": "Psalm 51:3-4, 12-13, 18-19",
+  "e": "",
+  "g": "Luke 11:29-32"
+ },
+ {
+  "id": "Lent|2|Friday",
+  "n": "Friday of the 2nd Week of Lent",
+  "f": "Genesis 37:3-4, 12-13a, 17b-28a",
+  "p": "Psalm 105:16-17, 18-19, 20-21",
+  "e": "",
+  "g": "Matthew 21:33-43, 45-46"
+ },
+ {
+  "id": "Lent|2|Monday",
+  "n": "Monday of the 2nd Week of Lent",
+  "f": "Daniel 9:4b-10",
+  "p": "Psalm 79:8, 9, 11+13",
+  "e": "",
+  "g": "Luke 6:36-38"
+ },
+ {
+  "id": "Lent|2|Saturday",
+  "n": "Saturday of the 2nd Week of Lent",
+  "f": "Micah 7:14-15, 18-20",
+  "p": "Psalm 103:1-2, 3-4, 9-10, 11-12",
+  "e": "",
+  "g": "Luke 15:1-3, 11-32"
+ },
+ {
+  "id": "Lent|2|Thursday",
+  "n": "Thursday of the 2nd Week of Lent",
+  "f": "Jeremiah 17:5-10",
+  "p": "Psalm 1:1-2, 3, 4+6",
+  "e": "",
+  "g": "Luke 16:19-31"
+ },
+ {
+  "id": "Lent|2|Tuesday",
+  "n": "Tuesday of the 2nd Week of Lent",
+  "f": "Isaiah 1:10, 16-20",
+  "p": "Psalm 50:8-9, 16bc-17, 21+23",
+  "e": "",
+  "g": "Matthew 23:1-12"
+ },
+ {
+  "id": "Lent|2|Wednesday",
+  "n": "Wednesday of the 2nd Week of Lent",
+  "f": "Jeremiah 18:18-20",
+  "p": "Psalm 31:5-6, 14, 15-16",
+  "e": "",
+  "g": "Matthew 20:17-28"
+ },
+ {
+  "id": "Lent|3|Friday",
+  "n": "Friday of the 3rd Week of Lent",
+  "f": "Hosea 14:2-10",
+  "p": "Psalm 81:6c-8a, 8bc-9, 10-11ab, 14+17",
+  "e": "",
+  "g": "Mark 12:28b-34"
+ },
+ {
+  "id": "Lent|3|Monday",
+  "n": "Monday of the 3rd Week of Lent",
+  "f": "2 Kings 5:1-15a",
+  "p": "Psalm 42:2, 3; 43:3, 4",
+  "e": "",
+  "g": "Luke 4:24-30"
+ },
+ {
+  "id": "Lent|3|Saturday",
+  "n": "Saturday of the 3rd Week of Lent",
+  "f": "Hosea 6:1-6",
+  "p": "Psalm 51:3-4, 18-19, 20-21ab",
+  "e": "",
+  "g": "Luke 18:9-14"
+ },
+ {
+  "id": "Lent|3|Thursday",
+  "n": "Thursday of the 3rd Week of Lent",
+  "f": "Jeremiah 7:23-28",
+  "p": "Psalm 95:1-2, 6-7, 8-9",
+  "e": "",
+  "g": "Luke 11:14-23"
+ },
+ {
+  "id": "Lent|3|Tuesday",
+  "n": "Tuesday of the 3rd Week of Lent",
+  "f": "Daniel 3:25, 34-43",
+  "p": "Psalm 25:4-5ab, 6+7bc, 8-9",
+  "e": "",
+  "g": "Matthew 18:21-35"
+ },
+ {
+  "id": "Lent|3|Wednesday",
+  "n": "Wednesday of the 3rd Week of Lent",
+  "f": "Deuteronomy 4:1, 5-9",
+  "p": "Psalm 147:12-13, 15-16, 19-20",
+  "e": "",
+  "g": "Matthew 5:17-19"
+ },
+ {
+  "id": "Lent|4|Friday",
+  "n": "Friday of the 4th Week of Lent",
+  "f": "Wisdom 2:1a, 12-22",
+  "p": "Psalm 34:17-18, 19-20, 21+23",
+  "e": "",
+  "g": "John 7:1-2, 10, 25-30"
+ },
+ {
+  "id": "Lent|4|Monday",
+  "n": "Monday of the 4th Week of Lent",
+  "f": "Isaiah 65:17-21",
+  "p": "Psalm 30:2+4, 5-6, 11-12a+13b",
+  "e": "",
+  "g": "John 4:43-54"
+ },
+ {
+  "id": "Lent|4|Saturday",
+  "n": "Saturday of the 4th Week of Lent",
+  "f": "Jeremiah 11:18-20",
+  "p": "Psalm 7:2-3, 9bc-10, 11-12",
+  "e": "",
+  "g": "John 7:40-53"
+ },
+ {
+  "id": "Lent|4|Thursday",
+  "n": "Thursday of the 4th Week of Lent",
+  "f": "Exodus 32:7-14",
+  "p": "Psalm 106:19-20, 21-22, 23",
+  "e": "",
+  "g": "John 5:31-47"
+ },
+ {
+  "id": "Lent|4|Tuesday",
+  "n": "Tuesday of the 4th Week of Lent",
+  "f": "Ezekiel 47:1-9, 12",
+  "p": "Psalm 46:2-3, 5-6, 8-9",
+  "e": "",
+  "g": "John 5:1-3a, 5-16"
+ },
+ {
+  "id": "Lent|4|Wednesday",
+  "n": "Wednesday of the 4th Week of Lent",
+  "f": "Isaiah 49:8-15",
+  "p": "Psalm 145:8-9, 13cd-14, 17-18",
+  "e": "",
+  "g": "John 5:17-30"
+ },
+ {
+  "id": "Lent|5|Friday",
+  "n": "Friday of the 5th Week of Lent",
+  "f": "Jeremiah 20:10-13",
+  "p": "Psalm 18:2-3a, 3bc-4, 5-6, 7",
+  "e": "",
+  "g": "John 10:31-42"
+ },
+ {
+  "id": "Lent|5|Monday",
+  "n": "Monday of the 5th Week of Lent",
+  "f": "Daniel 13:1-9, 15-17, 19-30, 33-62 or 13:41c-62",
+  "p": "Psalm 23:1-3a, 3b-4, 5, 6",
+  "e": "",
+  "g": "John 8:1-11"
+ },
+ {
+  "id": "Lent|5|Saturday",
+  "n": "Saturday of the 5th Week of Lent",
+  "f": "Ezekiel 37:21-28",
+  "p": "Jeremiah 31:10, 11-12abcd, 13",
+  "e": "",
+  "g": "John 11:45-56"
+ },
+ {
+  "id": "Lent|5|Thursday",
+  "n": "Thursday of the 5th Week of Lent",
+  "f": "Genesis 17:3-9",
+  "p": "Psalm 105:4-5, 6-7, 8-9",
+  "e": "",
+  "g": "John 8:51-59"
+ },
+ {
+  "id": "Lent|5|Tuesday",
+  "n": "Tuesday of the 5th Week of Lent",
+  "f": "Numbers 21:4-9",
+  "p": "Psalm 102:2-3, 16-18, 19-21",
+  "e": "",
+  "g": "John 8:21-30"
+ },
+ {
+  "id": "Lent|5|Wednesday",
+  "n": "Wednesday of the 5th Week of Lent",
+  "f": "Daniel 3:14-20, 91-92, 95",
+  "p": "Daniel 3:52, 53, 54, 55, 56",
+  "e": "",
+  "g": "John 8:31-42"
+ }
+]

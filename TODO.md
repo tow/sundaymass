@@ -21,27 +21,13 @@ Planned as four parts.
    `claude/music-planning-non-sunday-tojmw8`. Sunday-to-Sunday calendar navigation
    (`liturgical-calendar.js`, `calendar-navigation.js`, `planner-state.js`) was left
    untouched — that's a distinct concept from the plan-row date identifier.
-2. **Not started: default readings for every date.** A chosen weekday needs what the
-   Church celebrates that day: the weekday lectionary (Ordinary Time weekdays on the
-   two-year Year I/II cycle, plus the seasonal weekdays of Advent, Christmas, Lent, and
-   Easter), unless a saint's feast or memorial takes precedence, plus the Proper-of-Time
-   days that fall off Sunday — Christmas (Vigil/Night/Dawn/Day), Mary Mother of God and
-   Epiphany as weekdays, Ash Wednesday, Holy Thursday, Good Friday, Easter Vigil,
-   Ascension. None of this data exists in the repo today; `resolveSunday()`
-   hard-returns `null` for any non-Sunday, and `celebrations.json` offers Sanctoral
-   days only as an editor-chosen override, not as a date's default.
-   - First decide the source. Verify whether the `cpbjr` per-date API (already used for
-     some fixed feasts in `build_readings.js`) returns readings for every date of the
-     year, weekdays included; if it does, it can supply the weekday cycle and precedence
-     directly rather than the repo encoding them.
-   - Needs Easter-relative date math in `liturgical-calendar.js` (Ash Wednesday =
-     `easter - 46`, Holy Thursday = `easter - 3`, Good Friday = `easter - 2`, Easter
-     Vigil = `easter - 1`, Ascension = `easter + 39`; only the Sunday boundaries are
-     exposed today), a date resolver distinct from `resolveSunday`, the Year I/II weekday
-     cycle, and the precedence rule between a weekday and the saints' days on it.
-   - Needs a generated-data shape that can offer several Mass formularies for one date
-     (Christmas Vigil/Night/Dawn/Day, or an optional memorial against the weekday),
-     unlike the single-value shape `celebrations.json` uses today.
+2. **Done (2026-09-13): default readings for every date.** `LiturgicalCalendar.resolveDay()`
+   gives any date the Finnish calendar's celebration, and `LectionaryCatalog` its
+   readings, from a new `weekday-lectionary.json` built from Felix Just's weekday and
+   Sunday scripture indexes. Not yet embedded in the planner or reachable from its UI;
+   that is part 3. The assumptions made and the information still missing, above all the
+   Finnish national calendar, are in `docs/lectionary.md` under "Weekdays and other
+   non-Sunday dates".
 3. **Not started: plan a Mass on any date** — stop `calendarNavigation.selectionFor`
    from snapping an explicit non-Sunday `?date=` to the nearest Sunday (keep the snap
    only for the no-date default landing); add a date picker as a first-class way into a
