@@ -2,6 +2,7 @@ node_modules/
 .pages-site/
 /index.html
 /repertoire.html
+/app/
 /service-worker.js
 /favicon.ico
 /vendor/

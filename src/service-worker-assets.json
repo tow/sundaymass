@@ -3,6 +3,8 @@
   "./about.html",
   "./september-music.html",
   "./repertoire.html",
+  "./app/planner.js",
+  "./app/repertoire.js",
   "./manifest.webmanifest",
   "./favicon.ico",
   "./supabase-config.js",

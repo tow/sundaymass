@@ -8,6 +8,10 @@ const root = path.resolve(__dirname, "..");
 const generatedOutputs = [
   "index.html",
   "repertoire.html",
+  "app/planner.js",
+  "app/planner.js.map",
+  "app/repertoire.js",
+  "app/repertoire.js.map",
   "service-worker.js",
   "favicon.ico",
   "vendor/supabase.js",
@@ -49,6 +53,7 @@ test("deployable build outputs are generated and ignored rather than versioned",
   [
     "/index.html",
     "/repertoire.html",
+    "/app/",
     "/service-worker.js",
     "/favicon.ico",
     "/vendor/",

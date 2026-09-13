@@ -27,6 +27,20 @@ function buildAssetVersions() {
   ]));
 }
 
+// The application scripts are generated from everything above, so they are versioned
+// after the build writes them rather than embedded in themselves.
+const APP_SCRIPT_PATHS = Object.freeze(["app/planner.js", "app/repertoire.js"]);
+
+function buildShellVersions() {
+  return {
+    ...buildAssetVersions(),
+    ...Object.fromEntries(APP_SCRIPT_PATHS.map(relativePath => [
+      relativePath,
+      digest(fs.readFileSync(path.join(ROOT, relativePath))),
+    ])),
+  };
+}
+
 function versionedUrl(relativePath, versions) {
   return `./${relativePath}?v=${versions[relativePath]}`;
 }
@@ -39,8 +53,10 @@ function versionShellAssets(assets, versions) {
 }
 
 module.exports = {
+  APP_SCRIPT_PATHS,
   VERSIONED_ASSET_PATHS,
   buildAssetVersions,
+  buildShellVersions,
   digest,
   versionedUrl,
   versionShellAssets,

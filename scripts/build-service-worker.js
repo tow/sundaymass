@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const {
-  buildAssetVersions,
+  buildShellVersions,
   versionShellAssets,
 } = require("./asset-versions.js");
 const { pageBuilds } = require("./page-builds.js");
@@ -12,7 +12,7 @@ const template = fs.readFileSync(path.join(ROOT, "src/service-worker.js"), "utf8
 const sourceAssets = JSON.parse(
   fs.readFileSync(path.join(ROOT, "src/service-worker-assets.json"), "utf8"),
 );
-const assets = versionShellAssets(sourceAssets, buildAssetVersions());
+const assets = versionShellAssets(sourceAssets, buildShellVersions());
 const hash = crypto.createHash("sha256");
 
 hash.update(template.replace("@@CACHE_VERSION@@", ""));
@@ -32,7 +32,7 @@ const version = hash.digest("hex").slice(0, 12);
 const output = template
   .replace("@@CACHE_VERSION@@", version)
   .replace("@@APP_SHELL@@", JSON.stringify(assets, null, 2))
-  // Already represented in the hash above, through the generated pages that contain them.
+  // Already represented in the hash above, through the application scripts that set them.
   .replace("@@APP_BUILDS@@", JSON.stringify(Object.values(pageBuilds())));
 
 fs.writeFileSync(path.join(ROOT, "service-worker.js"), output);

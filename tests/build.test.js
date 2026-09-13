@@ -12,17 +12,18 @@ test("the build has one canonical planner entry point", () => {
   assert.equal(fs.existsSync(path.join(ROOT, "StJames_Mass_Planner.html")), false);
 });
 
-test("the assembled inline application script parses", () => {
+test("the planner application is an external script that parses, with no inline code", () => {
   const html = read("index.html");
-  const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
+  const inline = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
     .map(match => match[1])
     .filter(script => script.trim());
-  assert.equal(scripts.length, 1);
-  assert.doesNotThrow(() => new Function(scripts[0]));
+  assert.deepEqual(inline, []);
+  assert.doesNotThrow(() => new Function(read("app/planner.js")));
+  assert.match(read("app/planner.js"), /\n\/\/# sourceMappingURL=planner\.js\.map\n$/);
 });
 
 test("the generated planner contains no unresolved build tokens", () => {
-  const html = read("index.html");
+  const html = read("index.html") + read("app/planner.js");
   [
     "@@STYLES@@",
     "@@APP_SCRIPT@@",
@@ -73,6 +74,7 @@ test("external application assets referenced by the planner exist", () => {
   const html = read("index.html");
   const localScripts = [...html.matchAll(/<script[^>]+src="\.\/([^"]+)"/g)].map(match => match[1]);
   assert.deepEqual(localScripts.map(value => value.replace(/\?v=[^&]+$/, "")), [
+    "app/planner.js",
     "supabase-config.js",
     "src/services/monitoring.js",
     "src/services/supabase-client.js",
@@ -86,13 +88,13 @@ test("external application assets referenced by the planner exist", () => {
 });
 
 test("the generated repertoire application parses and has no unresolved build tokens", () => {
-  const html = read("repertoire.html");
-  const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
+  const inline = [...read("repertoire.html").matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
     .map(match => match[1])
     .filter(script => script.trim());
+  const html = read("repertoire.html") + read("app/repertoire.js");
 
-  assert.equal(scripts.length, 1);
-  assert.doesNotThrow(() => new Function(scripts[0]));
+  assert.deepEqual(inline, []);
+  assert.doesNotThrow(() => new Function(read("app/repertoire.js")));
   [
     "@@STYLES@@",
     "@@APP_SCRIPT@@",
@@ -115,6 +117,7 @@ test("external application assets referenced by the repertoire exist", () => {
   const html = read("repertoire.html");
   const localScripts = [...html.matchAll(/<script[^>]+src="\.\/([^"]+)"/g)].map(match => match[1]);
   assert.deepEqual(localScripts.map(value => value.replace(/\?v=[^&]+$/, "")), [
+    "app/repertoire.js",
     "supabase-config.js",
     "src/services/monitoring.js",
     "src/services/supabase-client.js",

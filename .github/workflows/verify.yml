@@ -272,6 +272,19 @@ jobs:
         id: page-builds
         run: node scripts/page-builds.js >> "$GITHUB_OUTPUT"
 
+      # Exactly the scripts and maps being deployed, for the Sentry release to resolve
+      # stack frames against after Pages has moved on to a later deployment.
+      - name: Keep the deployed scripts for Sentry
+        uses: actions/upload-artifact@v7
+        with:
+          name: deployed-scripts
+          path: |
+            .pages-site/**/*.js
+            .pages-site/**/*.js.map
+          # The staged site lives in a dot-directory, which uploads skip by default.
+          include-hidden-files: true
+          retention-days: 1
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
 
@@ -319,6 +332,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Fetch the deployed scripts
+        uses: actions/download-artifact@v8
+        with:
+          name: deployed-scripts
+          path: deployed-scripts
+
       # Sentry's automatic range starts at the newest release, which for the second page
       # is the first page's release from a moment ago, so name the pushed range instead.
       - name: Find the commit range this deployment covers
@@ -336,6 +355,9 @@ jobs:
         with:
           release: planner@${{ needs.build-pages.outputs.planner }}
           environment: production
+          sourcemaps: deployed-scripts
+          url_prefix: "~/sundaymass"
+          inject: false
           set_commits: manual
           repo: ${{ github.repository }}
           commit: ${{ github.sha }}
@@ -346,6 +368,9 @@ jobs:
         with:
           release: repertoire@${{ needs.build-pages.outputs.repertoire }}
           environment: production
+          sourcemaps: deployed-scripts
+          url_prefix: "~/sundaymass"
+          inject: false
           set_commits: manual
           repo: ${{ github.repository }}
           commit: ${{ github.sha }}

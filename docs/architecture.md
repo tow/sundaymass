@@ -34,7 +34,9 @@ server between the browser and Supabase.
 ## Deployable surfaces
 
 - `index.html` is the single generated planner entry point. It is not a self-contained
-  file.
+  file: its application runs from `app/planner.js`, which the build assembles from the
+  modules under `src/` with a source map back to them (`scripts/script-assembly.js`).
+  `repertoire.html` loads `app/repertoire.js` the same way.
 - `repertoire.html` is the public browser and editor surface for both the choir
   repertoire and the distinct extended library.
 - `about.html` contains help, provenance, and limitations.

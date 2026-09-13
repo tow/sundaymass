@@ -257,19 +257,22 @@ features, sends only explicit application logs, and removes request, user, bread
 and arbitrary log-attribute fields before sending. The DSN is not a secret; Sentry
 account tokens and auth keys are secrets and must never enter this repository.
 
-The build emits and deploys an external `.js.map` beside each minified vendor bundle;
-the bundle's `sourceMappingURL` lets Sentry fetch that map from GitHub Pages. The
-application entry code remains unminified in the generated HTML, so its reported line
-and column already point at readable deployed code. If source maps later stop being
-publicly hosted, add an authenticated CI upload before deployment rather than placing a
-Sentry auth token in browser configuration.
+The build emits and deploys an external `.js.map` beside each minified vendor bundle
+and beside each page's application script (`app/planner.js`, `app/repertoire.js`). The
+application maps are line-for-line maps back to the modules under `src/`, with their text
+embedded, so a stack frame names the original file and line. GitHub Pages only ever
+serves the current deployment, so maps fetched from the site would describe today's code
+for an event raised by an old page. The `sentry-release` job therefore also uploads every
+deployed script and map to its release, and Sentry resolves each event against the
+upload for the release it names. Never place a Sentry auth token in browser configuration.
 
 Each page reports its release as `planner@<build>` or `repertoire@<build>`, where the
 build is the page's `MASS_PLANNER_BUILD` digest. After a successful Pages deployment, the
 `sentry-release` job registers both releases in the `datamediate-jc/sundaymass` project,
 attaches the deployed commit, and records a production deploy, using the
 `SENTRY_AUTH_TOKEN` repository secret (an organization token). A failure there leaves the
-site deployed; events still arrive, only without commit and deploy information. A digest
+site deployed; events still arrive, only without commit, deploy, and uploaded-source
+information. A digest
 is unchanged when a commit does not touch that page's code, so one release can carry
 several deploys.
 

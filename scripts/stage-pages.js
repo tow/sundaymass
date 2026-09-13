@@ -6,6 +6,10 @@ const OUTPUT = path.join(ROOT, ".pages-site");
 const PAGES_FILES = Object.freeze([
   "index.html",
   "repertoire.html",
+  "app/planner.js",
+  "app/planner.js.map",
+  "app/repertoire.js",
+  "app/repertoire.js.map",
   "about.html",
   "september-music.html",
   "manifest.webmanifest",

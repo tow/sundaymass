@@ -7,6 +7,10 @@ const ROOT = path.resolve(__dirname, "..");
 const OUTPUTS = [
   "index.html",
   "repertoire.html",
+  "app/planner.js",
+  "app/planner.js.map",
+  "app/repertoire.js",
+  "app/repertoire.js.map",
   "service-worker.js",
   "favicon.ico",
   "icons/favicon-16.png",

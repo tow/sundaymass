@@ -123,6 +123,10 @@ test("the Pages artifact contains only the explicit deployable surface", () => {
   assert.deepEqual(PAGES_FILES, [
     "index.html",
     "repertoire.html",
+    "app/planner.js",
+    "app/planner.js.map",
+    "app/repertoire.js",
+    "app/repertoire.js.map",
     "about.html",
     "september-music.html",
     "manifest.webmanifest",
@@ -185,6 +189,9 @@ test("each deployed page's Sentry release is registered under the name the page 
   assert.match(job, /if: always\(\) && needs\.deploy-pages\.result == 'success'/);
   assert.match(job, /SENTRY_AUTH_TOKEN: \$\{\{ secrets\.SENTRY_AUTH_TOKEN \}\}/);
   assert.match(job, /fetch-depth: 0/);
+  // Each release carries the exact scripts it deployed, addressed as the pages load them.
+  assert.match(workflow, /name: deployed-scripts\n\s+path: \|\n\s+\.pages-site\/\*\*\/\*\.js\n\s+\.pages-site\/\*\*\/\*\.js\.map/);
+  assert.equal(job.match(/sourcemaps: deployed-scripts\n\s+url_prefix: "~\/sundaymass"\n\s+inject: false/g)?.length, 2);
   // Both releases carry the same pushed range; "auto" gave the second one no commits.
   assert.equal(job.match(/set_commits: manual/g)?.length, 2);
   assert.equal(job.match(/previous_commit: \$\{\{ steps\.range\.outputs\.previous \}\}/g)?.length, 2);

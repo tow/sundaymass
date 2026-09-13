@@ -5,7 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const {
-  buildAssetVersions,
+  buildShellVersions,
   versionShellAssets,
 } = require("../scripts/asset-versions.js");
 
@@ -32,7 +32,7 @@ test("the generated service-worker cache version represents its complete app she
   const template = read("src/service-worker.js");
   const assets = versionShellAssets(
     JSON.parse(read("src/service-worker-assets.json")),
-    buildAssetVersions(),
+    buildShellVersions(),
   );
   const generated = read("service-worker.js");
   const version = expectedVersion(template, assets);
