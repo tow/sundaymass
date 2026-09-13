@@ -40,10 +40,11 @@ begin
 
   insert into public.plans (plan_date, occasion_label, updated_at, updated_by)
   values (p_plan_date, label, now(), auth.uid())
+  -- Reading excluded.* needs column SELECT, which browser roles lack on the audit fields.
   on conflict (plan_date) do update
   set occasion_label = excluded.occasion_label,
-      updated_at = excluded.updated_at,
-      updated_by = excluded.updated_by;
+      updated_at = now(),
+      updated_by = auth.uid();
 end;
 $$;
 
