@@ -319,21 +319,37 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Sentry's automatic range starts at the newest release, which for the second page
+      # is the first page's release from a moment ago, so name the pushed range instead.
+      - name: Find the commit range this deployment covers
+        id: range
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            BEFORE="$(git rev-parse HEAD~1)"
+          fi
+          echo "previous=$BEFORE" >> "$GITHUB_OUTPUT"
+
       - name: Register the planner release
         uses: getsentry/action-release@v3
         with:
           release: planner@${{ needs.build-pages.outputs.planner }}
           environment: production
-          set_commits: auto
-          ignore_missing: true
+          set_commits: manual
+          repo: ${{ github.repository }}
+          commit: ${{ github.sha }}
+          previous_commit: ${{ steps.range.outputs.previous }}
 
       - name: Register the repertoire release
         uses: getsentry/action-release@v3
         with:
           release: repertoire@${{ needs.build-pages.outputs.repertoire }}
           environment: production
-          set_commits: auto
-          ignore_missing: true
+          set_commits: manual
+          repo: ${{ github.repository }}
+          commit: ${{ github.sha }}
+          previous_commit: ${{ steps.range.outputs.previous }}
 
   production-smoke:
     needs: deploy-pages

@@ -185,6 +185,9 @@ test("each deployed page's Sentry release is registered under the name the page 
   assert.match(job, /if: always\(\) && needs\.deploy-pages\.result == 'success'/);
   assert.match(job, /SENTRY_AUTH_TOKEN: \$\{\{ secrets\.SENTRY_AUTH_TOKEN \}\}/);
   assert.match(job, /fetch-depth: 0/);
+  // Both releases carry the same pushed range; "auto" gave the second one no commits.
+  assert.equal(job.match(/set_commits: manual/g)?.length, 2);
+  assert.equal(job.match(/previous_commit: \$\{\{ steps\.range\.outputs\.previous \}\}/g)?.length, 2);
   assert.match(job, /release: planner@\$\{\{ needs\.build-pages\.outputs\.planner \}\}/);
   assert.match(job, /release: repertoire@\$\{\{ needs\.build-pages\.outputs\.repertoire \}\}/);
   assert.match(monitoring, /`\$\{surface\}@\$\{global\.MASS_PLANNER_BUILD\}`/);
