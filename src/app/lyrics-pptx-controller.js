@@ -15,7 +15,7 @@
       // cannot tell the two apart from here — so it stays a fault and reaches
       // monitoring, because a broken deployment is not something to hide behind a
       // reassuring message about somebody's wifi.
-      if (!failures.isModuleFetchFailure(cause) || isOnline()) throw cause;
+      if (!failures.isFetchFailure(cause) || isOnline()) throw cause;
       throw failures.expected(
         "Export unavailable — you appear to be offline.",
         cause,

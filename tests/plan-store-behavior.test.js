@@ -668,7 +668,7 @@ test("Supabase network failures report whether an offline copy exists", async ()
   assert.equal(failures.length, 1);
   assert.ok(failures[0].error instanceof Error);
   assert.equal(failures[0].error.name, "PostgrestError");
-  assert.equal(failures[0].error.message, "TypeError: Failed to fetch");
+  assert.equal(failures[0].error.message, "Could not reach the server. Check your connection and try again.");
   assert.equal(failures[0].error.details, "TypeError: Failed to fetch");
   assert.deepEqual(failures[0].status, { offline: true, cached: true });
 });
@@ -951,4 +951,39 @@ test("Supabase marks a rejected password as the user's to fix and a server fault
     message: "Service unavailable",
   }).signInEditor("editor@example.test", "secret").then(() => null, error => error);
   assert.notEqual(fault.expected, true);
+});
+
+// Safari words a request that got no response as "Load failed", and the editor was shown
+// that verbatim. Only a browser that has lost its connection makes it the user's to fix.
+test("Supabase requests that get no response say so, and are a fault while still online", async () => {
+  function saveFailingWith(message) {
+    const { supabase } = supabaseFixture(Promise.resolve({ data: null, error: null }));
+    supabase.rpc = async () => ({ data: null, error: { message, details: "", hint: "", code: "" } });
+    return storeModule.createSupabaseStore(supabase, {
+      storage: memoryStorage(),
+      planData,
+      songCatalog,
+      isOnline: () => true,
+    }).saveWeeklyLyrics("2026-09-13", "entrance", "song-1", "Verse 1:\nText")
+      .then(() => null, error => error);
+  }
+
+  const online = await saveFailingWith("TypeError: Load failed");
+  assert.equal(online.name, "PostgrestError");
+  assert.equal(online.message, "Could not reach the server. Check your connection and try again.");
+  assert.equal(online.details, "TypeError: Load failed");
+  assert.notEqual(online.expected, true);
+
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+  Object.defineProperty(globalThis, "navigator", { value: { onLine: false }, configurable: true });
+  try {
+    const dropped = await saveFailingWith("TypeError: Load failed");
+    assert.equal(dropped.expected, true);
+  } finally {
+    if (descriptor) Object.defineProperty(globalThis, "navigator", descriptor);
+    else delete globalThis.navigator;
+  }
+
+  const refused = await saveFailingWith("permission denied for function save_plan_song_lyrics");
+  assert.equal(refused.message, "permission denied for function save_plan_song_lyrics");
 });

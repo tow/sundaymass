@@ -49,7 +49,7 @@ test("a rejected password is recognised, and a server fault is not", () => {
 
 // The wording differs per browser, so all four shapes count. A bundle that downloads but
 // will not parse is a defect and must not be mistaken for a connectivity problem.
-test("a failed module fetch is connectivity; a broken bundle is not", () => {
+test("a failed fetch is recognised in any browser's wording; a broken bundle is not", () => {
   const shapes = [
     "Failed to fetch dynamically imported module: https://example.test/vendor/pptxgenjs.js",
     "Failed to fetch",
@@ -57,8 +57,12 @@ test("a failed module fetch is connectivity; a broken bundle is not", () => {
     "Load failed",
   ];
   for (const message of shapes) {
-    assert.equal(Failures.isModuleFetchFailure(new TypeError(message)), true, message);
+    assert.equal(Failures.isFetchFailure(new TypeError(message)), true, message);
   }
-  assert.equal(Failures.isModuleFetchFailure(new SyntaxError("Unexpected token '<'")), false);
-  assert.equal(Failures.isModuleFetchFailure(null), false);
+  // supabase-js reports the browser's wording as a PostgREST-shaped object.
+  assert.equal(Failures.isFetchFailure({ message: "TypeError: Load failed", details: "" }), true);
+  assert.equal(Failures.isFetchFailure({ message: "Request failed", details: "TypeError: Failed to fetch" }), true);
+  assert.equal(Failures.isFetchFailure({ message: "permission denied", code: "42501" }), false);
+  assert.equal(Failures.isFetchFailure(new SyntaxError("Unexpected token '<'")), false);
+  assert.equal(Failures.isFetchFailure(null), false);
 });

@@ -70,7 +70,18 @@ function storeError(error) {
     const value = error?.[key];
     if (value !== undefined && value !== null && value !== "") failure[key] = value;
   });
-  return failure;
+  return failures.isFetchFailure(error) ? unreachable(failure) : failure;
+}
+
+// A request that got no response arrives as the browser's own wording ("TypeError: Load
+// failed"), which the editor would otherwise be shown verbatim. Say what happened instead,
+// keeping that wording in `details`. It is only the user's to fix when the browser has
+// lost its connection; while it still reports one, an unreachable backend is ours and
+// stays a fault.
+function unreachable(failure) {
+  failure.details = failure.details || failure.message;
+  failure.message = "Could not reach the server. Check your connection and try again.";
+  return globalThis.navigator?.onLine === false ? failures.markExpected(failure) : failure;
 }
 
 // A wrong email or password is the user mistaking their password, not a defect,

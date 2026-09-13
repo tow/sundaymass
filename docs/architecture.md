@@ -335,7 +335,9 @@ the condition could *also* be produced by something broken on our side. Where it
 it stays a fault. A failed export-bundle fetch is the example worth remembering: offline
 it is the reader's connection, but online the identical `TypeError` is what a missing or
 misdeployed bundle raises, so it is only marked when the browser reports being offline
-at the moment the fetch failed. Marked failures are still sent as structured logs, so
+at the moment the fetch failed. A Supabase request that gets no response is judged the
+same way; the stores replace the browser's wording ("TypeError: Load failed") with a
+sentence the editor can act on and keep the original in `details`. Marked failures are still sent as structured logs, so
 nothing is discarded — but they no longer raise issues, which is the whole point and the
 whole risk.
 

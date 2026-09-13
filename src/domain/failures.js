@@ -37,22 +37,23 @@
     return error.code === "invalid_credentials" || error.status === 400;
   }
 
-  // The export bundles are imported on demand and deliberately left out of the
-  // service-worker precache, so building an export needs the network even when
-  // `navigator.onLine` claims a connection. A failed module fetch is a connectivity
-  // condition; a bundle that loads but will not parse is a defect, and is not matched
-  // here.
-  const MODULE_FETCH_FAILURE =
-    /dynamically imported module|Failed to fetch|NetworkError|Load failed/i;
+  // A request that never got a response: each browser words it differently, and
+  // supabase-js hands the browser's wording back as a PostgREST message or details.
+  // This recognises only the shape. Whether it is the user's connection or our own
+  // breakage (a misdeployed bundle, an unreachable backend) is for the caller to judge,
+  // usually by asking whether the browser is still online. A bundle that loads but
+  // will not parse is a defect, and is not matched here.
+  const FETCH_FAILURE =
+    /dynamically imported module|Failed to fetch|NetworkError|Load failed|network request|internet connection/i;
 
-  function isModuleFetchFailure(error) {
-    return MODULE_FETCH_FAILURE.test(String(error?.message || ""));
+  function isFetchFailure(error) {
+    return FETCH_FAILURE.test([error?.message, error?.details].filter(Boolean).join(" "));
   }
 
   const api = Object.freeze({
     expected,
     isExpected,
-    isModuleFetchFailure,
+    isFetchFailure,
     isRejectedCredentials,
     markExpected,
   });
