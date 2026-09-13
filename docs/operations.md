@@ -26,6 +26,9 @@ service-role key, lyric export, or backup in the repository.
   through the protected `github-pages` environment. A failed check, database
   integration failure, migration failure, or incompatible production schema cannot
   deploy the frontend even though `main` itself is not branch-protected.
+- A push or pull request that changes only Markdown files runs no workflow and deploys
+  nothing, since no published file is Markdown. Run `npm run check` locally for
+  documentation changes; the documentation tests run again with the next code push.
 - The production smoke runs once after each Pages deployment. There is no scheduled
   synthetic monitor; this installation does not need continuous availability checks.
 - Sentry browser issue and structured-log reporting is enabled with the public EU

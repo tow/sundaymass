@@ -204,3 +204,13 @@ test("each deployed page's Sentry release is registered under the name the page 
   assert.match(workflow, /node scripts\/page-builds\.js >> "\$GITHUB_OUTPUT"/);
 });
 
+// No deployed file is Markdown, so a push that only edits documentation must not spend
+// CI minutes or redeploy the site (which reloads every open planner page).
+test("a Markdown-only change neither runs checks nor deploys", () => {
+  const triggers = workflow.slice(workflow.indexOf("\non:"), workflow.indexOf("\npermissions:"));
+  assert.match(triggers, /pull_request:\s*\n\s+paths-ignore:\s*\n\s+- "\*\*\/\*\.md"/);
+  assert.match(triggers, /push:\s*\n\s+branches:\s*\n\s+- main\s*\n\s+paths-ignore:\s*\n\s+- "\*\*\/\*\.md"/);
+  const { PAGES_DIRECTORIES, PAGES_FILES } = require("../scripts/stage-pages.js");
+  assert.deepEqual([...PAGES_FILES, ...PAGES_DIRECTORIES].filter(file => /\.md$/i.test(file)), []);
+});
+

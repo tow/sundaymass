@@ -1,10 +1,17 @@
 name: Verify and deploy
 
+# A change to Markdown alone (docs, TODO.md, CLAUDE.md) runs nothing and deploys nothing:
+# no published file is Markdown, and CI minutes are budgeted. A push that also changes
+# anything else runs in full, documentation tests included.
 on:
   pull_request:
+    paths-ignore:
+      - "**/*.md"
   push:
     branches:
       - main
+    paths-ignore:
+      - "**/*.md"
   workflow_dispatch:
     inputs:
       allow_contract_migrations:
