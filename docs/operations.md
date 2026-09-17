@@ -256,8 +256,11 @@ paid subscription:
 
 Do not enable Session Replay, tracing, profiling, metrics, automatic console capture,
 or default PII collection. The application configuration intentionally omits those
-features, sends only explicit application logs, and removes request, user, breadcrumb,
-and arbitrary log-attribute fields before sending. The DSN is not a secret; Sentry
+features, sends only explicit application logs, and removes request, breadcrumb, and
+arbitrary log-attribute fields before sending. The only user field sent is a random
+per-browser id, generated on first load and kept in the browser's local storage, so
+that Sentry can count how many browsers an issue reached; no name, email, or IP
+address is attached, and the id cannot be traced back to a person. The DSN is not a secret; Sentry
 account tokens and auth keys are secrets and must never enter this repository.
 
 The build emits and deploys an external `.js.map` beside each minified vendor bundle

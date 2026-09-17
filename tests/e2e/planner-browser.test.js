@@ -212,7 +212,7 @@ test("planner has no horizontal overflow at mobile and desktop widths", async ()
 });
 
 test(
-  "configured monitoring forwards errors without user, request, or breadcrumb data",
+  "configured monitoring forwards errors with only a random browser id as user data",
   { timeout: 10000 },
   async () => {
   const context = await browser.newContext({
@@ -260,7 +260,12 @@ test(
   assert.equal(event.environment, "test");
   assert.equal(event.tags.app_surface, "planner");
   assert.equal(typeof event.tags.app_build, "string");
-  assert.equal(event.user, undefined);
+  assert.deepEqual(Object.keys(event.user), ["id"]);
+  assert.match(event.user.id, /^[0-9a-f-]{36}$/);
+  assert.equal(
+    await page.evaluate(() => localStorage.getItem("st-james-monitoring-browser-v1")),
+    event.user.id,
+  );
   assert.equal(event.request, undefined);
   assert.equal(event.breadcrumbs, undefined);
   assert.match(logEnvelope, /Monitoring warning test/);

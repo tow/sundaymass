@@ -54,7 +54,8 @@ buildBundle({
     globalHandlersIntegration,
     linkedErrorsIntegration,
     dedupeIntegration,
-    logger
+    logger,
+    setUser
   } from "@sentry/browser";`,
   sourcefile: "sentry-entry.js",
 });

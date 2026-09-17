@@ -40,6 +40,22 @@
     });
   }
 
+  // A random token per browser lets Sentry count how many browsers an issue reaches.
+  // It names nobody: no name, email, or IP address is ever attached to an event.
+  const browserIdKey = "st-james-monitoring-browser-v1";
+  function browserId() {
+    try {
+      const storage = global.localStorage;
+      const existing = storage?.getItem(browserIdKey);
+      if (existing) return existing;
+      const id = global.crypto?.randomUUID?.();
+      if (id) storage?.setItem(browserIdKey, id);
+      return id;
+    } catch {
+      return undefined;
+    }
+  }
+
   const moduleUrl = global.AppAssets?.url("vendor/sentry.js")
     || new URL("./vendor/sentry.js", document.baseURI).href;
 
@@ -69,7 +85,7 @@
         ],
         tracesSampleRate: 0,
         beforeSend(event) {
-          delete event.user;
+          event.user = event.user?.id ? { id: event.user.id } : undefined;
           delete event.request;
           delete event.breadcrumbs;
           return event;
@@ -87,6 +103,8 @@
           };
         },
       });
+      const id = browserId();
+      if (id) Sentry.setUser({ id });
       logger.setReporter(({ level, error, label }) => {
         const detail = errorDetail(error);
         Sentry.logger[level](label, error ? detail : undefined);
