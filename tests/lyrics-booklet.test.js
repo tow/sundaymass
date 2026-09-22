@@ -25,7 +25,7 @@ function stubDocument(marks) {
   let sheet = 0;
   return {
     setProperties() {}, setFont() {}, setTextColor() {}, setDrawColor() {},
-    setLineWidth() {},
+    setLineWidth() {}, viewerPreferences() {},
     setFontSize(value) { size = value; },
     addPage() { sheet += 1; },
     text(value, x, y) { marks?.push({ sheet, x, y, size, value: String(value) }); },
@@ -470,6 +470,18 @@ test("the booklet PDF has one A4 landscape page per imposed sheet with every lyr
     "Refrain:",
     "ST JAMES THE APOSTLE",
   ].forEach(text => assert.ok(source.includes(text), `PDF should contain "${text}"`));
+});
+
+test("the booklet PDF asks the print dialog for short-edge duplex at actual size", needsPdf, () => {
+  const source = pdfSource(LyricsBooklet.buildPdf(jsPDF, {
+    date: "2026-08-02",
+    celebration: "18th Sunday in Ordinary Time",
+    meta: "Sunday · Year A",
+    assignments: [assignment()],
+  }));
+
+  assert.match(source, /\/ViewerPreferences\s*<<[^>]*\/Duplex\s*\/DuplexFlipShortEdge/);
+  assert.match(source, /\/ViewerPreferences\s*<<[^>]*\/PrintScaling\s*\/None/);
 });
 
 test("section labels need a colon; lyric lines starting with a label word stay lyrics", () => {
