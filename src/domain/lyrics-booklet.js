@@ -707,6 +707,9 @@
       author: "St James the Apostle 6pm Mass",
       creator: "Datamediate Oy",
     });
+    // Print-dialog defaults for viewers that honour them (ISO 32000 §12.2); the
+    // status text still carries the same instructions for those that do not.
+    doc.viewerPreferences({ Duplex: "DuplexFlipShortEdge", PrintScaling: "None" });
     sheets.forEach((sheet, index) => {
       if (index) doc.addPage("a4", "landscape");
       paintPage(doc, sheet.left, 0);
