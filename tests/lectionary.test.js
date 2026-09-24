@@ -146,6 +146,27 @@ test("every generated citation has text and Psalm offsets preserve the cited ver
   assert.ok(!("Psalm 23: 1-3a, 3b4, 5, 6" in readings));
 });
 
+test("every catalogue citation parses and has its own complete text", () => {
+  const unusable = [];
+  const check = (source, value) => catalog.citationAlternatives(value).forEach(option => {
+    if (!readings[option] || !catalog.parseReadingCitation(option)) unusable.push(`${source}: "${option}"`);
+  });
+  [...sundayLectionary, ...weekdayLectionary, ...celebrations].forEach(item => {
+    ["f", "p", "e", "g"].forEach(field => check(`${item.id} ${field}`, item[field]));
+  });
+  commons.forEach(common => ["firstOutsideEaster", "firstEaster", "psalm", "second", "gospel"]
+    .forEach(role => common[role].forEach(value => check(`${common.id} ${role}`, value))));
+  assert.deepEqual(unusable, []);
+  // "6 and 8" once stopped the 25th Sunday's psalm text after verse 5.
+  assert.match(readings["Psalm 54:3-4, 5, 6, 8"], /⁶\s.*⁸\s/);
+});
+
+test("Saints Simon and Jude read the choosing of the Twelve, as the USCCB prints it", () => {
+  const simonAndJude = celebrations.find(item => item.id === "sanctoral-666");
+  assert.equal(simonAndJude.g, "Luke 6:12-16");
+  assert.match(readings["Luke 6:12-16"], /¹⁶\sJudas the son of James; and Judas Iscariot, who also became a traitor\.$/);
+});
+
 // A Mass on any date starts from that date's readings. These defaults were checked against
 // the USCCB readings published by cpbjr/catholic-readings-api, except where Finland's
 // calendar differs (see docs/lectionary.md).
@@ -162,7 +183,7 @@ test("a weekday's default readings are the Finnish calendar's celebration of tha
     // A solemnity displaced from Holy Week to the Monday after the Second Sunday of Easter.
     "2027-04-05": ["The Annunciation of the Lord", "Solemnity", "Isaiah 7:10-14; 8:10", "Psalm 40:7-8a, 8b-9, 10, 11", "Hebrews 10:4-10", "Luke 1:26-38"],
     // A feast that takes precedence over the weekday.
-    "2026-10-28": ["Saints Simon and Jude, Apostles", "Feast", "Ephesians 2:19-22", "Psalm 19:2-3, 4-5", "", "Luke 6:12-19"],
+    "2026-10-28": ["Saints Simon and Jude, Apostles", "Feast", "Ephesians 2:19-22", "Psalm 19:2-3, 4-5", "", "Luke 6:12-16"],
     // A European co-patron, a feast in Finland rather than a memorial.
     "2026-07-23": ["Saint Bridget of Sweden, Patron of Europe", "Feast", "Galatians 2:19-20", "Psalm 34:2-3, 4-5, 6-7, 8-9, 10-11", "", "John 15:1-8"],
     // No Mass by day on Holy Saturday.

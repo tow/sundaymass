@@ -66,7 +66,8 @@ The full data rebuild is ordered:
    public `cpbjr/catholic-readings-api` data.
 2. `scripts/build_readings.js` merges those citations with Year C, displaced weeks, and
    fixed feasts. Year C comes from the Felix Just tables because the harvested 2025
-   source is known to mislabel All Souls.
+   source is known to mislabel All Souls. A few harvested psalm citations the reading
+   editor could not parse are corrected, each commented.
 3. `scripts/build_sunday_lectionary.js` converts the normalized sources directly into
    cycle-keyed reading templates. It does not enumerate calendar dates.
 4. `scripts/build_weekday_lectionary.js` inverts Felix Just's scripture indexes of the
@@ -76,7 +77,8 @@ The full data rebuild is ordered:
    (`scripts/lectionary-citations.js`) and corrects a few source typos, each commented.
 5. `scripts/build_celebrations.js` imports the Proper of Saints, explicit alternatives,
    Common references, and all seven Commons from the 2002 US lectionary citation
-   indexes. It then applies Finnish and parish-specific entries.
+   indexes. It then applies commented corrections checked against the USCCB (Saints
+   Simon and Jude end at Luke 6:16) and Finnish and parish-specific entries.
 6. `scripts/extract_readings.js` collects every distinct selectable citation and
    extracts public-domain full text.
 7. `scripts/build-app.js` embeds the generated catalogues in the planner. It does not
@@ -201,10 +203,6 @@ These are planner defaults, not claims about the current Finnish diocesan Ordo:
   above memorial rank.
 - **Transfers.** Confirm how the diocese handles the clashing solemnities above and a
   Sunday 25 July at Saint James.
-- **Source discrepancies.** The celebrations source gives Luke 6:12-19 for Saints Simon
-  and Jude where the USCCB gives Luke 6:12-16. Several Sunday templates carry citations
-  the reading editor cannot parse (`137:1-2` without its book, `Psalm 23: 1-3a`,
-  `6 and 8`).
 
 ## Proper celebrations and Commons
 

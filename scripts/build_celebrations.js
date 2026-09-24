@@ -27,6 +27,13 @@ const LOCAL_CELEBRATION_OVERRIDES = {
   },
 };
 
+// Corrections to the source index, each checked against the USCCB reading page.
+const SOURCE_CORRECTIONS = {
+  // Saints Simon and Jude: the index prints Luke 6:12-19, the weekday Gospel of the
+  // 23rd Week; the feast ends at the list of the Twelve.
+  "sanctoral-666": { g: "Luke 6:12-16" },
+};
+
 const MONTHS = {
   jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
   jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12",
@@ -36,6 +43,8 @@ function readingFromCell(cell) {
   let value = textFromHtml(cell)
     .replace(/\s*\(#[^)]+\)\s*/g, " ")
     .replace(/\s*\(see\s+#[^)]+\)\s*/gi, " ")
+    // An unbracketed cross-reference to another Lectionary number ("6 #715.4").
+    .replace(/\s+#\d+[A-Z]?(?:\.\d+)?(?=\s|$)/g, " ")
     .replace(/\s+/g, " ")
     .trim();
   if (!value || /^(x|—|-)$/i.test(value)) return "";
@@ -192,6 +201,7 @@ async function main() {
   });
 
   celebrations.forEach(celebration => {
+    Object.assign(celebration, SOURCE_CORRECTIONS[celebration.id]);
     const override = LOCAL_CELEBRATION_OVERRIDES[celebration.id];
     if (override) Object.assign(celebration, override);
   });
