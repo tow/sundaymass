@@ -40,6 +40,16 @@ function expand(cite) {
   }
   return s.replace(/—/g,"-").replace(/\b3b4\b/g,"3b-4");
 }
+// Corrections to the harvested cpbjr citations, each checked against the USCCB reading page.
+const SOURCE_CORRECTIONS = {
+  // Year A, 4th Sunday of Lent and 4th Sunday of Easter: a stray space after the colon.
+  "Psalm 23: 1-3a, 3b-4, 5, 6": "Psalm 23:1-3a, 3b-4, 5, 6",
+  // Year B, 4th Sunday of Lent: the source omits the book.
+  "137:1-2, 3, 4-5, 6": "Psalm 137:1-2, 3, 4-5, 6",
+  // Year B, 25th Sunday in Ordinary Time: "6 and 8" skips verse 7.
+  "Psalm 54:3-4, 5, 6 and 8": "Psalm 54:3-4, 5, 6, 8",
+};
+function corrected(cite) { return SOURCE_CORRECTIONS[cite] || cite; }
 function row(f,p,s,g){ return { first:expand(f), psalm:expand(p), second:expand(s), gospel:expand(g) }; }
 
 // ---- Felix Just data for slots cpbjr lacks (Year C first-half, seasonal, + fixed) ----
@@ -145,7 +155,7 @@ const FIXED_FEAST_FALLBACKS = {
   // 1) start with cpbjr harvested for A & B only (2025 Year C harvest is contaminated by All Souls etc.)
   for (const [k, v] of Object.entries(cpbjr)) {
     if (k.startsWith("Year C |")) continue;
-    table[k] = { ...row(v.first, v.psalm, v.second, v.gospel), src: "usccb" };
+    table[k] = { ...row(corrected(v.first), corrected(v.psalm), corrected(v.second), corrected(v.gospel)), src: "usccb" };
   }
   // 2) add Felix only where cpbjr lacks
   const felixVerify = [];
