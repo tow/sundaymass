@@ -84,6 +84,9 @@
           Sentry.dedupeIntegration(),
         ],
         tracesSampleRate: 0,
+        // In-app browsers inject their own scripts into every page (Meta's Android
+        // browsers under `iabjs:`); their failures are not this application's.
+        denyUrls: [/^iabjs:/i],
         beforeSend(event) {
           event.user = event.user?.id ? { id: event.user.id } : undefined;
           delete event.request;

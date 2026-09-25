@@ -171,6 +171,8 @@ test("Sentry is pinned, source-mapped, and configured for private errors and log
   assert.match(monitoring, /beforeSendLog\(log\)/);
   assert.match(monitoring, /Sentry\.logger\[level\]/);
   assert.match(monitoring, /tracesSampleRate:\s*0/);
+  assert.match(monitoring, /Sentry\.inboundFiltersIntegration\(\)/);
+  assert.match(monitoring, /denyUrls:\s*\[\/\^iabjs:\/i\]/);
   assert.match(monitoring, /event\.user = event\.user\?\.id \? \{ id: event\.user\.id \} : undefined/);
   assert.match(monitoring, /Sentry\.setUser\(\{ id \}\)/);
   assert.doesNotMatch(monitoring, /replayIntegration|browserTracingIntegration|tracesSampler/);

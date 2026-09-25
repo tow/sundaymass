@@ -263,6 +263,12 @@ that Sentry can count how many browsers an issue reached; no name, email, or IP
 address is attached, and the id cannot be traced back to a person. The DSN is not a secret; Sentry
 account tokens and auth keys are secrets and must never enter this repository.
 
+Errors raised by scripts under the `iabjs:` scheme are dropped before sending. Meta's
+Android in-app browsers (Facebook, Instagram, Messenger) inject those scripts into every
+page they open, and a WebView torn down mid-beacon reports "Java object is gone" from
+them; nothing in this application is involved. Extend `denyUrls` in
+`src/services/monitoring.js` if another in-app browser's injected scripts start reporting.
+
 The build emits and deploys an external `.js.map` beside each minified vendor bundle
 and beside each page's application script (`app/planner.js`, `app/repertoire.js`). The
 application maps are line-for-line maps back to the modules under `src/`, with their text
