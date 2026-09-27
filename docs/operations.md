@@ -652,9 +652,19 @@ while a dialog is open or a form field has focus. Any page that does not answer 
 navigated to a fresh load of its URL: that covers every page from before this behaviour
 shipped, and also a current page suspended in the background, which loses anything
 unsaved in an open dialog. Current pages also ask for a new worker each time they are
-shown again. In Sentry, an old `app_build` tag still reporting well after a deploy is a
-device whose browser has not yet installed the new worker, or does not support
-`WindowClient.navigate()`.
+shown again.
+
+A page whose browser never installs a new worker is reached another way. Every vendor
+bundle (`vendor/*.js`) opens with `src/services/deployment-guard.js`, stamped by
+`scripts/stamp-vendor-builds.js` with the page builds of the deployment that wrote it. An
+old page still fetches those bundles, Supabase and Sentry when it loads and jsPDF or
+PptxGenJS when it exports, and the first bundle it receives whose builds do not include
+its own reloads it, under the same rules as the worker's answer: never over an open dialog
+or a focused field, and at most once per deployment per tab, so a page that comes back
+still old from the offline cache does not loop. Under an old worker the bundle is served
+from its cache and refreshed behind it, so the reload comes on the second fetch. In
+Sentry, an old `app_build` tag still reporting well after a deploy is a device whose
+browser has not yet installed the new worker and has not yet fetched a fresh bundle.
 
 When a device appears stale:
 

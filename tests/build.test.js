@@ -178,6 +178,29 @@ test("Sentry is pinned, source-mapped, and configured for private errors and log
   assert.doesNotMatch(monitoring, /replayIntegration|browserTracingIntegration|tracesSampler/);
 });
 
+test("every vendor bundle opens with the deployment guard, stamped with the page builds", () => {
+  const { pageBuilds } = require("../scripts/page-builds.js");
+  const { VENDOR_BUNDLE_PATHS } = require("../scripts/asset-versions.js");
+  const guard = read("src/services/deployment-guard.js");
+  const builds = JSON.stringify(Object.values(pageBuilds()));
+
+  assert.deepEqual(VENDOR_BUNDLE_PATHS, [
+    "vendor/supabase.js",
+    "vendor/pptxgenjs.js",
+    "vendor/jspdf.js",
+    "vendor/sentry.js",
+  ]);
+  VENDOR_BUNDLE_PATHS.forEach(relativePath => {
+    const bundle = read(relativePath);
+    assert.ok(bundle.startsWith(guard), `${relativePath} must open with the deployment guard`);
+    assert.ok(
+      bundle.includes(`DeploymentGuard.reloadIfBehind({ builds: ${builds} });`),
+      `${relativePath} must be stamped with the deployed page builds`,
+    );
+    assert.doesNotMatch(bundle, /@@APP_BUILDS@@/);
+  });
+});
+
 test("the Supabase browser client is pinned, built locally, and cached for offline startup", () => {
   const packageJson = JSON.parse(read("package.json"));
   const planStore = read("src/services/plan-store.js");

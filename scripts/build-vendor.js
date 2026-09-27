@@ -2,9 +2,17 @@ const esbuild = require("esbuild");
 const fs = require("fs");
 const path = require("path");
 
+const { DEPLOYED_BUILDS_TOKEN } = require("./asset-versions.js");
+
 const ROOT = path.resolve(__dirname, "..");
 const outputDirectory = path.join(ROOT, "vendor");
 fs.mkdirSync(outputDirectory, { recursive: true });
+
+// Every bundle opens with the deployment guard, so that an old page still fetching our
+// bundles reloads onto the current deployment. stamp-vendor-builds.js fills the token
+// once the application scripts, and so the builds, exist.
+const guard = fs.readFileSync(path.join(ROOT, "src/services/deployment-guard.js"), "utf8");
+const banner = `${guard}DeploymentGuard.reloadIfBehind({ builds: ${DEPLOYED_BUILDS_TOKEN} });\n`;
 
 function buildBundle({ name, contents, sourcefile }) {
   const outputFile = path.join(outputDirectory, `${name}.js`);
@@ -16,6 +24,7 @@ function buildBundle({ name, contents, sourcefile }) {
       sourcefile,
     },
     outfile: outputFile,
+    banner: { js: banner },
     bundle: true,
     charset: "utf8",
     format: "esm",
